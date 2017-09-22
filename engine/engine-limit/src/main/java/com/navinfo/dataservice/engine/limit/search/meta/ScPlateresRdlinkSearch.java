@@ -1,8 +1,8 @@
-package com.navinfo.dataservice.engine.limit.search.mate;
+package com.navinfo.dataservice.engine.limit.search.meta;
 
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
-import com.navinfo.dataservice.engine.limit.glm.model.mate.ScPlateresManoeuvre;
+import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresRdLink;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import net.sf.json.JSONObject;
 
@@ -15,11 +15,11 @@ import java.util.List;
 /**
  * Created by ly on 2017/9/19.
  */
-public class ScPlateresManoeuvreSearch {
+public class ScPlateresRdlinkSearch {
 
     private Connection conn;
 
-    public ScPlateresManoeuvreSearch(Connection conn) {
+    public ScPlateresRdlinkSearch(Connection conn) {
         this.conn = conn;
     }
 
@@ -43,11 +43,11 @@ public class ScPlateresManoeuvreSearch {
 
             while (resultSet.next()) {
 
-                ScPlateresManoeuvre manoeuvre = new ScPlateresManoeuvre();
+                ScPlateresRdLink link = new ScPlateresRdLink();
 
-                ReflectionAttrUtils.executeResultSet(manoeuvre, resultSet);
+                ReflectionAttrUtils.executeResultSet(link, resultSet);
 
-                rows.add(manoeuvre);
+                rows.add(link);
             }
         } catch (Exception e) {
 

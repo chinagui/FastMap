@@ -1,9 +1,8 @@
-package com.navinfo.dataservice.engine.limit.search.mate;
+package com.navinfo.dataservice.engine.limit.search.meta;
 
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
-import com.navinfo.dataservice.engine.limit.glm.model.mate.ScPlateresGeometry;
-import com.navinfo.dataservice.engine.limit.glm.model.mate.ScPlateresGroup;
+import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresGeometry;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import net.sf.json.JSONObject;
 

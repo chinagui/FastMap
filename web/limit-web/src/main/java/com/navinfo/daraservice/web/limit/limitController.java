@@ -1,10 +1,14 @@
 package com.navinfo.daraservice.web.limit;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
+import com.navinfo.dataservice.engine.limit.operation.Transaction;
 import com.navinfo.dataservice.engine.limit.search.SearchProcess;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -129,6 +133,66 @@ public class limitController  extends BaseController {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+    @RequestMapping(value = "/run")
+    public ModelAndView run(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+        logger.info("parameter====" + parameter);
+        AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+
+        com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject
+                .parseObject(parameter);
+
+        JSONObject paraJson = JsonUtils.fastJson2netJson(fastJson);
+
+        try {
+            long beginRunTime = System.currentTimeMillis();
+            logger.info("BEGIN EDIT RUN");
+            Transaction t = new Transaction(parameter);
+            // 加载用户ID
+            t.setUserId(tokenObj.getUserId());
+            // 加载用户taskId
+            if (paraJson.containsKey("subtaskId")) {
+                t.setSubTaskId(paraJson.getInt("subtaskId"));
+            }
+            // 加载数据库类型
+            if (paraJson.containsKey("dbType")) {
+                t.setDbType(paraJson.getInt("dbType"));
+            }
+            String msg = t.run();
+
+            String log = t.getLogs();
+
+            JSONObject json = new JSONObject();
+
+            json.put("result", msg);
+
+            json.put("log", log);
+
+            json.put("check", t.getCheckLog());
+
+            json.put("pid", t.getPid());
+            long endRunTime = System.currentTimeMillis();
+            logger.info("END EDIT RUN");
+            logger.info("edit run total use time   "
+                    + String.valueOf(endRunTime - beginRunTime));
+            if (parameter.contains("\"infect\":1")) {
+                return new ModelAndView("jsonView", infect(json));
+            } else {
+                return new ModelAndView("jsonView", success(json));
+            }
+        } catch (DataNotChangeException e) {
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", success(e.getMessage()));
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
         }
     }
 }

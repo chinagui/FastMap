@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.limit.search;
 
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
+import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresInfoSearch;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGeometrySearch;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGroupSearch;
@@ -89,7 +90,32 @@ public class SearchProcess {
 
 		}
 	}
+	
+	public JSONObject searchRdLinkDataByCondition(int type, JSONObject condition) throws Exception {
+		JSONObject result = new JSONObject();
 
+		RdLinkSearch search = new RdLinkSearch(this.conn);
+
+		try {
+			switch (type) {
+			case 1:
+			case 2:
+				result = search.searchDataByCondition(type, condition);
+				break;
+			case 3:
+				result = search.searchDataByPid(condition);
+			default:
+				return result;
+			}
+
+			return result;
+		} catch (Exception e) {
+
+			throw e;
+
+		}
+	}
+	
 	/**
 	 * 控制输出JSON的格式
 	 * 

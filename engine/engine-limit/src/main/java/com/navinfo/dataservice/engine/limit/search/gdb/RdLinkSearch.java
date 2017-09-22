@@ -3,13 +3,18 @@ package com.navinfo.dataservice.engine.limit.search.gdb;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 public class RdLinkSearch {
 	private Connection conn = null;
@@ -18,7 +23,7 @@ public class RdLinkSearch {
 		this.conn = conn;
 	}
 	
-	public JSONObject searchDataByCondition(JSONObject condition) throws Exception{
+	public JSONObject searchDataByCondition(int type, JSONObject condition) throws Exception{
 		
 		if(!condition.containsKey("name")){
 			throw new Exception("未输入道路名，无法查询道路信息");
@@ -28,53 +33,41 @@ public class RdLinkSearch {
 		String[] names = name.split(",");
 		
 		StringBuilder sql = new StringBuilder();
-		componentSql(sql,names);
+		
+		if (type == 1) {  
+			componentSql(sql, names);   //模糊查询
+		} else {
+			componentSqlForAccurate(sql, names);   //精准查询
+		}
 		
 		PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         
-        int total = 0;
-        
-        int pageSize = condition.getInt("pageSize");
-        int pageNum = condition.getInt("pageNum");
-
-        JSONObject result = new JSONObject();
-        
 		try {
 			pstmt = conn.prepareStatement(sql.toString());
-
-			int startRow = (pageNum - 1) * pageSize + 1;
-			int endRow = pageNum * pageSize;
-
-			pstmt.setInt(1, endRow);
-			pstmt.setInt(2, startRow);
 			
 			resultSet = pstmt.executeQuery();
 			
-			JSONArray array = new JSONArray();
+			Map<String,List<Integer>> classify = new HashMap<>();  
 			
 			while (resultSet.next()) {
 				
-				total = resultSet.getInt("total");
-				
-				JSONObject json = new JSONObject();
-		
 				int pid = resultSet.getInt("pid");
-				json.put("pid", pid);
-				
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				json.put("geometry", GeoTranslator.jts2Geojson(GeoTranslator
-						.struct2Jts(struct)));
 				
 				String nameout = resultSet.getString("name");
-				json.put("name", nameout == null? "":nameout);
 				
-			     array.add(json);
+				if(classify.containsKey(nameout)){
+					classify.get(nameout).add(pid);
+				}else{
+					List<Integer> pids = new ArrayList<>();
+					pids.add(pid);
+					classify.put(nameout, pids);
+				}
+				
 			}
-			result.put("total", total);
 
-			result.put("rows", array);
-
+			JSONObject result = componetQueryResult(classify);
+			
 			return result;
         } catch (Exception e) {
 
@@ -84,6 +77,28 @@ public class RdLinkSearch {
             DBUtils.closeResultSet(resultSet);
             DBUtils.closeStatement(pstmt);
         }
+	}
+	
+	private JSONObject componetQueryResult(Map<String,List<Integer>> classify){
+		JSONArray array = new JSONArray();
+
+	    JSONObject result = new JSONObject();
+	    
+	    for(Map.Entry<String, List<Integer>> entry:classify.entrySet()){
+	    	
+	    	JSONObject obj = new JSONObject();
+	    	
+	    	obj.put("name", entry.getKey());
+	    	obj.put("pid", entry.getValue().toArray());
+	    	
+	    	array.add(obj);
+	    }
+	        
+		result.put("total", classify.size());
+
+		result.put("rows", array);
+		
+		return result;
 	}
 	
 	private void componentSql(StringBuilder sql, String[] names) {
@@ -96,12 +111,83 @@ public class RdLinkSearch {
 			sql.append(" name like '%" + names[i] + "%'");
 		}
 
-		sql.append(" and u_record != 2)");
+		sql.append(" and u_record != 2),");
 
 		sql.append(
-				"tmp2 AS (SELECT /*+ index(r1)*/ rln.link_pid pid,rl.geometry AS geometry,tmp1.name FROM rd_link_name rln,tmp1,rd_link rl WHERE rln.name_class=1 AND rln.link_pid = rl.link_pid and tmp1.name_groupid = rln.name_groupId AND rln.u_record !=2 )");
+				" tmp2 AS (SELECT /*+ index(r1)*/ rln.link_pid pid, tmp1.name FROM rd_link_name rln,tmp1,rd_link rl WHERE rln.name_class=1 AND rln.link_pid = rl.link_pid and tmp1.name_groupid = rln.name_groupId AND rln.u_record !=2 )");
 
 		sql.append(
-				"tmp3 AS (SELECT count(*) over () total,tmp2.*, ROWNUM rn FROM tmp2 ) ,tmp4 as ( select * from tmp3 where ROWNUM <=:1 ) SELECT * FROM tmp4 WHERE rn >=:2 for update nowait");
+				" select * from tmp2 for update nowait");
+	}
+	
+	private void componentSqlForAccurate(StringBuilder sql,String[] names){
+		sql.append("with tmp1 as ( select lang_code,name_groupid,name from rd_name where name in (");
+
+		for (int i = 0; i < names.length; i++) {
+			if (i > 0) {
+				sql.append(", ");
+			}
+			sql.append(" name like '" + names[i] + "'");
+		}
+
+		sql.append(") and u_record != 2),");
+
+		sql.append(
+				" tmp2 AS (SELECT /*+ index(r1)*/ rln.link_pid pid, tmp1.name FROM rd_link_name rln,tmp1,rd_link rl WHERE rln.name_class=1 AND rln.link_pid = rl.link_pid and tmp1.name_groupid = rln.name_groupId AND rln.u_record !=2 )");
+
+		sql.append(
+				" select * from tmp2 for update nowait");
+	}
+	
+	public JSONObject searchDataByPid(JSONObject condition) throws Exception {
+
+		if (!condition.containsKey("linkPid")) {
+			throw new Exception("未输入道路pid，无法查询道路信息");
+		}
+
+		int pid = condition.getInt("linkPid");
+
+		StringBuilder sql = new StringBuilder();
+
+		sql.append(
+				"SELECT rl.link_pid pid, rd.name FROM RD_LINK rl, RD_NAME rd, RD_LINK_NAME rln WHERE rln.name_class=1 AND rln.link_pid = rl.link_pid and rd.name_groupid = rln.name_groupId AND rln.u_record !=2");
+		sql.append(" AND rl.link_pid = " + pid);
+		sql.append(" AND rd.lang_code = 'CHI'");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			Map<String, List<Integer>> classify = new HashMap<>();
+
+			while (resultSet.next()) {
+				int linkPid = resultSet.getInt("pid");
+
+				String nameout = resultSet.getString("name");
+
+				if (classify.containsKey(nameout)) {
+					classify.get(nameout).add(linkPid);
+				} else {
+					List<Integer> pids = new ArrayList<>();
+					pids.add(linkPid);
+					classify.put(nameout, pids);
+				}
+			}
+
+			JSONObject result = componetQueryResult(classify);
+
+			return result;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
 	}
 }

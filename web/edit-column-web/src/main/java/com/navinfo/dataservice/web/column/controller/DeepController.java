@@ -323,6 +323,10 @@ public class DeepController extends BaseController {
 		try{
 			String parameter = request.getParameter("parameter");
 			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}		
@@ -332,7 +336,7 @@ public class DeepController extends BaseController {
 			}
 			DeepCoreControl deepCore = new DeepCoreControl();
 			
-			deepCore.operateProblem(dataJson);
+			deepCore.operateProblem(dataJson,userId);
 			
 			return new ModelAndView("jsonView", success());
 		}catch(Exception e){

@@ -1119,9 +1119,10 @@ public class DeepCoreControl {
 	 * 深度信息质检问题操作（新增，修改，删除）
 	 * @param userId
 	 * @param dataJson
+	 * @param userId 
 	 * @throws Exception
 	 */
-	public void operateProblem(JSONObject dataJson) throws Exception {
+	public void operateProblem(JSONObject dataJson, long userId) throws Exception {
 		Connection conn = null;
 		try {
 			String command = null;
@@ -1193,6 +1194,7 @@ public class DeepCoreControl {
 				String qcTime = "";
 				String problemLevel = "";
 				String problemDesc = "";
+				int commonWorkerId = 0;
 				
 				conditions.add("PROBLEM_ID");
 				
@@ -1279,6 +1281,17 @@ public class DeepCoreControl {
 				if(!StringUtils.isEmpty(problemDesc)){
 					conditions.add("PROBLEM_DESC");
 					params.add(problemDesc);
+				}
+				if(data.containsKey("commonWorkerId")){
+					commonWorkerId = data.getInt("commonWorkerId");
+				}
+				if(commonWorkerId != 0){
+					conditions.add("COMMON_WORKER_ID");
+					params.add(commonWorkerId);
+				}
+				if(userId != 0){
+					conditions.add("QC_WORKER_ID");
+					params.add(userId);
 				}
 				
 				StringBuilder builder = new StringBuilder();

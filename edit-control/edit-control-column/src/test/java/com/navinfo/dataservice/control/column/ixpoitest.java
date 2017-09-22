@@ -380,7 +380,7 @@ public class ixpoitest {
 		try {
 			
 			DeepCoreControl deepCore = new DeepCoreControl();
-			deepCore.operateProblem(jsonReq);
+			//deepCore.operateProblem(jsonReq);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}

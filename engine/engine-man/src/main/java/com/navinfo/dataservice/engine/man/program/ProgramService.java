@@ -1932,7 +1932,7 @@ public class ProgramService {
 	 * @param userId
 	 * @throws Exception
 	 */
-	private void splitInforTasks(final Connection conn,final Map<Integer, Program> inforPrograms,final Long userId)throws Exception{
+	private void splitInforTasks(Connection conn,final Map<Integer, Program> inforPrograms,final Long userId)throws Exception{
 		try{
 			if(inforPrograms==null||inforPrograms.size()==0){return;}
 			String selectSql="SELECT P.PROGRAM_ID, M.GRID_ID, G.REGION_ID,r.region_name"

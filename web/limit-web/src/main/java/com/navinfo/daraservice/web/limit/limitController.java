@@ -260,11 +260,11 @@ public class limitController extends BaseController {
 
             conn = DBConnector.getInstance().getConnectionById(dbId);
 
-//            RdLinkSearch p = new RdLinkSearch(conn);
-//
-//            JSONObject result = p.searchDataByCondition(condition);
-//
-//            return new ModelAndView("jsonView", success(result));
+            RdLinkSearch p = new RdLinkSearch(conn);
+
+            JSONObject result = p.searchDataByCondition(condition);
+
+            return new ModelAndView("jsonView", success(result));
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

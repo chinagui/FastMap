@@ -47,7 +47,7 @@ public interface IRow extends ISerializable {
 	/**
 	 * @return 所属主表的主键字段值
 	 */
-	public int parentPKValue();
+	public String parentPKValue();
 
 	/**
 	 * @return 所属主表的表名

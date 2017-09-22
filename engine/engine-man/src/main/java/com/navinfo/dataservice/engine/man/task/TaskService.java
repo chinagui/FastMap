@@ -429,9 +429,11 @@ public class TaskService {
 						
 					}
 					if(task.getSubWorkKind(4)==1){
-						int subtaskId = createCollectSubtaskByTask(4, task);
+						Subtask subtask = createCollectSubtaskByTask(4, task);
 						//modify by songhe 2017/09/18  多源子任务创建后自动发布
-						subPushMsgIds.add(subtaskId);
+						if(subtask.getExeGroupId() != 0 && subtask.getSubtaskId() != 0){
+							subPushMsgIds.add(subtask.getSubtaskId());
+						}
 					}
 				}
 				//}
@@ -786,7 +788,8 @@ public class TaskService {
 	 * @param num
 	 * @throws Exception 
 	 */
-	private int createCollectSubtaskByTask(int num,Task task) throws Exception{
+	private Subtask createCollectSubtaskByTask(int num,Task task) throws Exception{
+		Subtask subtask = new Subtask();
 		int subtaskId = 0;
 		int programType=1;
 		if(task.getBlockId()==0){//情报任务
@@ -795,7 +798,6 @@ public class TaskService {
 		//情报子任务
 		if(num==3){
 			log.info("创建情报子任务");
-			Subtask subtask = new Subtask();
 			if(programType==1){
 				subtask.setName(task.getName());
 			}
@@ -812,11 +814,11 @@ public class TaskService {
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			subtask.setGeometry(wkt);
 			subtaskId = SubtaskService.getInstance().createSubtask(subtask);
+			subtask.setSubtaskId(subtaskId);
 		}
 		//多源子任务
 		if(num==4){
 			log.info("创建多源子任务");
-			Subtask subtask = new Subtask();
 			String adminCode = selectAdminCode(task.getProgramId());
 			//* 快线：情报名称_发布时间_作业员_子任务ID
 			// * 中线：任务名称_作业组
@@ -843,8 +845,9 @@ public class TaskService {
 			subtask.setGeometry(wkt);
 
 			subtaskId = SubtaskService.getInstance().createSubtask(subtask);
+			subtask.setSubtaskId(subtaskId);
 		}
-		return subtaskId;
+		return subtask;
 	}
 	
 	/**

@@ -87,7 +87,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 				sourceCode = dataJson.getInt("sourceCode");
 			}
 			if(dataJson.containsKey("featureKind")){
-				inforStage = dataJson.getInt("featureKind");
+				featureKind = dataJson.getInt("featureKind");
 			}
 			if(dataJson.containsKey("inforStage")){
 				inforStage = dataJson.getInt("inforStage");
@@ -153,8 +153,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 		try{
 			if(bean.getGeometry() == null || StringUtils.isEmpty(bean.getGeometry().toString())){
 				log.error("情报对应Geometry不能为空");
-				return;
-//				throw new Exception("情报对应Geometry不能为空");
+				throw new Exception("情报对应Geometry不能为空");
 			}
 			QueryRunner run = new QueryRunner();
 			

@@ -359,13 +359,13 @@ public class SubtaskOperation {
 				value.add(bean.getStatus());
 			};
 			
-			if (changeFields.containsKey("PLAN_START_DATE") && StringUtils.isNotBlank(changeFields.get("PLAN_START_DATE").toString())){
+			if (changeFields.containsKey("PLAN_START_DATE")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" PLAN_START_DATE ";
 				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
 				value.add(bean.getPlanStartDate().toString().substring(0, 10));
 			};
-			if (changeFields.containsKey("PLAN_END_DATE") && StringUtils.isNotBlank(changeFields.get("PLAN_END_DATE").toString())){
+			if (changeFields.containsKey("PLAN_END_DATE")){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" PLAN_END_DATE ";
 				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";

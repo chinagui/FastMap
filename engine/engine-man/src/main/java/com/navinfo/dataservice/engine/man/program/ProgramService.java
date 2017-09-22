@@ -1964,9 +1964,6 @@ public class ProgramService {
 						if(programId!=programIdTmp){
 							//创建月编任务
 					    	Task monthTask=new Task();
-					    	//modify by songhe
-					    	//月编任务创建自动赋值作业组
-					    	updateMonthTaskGroupIdByProgram(conn, programId, monthTask);
 					    	monthTask.setProgramId(programId);
 					    	monthTask.setRegionId(regionId);
 					    	monthTask.setGridIds(monthGridMap);
@@ -2028,9 +2025,6 @@ public class ProgramService {
 						
 						//创建月编任务
 				    	Task monthTask=new Task();
-				    	//modify by songhe
-				    	//月编任务创建自动赋值作业组
-				    	updateMonthTaskGroupIdByProgram(conn, programId, monthTask);
 				    	monthTask.setProgramId(programId);
 				    	monthTask.setRegionId(regionId);
 				    	monthTask.setGridIds(monthGridMap);
@@ -2063,13 +2057,15 @@ public class ProgramService {
 					 *     1.“矢量制作”：赋值=空
 					 *     2.其它：根据INFOR表情报“情报省份城市”字段，参考<行政与作业组配置表>，取作业组赋值
 					 */
-					if(t.getType()==0&&userId==0){
-						if(!"矢量制作".equals(infor.getMethod())){
-							group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 1);
-						}
+					int groupType = 0;
+					if(t.getType()==0&&userId==0 && !"矢量制作".equals(infor.getMethod())){
+						groupType = 1;
 					}else if(t.getType()==1){
-						group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 2);
+						groupType = 2;
+					}else if(t.getType() == 2){
+						groupType = 6;
 					}
+					group = UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), groupType);
 					if(group!=null){
 						t.setGroupId(group.getGroupId());
 					}
@@ -2867,23 +2863,23 @@ public class ProgramService {
 		}
 	}
 	
-	/**
-	 * 根据项目id自动给月编任务的作业组赋值
-	 * @param int programId
-	 * @param Connection
-	 * @param Task
-	 * 
-	 * */
-	public void updateMonthTaskGroupIdByProgram(Connection conn, int programId, Task monthTask){
-		//modify by songhe
-		//月编任务创建自动赋值作业组id
-		try {
-			String adminCode = TaskService.getInstance().selectAdminCode(conn, programId);
-			UserGroup userGrop = UserGroupService.getInstance().getGroupByAminCode(conn, adminCode, 6);
-			monthTask.setGroupId(userGrop.getGroupId());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	/**
+//	 * 根据项目id自动给月编任务的作业组赋值
+//	 * @param int programId
+//	 * @param Connection
+//	 * @param Task
+//	 * 
+//	 * */
+//	public void updateMonthTaskGroupIdByProgram(Connection conn, int programId, Task monthTask){
+//		//modify by songhe
+//		//月编任务创建自动赋值作业组id
+//		try {
+//			String adminCode = TaskService.getInstance().selectAdminCode(conn, programId);
+//			UserGroup userGrop = UserGroupService.getInstance().getGroupByAminCode(conn, adminCode, 6);
+//			monthTask.setGroupId(userGrop.getGroupId());
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 }

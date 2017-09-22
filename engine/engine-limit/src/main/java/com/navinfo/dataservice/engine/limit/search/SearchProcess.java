@@ -1,17 +1,13 @@
+
 package com.navinfo.dataservice.engine.limit.search;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
-import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresInfoSearch;
-import com.navinfo.dataservice.engine.limit.search.mate.ScPlateresGeometrySearch;
-import com.navinfo.dataservice.engine.limit.search.mate.ScPlateresGroupSearch;
-import com.navinfo.dataservice.engine.limit.search.mate.ScPlateresManoeuvreSearch;
-import com.navinfo.dataservice.engine.limit.search.mate.ScPlateresRdlinkSearch;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
-import net.sf.json.JSONArray;
+import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGeometrySearch;
+import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGroupSearch;
+import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresManoeuvreSearch;
+import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresRdlinkSearch;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonValueProcessor;
@@ -19,8 +15,6 @@ import net.sf.json.util.JSONUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

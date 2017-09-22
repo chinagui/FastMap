@@ -133,6 +133,25 @@
 			<geoRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
     </object>
+    <object name="IX_POINTADDRESS" type="FEATURE" mainTable="IX_POINTADDRESS"
+        class="com.navinfo.dataservice.dao.plus.obj.IxPointAddressObj">
+        <!-- feature main table has no ref-->
+		<table name="IX_POINTADDRESS" pk="PID" 
+			class="com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddress">
+		</table>
+		<table name="IX_POINTADDRESS_NAME" pk="NAME_ID"
+			class="com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressName">
+			<objRef col="PID" refTable="IX_POINTADDRESS" refCol="PID" isRefMain="true"/>
+		</table>
+		<table name="IX_POINTADDRESS_FLAG" pk=""
+			class="com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressFlag">
+			<objRef col="PID" refTable="IX_POINTADDRESS" refCol="PID" isRefMain="true"/>
+		</table>
+		<table name="IX_POINTADDRESS_NAME_TONE" pk=""
+			class="com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressNameTone">
+			<objRef col="NAME_ID" refTable="IX_POINTADDRESS_NAME" refCol="NAME_ID" isRefMain="false"/>
+		</table>
+	</object>
 	
 	<ignoreColumns>U_RECORD,U_FIELDS,U_DATE</ignoreColumns>
 </mapping>

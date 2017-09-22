@@ -1195,7 +1195,6 @@ public class DeepCoreControl {
 				String problemLevel = "";
 				String problemDesc = "";
 				int commonWorkerId = 0;
-				int qcWorkerId = 0;
 				
 				conditions.add("PROBLEM_ID");
 				
@@ -1290,12 +1289,9 @@ public class DeepCoreControl {
 					conditions.add("COMMON_WORKER_ID");
 					params.add(commonWorkerId);
 				}
-				if(data.containsKey("qcWorkerId")){
-					qcWorkerId = data.getInt("qcWorkerId");
-				}
-				if(qcWorkerId != 0){
+				if(userId != 0){
 					conditions.add("QC_WORKER_ID");
-					params.add(qcWorkerId);
+					params.add(userId);
 				}
 				
 				StringBuilder builder = new StringBuilder();

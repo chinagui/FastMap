@@ -11,7 +11,7 @@ import java.util.*;
  */
 public class Result implements ISerializable, Cloneable {
 
-    private int primaryPid;
+    private String primaryId;
 
     private OperStage operStage = OperStage.DayEdit;
 
@@ -23,12 +23,12 @@ public class Result implements ISerializable, Cloneable {
         this.operStage = operStage;
     }
 
-    public int getPrimaryPid() {
-        return primaryPid;
+    public String getPrimaryId() {
+        return primaryId;
     }
 
-    public void setPrimaryPid(int primaryPid) {
-        this.primaryPid = primaryPid;
+    public void setPrimaryId(String primaryPid) {
+        this.primaryId = primaryPid;
     }
 
     /**
@@ -45,12 +45,6 @@ public class Result implements ISerializable, Cloneable {
      * 修改对象列表
      */
     private List<IRow> listUpdateIRow = new ArrayList<IRow>();
-
-    private List<Integer> listAddIRowObPid = new ArrayList<>();
-
-    private List<Integer> listUpdateIRowObPid = new ArrayList<>();
-
-    private List<Integer> listDelIRowObPid = new ArrayList<>();
 
     private JSONArray checkResults = new JSONArray();
 
@@ -73,9 +67,9 @@ public class Result implements ISerializable, Cloneable {
      *
      * @param row          对象
      * @param os           对象状态
-     * @param topParentPid 最顶级父表的pid,用来给前台做定位用
+     * @param topParentId 最顶级父表的pid,用来给前台做定位用
      */
-    public void insertObject(IRow row, ObjStatus os, int topParentPid) {
+    public void insertObject(IRow row, ObjStatus os, String topParentId) {
 
         row.setStatus(os);
 
@@ -86,9 +80,9 @@ public class Result implements ISerializable, Cloneable {
         if (row instanceof com.navinfo.dataservice.dao.glm.iface.IObj) {
             IObj obj = (IObj) row;
         } else {
-            json.put("pid", topParentPid);
+            json.put("id", topParentId);
 
-            if (row.parentPKValue() == topParentPid) {
+            if (row.parentPKValue() == topParentId) {
                 // 该表是二级子表
                 json.put("childPid", "");
             } else {
@@ -100,17 +94,14 @@ public class Result implements ISerializable, Cloneable {
         switch (os) {
             case INSERT:
                 listAddIRow.add(row);
-                listAddIRowObPid.add(topParentPid);
                 json.put("op", "新增");
                 break;
             case DELETE:
                 listDelIRow.add(row);
-                listDelIRowObPid.add(topParentPid);
                 json.put("op", "删除");
                 break;
             case UPDATE:
                 listUpdateIRow.add(row);
-                listUpdateIRowObPid.add(topParentPid);
                 json.put("op", "修改");
                 break;
             default:
@@ -139,18 +130,6 @@ public class Result implements ISerializable, Cloneable {
      */
     public List<IRow> getUpdateObjects() {
         return listUpdateIRow;
-    }
-
-    public List<Integer> getListAddIRowObPid() {
-        return listAddIRowObPid;
-    }
-
-    public List<Integer> getListUpdateIRowObPid() {
-        return listUpdateIRowObPid;
-    }
-
-    public List<Integer> getListDelIRowObPid() {
-        return listDelIRowObPid;
     }
 
     @Override

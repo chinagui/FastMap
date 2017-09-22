@@ -271,9 +271,8 @@ public class Transaction {
 
     }
 
-
-    public int getPid() {
-        return process.getResult().getPrimaryPid();
+    public String getId() {
+        return process.getResult().getPrimaryId();
     }
 
     public int getDbType() {

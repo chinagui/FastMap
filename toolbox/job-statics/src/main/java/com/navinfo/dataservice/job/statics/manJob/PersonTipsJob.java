@@ -4,7 +4,6 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
@@ -23,7 +22,6 @@ import org.apache.hadoop.hbase.client.Table;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**

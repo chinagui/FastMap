@@ -25,6 +25,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.StringConverter;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -57,7 +58,6 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			conn = DBConnector.getInstance().getManConnection();
 			
 			int inforId = getInforId(conn);
-//			String inforId = "DDD";
 			
 			Infor infor = (Infor) JsonOperation.jsonToBean(dataJson,Infor.class);
 			infor.setInforId(inforId);
@@ -67,12 +67,6 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			infor.setPublishDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("publishDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
 			infor.setNewsDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("newsDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
 			
-//			Calendar aCalendar = Calendar.getInstance();
-//			aCalendar.setTime();
-//			int day1 = aCalendar.get(Calendar.DAY_OF_YEAR);
-//			aCalendar.setTime(new Date());
-//			int day2 = aCalendar.get(Calendar.DAY_OF_YEAR);
-			
 			Timestamp date1=infor.getExpectDate();
 			String d2=DateUtils.dateToString(new Date(), DateUtils.DATE_WITH_SPLIT_YMD);
 			Timestamp date2=new Timestamp(DateUtils.stringToLong(d2, DateUtils.DATE_WITH_SPLIT_YMD));
@@ -80,11 +74,28 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 		    long diff = date2.getTime() - date1.getTime();
 		    long days = diff / (1000 * 60 * 60 * 24);			
 
-			if(days<-21){
-				infor.setMethod("矢量制作");
-			}else if(days==-21){
+		    //modify by songhe 2017/09/20   13迭代method字段赋值原则变更
+			if(days == -21){
 				infor.setMethod("预采集");
-			}else if(days>=-6){
+			}else if(days >= -6){
+				infor.setMethod("正式采集");
+			}
+			int sourceCode = 0;
+			int featureKind = 0;
+			int inforStage = 0;
+			if(dataJson.containsKey("sourceCode")){
+				sourceCode = dataJson.getInt("sourceCode");
+			}
+			if(dataJson.containsKey("featureKind")){
+				featureKind = dataJson.getInt("featureKind");
+			}
+			if(dataJson.containsKey("inforStage")){
+				inforStage = dataJson.getInt("inforStage");
+			}
+			if(sourceCode == 1 && featureKind == 2 && inforStage == 2){
+				infor.setMethod("矢量制作");
+			}
+			if(sourceCode == 3){
 				infor.setMethod("正式采集");
 			}
 			
@@ -140,148 +151,125 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 	 */
 	private void createWithBean(Connection conn, Infor bean) throws Exception {
 		try{
+			if(bean.getGeometry() == null || StringUtils.isEmpty(bean.getGeometry().toString())){
+				log.error("情报对应Geometry不能为空");
+				throw new Exception("情报对应Geometry不能为空");
+			}
 			QueryRunner run = new QueryRunner();
-//			String taskIdStr="INFOR_SEQ.NEXTVAL";
-//			if(bean.getInforId()!=null && bean.getInforId()!=0){
-//				taskIdStr=bean.getTaskId().toString();
-//			}
 			
-			String insertPart="";
-			String values="";
-			List<Object> value = new ArrayList<Object>();
-			if (bean!=null&&bean.getInforId()!=0){
-//			if (bean!=null&&bean.getInforId()!=null && !bean.getInforId().isEmpty() && StringUtils.isNotEmpty(bean.getInforId().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" INFOR_ID ";
-				values+=" ? ";
-				value.add(bean.getInforId());
+			StringBuffer insert = new StringBuffer();
+			StringBuffer value = new StringBuffer();
+			
+			if(bean != null && bean.getInforId() != 0){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" INFOR_ID ");
+				value.append(bean.getInforId());
 			};
-			if (bean!=null&&bean.getInforName()!=null && StringUtils.isNotEmpty(bean.getInforName().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" INFOR_NAME ";
-				values+=" ? ";
-				value.add(bean.getInforName());
+			if(bean != null && StringUtils.isNotEmpty(bean.getInforName())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" INFOR_NAME ");
+				value.append("'" + bean.getInforName() + "'");
 			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" GEOMETRY ";
-				Clob c = ConnectionUtil.createClob(conn);
-				c.setString(1, bean.getGeometry());
-				values+=" ? ";
-				value.add(c);
+			if(bean != null && bean.getInforLevel() != null && StringUtils.isNotEmpty(bean.getInforLevel().toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" INFOR_LEVEL ");
+				value.append(bean.getInforLevel());
 			};
-			if (bean!=null&&bean.getInforLevel()!=null && bean.getInforLevel()!=0 && StringUtils.isNotEmpty(bean.getInforLevel().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" INFOR_LEVEL ";
-				values+=" ? ";
-				value.add(bean.getInforLevel());
+			if(bean != null && bean.getPlanStatus() != null && StringUtils.isNotEmpty(bean.getPlanStatus().toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" PLAN_STATUS ");
+				value.append(bean.getPlanStatus());
 			};
-			if (bean!=null&&bean.getPlanStatus()!=null && bean.getPlanStatus()!=0 && StringUtils.isNotEmpty(bean.getPlanStatus().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" PLAN_STATUS";
-				values+=" ? ";
-				value.add(bean.getPlanStatus());
+			if(bean!=null && bean.getFeedbackType() != null && StringUtils.isNotEmpty(bean.getFeedbackType().toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" FEEDBACK_TYPE ");
+				value.append(bean.getFeedbackType());
 			};
-			if (bean!=null&&bean.getFeedbackType()!=null && bean.getFeedbackType()!=0 && StringUtils.isNotEmpty(bean.getFeedbackType().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" FEEDBACK_TYPE";
-				values+=" ? ";
-				value.add(bean.getFeedbackType());
+			if(bean !=null && bean.getInsertTime() != null && StringUtils.isNotEmpty(bean.getInsertTime().toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" INSERT_TIME ");
+				value.append(" to_date('" +bean.getInsertTime()+ "','yyyy-MM-dd HH24:MI:ss') ");
 			};
-			if (bean!=null&&bean.getInsertTime()!=null && StringUtils.isNotEmpty(bean.getInsertTime().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" INSERT_TIME ";
-				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
-				value.add(bean.getInsertTime());
+			if(bean != null && bean.getFeatureKind() != 0){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" FEATURE_KIND ");
+				value.append(bean.getFeatureKind());
 			};
-			if (bean!=null&&bean.getFeatureKind()!=0){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" FEATURE_KIND";
-				values+=" ? ";
-				value.add(bean.getFeatureKind());
+			if(bean != null && StringUtils.isNotEmpty(bean.getAdminName())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" ADMIN_NAME ");
+				value.append("'" + bean.getAdminName() + "'");
 			};
-			if (bean!=null&&bean.getAdminName()!=null && StringUtils.isNotEmpty(bean.getAdminName().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" ADMIN_NAME ";
-				values+=" ? ";
-				value.add(bean.getAdminName());
+			if(bean != null && StringUtils.isNotEmpty(bean.getInforCode())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" INFOR_CODE ");
+				value.append("'" + bean.getInforCode() + "'");
 			};
-			if (bean!=null&&bean.getInforCode()!=null && StringUtils.isNotEmpty(bean.getInforCode().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" INFOR_CODE ";
-				values+=" ? ";
-				value.add(bean.getInforCode());
+			if(bean != null && bean.getPublishDate() != null && StringUtils.isNotEmpty(bean.getPublishDate().toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" PUBLISH_DATE ");
+				value.append(" to_date('"+bean.getPublishDate().toString().substring(0, 10)+"','yyyy-MM-dd HH24:MI:ss') ");
 			};
-			if (bean!=null&&bean.getPublishDate()!=null && StringUtils.isNotEmpty(bean.getPublishDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" PUBLISH_DATE ";
-				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
-				value.add(bean.getPublishDate().toString().substring(0, 10));
+			if(bean != null && bean.getExpectDate() != null && StringUtils.isNotEmpty(bean.getExpectDate().toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" EXPECT_DATE ");
+				value.append(" to_date('"+bean.getExpectDate().toString().substring(0, 10)+"','yyyy-MM-dd HH24:MI:ss') ");
 			};
-			if (bean!=null&&bean.getExpectDate()!=null && StringUtils.isNotEmpty(bean.getExpectDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" EXPECT_DATE ";
-				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
-				value.add(bean.getExpectDate().toString().substring(0, 10));
+			if(bean != null && StringUtils.isNotEmpty(bean.getTopicName())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" TOPIC_NAME ");
+				value.append("'" + bean.getTopicName() + "'");
 			};
-			if (bean!=null&&bean.getTopicName()!=null && StringUtils.isNotEmpty(bean.getTopicName().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" TOPIC_NAME ";
-				values+=" ? ";
-				value.add(bean.getTopicName());
+			if(bean != null && StringUtils.isNotEmpty(bean.getMethod())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" METHOD ");
+				value.append("'" + bean.getMethod() + "'");
 			};
-			if (bean!=null&&bean.getMethod()!=null && StringUtils.isNotEmpty(bean.getMethod().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" METHOD ";
-				values+=" ? ";
-				value.add(bean.getMethod());
+			if(bean != null && bean.getNewsDate() != null && StringUtils.isNotEmpty(bean.getNewsDate().toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" NEWS_DATE ");
+				value.append(" to_date('"+bean.getNewsDate().toString().substring(0, 10)+"','yyyy-MM-dd HH24:MI:ss') ");
 			};
-			if (bean!=null&&bean.getNewsDate()!=null && StringUtils.isNotEmpty(bean.getNewsDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" NEWS_DATE ";
-				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
-				value.add(bean.getNewsDate().toString().substring(0, 10));
+			if(bean != null && bean.getRoadLength() != null && bean.getRoadLength() != 0 && StringUtils.isNotEmpty(bean.getRoadLength().toString())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" ROAD_LENGTH ");
+				value.append(bean.getRoadLength());
 			};
-			if (bean!=null&&bean.getRoadLength()!=null && bean.getRoadLength()!=0 && StringUtils.isNotEmpty(bean.getRoadLength().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" ROAD_LENGTH";
-				values+=" ? ";
-				value.add(bean.getRoadLength());
+			if(bean != null && bean.getReportUserId() != 0){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" REPORT_USER_ID ");
+				value.append(bean.getReportUserId());
 			};
-			if (bean!=null&&bean.getReportUserId()!=0){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" REPORT_USER_ID";
-				values+=" ? ";
-				value.add(bean.getReportUserId());
+			if(bean != null && bean.getSourceCode() != 0 ){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" SOURCE_CODE ");
+				value.append(bean.getSourceCode());
 			};
-			if (bean!=null&&bean.getSourceCode()!=0 ){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" SOURCE_CODE";
-				values+=" ? ";
-				value.add(bean.getSourceCode());
-			};
-			if (bean!=null&&bean.getInfoTypeName()!=null && StringUtils.isNotEmpty(bean.getInfoTypeName().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" INFO_TYPE_NAME ";
-				values+=" ? ";
-				value.add(bean.getInfoTypeName());
+			if(bean != null && StringUtils.isNotEmpty(bean.getInfoTypeName())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" INFO_TYPE_NAME ");
+				value.append("'" + bean.getInfoTypeName() +"'");
 			};
 			
-			if (bean!=null&&bean.getAdminCode()!=null && StringUtils.isNotEmpty(bean.getAdminCode().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" ADMIN_CODE ";
-				values+=" ? ";
-				value.add(bean.getAdminCode());
+			if(bean != null && StringUtils.isNotEmpty(bean.getAdminCode())){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" ADMIN_CODE ");
+				value.append("'" + bean.getAdminCode() + "'");
 			};
 			
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-			insertPart+=" PLAN_STATUS ";
-			values+=" ? ";
-			value.add(0);
+			StringConverter.manCreatDataUtils(insert, value);
+			insert.append(" PLAN_STATUS ");
+			value.append(0);
 			
-			String createSql = "insert into infor ("+insertPart+") values("+values+")";
+			StringConverter.manCreatDataUtils(insert, value);
+			insert.append(" GEOMETRY ");
+			Clob c = ConnectionUtil.createClob(conn);
+			c.setString(1, bean.getGeometry());
+			value.append("?");
 			
-			run.update(conn,createSql,value.toArray());			
+			String createSql = "insert into infor ("+insert.toString()+") values("+value.toString()+")";
+			
+			run.update(conn, createSql, c);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -393,6 +381,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 				}
 			};
 			Infor result =  run.query(conn, sql,rsHandler);
+			
 			return result;
 			
 		} catch (Exception e) {

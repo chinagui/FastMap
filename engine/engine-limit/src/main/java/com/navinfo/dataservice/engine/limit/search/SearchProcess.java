@@ -4,6 +4,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
+import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresInfoSearch;
 import com.navinfo.dataservice.engine.limit.search.mate.ScPlateresGeometrySearch;
 import com.navinfo.dataservice.engine.limit.search.mate.ScPlateresGroupSearch;
@@ -40,29 +41,29 @@ public class SearchProcess {
 
 	}
 
-	public List<IRow> searchMetaDataByCondition(LimitObjType type, JSONObject condition)
+	public int searchMetaDataByCondition(LimitObjType type, JSONObject condition, List<IRow> rows)
 			throws Exception {
-		List<IRow> rows = new ArrayList<>();
+		int total = 0;
 		try {
 			switch (type) {
 				case SCPLATERESGEOMETRY:
-					rows = new ScPlateresGeometrySearch(this.conn).searchDataByCondition(condition);
+					total = new ScPlateresGeometrySearch(this.conn).searchDataByCondition(condition,rows);
 					break;
 				case SCPLATERESGROUP:
-					rows = new ScPlateresGroupSearch(this.conn).searchDataByCondition(condition);
+					total = new ScPlateresGroupSearch(this.conn).searchDataByCondition(condition,rows);
 					break;
 
 				case SCPLATERESMANOEUVRE:
-					rows = new ScPlateresManoeuvreSearch(this.conn).searchDataByCondition(condition);
+					total = new ScPlateresManoeuvreSearch(this.conn).searchDataByCondition(condition,rows);
 					break;
 				case SCPLATERESRDLINK:
-					rows = new ScPlateresRdlinkSearch(this.conn).searchDataByCondition(condition);
+					total = new ScPlateresRdlinkSearch(this.conn).searchDataByCondition(condition,rows);
 					break;
 				default:
-					return rows;
+					return total;
 			}
 
-			return rows;
+			return total;
 		} catch (Exception e) {
 
 			throw e;
@@ -72,20 +73,20 @@ public class SearchProcess {
 		}
 	}
 
-	public List<IRow> searchLimitDataByCondition(LimitObjType type, JSONObject condition)
+	public int searchLimitDataByCondition(LimitObjType type, JSONObject condition,List<IRow> objList)
 			throws Exception {
-		List<IRow> rows = new ArrayList<>();
+		int total = 0;
 		try {
 			switch (type) {
 				 case SCPLATERESINFO:
-					rows = new ScPlateresInfoSearch(this.conn).searchDataByCondition(condition);
+					total = new ScPlateresInfoSearch(this.conn).searchDataByCondition(condition, objList);
 					break;
 
 				default:
-					return rows;
+					return total;
 			}
 
-			return rows;
+			return total;
 		} catch (Exception e) {
 
 			throw e;

@@ -251,18 +251,20 @@ public class limitController extends BaseController {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             if (jsonReq == null || !jsonReq.containsKey("dbId") || !jsonReq.containsKey("type") || !jsonReq.containsKey("condition")) {
-                throw new Exception("输入不完善，无法查询道路link！");
+                throw new Exception("输入信息不完善，无法查询道路link！");
             }
 
             int dbId = jsonReq.getInt("dbId");
+            
+            int type = jsonReq.getInt("type");
 
             JSONObject condition = jsonReq.getJSONObject("condition");
 
             conn = DBConnector.getInstance().getConnectionById(dbId);
 
-            RdLinkSearch p = new RdLinkSearch(conn);
+            SearchProcess p = new SearchProcess(conn);
 
-            JSONObject result = p.searchDataByCondition(condition);
+            JSONObject result = p.searchRdLinkDataByCondition(type, condition);
 
             return new ModelAndView("jsonView", success(result));
 
@@ -275,10 +277,5 @@ public class limitController extends BaseController {
                 conn.close();
             }
         }
-    }
-
-    public ModelAndView getRdLinkByPid(HttpServletRequest request) throws Exception {
-        return new ModelAndView("jsonView", success());
-
     }
 }

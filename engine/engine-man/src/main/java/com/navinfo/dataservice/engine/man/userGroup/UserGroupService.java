@@ -653,7 +653,6 @@ public class UserGroupService {
 				}});
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
-			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
 		}
 	}

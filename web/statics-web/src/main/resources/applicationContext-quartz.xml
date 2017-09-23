@@ -130,7 +130,7 @@
     <bean id="productMonitorStat_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="productMonitorStat_detail" />
-        <property name="cronExpression" value="0 0 1 * * ?" />
+        <property name="cronExpression" value="0 0 * * * ?" />
     </bean>
 <!--     <bean id="poiQualityInitCountTable_Trigger" -->
 <!--           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean"> -->

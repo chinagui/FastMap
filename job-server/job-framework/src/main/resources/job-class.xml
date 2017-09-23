@@ -177,5 +177,9 @@
           class="com.navinfo.dataservice.job.statics.manJob.MediumMonitorJob"
           request="com.navinfo.dataservice.job.statics.manJob.MediumMonitorJobRequest" >
     </type>
+    <type name="productMonitorStat"
+          class="com.navinfo.dataservice.job.statics.manJob.ProductMonitorJob"
+          request="com.navinfo.dataservice.job.statics.manJob.ProductMonitorJobRequest" >
+    </type>
     
 	</mapping>

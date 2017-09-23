@@ -77,30 +77,43 @@ public class ProductMonitorJob extends AbstractStatJob {
 			//任务统计数据
 			List<Map<String, Object>> statList = new ArrayList<Map<String, Object>>();
 			Map<String,Object> stat = new HashMap<String,Object>();
-			double roadLen = 0;
+			long roadLen = 0;
 			int poiNum = 0;
 			//rd_link非删除link长度总和
 			for(int monDbId : monDbIds){
-				double RdLinkTotal = getUnDelRdLinkTotal(monDbId);
+				long RdLinkTotal = getUnDelRdLinkTotal(monDbId);
 				roadLen += RdLinkTotal;
 			}
 			//ix_poi非删除总数
 			for(int dbId : dbIds){
-				double poiTotal = getUnDelPoiTotal(dbId);
+				int poiTotal = getUnDelPoiTotal(dbId);
 				poiNum += poiTotal;
 			}
 			stat.put("roadLen", roadLen);
 			stat.put("poiNum", poiNum);
 			//查询mongo中product_monitor的最新统计数据
-			Map<String, Object> productMonitorStat = getProductMonitorStatData();
-			stat.putAll(productMonitorStat);
+			Map<String, Object> productMonitorStatPre = getProductMonitorStatPreData();
 			//查询mongo中day_produce的最新统计数据
 			Map<String, Object> dayProduceStat = getDayProduceStatData();
-			stat.putAll(dayProduceStat);
 			//查询mongo中task的最新统计数据(中线)
 			Map<String, Object> taskStat = getTaskStatData();
-			stat.putAll(taskStat);
 			//处理数据
+			long perUpdateRoad = 0;
+			long perAddRoad = 0;
+			int perUpdatePoi = 0;
+			int perAddPoi = 0;
+			//处理数据
+			perUpdateRoad = (long)taskStat.get("cUpdateRoad") - (long)productMonitorStatPre.get("cUpdateRoad");
+			perAddRoad = (long)taskStat.get("cAddRoad") - (long)productMonitorStatPre.get("cAddRoad");
+			perUpdatePoi = (int)taskStat.get("cUpdatePoi") - (int)productMonitorStatPre.get("cUpdatePoi");
+			perAddPoi = (int)taskStat.get("cAddPoi") - (int)productMonitorStatPre.get("cAddPoi");
+			stat.put("perUpdateRoad", perUpdateRoad);
+			stat.put("perAddRoad", perAddRoad);
+			stat.put("perUpdatePoi", perUpdatePoi);
+			stat.put("perAddPoi", perAddPoi);
+			
+			stat.putAll(dayProduceStat);
+			stat.putAll(taskStat);
 			JSONObject result = new JSONObject();
 			result.put("product_monitor",statList);
 
@@ -154,11 +167,11 @@ public class ProductMonitorJob extends AbstractStatJob {
 	 * @return
 	 * @throws Exception
 	 */
-	private  double getUnDelRdLinkTotal(int dbId) throws Exception{
+	private  long getUnDelRdLinkTotal(int dbId) throws Exception{
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		double lengthTotal = 0;
+		long lengthTotal = 0;
 		try{
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			String sql = "SELECT SUM(LENGTH) TOTAL FROM RD_LINK WHERE U_RECORD <>2";
@@ -168,7 +181,7 @@ public class ProductMonitorJob extends AbstractStatJob {
 			rs = pstmt.executeQuery();
 			
 			while(rs.next()){
-				lengthTotal = rs.getDouble("TOTAL");
+				lengthTotal = Math.round(rs.getDouble("TOTAL"));
 			}
 		}catch(Exception e){
 			log.error("dbId("+dbId+")查询月库中非删除link长度总和报错:" + e.getMessage(), e);
@@ -221,8 +234,8 @@ public class ProductMonitorJob extends AbstractStatJob {
 					cAddPoi += (int) jso.get("poiActualAddNum");
 				}
 			}
-			stat.put("cUpdateRoad", cUpdateRoad);
-			stat.put("cAddRoad", cAddRoad);
+			stat.put("cUpdateRoad", Math.round(cUpdateRoad));
+			stat.put("cAddRoad", Math.round(cAddRoad));
 			stat.put("cUpdatePoi", cUpdatePoi);
 			stat.put("cAddPoi", cAddPoi);
 			return stat;
@@ -277,8 +290,8 @@ public class ProductMonitorJob extends AbstractStatJob {
 					dpAverage.putAll(jso.getJSONObject("dpAverage")); 
 				}
 			}
-			stat.put("dpUpdateRoad", dpUpdateRoad);
-			stat.put("dpAddRoad", dpAddRoad);
+			stat.put("dpUpdateRoad", Math.round(dpUpdateRoad));
+			stat.put("dpAddRoad", Math.round(dpAddRoad));
 			stat.put("dpUpdatePoi", dpUpdatePoi);
 			stat.put("dpAddPoi", dpAddPoi);
 			stat.put("dpAverage", dpAverage);
@@ -290,26 +303,21 @@ public class ProductMonitorJob extends AbstractStatJob {
 	}
 
 	/**
-	 * 查询mongo中product_monitor的最新统计数据
+	 * 查询mongo中前一天product_monitor的最新统计数据
 	 * @throws ServiceException 
 	 */
-	private Map<String,Object> getProductMonitorStatData() throws Exception{
-		double perUpdateRoad = 0;
-		double perAddRoad = 0;
-		int perUpdatePoi = 0;
-		int perAddPoi = 0;
+	private Map<String,Object> getProductMonitorStatPreData() throws Exception{
 		
 		try {
-			String time = DateUtils.getCurYmd();
 			Date lastDate = DateUtils.getDayBefore(new Date());
 			String lastTime = DateUtils.format(lastDate, DateUtils.DATE_YMD);
 			MongoDao mongoDao = new MongoDao(dbName);
-			//获取今天最新统计数据
-			double cUpdateRoad = 0;
-			double cAddRoad = 0;
+			//获取前一天最新统计数据
+			long cUpdateRoad = 0;
+			long cAddRoad = 0;
 			int cUpdatePoi = 0;
 			int cAddPoi = 0;
-			Pattern pattern = Pattern.compile("^"+time);
+			Pattern pattern = Pattern.compile("^"+lastTime);
 			BasicDBObject filter = new BasicDBObject("timestamp", pattern);
 			FindIterable<Document> findIterable = mongoDao.find(product_monitor, filter).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
 			MongoCursor<Document> iterator = findIterable.iterator();
@@ -328,10 +336,10 @@ public class ProductMonitorJob extends AbstractStatJob {
 					break;
 				}
 				if(jso.has("cUpdateRoad")){
-					cUpdateRoad = (double) jso.get("cUpdateRoad");
+					cUpdateRoad = (long) jso.get("cUpdateRoad");
 				}
 				if(jso.has("cAddRoad")){
-					cAddRoad = (double) jso.get("cAddRoad");
+					cAddRoad = (long) jso.get("cAddRoad");
 				}
 				if(jso.has("cUpdatePoi")){
 					cUpdatePoi = (int) jso.get("cUpdatePoi");
@@ -340,58 +348,11 @@ public class ProductMonitorJob extends AbstractStatJob {
 					cAddPoi = (int) jso.get("cAddPoi");
 				}
 			}
-			//获取前一天最新统计数据
-			double cUpdateRoadPre = 0;
-			double cAddRoadPre = 0;
-			int cUpdatePoiPre = 0;
-			int cAddPoiPre = 0;
-			Pattern patternPre = Pattern.compile("^"+lastTime);
-			BasicDBObject filterPre = new BasicDBObject("timestamp", patternPre);
-			FindIterable<Document> findIterablePre = mongoDao.find(product_monitor, filterPre).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
-			MongoCursor<Document> iteratorPre = findIterablePre.iterator();
-			String timestampLastPre="";
-			//处理数据
-			while(iteratorPre.hasNext()){
-				//获取统计数据
-				JSONObject jso = JSONObject.fromObject(iteratorPre.next());
-				String timestampOrigin=String.valueOf(jso.get("timestamp"));
-				if(StringUtils.isEmpty(timestampLastPre)){
-					timestampLastPre=timestampOrigin;
-					log.info("前一天最近一次的统计日期为："+timestampLastPre);
-				}
-				if(!timestampLastPre.equals(timestampOrigin)){
-					break;
-				}
-				if(jso.has("cUpdateRoad")){
-					cUpdateRoadPre = (double) jso.get("cUpdateRoad");
-				}
-				if(jso.has("cAddRoad")){
-					cAddRoadPre = (double) jso.get("cAddRoad");
-				}
-				if(jso.has("cUpdatePoi")){
-					cUpdatePoiPre = (int) jso.get("cUpdatePoi");
-				}
-				if(jso.has("cAddPoi")){
-					cAddPoiPre = (int) jso.get("cAddPoi");
-				}
-			}
-			//处理数据
-			if(cUpdateRoad > 0){
-				perUpdateRoad = cUpdateRoad - cUpdateRoadPre;
-			}
-			if(cAddRoad > 0){
-				perAddRoad = cAddRoad - cAddRoadPre;
-			}
-			if(cUpdatePoi > 0){
-				perUpdatePoi = cUpdatePoi - cUpdatePoiPre;
-			}
-			if(cAddPoi > 0){
-				perAddPoi = cAddPoi - cAddPoiPre;
-			}
-			stat.put("perUpdateRoad", perUpdateRoad);
-			stat.put("perAddRoad", perAddRoad);
-			stat.put("perUpdatePoi", perUpdatePoi);
-			stat.put("perAddPoi", perAddPoi);
+			
+			stat.put("cUpdateRoad", cUpdateRoad);
+			stat.put("cAddRoad", cAddRoad);
+			stat.put("cUpdatePoi", cUpdatePoi);
+			stat.put("cAddPoi", cAddPoi);
 			return stat;
 		} catch (Exception e) {
 			log.error("查询mongo中product_monitor的最新统计数据(中线)报错"+e.getMessage());
@@ -400,6 +361,4 @@ public class ProductMonitorJob extends AbstractStatJob {
 	}
 
 	
-	
-
 }

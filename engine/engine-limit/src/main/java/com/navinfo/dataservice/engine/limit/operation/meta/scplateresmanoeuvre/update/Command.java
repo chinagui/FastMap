@@ -37,7 +37,7 @@ public class Command extends AbstractCommand{
 		this.requester = requester;
 		
 		JSONObject data = json.getJSONObject("data");
-		this.manoeuvreId = data.getInt("manoeuvreId");
+		this.manoeuvreId = data.getInt("objId");
 		this.content = data.getJSONObject("data");
 	}
 

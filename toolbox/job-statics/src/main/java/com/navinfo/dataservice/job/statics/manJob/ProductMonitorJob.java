@@ -89,7 +89,7 @@ public class ProductMonitorJob extends AbstractStatJob {
 				int poiTotal = getUnDelPoiTotal(dbId);
 				poiNum += poiTotal;
 			}
-			stat.put("roadLen", roadLen);
+			stat.put("roadLen", (roadLen/1000));
 			stat.put("poiNum", poiNum);
 			//查询mongo中product_monitor的最新统计数据
 			Map<String, Object> productMonitorStatPre = getProductMonitorStatPreData();
@@ -114,6 +114,7 @@ public class ProductMonitorJob extends AbstractStatJob {
 			
 			stat.putAll(dayProduceStat);
 			stat.putAll(taskStat);
+			statList.add(stat);
 			JSONObject result = new JSONObject();
 			result.put("product_monitor",statList);
 
@@ -222,10 +223,10 @@ public class ProductMonitorJob extends AbstractStatJob {
 					break;
 				}
 				if(jso.has("collectLinkUpdateTotal")){
-					cUpdateRoad += (double) jso.get("collectLinkUpdateTotal");
+					cUpdateRoad += Double.parseDouble(jso.get("collectLinkUpdateTotal").toString()) ;
 				}
 				if(jso.has("collectLinkAddTotal")){
-					cAddRoad += (double) jso.get("collectLinkAddTotal");
+					cAddRoad += Double.parseDouble(jso.get("collectLinkAddTotal").toString());
 				}
 				if(jso.has("poiActualUpdateNum")){
 					cUpdatePoi += (int) jso.get("poiActualUpdateNum");
@@ -275,10 +276,10 @@ public class ProductMonitorJob extends AbstractStatJob {
 					break;
 				}
 				if(jso.has("dpUpdateRoad")){
-					dpUpdateRoad = (double) jso.get("dpUpdateRoad");
+					dpUpdateRoad = Double.parseDouble(jso.get("dpUpdateRoad").toString());
 				}
 				if(jso.has("dpAddRoad")){
-					dpAddRoad = (double) jso.get("dpAddRoad");
+					dpAddRoad = Double.parseDouble(jso.get("dpAddRoad").toString());
 				}
 				if(jso.has("dpUpdatePoi")){
 					dpUpdatePoi = (int) jso.get("dpUpdatePoi");
@@ -336,10 +337,10 @@ public class ProductMonitorJob extends AbstractStatJob {
 					break;
 				}
 				if(jso.has("cUpdateRoad")){
-					cUpdateRoad = (long) jso.get("cUpdateRoad");
+					cUpdateRoad = jso.getLong("cUpdateRoad");
 				}
 				if(jso.has("cAddRoad")){
-					cAddRoad = (long) jso.get("cAddRoad");
+					cAddRoad = jso.getLong("cAddRoad");
 				}
 				if(jso.has("cUpdatePoi")){
 					cUpdatePoi = (int) jso.get("cUpdatePoi");

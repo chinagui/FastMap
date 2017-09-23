@@ -26,6 +26,9 @@ public class JobFinderFromMQ implements JobFinder {
 		case MSG_RUN_JOB:
 			JobMsgSubscriber.SubscribeJob(JobMsgType.MSG_RUN_JOB, new RunJobHandler(),new RunJobSubscriberSignal());
 			break;
+		case MSG_RUN_STATICS_JOB:
+			JobMsgSubscriber.SubscribeJob(JobMsgType.MSG_RUN_STATICS_JOB, new RunJobHandler(),new RunJobSubscriberSignal());
+			break;
 		case MSG_RESPONSE_JOB:
 			JobMsgSubscriber.SubscribeJob(JobMsgType.MSG_RESPONSE_JOB, new ResponseJobHandler(),null);
 			break;

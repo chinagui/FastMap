@@ -14,6 +14,7 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.editplus.diff.BaiduGeocoding;
+import com.navinfo.dataservice.engine.editplus.diff.StringUtil;
 import com.vividsolutions.jts.geom.Geometry;
 
 
@@ -60,7 +61,7 @@ public class DiffService {
 		for (IxDealershipResult i : dealershipResult) {
 			sourceNameMap.put(i.getName().trim(), 1);
 			sourceAddrMap.put(i.getAddress().trim(), 1);
-			sourceTelMap.put(i.getTelephone().trim(), 1);
+			sourceTelMap.put(StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim())), 1);
 			sourcePostCodeMap.put(i.getPostCode().trim(), 1);
 			sourceChainMap.put(i.getChain().trim(), 1);
 			sourceKindMap.put(i.getKindCode(), 1);
@@ -86,7 +87,7 @@ public class DiffService {
 				String shortName = (null == i.getNameShort()? "":i.getNameShort());
 				String postCode = (null == i.getPostCode()? "":i.getPostCode());
 				t = hash(i.getName().trim() + i.getAddress().trim()
-						+ i.getTelephone().trim() + postCode.trim()
+						+ StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim())) + postCode.trim()
 						+ i.getKindCode().trim() + i.getChain() + shortName.trim());
 				mapMatchSame.put(t, i);
 
@@ -101,7 +102,7 @@ public class DiffService {
 				}
 
 				//上传一览表与全国一览表中分类、品牌、电话均相同，且地址相同但邮编不同或地址不同但邮编相同
-				t = hash(i.getChain().trim() + i.getTelephone().trim() + i.getKindCode().trim());
+				t = hash(i.getChain().trim() + StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim())) + i.getKindCode().trim());
 				if (editPart2.get(t) == null) {
 					List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
 					dsList.add(i);
@@ -111,7 +112,7 @@ public class DiffService {
 				}
 
 				//上传一览表与全国一览表中分类、品牌、地址、电话均相同，且名称相同但邮编不同或名称相同但电话不同
-				t = hash(i.getAddress().trim() + i.getTelephone().trim() + i.getKindCode().trim() + i.getChain().trim());
+				t = hash(i.getAddress().trim() + StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim())) + i.getKindCode().trim() + i.getChain().trim());
 				if (editPart3.get(t) == null) {
 					List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
 					dsList.add(i);
@@ -138,7 +139,7 @@ public class DiffService {
 				boolean flag = false;
 				String shortName = (null == i.getNameShort()? "":i.getNameShort());
 				t = hash(i.getName().trim() + i.getAddress().trim()
-						+ i.getTelephone().trim() + i.getPostCode().trim()
+						+ StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim())) + i.getPostCode().trim()
 						+ i.getKindCode().trim() +  i.getChain().trim() + shortName.trim());
 
 				/**************** 新旧一致逻辑 *******************/
@@ -189,7 +190,7 @@ public class DiffService {
 						continue;
 				}
 				//上传一览表与全国一览表中分类、品牌、电话均相同，且地址相同但邮编不同或地址不同但邮编相同
-				t = hash(i.getChain().trim() + i.getTelephone().trim()+ i.getKindCode().trim());
+				t = hash(i.getChain().trim() + StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim()))+ i.getKindCode().trim());
 				if (editPart2.get(t) != null&&editPart2.get(t).size()!=0) {
 					for (IxDealershipSource j : editPart2.get(t)) {
 						boolean sameAddr = i.getAddress().equals(j.getAddress());
@@ -220,7 +221,7 @@ public class DiffService {
 				}
 
 				//上传一览表与全国一览表中分类、品牌、地址、电话均相同，且名称相同但邮编不同或名称相同但邮编不同
-				t = hash(i.getAddress().trim() + i.getTelephone().trim() + i.getKindCode().trim() + i.getChain().trim());
+				t = hash(i.getAddress().trim() + StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim())) + i.getKindCode().trim() + i.getChain().trim());
 				if (editPart3.get(t) != null&&editPart3.get(t).size()!=0) {
 					for (IxDealershipSource j : editPart3.get(t)) {
 						boolean sameName = (i.getName().equals(j.getTelephone())&&i.getNameShort().equals(j.getNameShort()));
@@ -361,7 +362,7 @@ public class DiffService {
 							&&(sourceChainMap.get(i.getChain()) != null)
 							&& (sourceAddrMap.get(i.getAddress().trim()) == null)
 							&& (sourcePostCodeMap.get(i.getPostCode()) == null)
-							&& (sourceTelMap.get(i.getTelephone().trim()) == null))) {
+							&& (sourceTelMap.get(StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim()))) == null))) {
 						resultDpAttrDiff.setDealSrcDiff(2);
 					} else
 					/***************** 其他逻辑 ****************/

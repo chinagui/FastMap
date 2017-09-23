@@ -2,6 +2,7 @@ package com.navinfo.dataservice.dao.plus.utils;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -52,5 +53,21 @@ public class RowJsonUtils {
 			return ja;
 		}
 		return null;
+	}
+	public static void main(String[] args) {
+		JSONObject jo = JSONObject.fromObject("");
+		System.out.println(jo.toString());
+		JSONObject jo2 = JSONObject.fromObject(null);
+		System.out.println(jo2.toString());
+		Map<String,Object> map=new HashMap<String,Object>();
+		map.put("1", JSONNull.getInstance());
+		map.put("2", null);
+		String name3 = (String)map.get("3");
+		System.out.println(name3);
+		String name2 = (String)map.get("2");
+		System.out.println(name2);
+		String name1 = (String)map.get("1");
+		System.out.println(name1);
+		
 	}
 }

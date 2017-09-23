@@ -33,6 +33,8 @@ public class DBConnector {
 	private DataSource checkDataSource;
 	private DataSource renderDataSource;
 	private DataSource tipsIdxDataSource;
+	private DataSource limitlineinfoDataSource;
+	private DataSource limitDataSource;
 
 	// 大区库连接池
 	private Map<String, DataSource> dataSourceMap = new HashMap<String, DataSource>();
@@ -60,8 +62,8 @@ public class DBConnector {
 		}
 		return manDataSource.getConnection();
 	}
-	
-	
+
+
 	/**
 	 * @Description:获取质检库连接
 	 * @return
@@ -140,7 +142,7 @@ public class DBConnector {
 		}
 		return mkDataSource.getConnection();
 	}
-	
+
 	public Connection getPidConnection() throws SQLException {
 		if (pidDataSource == null) {
 			synchronized (this) {
@@ -194,7 +196,7 @@ public class DBConnector {
 
 		return dataSourceMap.get(str).getConnection();
 	}
-	
+
 	public MongoClient getStatConnection() throws Exception {
 		if (statClient == null) {
 			synchronized (this) {
@@ -218,7 +220,7 @@ public class DBConnector {
 		}
 		return statClient;
 	}
-	
+
 	public Connection getDealershipConnection() throws SQLException {
 		if (dealshipDataSource == null) {
 			synchronized (this) {
@@ -288,4 +290,31 @@ public class DBConnector {
 		}
 		return tipsIdxDataSource.getConnection();
 	}
+
+	public Connection getLimitConnection() throws SQLException {
+		if (limitDataSource == null) {
+			synchronized (this) {
+				if (limitDataSource == null) {
+					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+							.getBean("datahubApi");
+					DbInfo metaDb = null;
+					DbConnectConfig connConfig = null;
+					try {
+						metaDb = datahub.getOnlyDbByType("fmLimit");
+						connConfig = DbConnectConfig
+								.createConnectConfig(metaDb.getConnectParam());
+					} catch (Exception e) {
+						throw new SQLException("从datahub获取元数据信息失败："
+								+ e.getMessage(), e);
+					}
+					limitDataSource = MultiDataSourceFactory.getInstance()
+							.getDataSource(connConfig);
+				}
+			}
+		}
+		return limitDataSource.getConnection();
+
+	}
+
 }
+

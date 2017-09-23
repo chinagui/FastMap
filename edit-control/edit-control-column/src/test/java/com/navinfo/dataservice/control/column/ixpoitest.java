@@ -380,11 +380,28 @@ public class ixpoitest {
 		try {
 			
 			DeepCoreControl deepCore = new DeepCoreControl();
-			deepCore.operateProblem(jsonReq);
+			//deepCore.operateProblem(jsonReq);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 	}
 
+	@Test
+	public void testQcProblemInit() throws Exception{
+		long userId = 5;
+		int subtaskId = 251;
+		long pid=23701;
+		
+		String firstWorkItem = "poi_deep";
+		String secondWorkItem = "deepDetail";
+		try {
+		
+			DeepCoreControl deepCore = new DeepCoreControl();
+			JSONObject resultJson  = deepCore.qcProblemInit(pid,subtaskId, firstWorkItem, secondWorkItem, userId);
+			System.out.println(resultJson);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
 
 }

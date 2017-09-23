@@ -14,10 +14,7 @@ import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 
-import oracle.sql.STRUCT;
-
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
@@ -25,12 +22,11 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
-import com.vividsolutions.jts.geom.Geometry;
 /**
  * GLM60236
  * 检查条件：非删除POI且存在父子关系
  * 重复检查：
- * 一子多父
+ * 如果存在相同父子关系类型（RELATION_TYPE）一子多父的数据，则报log：该子POI存在多个父，请确认！
  * 循环检查：
  * 在一组父子关系中，其中一个POI在这组关系中既充当其它POI的父亲，又充当了其它POI的子，
  * 则认为这组POI存在循环建立父子关系，报LOG：POI存在循环建立父子关系！
@@ -89,6 +85,7 @@ public class GLM60236 extends BasicCheckRule {
 					+ "   AND C2.GROUP_ID = P2.GROUP_ID"
 					+ "   AND P.PID = C1.CHILD_POI_PID"
 					+ "   AND P1.PARENT_POI_PID > P2.PARENT_POI_PID"
+					+ "	  AND C1.RELATION_TYPE > C2.RELATION_TYPE"
 					+ "   AND C1.CHILD_POI_PID = C2.CHILD_POI_PID"
 					+ "   AND P.U_RECORD != 2"
 					+ "   AND C1.U_RECORD != 2"
@@ -111,6 +108,7 @@ public class GLM60236 extends BasicCheckRule {
 					+ "   AND C2.GROUP_ID = P2.GROUP_ID"
 					+ "   AND P.PID = C1.CHILD_POI_PID"
 					+ "   AND P1.PARENT_POI_PID != P2.PARENT_POI_PID"
+					+ "	  AND C1.RELATION_TYPE != C2.RELATION_TYPE"
 					+ "   AND C1.CHILD_POI_PID = C2.CHILD_POI_PID"
 					+ "   AND P.U_RECORD != 2"
 					+ "   AND C1.U_RECORD != 2"
@@ -134,7 +132,7 @@ public class GLM60236 extends BasicCheckRule {
 				Long pidTmp3=rs.getLong("P2");
 				if(!dupPid.contains(pidTmp1)||!dupPid.contains(pidTmp2)||!dupPid.contains(pidTmp3)){
 					String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp3+"]";
-					setCheckResult("", targets, 0,"POI存在一子多父");
+					setCheckResult("", targets, 0,"该子POI存在多个父，请确认！");
 					dupPid.add(pidTmp1);dupPid.add(pidTmp2);dupPid.add(pidTmp3);
 				}
 			}

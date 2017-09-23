@@ -132,11 +132,19 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 			
 			FmPoiRoadDailyReleaseJobRequest releaseFmIdbDailyPoiRequest = (FmPoiRoadDailyReleaseJobRequest ) request;
 			int releaseFlag=releaseFmIdbDailyPoiRequest.getProduceFlag();//执行标识（0：正常出品，1：补出品）
+			int regionId=releaseFmIdbDailyPoiRequest.getRegionId();//按大区库执行
 			
+			List<Region> regions = new ArrayList<Region>();
+			if(regionId!=0){//按照指定大区库进行日落月
+				Region r = manApi.queryByRegionId(regionId);
+				regions.add(r);
+			}else{
+				//全部大区定时落
+				regions = manApi.queryRegionList();
+			}
 			//确定需要日落月的大区：全部大区
-			List<Region> regions = manApi.queryRegionList();
-			log.info("确定日落月大区库个数："+regions.size()+"个。");
-			response("确定日落月大区库个数："+regions.size()+"个。",null);
+			log.info("确定日出品的大区库个数："+regions.size()+"个。");
+			response("确定日出品的大区库个数："+regions.size()+"个。",null);
 			
 			//获取可以出品的快线项目信息；
 			List<Map<String, Object>> projects =manApi.getProduceProgram();

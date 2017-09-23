@@ -209,6 +209,9 @@ public class DeepController extends BaseController {
 			if(jsonReq == null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
 			DeepCoreControl deepCore = new DeepCoreControl();
 			
 			long pid = jsonReq.getLong("pid");
@@ -216,7 +219,7 @@ public class DeepController extends BaseController {
 			String firstWorkItem = jsonReq.getString("firstWorkItem");
 			String secondWorkItem = jsonReq.getString("secondWorkItem");
 			
-			JSONObject result = deepCore.qcProblemInit(pid, qualitySubtaskId, firstWorkItem, secondWorkItem);
+			JSONObject result = deepCore.qcProblemInit(pid, qualitySubtaskId, firstWorkItem, secondWorkItem,userId);
 			logger.debug("查询问题页面初始值end......");
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
@@ -320,6 +323,10 @@ public class DeepController extends BaseController {
 		try{
 			String parameter = request.getParameter("parameter");
 			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}		
@@ -329,7 +336,7 @@ public class DeepController extends BaseController {
 			}
 			DeepCoreControl deepCore = new DeepCoreControl();
 			
-			deepCore.operateProblem(dataJson);
+			deepCore.operateProblem(dataJson,userId);
 			
 			return new ModelAndView("jsonView", success());
 		}catch(Exception e){

@@ -65,6 +65,7 @@ public class DayPoiJob extends AbstractStatJob {
 					dbIds.add(region.getDailyDbId());
 				}
 			}
+			log.info("dbIds:"+dbIds);
 			//查询所有元数据库中的代理店的数据
 			Set<String> dealers = queryDealershipFromMeta();
 			
@@ -151,39 +152,17 @@ public class DayPoiJob extends AbstractStatJob {
 		
 		@Override
 		public void run() {
+			log.info("start dbId:"+dbId);
+			Connection conn = null;
 			try{
-				//查询并统计所有数据
-				Map<String,Object> result = convertAllTaskData(dealers);
+				conn = DBConnector.getInstance().getConnectionById(dbId);				
 				
-				List<Map<String, Object>> subtaskStat = new ArrayList<Map<String, Object>>();
-				List<Map<String, Object>> taskStat = new ArrayList<Map<String, Object>>();
+				List<Map<String, Object>> subtaskStat = subtaskStat(conn);
+				List<Map<String, Object>> taskStat = taskStat(conn);
 				List<Map<String, Object>> notaskStat = new ArrayList<Map<String, Object>>();
-
-				Map<Integer, Map<String, Object>> subtask = (Map<Integer, Map<String, Object>>) result.get("subtaskStat");
-				for(Map.Entry<Integer, Map<String, Object>> entry : subtask.entrySet()){
-					Map<String, Object> cell = new HashMap<String, Object>();
-					cell.put("subtaskId", entry.getKey());
-					cell.put("poiUploadNum", entry.getValue().get("poiUploadNum"));
-					cell.put("poiFinishNum", entry.getValue().get("poiFinishNum"));
-					cell.put("firstEditDate", entry.getValue().get("firstEditDate"));
-					cell.put("firstCollectDate", entry.getValue().get("firstCollectDate"));
-					cell.put("waitWorkPoi", entry.getValue().get("waitWorkPoi"));
-					subtaskStat.add(cell);
-				}
 				
-				Map<Integer,Map<String, Object>> task = (Map<Integer, Map<String, Object>>) result.get("taskStat");
-				for(Map.Entry<Integer, Map<String, Object>> entry : task.entrySet()){
-					Map<String, Object> cell = new HashMap<String, Object>();
-					cell.put("taskId", entry.getKey());
-					cell.put("poiUploadNum", entry.getValue().get("poiUploadNum"));
-					cell.put("poiFinishNum", entry.getValue().get("poiFinishNum"));
-					cell.put("poiUnfinishNum", entry.getValue().get("poiUnfinishNum"));
-					cell.put("poiFreshNum", entry.getValue().get("poiFreshNum"));
-					cell.put("poiUnFreshNum", entry.getValue().get("poiUnFreshNum"));
-					cell.put("poiFinishAndPlanNum", entry.getValue().get("poiFinishAndPlanNum"));
-					taskStat.add(cell);
-				}
-				
+				//查询并统计所有数据
+				Map<String,Object> result = convertAllTaskData(conn,dealers);
 				Map<Integer, Map<String, Object>> notask = (Map<Integer, Map<String, Object>>) result.get("notaskStat");
 				for(Entry<Integer, Map<String, Object>> entry : notask.entrySet()){
 					Map<String, Object> cell = new HashMap<String, Object>();
@@ -195,21 +174,208 @@ public class DayPoiJob extends AbstractStatJob {
 				}
 				
 				Map<String,List<Map<String, Object>>> temp = new HashMap<String,List<Map<String, Object>>>();
-				log.info("dbId:"+dbId+"subtaskStatMap:" + subtaskStat);
-				log.info("dbId:"+dbId+"taskStatMap:" + taskStat);
-				log.info("dbId:"+dbId+"notaskStatMap:" + notaskStat);
+//				log.info("dbId:"+dbId+"subtaskStatMap:" + subtaskStat);
+//				log.info("dbId:"+dbId+"taskStatMap:" + taskStat);
+//				log.info("dbId:"+dbId+"notaskStatMap:" + notaskStat);
 				
 				temp.put("subtaskStat", subtaskStat);
 				temp.put("taskStat", taskStat);
 				temp.put("notaskStat", notaskStat);
 				stats.put(dbId, temp);
+				log.info("end dbId:"+dbId);
 			}catch(Exception e){
 				log.error("dbId("+dbId+")POI日库作业数据统计失败");
+				DbUtils.commitAndCloseQuietly(conn);
 			}finally{
+				DbUtils.commitAndCloseQuietly(conn);
 				if(latch!=null){
 					latch.countDown();
 				}
 			}
+		}
+		
+		private List<Map<String, Object>> subtaskStat(Connection conn) throws Exception{
+			QueryRunner run = new QueryRunner();
+			String sql="SELECT S.QUICK_SUBTASK_ID ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.QUICK_SUBTASK_ID!=0"
+					+ " GROUP BY S.QUICK_SUBTASK_ID"
+					+ " UNION ALL"
+					+ " SELECT S.MEDIUM_SUBTASK_ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.MEDIUM_SUBTASK_ID!=0"
+					+ " GROUP BY S.MEDIUM_SUBTASK_ID";
+			Map<Integer, Long> taskPoiUploadNum=run.query(conn, sql, numRsHandler());
+			
+			sql="SELECT S.QUICK_SUBTASK_ID ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.STATUS=3 AND S.QUICK_SUBTASK_ID!=0"
+					+ " GROUP BY S.QUICK_SUBTASK_ID"
+					+ " UNION ALL"
+					+ " SELECT S.MEDIUM_SUBTASK_ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.STATUS=3 AND S.MEDIUM_SUBTASK_ID!=0"
+					+ " GROUP BY S.MEDIUM_SUBTASK_ID";
+			Map<Integer, Long> taskPoiFinishNum=run.query(conn, sql, numRsHandler());
+			
+			sql="SELECT S.QUICK_SUBTASK_ID ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.STATUS=1 AND S.QUICK_SUBTASK_ID!=0"
+					+ " GROUP BY S.QUICK_SUBTASK_ID"
+					+ " UNION ALL"
+					+ " SELECT S.MEDIUM_SUBTASK_ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.STATUS=1 AND S.MEDIUM_SUBTASK_ID!=0"
+					+ " GROUP BY S.MEDIUM_SUBTASK_ID";
+			Map<Integer, Long> taskPoiWaitWork=run.query(conn, sql, numRsHandler());
+			
+			Map<Integer, String> subTaskDate = queryFirstEditDate(conn);
+			
+			Map<Integer, String> subTaskCollectDate = queryFirstCollectDate(conn);
+			
+			Set<Integer> subtaskIdSet=new HashSet<>();
+			subtaskIdSet.addAll(taskPoiUploadNum.keySet());
+			subtaskIdSet.addAll(taskPoiFinishNum.keySet());
+			subtaskIdSet.addAll(taskPoiWaitWork.keySet());
+			subtaskIdSet.addAll(subTaskDate.keySet());
+			subtaskIdSet.addAll(subTaskCollectDate.keySet());
+			List<Map<String, Object>> subtaskStat = new ArrayList<Map<String, Object>>();
+			for (int subtaskId:subtaskIdSet){
+				Map<String, Object> subtaskStatOne=new HashMap<>();
+				subtaskStatOne.put("subtaskId", subtaskId);
+				subtaskStatOne.put("poiUploadNum", 0);
+				subtaskStatOne.put("poiFinishNum", 0);
+				subtaskStatOne.put("firstEditDate", "");
+				subtaskStatOne.put("firstCollectDate", "");
+				subtaskStatOne.put("waitWorkPoi", 0);
+				if(taskPoiUploadNum.containsKey(subtaskId)){
+					subtaskStatOne.put("poiUploadNum", taskPoiUploadNum.get(subtaskId));
+				}
+				if(taskPoiFinishNum.containsKey(subtaskId)){
+					subtaskStatOne.put("poiFinishNum", taskPoiFinishNum.get(subtaskId));
+				}
+				if(subTaskDate.containsKey(subtaskId)){
+					subtaskStatOne.put("firstEditDate", subTaskDate.get(subtaskId));
+				}
+				if(subTaskCollectDate.containsKey(subtaskId)){
+					subtaskStatOne.put("firstCollectDate", subTaskCollectDate.get(subtaskId));
+				}
+				if(taskPoiWaitWork.containsKey(subtaskId)){
+					subtaskStatOne.put("waitWorkPoi", taskPoiWaitWork.get(subtaskId));
+				}
+				subtaskStat.add(subtaskStatOne);
+			}
+			return subtaskStat;
+		}
+		
+		private List<Map<String, Object>> taskStat(Connection conn) throws Exception{
+			QueryRunner run = new QueryRunner();
+			String sql="SELECT S.QUICK_TASK_ID ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.QUICK_TASK_ID!=0"
+					+ " GROUP BY S.QUICK_TASK_ID"
+					+ " UNION ALL"
+					+ " SELECT S.MEDIUM_TASK_ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.MEDIUM_TASK_ID!=0"
+					+ " GROUP BY S.MEDIUM_TASK_ID";
+			Map<Integer, Long> taskPoiUploadNum=run.query(conn, sql, numRsHandler());
+			
+			sql="SELECT S.QUICK_TASK_ID ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.STATUS=3 AND S.QUICK_TASK_ID!=0"
+					+ " GROUP BY S.QUICK_TASK_ID"
+					+ " UNION ALL"
+					+ " SELECT S.MEDIUM_TASK_ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.STATUS=3 AND S.MEDIUM_TASK_ID!=0"
+					+ " GROUP BY S.MEDIUM_TASK_ID";
+			Map<Integer, Long> taskPoiFinishNum=run.query(conn, sql, numRsHandler());
+			
+			sql="SELECT S.QUICK_TASK_ID ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.STATUS IN (1,2) AND S.QUICK_TASK_ID!=0"
+					+ " GROUP BY S.QUICK_TASK_ID"
+					+ " UNION ALL"
+					+ " SELECT S.MEDIUM_TASK_ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.STATUS IN (1,2) AND S.MEDIUM_TASK_ID!=0"
+					+ " GROUP BY S.MEDIUM_TASK_ID";
+			Map<Integer, Long> taskPoiUnfinishNum=run.query(conn, sql, numRsHandler());
+			
+			sql="SELECT S.QUICK_TASK_ID ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.FRESH_VERIFIED=1 AND S.QUICK_TASK_ID!=0"
+					+ " GROUP BY S.QUICK_TASK_ID"
+					+ " UNION ALL"
+					+ " SELECT S.MEDIUM_TASK_ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.FRESH_VERIFIED=1 AND S.MEDIUM_TASK_ID!=0"
+					+ " GROUP BY S.MEDIUM_TASK_ID";
+			Map<Integer, Long> taskPoiFreshNum=run.query(conn, sql, numRsHandler());
+			
+			sql="SELECT S.QUICK_TASK_ID ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.FRESH_VERIFIED=0 AND S.STATUS=3 AND S.QUICK_TASK_ID!=0"
+					+ " GROUP BY S.QUICK_TASK_ID"
+					+ " UNION ALL"
+					+ " SELECT S.MEDIUM_TASK_ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S WHERE S.FRESH_VERIFIED=0 AND S.STATUS=3 AND S.MEDIUM_TASK_ID!=0"
+					+ " GROUP BY S.MEDIUM_TASK_ID";
+			Map<Integer, Long> taskPoiUnFreshNum=run.query(conn, sql, numRsHandler());
+			
+			sql="SELECT S.MEDIUM_TASK_ID, COUNT(1) NUM"
+					+ "  FROM POI_EDIT_STATUS S, DATA_PLAN D"
+					+ " WHERE D.PID = S.PID"
+					+ "   AND D.DATA_TYPE = 1"
+					+ "   AND D.IS_PLAN_SELECTED = 1"
+					+ "   AND S.STATUS = 3"
+					+ "   AND S.MEDIUM_TASK_ID!=0"
+					+ " GROUP BY S.MEDIUM_TASK_ID";
+			Map<Integer, Long> taskPoiFinishAndPlanNum=run.query(conn, sql, numRsHandler());
+			
+			Set<Integer> taskIdSet=new HashSet<>();
+			taskIdSet.addAll(taskPoiUploadNum.keySet());
+			taskIdSet.addAll(taskPoiFinishNum.keySet());
+			taskIdSet.addAll(taskPoiUnfinishNum.keySet());
+			taskIdSet.addAll(taskPoiFreshNum.keySet());
+			taskIdSet.addAll(taskPoiUnFreshNum.keySet());
+			taskIdSet.addAll(taskPoiFinishAndPlanNum.keySet());
+			List<Map<String, Object>> taskStat = new ArrayList<Map<String, Object>>();
+			for (int taskId:taskIdSet){
+				Map<String, Object> taskStatOne=new HashMap<>();
+				taskStatOne.put("taskId", taskId);
+				taskStatOne.put("poiUploadNum", 0);
+				taskStatOne.put("poiFinishNum", 0);
+				taskStatOne.put("poiUnfinishNum", 0);
+				taskStatOne.put("poiFreshNum", 0);
+				taskStatOne.put("poiUnFreshNum", 0);
+				taskStatOne.put("poiFinishAndPlanNum", 0);
+				if(taskPoiUploadNum.containsKey(taskId)){
+					taskStatOne.put("poiUploadNum", taskPoiUploadNum.get(taskId));
+				}
+				if(taskPoiFinishNum.containsKey(taskId)){
+					taskStatOne.put("poiFinishNum", taskPoiFinishNum.get(taskId));
+				}
+				if(taskPoiUnfinishNum.containsKey(taskId)){
+					taskStatOne.put("poiUnfinishNum", taskPoiUnfinishNum.get(taskId));
+				}
+				if(taskPoiFreshNum.containsKey(taskId)){
+					taskStatOne.put("poiFreshNum", taskPoiFreshNum.get(taskId));
+				}
+				if(taskPoiUnFreshNum.containsKey(taskId)){
+					taskStatOne.put("poiUnFreshNum", taskPoiUnFreshNum.get(taskId));
+				}
+				if(taskPoiFinishAndPlanNum.containsKey(taskId)){
+					taskStatOne.put("poiFinishAndPlanNum", taskPoiFinishAndPlanNum.get(taskId));
+				}
+				taskStat.add(taskStatOne);
+			}
+			return taskStat;
+		}
+		
+		/**
+		 * Map<Integer, Long>
+		 * @return
+		 */
+		private ResultSetHandler<Map<Integer, Long>> numRsHandler(){
+			ResultSetHandler<Map<Integer, Long>> rsHandler = new ResultSetHandler<Map<Integer, Long>>() {
+				public Map<Integer, Long> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Long> result=new HashMap<>();
+					while (rs.next()) {
+						int subtaskId = rs.getInt("ID");
+						long num=rs.getLong("NUM");
+						result.put(subtaskId, num);
+					}
+					return result;
+				}	
+			};
+		return rsHandler;
 		}
 		
 		
@@ -360,81 +526,73 @@ public class DayPoiJob extends AbstractStatJob {
 		}
 		
 		/**
+		 * 查询所有子任务第一条采集时间
+		 * @param Connection
+		 * @throws Exception
+		 * 
+		 * */
+		public Map<Integer, String> queryFirstCollectDate(Connection conn) throws Exception{
+			try{
+				QueryRunner run = new QueryRunner();
+				String sql = "SELECT S.QUICK_SUBTASK_ID STK_ID,"
+						+ "       TO_CHAR(MIN(TO_DATE(P.COLLECT_TIME, 'YYYYMMDDHH24MISS')),"
+						+ "               'YYYYMMDDHH24MISS') AS FIRSTTIME"
+						+ "  FROM POI_EDIT_STATUS S, IX_POI P"
+						+ " WHERE S.PID = P.PID"
+						+ "   AND S.QUICK_SUBTASK_ID != 0"
+						+ " GROUP BY S.QUICK_SUBTASK_ID"
+						+ " UNION ALL"
+						+ " SELECT S.MEDIUM_SUBTASK_ID STK_ID,"
+						+ "       TO_CHAR(MIN(TO_DATE(P.COLLECT_TIME, 'YYYYMMDDHH24MISS')),"
+						+ "               'YYYYMMDDHH24MISS') AS FIRSTTIME"
+						+ "  FROM POI_EDIT_STATUS S, IX_POI P"
+						+ " WHERE S.PID = P.PID"
+						+ "   AND S.MEDIUM_SUBTASK_ID != 0"
+						+ " GROUP BY S.MEDIUM_SUBTASK_ID";
+				ResultSetHandler<Map<Integer, String>> rsHandler = new ResultSetHandler<Map<Integer, String>>() {
+					public Map<Integer, String> handle(ResultSet rs) throws SQLException {
+						Map<Integer, String> map = new HashMap<Integer, String>();
+						while(rs.next()){
+							map.put(rs.getInt("STK_ID"), rs.getString("FIRSTTIME"));
+						}
+						return map;
+					}
+				};
+				return run.query(conn, sql, rsHandler);
+			}catch(Exception e){
+				log.error(e.getMessage(), e);
+				throw e;
+			}
+		}
+		
+		/**
 		 * 处理任务，子任务，无任务数据
 		 * @throws Exception 
 		 * 
 		 * */
-		public Map<String,Object> convertAllTaskData(final Set<String> dealers) throws Exception{
-			Connection conn = null;
-			try{
-				conn = DBConnector.getInstance().getConnectionById(dbId);
-				final Map<Integer, String> subTaskDate = queryFirstEditDate(conn);
-				
+		public Map<String,Object> convertAllTaskData(Connection conn,final Set<String> dealers) throws Exception{
+			try{				
 				QueryRunner run = new QueryRunner();
 				
 				StringBuilder sb = new StringBuilder();
-				sb.append(" SELECT S.PID,                         ");
-				sb.append("        S.STATUS,                      ");
-				sb.append("        S.IS_UPLOAD,                   ");
-				sb.append("        S.FRESH_VERIFIED,              ");
-				sb.append("        S.QUICK_SUBTASK_ID,            ");
-				sb.append("        S.MEDIUM_SUBTASK_ID,           ");
-				sb.append("        S.QUICK_TASK_ID,               ");
-				sb.append("        S.MEDIUM_TASK_ID,              ");
-				sb.append("        P.MESH_ID,                     ");
-				sb.append("        P.GEOMETRY,                    ");
-				sb.append("        P.COLLECT_TIME,                ");
+				sb.append(" SELECT P.GEOMETRY,                    ");
 				sb.append("        P.KIND_CODE,                   ");
-				sb.append("        P.CHAIN,                       ");
-				sb.append("        D.PID  PLAN_PID                ");
+				sb.append("        P.CHAIN                      ");
 				sb.append("   FROM POI_EDIT_STATUS S, IX_POI P    ");
-				sb.append("LEFT JOIN DATA_PLAN D ON D.PID = P.PID ");
-				sb.append("   AND D.DATA_TYPE = 1                 ");
-				sb.append("   AND D.IS_PLAN_SELECTED = 1          ");
-				sb.append("   WHERE P.PID = S.PID  and s.status!=0 ");
+				sb.append("   WHERE P.PID = S.PID  and s.status!=0 and S.MEDIUM_TASK_ID = 0 and s.quick_task_id=0 ");
 				
 				String selectSql = sb.toString();
 
 				ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
 					public Map<String,Object> handle(ResultSet rs) throws SQLException {
 						Map<String,Object> result = new HashMap<String,Object>();
-						Map<Integer, Map<String, Object>> subtaskStat = new HashMap<Integer,Map<String,Object>>();
-						Map<Integer, Map<String, Integer>> taskStat = new HashMap<Integer,Map<String,Integer>>();
 						Map<Integer, Map<String, Integer>> notaskStat = new HashMap<Integer, Map<String, Integer>>();
 						while (rs.next()) {
-						    int subtaskId = rs.getInt("MEDIUM_SUBTASK_ID");
-						    int quickSubtaskId = rs.getInt("QUICK_SUBTASK_ID");						    
-						    int taskId = rs.getInt("MEDIUM_TASK_ID");
-						    int quickTaskId = rs.getInt("QUICK_TASK_ID");
-						    int status = rs.getInt("STATUS");
-						    int fresh = rs.getInt("FRESH_VERIFIED");
-						    int planPid = rs.getInt("PLAN_PID");
-						    if(subtaskId != 0){
-						    	String collectTime = (rs.getString("COLLECT_TIME") == null) ? "" : rs.getString("COLLECT_TIME");
-						    	statisticsSubTaskDataImp(subtaskStat, subtaskId, status, subTaskDate, collectTime);
-						    }
-						    if(quickSubtaskId != 0){
-						    	String collectTime = (rs.getString("COLLECT_TIME") == null) ? "" : rs.getString("COLLECT_TIME");
-						    	statisticsSubTaskDataImp(subtaskStat, quickSubtaskId, status, subTaskDate, collectTime);
-						    }
-						    if(taskId != 0){
-						    	//调用处理任务统计方法
-						    	statisticsTaskDataImp(taskStat, taskId, 0, status, fresh, planPid);
-						    	
-						    }
-						    if(quickTaskId != 0){
-						    	//调用处理任务统计方法
-						    	statisticsTaskDataImp(taskStat, 0, quickTaskId, status, fresh, planPid);
-						    }
-						    if(taskId == 0 && quickTaskId == 0){
-						    	STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						    	String kindCode = rs.getString("KIND_CODE")== null ? "" : rs.getString("KIND_CODE");
-								String chain = rs.getString("CHAIN") == null ? "" : rs.getString("CHAIN");
-						    	statisticsNoTaskDataImp(dealers, notaskStat, kindCode, chain, struct);
-						    }
+					    	STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+					    	String kindCode = rs.getString("KIND_CODE")== null ? "" : rs.getString("KIND_CODE");
+							String chain = rs.getString("CHAIN") == null ? "" : rs.getString("CHAIN");
+					    	statisticsNoTaskDataImp(dealers, notaskStat, kindCode, chain, struct);					    	
 						}
-						result.put("subtaskStat", subtaskStat);
-						result.put("taskStat", taskStat);
 						result.put("notaskStat", notaskStat);
 						return result;
 					}	

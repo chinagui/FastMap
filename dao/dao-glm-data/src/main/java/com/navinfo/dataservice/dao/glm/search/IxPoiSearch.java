@@ -1772,6 +1772,13 @@ public class IxPoiSearch implements ISearch {
 		List<IRow> nRows = poi.getNames();
 		String oldOriginalEngName = "", newOriginalEngName = "", oldStandardEngName = "", newStandardEngName = "";
 		try {
+			if(!("poi_englishname".equals(firstWordItem))){
+				dataObj.put("oldOriginalEngName", oldOriginalEngName);
+				dataObj.put("newOriginalEngName", newOriginalEngName);
+				dataObj.put("oldStandardEngName", oldStandardEngName);
+				dataObj.put("newStandardEngName", newStandardEngName);
+				return dataObj;
+			}
 			for (IRow nRow : nRows) {
 				IxPoiName name = (IxPoiName) nRow;
 				// 官方原始英文改前改后

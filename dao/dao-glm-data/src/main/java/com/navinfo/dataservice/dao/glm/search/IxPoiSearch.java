@@ -1309,7 +1309,7 @@ public class IxPoiSearch implements ISearch {
 //			MetadataApi apiService = (MetadataApi) ApplicationContextUtil
 //					.getBean("metadataApi");
 //			String KindName = apiService.searchKindName(poi.getKindCode());
-			dataObj.put("kindName", KINDCODEMAP.get(poi.getChain()));
+			dataObj.put("kindName", KINDCODEMAP.get(poi.getKindCode()));
 
 			// ix_poi表通过region_id关联ad_admin，获取adminCode
 			int regionId = poi.getRegionId();

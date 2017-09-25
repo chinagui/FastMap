@@ -21,6 +21,12 @@ public class Command extends AbstractCommand{
 		return this.manoeuvreId;
 	}
 	
+	private String groupId;
+	
+	public String getGroupId(){
+		return this.groupId;
+	}
+	
 	public JSONObject getContent(){
 		return this.content;
 	}
@@ -39,6 +45,7 @@ public class Command extends AbstractCommand{
 		JSONObject data = json.getJSONObject("data");
 		this.manoeuvreId = data.getInt("objId");
 		this.content = data.getJSONObject("data");
+		this.groupId = data.getString("groupId");
 	}
 
 	@Override

@@ -23,11 +23,11 @@ public class ScPlateresManoeuvreSearch {
         this.conn = conn;
     }
 
-    public ScPlateresManoeuvre loadById(int manoeuvreId) throws Exception {
+    public ScPlateresManoeuvre loadById(int manoeuvreId,String groupId) throws Exception {
 
     	ScPlateresManoeuvre manoeuvre = new ScPlateresManoeuvre();
 
-        String sqlstr = "SELECT * FROM SC_PLATERES_MANOEUVRE WHERE MANOEUVRE_ID=? ";
+        String sqlstr = "SELECT * FROM SC_PLATERES_MANOEUVRE WHERE MANOEUVRE_ID = ? AND GROUP_ID = ?";
 
         PreparedStatement pstmt = null;
 
@@ -37,6 +37,7 @@ public class ScPlateresManoeuvreSearch {
             pstmt = this.conn.prepareStatement(sqlstr);
 
             pstmt.setInt(1, manoeuvreId);
+            pstmt.setString(2, groupId);
 
             resultSet = pstmt.executeQuery();
 
@@ -46,7 +47,7 @@ public class ScPlateresManoeuvreSearch {
             }
         } catch (Exception e) {
 
-            throw new Exception("查询的ID为：" + manoeuvreId + "的" + manoeuvre.tableName().toUpperCase() + "不存在");
+            throw new Exception("查询的ID为：" + manoeuvreId + ",GROUP_ID为" + groupId + "的" + manoeuvre.tableName().toUpperCase() + "不存在");
 
         } finally {
             DBUtils.closeResultSet(resultSet);

@@ -274,7 +274,7 @@ public class ColumnController extends BaseController {
 		
 		String parameter = request.getParameter("parameter");
 		
-		logger.debug("月编专项库存总量统计");
+		logger.info("start getLogCount");
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
@@ -289,7 +289,7 @@ public class ColumnController extends BaseController {
 			ColumnCoreControl columnControl = new ColumnCoreControl();
 			
 			JSONObject result = columnControl.getLogCount(subtaskId, userId);
-			
+			logger.info("end getLogCount");
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

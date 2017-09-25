@@ -1723,13 +1723,8 @@ public class ProgramService {
 						map.put("producePlanEndDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_END_DATE")));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						//情报反馈状态=未采纳时，显示未采纳原因
-						int isAdopted = rs.getInt("IS_ADOPTED");
-						String denyReason = null;
-						map.put("isAdopted", isAdopted);
-						if(1 == isAdopted){
-							denyReason = rs.getString("DENY_REASON");
-						}
-						map.put("denyReason", denyReason);
+						map.put("isAdopted", rs.getInt("IS_ADOPTED"));
+						map.put("denyReason", rs.getString("DENY_REASON"));
 						map.put("feedbackDate", DateUtils.dateToString(rs.getTimestamp("FEEDBACK_DATE")));
 						return map;
 					}

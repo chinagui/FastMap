@@ -147,7 +147,7 @@ public class limitController extends BaseController {
 
         String parameter = request.getParameter("parameter");
         logger.info("parameter====" + parameter);
-        AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+//        AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 
         com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject
                 .parseObject(parameter);
@@ -159,15 +159,12 @@ public class limitController extends BaseController {
             logger.info("BEGIN EDIT RUN");
             Transaction t = new Transaction(parameter);
             // 加载用户ID
-            t.setUserId(tokenObj.getUserId());
+//            t.setUserId(tokenObj.getUserId());
             // 加载用户taskId
             if (paraJson.containsKey("subtaskId")) {
                 t.setSubTaskId(paraJson.getInt("subtaskId"));
             }
-            // 加载数据库类型
-            if (paraJson.containsKey("dbType")) {
-                t.setDbType(paraJson.getInt("dbType"));
-            }
+
             String msg = t.run();
 
             String log = t.getLogs();

@@ -153,44 +153,53 @@ public class Transaction {
      *
      * @return 命令
      */
-	public AbstractCommand createCommand(String requester) throws Exception {
-		// 修改net.sf.JSONObject的bug：string转json对象损失精度问题（解决方案目前有两种，一种替换新的jar包以及依赖的包，第二种先转fastjson后再转net.sf）
-		com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(requester);
-		JSONObject json = JsonUtils.fastJson2netJson(fastJson);
+    public AbstractCommand createCommand(String requester) throws Exception {
+        // 修改net.sf.JSONObject的bug：string转json对象损失精度问题（解决方案目前有两种，一种替换新的jar包以及依赖的包，第二种先转fastjson后再转net.sf）
+        com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(requester);
+        JSONObject json = JsonUtils.fastJson2netJson(fastJson);
 
-		operType = Enum.valueOf(OperType.class, json.getString("command"));
-		objType = Enum.valueOf(LimitObjType.class, json.getString("type"));
-		if (json.containsKey("infect")) {
-			infect = json.getInt("infect");
-		}
+        operType = Enum.valueOf(OperType.class, json.getString("command"));
+        objType = Enum.valueOf(LimitObjType.class, json.getString("type"));
+        if (json.containsKey("infect")) {
+            infect = json.getInt("infect");
+        }
 
-		switch (objType) {
-		case SCPLATERESGROUP:
-			switch (operType) {
-			case CREATE:
-				return new Command(json, requester);
-			}
-		case SCPLATERESMANOEUVRE:
-			switch (operType) {
-			case CREATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Command(json,
-						requester);
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Command(json,
-						requester);
-			case DELETE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Command(json,
-						requester);
-			}
+        switch (objType) {
+            case SCPLATERESGROUP:
+                switch (operType) {
+                    case CREATE:
+                        return new Command(json, requester);
+                }
+            case SCPLATERESMANOEUVRE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Command(json,
+                                requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Command(json,
+                                requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Command(json,
+                                requester);
+                }
+            case SCPLATERESINFO:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.create.Command(json,
+                                requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.update.Command(json,
+                                requester);
+                }
 
-		case SCPLATERESRDLINK:
-			switch (operType) {
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Command(json, requester);
-			}
-		}
-		throw new Exception("不支持的操作类型");
-	}
+            case SCPLATERESRDLINK:
+                switch (operType) {
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Command(json, requester);
+                }
+        }
+        throw new Exception("不支持的操作类型");
+    }
 
     /**
      * 创建操作进程
@@ -199,12 +208,12 @@ public class Transaction {
      * @return 操作进程
      * @throws Exception
      */
-	public AbstractProcess createProcess(AbstractCommand command) throws Exception {
-		switch (objType) {
-		case SCPLATERESGROUP:
-			switch (operType) {
-			case CREATE:
-				return new Process(command);
+    public AbstractProcess createProcess(AbstractCommand command) throws Exception {
+        switch (objType) {
+            case SCPLATERESGROUP:
+                switch (operType) {
+                    case CREATE:
+                        return new Process(command);
 //              case UPDATE:
 //              return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process(command);
 //          case DELETE:
@@ -225,27 +234,36 @@ public class Transaction {
 //              return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Process(command);
 //          case TOPOBREAK:
 //              return new com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Process(command);
-			}
-		case SCPLATERESMANOEUVRE:
-			switch (operType) {
-			case CREATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Process(
-						command);
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Process(
-						command);
-			case DELETE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Process(
-						command);
-			}
-		case SCPLATERESRDLINK:
-			switch (operType) {
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Process(command);
-			}
-		}
-		throw new Exception("不支持的操作类型");
-	}
+                }
+            case SCPLATERESMANOEUVRE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Process(
+                                command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Process(
+                                command);
+                }
+            case SCPLATERESINFO:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.update.Process(
+                                command);
+                }
+            case SCPLATERESRDLINK:
+                switch (operType) {
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Process(command);
+                }
+        }
+        throw new Exception("不支持的操作类型");
+    }
 
 
     /**

@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.limit.search.meta;
 
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
+import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresGeometry;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -12,12 +14,17 @@ import java.sql.ResultSet;
 import java.util.List;
 
 
-public class ScPlateresGeometrySearch {
+public class ScPlateresGeometrySearch implements ISearch {
 
     private Connection conn;
 
     public ScPlateresGeometrySearch(Connection conn) {
         this.conn = conn;
+    }
+
+    @Override
+    public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
+        return null;
     }
 
     public int searchDataByCondition(JSONObject condition, List<IRow> rows) throws Exception {
@@ -64,6 +71,11 @@ public class ScPlateresGeometrySearch {
         }
 
         return total;
+    }
+
+    @Override
+    public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+        return null;
     }
 
 }

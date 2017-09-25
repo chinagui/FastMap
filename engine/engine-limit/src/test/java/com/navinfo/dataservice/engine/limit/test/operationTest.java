@@ -31,6 +31,7 @@ public class operationTest extends ClassPathXmlAppContextInit {
         //ScPlateresInfo
         //ScPlateresManoeuvre
         //ScPlateresRdLink
+        //ScPlateresInfo
         Transaction t = new Transaction(parameter);
 
         String msg = t.run();

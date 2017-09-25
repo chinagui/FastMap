@@ -53,7 +53,7 @@ public class DayProduceJob extends AbstractStatJob {
 			dayProduceStatByUrlMap.put("dpAverage", dayProduceStatMap);	
 			//处理数据
 			JSONObject result = new JSONObject();
-			result.put("dayProduce",dayProduceStatByUrlMap);
+			result.put("day_produce",dayProduceStatByUrlMap);
 
 			log.info("end stat "+statReq.getJobType());
 			log.debug("所有日出品数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
@@ -194,7 +194,7 @@ public class DayProduceJob extends AbstractStatJob {
 			log.debug(" DayProduceUrl: "+msUrl);
 			String result = ServiceInvokeUtil.invoke(msUrl, parMap, 10000);
 			JSONObject resJson = JSONObject.fromObject(result);
-			JSONObject dataJson = resJson.getJSONObject("data");
+			JSONObject dataJson = resJson.getJSONObject("msg");
 			double dpUpdateRoad = 0;
 			double dpAddRoad = 0;
 			int dpUpdatePoi = 0;

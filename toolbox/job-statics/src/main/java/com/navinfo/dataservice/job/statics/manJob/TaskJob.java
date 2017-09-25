@@ -907,10 +907,18 @@ public class TaskJob extends AbstractStatJob {
 						}
 					}
 				}
+				if(subDayPoiStatData.containsKey("poiActualAddNum")){
+					poiActualAddNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualAddNum").toString());
+				}
+				if(subDayPoiStatData.containsKey("poiActualUpdateNum")){
+					poiActualUpdateNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualUpdateNum").toString());
+				}
+				if(subDayPoiStatData.containsKey("poiActualDeleteNum")){
+					poiActualDeleteNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualDeleteNum").toString());
+				}
 				
-				poiActualAddNumSum+=(int) subtask.get("poiActualAddNum");
-				poiActualUpdateNumSum+=(int) subtask.get("poiActualUpdateNum");
-				poiActualDeleteNumSum+=(int) subtask.get("poiActualDeleteNum");
+//				poiActualUpdateNumSum+=(int) subtask.get("poiActualUpdateNum");
+//				poiActualDeleteNumSum+=(int) subtask.get("poiActualDeleteNum");
 			}
 			
 			//poiActualAddNum// POI实际新增个数【MT-CP-8】

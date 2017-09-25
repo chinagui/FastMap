@@ -5113,7 +5113,9 @@ public class TaskService {
 					+ "       T.PLAN_START_DATE,"
 					+ "       T.PLAN_END_DATE,"
 					+ "       T.CREATE_DATE,"
-					+ "       P.TYPE"
+					+ "       P.TYPE,"
+					+ "       P.PROGRAM_ID,"
+					+ "       P.INFOR_ID"
 					+ "  FROM TASK T, USER_GROUP U, USER_INFO I, PROGRAM P"
 					+ " WHERE T.GROUP_ID = U.GROUP_ID"
 					+ "   AND U.LEADER_ID = I.USER_ID"
@@ -5136,6 +5138,8 @@ public class TaskService {
 						task.put("planEndDate", DateUtils.format(rs.getTimestamp("PLAN_END_DATE"), DateUtils.DATE_WITH_SPLIT_YMD));
 						task.put("createDate", DateUtils.format(rs.getTimestamp("CREATE_DATE"), DateUtils.DATE_DEFAULT_FORMAT));
 						task.put("type", rs.getInt("type"));
+						task.put("programId", rs.getInt("PROGRAM_ID"));
+						task.put("inforId", rs.getInt("INFOR_ID"));
 						result.add(task);
 					}
 					return result;
@@ -5143,6 +5147,9 @@ public class TaskService {
 			};
 			QueryRunner run = new QueryRunner();
 			List<Map<String, Object>> result = run.query(conn,selectSql, rs);
+			//modify by songhe 2017/09/25
+			//查询对应省份名称
+			queryCityNameByProgram(conn, result);
 			return result;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -5150,6 +5157,42 @@ public class TaskService {
 			throw new Exception("查询task对应的项目类型失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 根据项目Id和类型查询对应的城市名称
+	 * @throws Exception 
+	 * 
+	 * */
+	public void queryCityNameByProgram(Connection conn, List<Map<String, Object>> programs) throws Exception{
+		try{
+			for(Map<String, Object> map : programs){
+				int programType = (int) map.get("type");
+				int programId = (int) map.get("programId");
+				String sqlForCity = "";
+				if(programType == 1){
+					sqlForCity = "SELECT C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID AND P.PROGRAM_ID = "+programId;
+				}else{
+					sqlForCity = "SELECT C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID AND P.PROGRAM_ID = "+programId;
+				}
+			
+				ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+					@Override
+					public String handle(ResultSet rs) throws SQLException {
+						String cityName = "";
+						if(rs.next()){
+							cityName = rs.getString("CITY_NAME");
+						}	
+						return cityName;
+					}	
+				};
+				QueryRunner run = new QueryRunner();
+				String name = run.query(conn, sqlForCity, rs);
+				map.put("province", name);
+			}
+		}catch(Exception e){
+			throw e;
 		}
 	}
 	

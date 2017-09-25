@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.limit.test;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -16,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.search.SearchProcess;
+import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -46,21 +48,19 @@ public class limitTest extends ClassPathXmlAppContextInit{
 
             SearchProcess p = new SearchProcess(conn);
 
-            List<? extends IRow> objList = p.searchLimitDataByCondition(
-                    LimitObjType.valueOf(objType), condition);
+            List<IRow> objList = new ArrayList<>();
+            
+            int total = p.searchLimitDataByCondition(
+                    LimitObjType.valueOf(objType), condition,objList);
 
             JSONArray array = new JSONArray();
 
-            if (objList != null) {
-                for (IRow obj : objList) {
-                    JSONObject json = obj.Serialize(ObjLevel.FULL);
-                    json.put("geoLiveType", objType);
-                    array.add(json);
-                }
-                System.out.print(array);
-            } else {
-                return;
-            }
+            for (IRow obj : objList) {
+			    JSONObject json = obj.Serialize(ObjLevel.FULL);
+			    json.put("geoLiveType", objType);
+			    array.add(json);
+			}
+			System.out.print(array);
         } catch (Exception e) {
 
             log.error(e.getMessage(), e);           
@@ -73,5 +73,30 @@ public class limitTest extends ClassPathXmlAppContextInit{
                 }
             }
         }
+	}
+	
+	@Test
+	public void testRdName() throws Exception{
+		String parameter = "{\"dbId\":13,\"type\":3,\"condition\":{\"linkPid\":573595}}";
+		
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+        if (jsonReq == null || !jsonReq.containsKey("dbId") || !jsonReq.containsKey("type") || !jsonReq.containsKey("condition")) {
+            throw new Exception("输入信息不完善，无法查询道路link！");
+        }
+
+        int dbId = jsonReq.getInt("dbId");
+        
+        int type = jsonReq.getInt("type");
+
+        JSONObject condition = jsonReq.getJSONObject("condition");
+
+        Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+
+        SearchProcess p = new SearchProcess(conn);
+        
+        JSONObject result = p.searchRdLinkDataByCondition(type, condition);
+        
+        System.out.println(result);
 	}
 }

@@ -562,7 +562,7 @@ public class TipsSelectorTest extends InitApplication {
 
 			int jobId = jsonReq.getInt("jobId");
 
-			int subtaskId = 0;
+			int subtaskId = 216;
 
 			//外业，有可能没有任务号
 			if(jsonReq.containsKey("subtaskId")){
@@ -590,9 +590,9 @@ public class TipsSelectorTest extends InitApplication {
 
 			TipsUpload tipsUploader = new TipsUpload(subtaskId);
 
-		//	tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap,userId);
+			tipsUploader.run("F:\\FCC\\tips.txt", photoMap, audioMap,userId);
 
-			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap,userId);
+//			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap,userId);
 
 			//tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 

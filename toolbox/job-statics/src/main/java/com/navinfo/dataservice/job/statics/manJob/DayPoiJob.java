@@ -107,9 +107,12 @@ public class DayPoiJob extends AbstractStatJob {
 			//log.info("stats:" + JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 			
-		} catch (Exception e) {
+		}catch(Exception e) {
 			log.error(e.getMessage(), e);
-			throw new JobException(e.getMessage(),e);
+			shutDownPoolExecutor();
+			throw new JobException(e.getMessage(), e);
+		}finally{
+			shutDownPoolExecutor();
 		}
 	}
 	
@@ -363,7 +366,7 @@ public class DayPoiJob extends AbstractStatJob {
 		 * Map<Integer, Long>
 		 * @return
 		 */
-		private ResultSetHandler numRsHandler(){
+		private ResultSetHandler<Map<Integer, Long>> numRsHandler(){
 			ResultSetHandler<Map<Integer, Long>> rsHandler = new ResultSetHandler<Map<Integer, Long>>() {
 				public Map<Integer, Long> handle(ResultSet rs) throws SQLException {
 					Map<Integer, Long> result=new HashMap<>();

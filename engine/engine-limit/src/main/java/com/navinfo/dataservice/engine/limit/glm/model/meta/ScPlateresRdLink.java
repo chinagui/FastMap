@@ -1,9 +1,12 @@
-package com.navinfo.dataservice.engine.limit.glm.model.mate;
+package com.navinfo.dataservice.engine.limit.glm.model.meta;
 
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.engine.limit.glm.iface.*;
-import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.engine.limit.glm.iface.IObj;
+import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
+import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
+import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -13,71 +16,49 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class ScPlateresGroup implements IObj{
+public class ScPlateresRdLink implements IObj {
 
-  private   String groupId = "";//GROUP_ID
+    private int linkPid;   //LINK_PID
+    private int linkDir;//            LIMIT_DIR
+    private String geometryId = "";//    GEOMETRY_ID
+    private Geometry geometryRdLink;//    GEOMETRY_RDLINK
 
-    private String infoIntelId = "";//INFO_INTEL_ID
-
-    private int adAdmin = 0;//AD_ADMIN
-
-    private  String principle = "";//PRINCIPLE
-
-    private  int groupType = 1;//GROUP_TYPE
-
-    private  String uDate = "";//U_DATE
-
-    public String getGroupId() {
-        return groupId;
+    public int getLinkPid() {
+        return linkPid;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public void setLinkPid(int linkPid) {
+        this.linkPid = linkPid;
     }
 
-    public String getInfoIntelId() {
-        return infoIntelId;
+    public int getLinkDir() {
+        return linkDir;
     }
 
-    public void setInfoIntelId(String infoIntelId) {
-        this.infoIntelId = infoIntelId;
+    public void setLinkDir(int linkDir) {
+        this.linkDir = linkDir;
     }
 
-    public int getAdAdmin() {
-        return adAdmin;
+    public String getGeometryId() {
+        return geometryId;
     }
 
-    public void setAdAdmin(int adAdmin) {
-        this.adAdmin = adAdmin;
+    public void setGeometryId(String geometryId) {
+        this.geometryId = geometryId;
     }
 
-    public String getPrinciple() {
-        return principle;
+    public Geometry getGeometryRdLink() {
+        return geometryRdLink;
     }
 
-    public void setPrinciple(String principle) {
-        this.principle = principle;
-    }
-
-    public int getGroupType() {
-        return groupType;
-    }
-
-    public void setGroupType(int groupType) {
-        this.groupType = groupType;
-    }
-
-    public String getuDate() {
-        return uDate;
-    }
-
-    public void setuDate(String uDate) {
-        this.uDate = uDate;
+    public void setGeometryRdLink(Geometry geometryRdLink) {
+        this.geometryRdLink = geometryRdLink;
     }
 
     protected ObjStatus status;
 
     private Map<String, Object> changedFields = new HashMap<>();
+
 
     @Override
     public List<IRow> relatedRows() {
@@ -86,12 +67,12 @@ public class ScPlateresGroup implements IObj{
 
     @Override
     public String primaryKeyValue() {
-        return groupId;
+        return String.valueOf(linkPid);
     }
 
     @Override
     public String primaryKey() {
-        return "GROUP_ID";
+        return "LINK_PID";
     }
 
     @Override
@@ -104,25 +85,26 @@ public class ScPlateresGroup implements IObj{
         return null;
     }
 
+
     @Override
     public String tableName() {
-        return "SC_PLATERES_GROUP";
+        return "SC_PLATERES_RDLINK";
     }
 
     @Override
     public ObjStatus status() {
+
         return status;
     }
 
     @Override
     public void setStatus(ObjStatus os) {
-
         status = os;
     }
 
     @Override
     public LimitObjType objType() {
-        return LimitObjType.SCPLATERESGROUP;
+        return LimitObjType.SCPLATERESRDLINK;
     }
 
     @Override
@@ -132,17 +114,17 @@ public class ScPlateresGroup implements IObj{
 
     @Override
     public String parentPKName() {
-        return "GROUP_ID";
+        return "GEOMETRY_ID";
     }
 
     @Override
-    public int parentPKValue() {
-        return 0;
+    public String parentPKValue() {
+        return null;
     }
 
     @Override
     public String parentTableName() {
-        return "SC_PLATERES_GROUP";
+        return "SC_PLATERES_GEOMETRY";
     }
 
     @Override
@@ -159,34 +141,32 @@ public class ScPlateresGroup implements IObj{
 
             if (json.get(key) instanceof JSONArray) {
                 continue;
-            } else {
-                if (!"objStatus".equals(key)) {
+            }
+            if (!"objStatus".equals(key)) {
 
-                    Field field = this.getClass().getDeclaredField(key);
+                Field field = this.getClass().getDeclaredField(key);
 
-                    field.setAccessible(true);
+                field.setAccessible(true);
 
-                    Object objValue = field.get(this);
+                Object objValue = field.get(this);
 
-                    String oldValue ;
+                String oldValue;
 
-                    if (objValue == null) {
-                        oldValue = "null";
+                if (objValue == null) {
+                    oldValue = "null";
+                } else {
+                    oldValue = String.valueOf(objValue);
+                }
+
+                String newValue = json.getString(key);
+
+                if (!newValue.equals(oldValue)) {
+                    Object value = json.get(key);
+
+                    if (value instanceof String) {
+                        changedFields.put(key, newValue.replace("'", "''"));
                     } else {
-                        oldValue = String.valueOf(objValue);
-                    }
-
-                    String newValue = json.getString(key);
-
-                    if (!newValue.equals(oldValue)) {
-                        Object value = json.get(key);
-
-                        if (value instanceof String) {
-                            changedFields.put(key, newValue.replace("'", "''"));
-                        } else {
-                            changedFields.put(key, value);
-                        }
-
+                        changedFields.put(key, value);
                     }
                 }
             }
@@ -194,6 +174,7 @@ public class ScPlateresGroup implements IObj{
 
         return changedFields.size() > 0;
     }
+
 
     @Override
     public JSONObject Serialize(ObjLevel objLevel) throws Exception {
@@ -224,4 +205,5 @@ public class ScPlateresGroup implements IObj{
         }
         return true;
     }
+
 }

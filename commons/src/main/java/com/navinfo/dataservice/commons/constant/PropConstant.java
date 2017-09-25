@@ -134,4 +134,7 @@ public class PropConstant {
 
     //20170911 adas hbase库独立
     public static final String adasHbaseAddress = "hbase.adas.address";
+    
+    //深度信息质检率系数
+    public static final String deepQcQualityRateRatio = "extract.deep.qc.quality.rate.ratio";
 }

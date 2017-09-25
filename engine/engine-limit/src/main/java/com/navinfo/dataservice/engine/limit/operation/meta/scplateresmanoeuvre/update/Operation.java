@@ -31,7 +31,7 @@ public class Operation implements IOperation {
 			boolean isChanged = manoeuvre.fillChangeFields(content);
 
 			if (isChanged) {
-				result.insertObject(manoeuvre, ObjStatus.UPDATE, String.valueOf(manoeuvre.getManoeuvreId()));
+				result.insertObject(manoeuvre, ObjStatus.UPDATE, this.command.getGroupId() + this.command.getManoeuvreId());
 			}
 
 		}

@@ -14,7 +14,7 @@ public class Operation implements IOperation{
 
 	@Override
 	public String run(Result result) throws Exception{
-		result.insertObject(command.getManoeuvre(), ObjStatus.DELETE, String.valueOf(command.getManoeuvreId()));
+		result.insertObject(command.getManoeuvre(), ObjStatus.DELETE, command.getGroupId() + command.getManoeuvreId());
 		return null;
 	}
 

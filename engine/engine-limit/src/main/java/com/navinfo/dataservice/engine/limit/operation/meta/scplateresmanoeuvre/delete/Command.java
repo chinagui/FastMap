@@ -16,6 +16,8 @@ public class Command extends AbstractCommand{
 	private JSONObject content;
 
 	private ScPlateresManoeuvre manoeuvre;
+	
+	private String groupId;
 
 	public int getManoeuvreId() {
 		return this.manoeuvreId;
@@ -32,6 +34,10 @@ public class Command extends AbstractCommand{
 	public void setManoeuvre(ScPlateresManoeuvre value) {
 		this.manoeuvre = value;
 	}
+	
+	public String getGroupId(){
+		return this.groupId;
+	}
 
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
@@ -39,6 +45,7 @@ public class Command extends AbstractCommand{
 		JSONObject data = json.getJSONObject("data");
 		this.manoeuvreId = data.getInt("objId");
 		this.content = data.getJSONObject("data");
+		this.groupId = data.getString("groupId");
 	}
 
 	@Override

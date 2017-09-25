@@ -16,7 +16,7 @@ public class Process extends AbstractProcess<Command> {
 
         ScPlateresManoeuvreSearch search = new ScPlateresManoeuvreSearch(this.getConn());
 
-        this.getCommand().setManoeuvre(search.loadById(getCommand().getManoeuvreId()));
+        this.getCommand().setManoeuvre(search.loadById(getCommand().getManoeuvreId(),getCommand().getGroupId()));
 
         return true;
     }

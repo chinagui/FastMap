@@ -23,6 +23,40 @@ public class ScPlateresInfoSearch  {
         this.conn = conn;
     }
 
+
+    public ScPlateresInfo loadById(String infoId) throws Exception {
+
+        ScPlateresInfo info = new ScPlateresInfo();
+
+        String sqlstr = "SELECT * FROM SC_PLATERES_INFO WHERE INFO_INTEL_ID=? ";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sqlstr);
+
+            pstmt.setString(1, infoId);
+
+            resultSet = pstmt.executeQuery();
+
+            if (resultSet.next()) {
+
+                ReflectionAttrUtils.executeResultSet(info, resultSet);
+            }
+        } catch (Exception e) {
+
+            throw new Exception("查询的ID为：" + infoId + "的" + info.tableName().toUpperCase() + "不存在");
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return info;
+    }
+
     public int searchDataByCondition(JSONObject condition, List<IRow> objList) throws Exception {
 
         if(!condition.containsKey("adminArea")||!condition.containsKey("pageSize")||!condition.containsKey("pageNum")){

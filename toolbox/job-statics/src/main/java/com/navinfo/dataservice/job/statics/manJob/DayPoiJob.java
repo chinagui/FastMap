@@ -15,11 +15,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
-
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
@@ -33,7 +31,6 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.vividsolutions.jts.geom.Point;
-
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -227,12 +224,26 @@ public class DayPoiJob extends AbstractStatJob {
 			
 			Map<Integer, String> subTaskCollectDate = queryFirstCollectDate(conn);
 			
+			//查询poi实际新增个数
+			sql  = "select a.stk_id ID,count(1) NUM  from log_detail d,log_operation o,log_action a  "
+					+ "where  d.op_id = o.op_id and o.act_id = a.act_id   "
+					+ "and d.tb_nm = 'IX_POI' AND d.op_tp = 1 GROUP BY a.stk_id  ";
+			Map<Integer, Long> poiActualAddNumMap=run.query(conn, sql, numRsHandler());
+			
+			//查询poi实际删除个数
+			sql  = "select s.medium_subtask_id ID  ,count(1) NUM from ix_poi i,poi_edit_status s  "
+					+ "where i.pid = s.pid and s.status in (1,2,3) and s.medium_subtask_id  != 0  "
+					+ "and i.u_record =2 group by s.medium_subtask_id ";
+			Map<Integer, Long> poiActualDeleteNumMap=run.query(conn, sql, numRsHandler());
+			
 			Set<Integer> subtaskIdSet=new HashSet<>();
 			subtaskIdSet.addAll(taskPoiUploadNum.keySet());
 			subtaskIdSet.addAll(taskPoiFinishNum.keySet());
 			subtaskIdSet.addAll(taskPoiWaitWork.keySet());
 			subtaskIdSet.addAll(subTaskDate.keySet());
 			subtaskIdSet.addAll(subTaskCollectDate.keySet());
+			subtaskIdSet.addAll(poiActualAddNumMap.keySet());
+			subtaskIdSet.addAll(poiActualDeleteNumMap.keySet());
 			List<Map<String, Object>> subtaskStat = new ArrayList<Map<String, Object>>();
 			for (int subtaskId:subtaskIdSet){
 				Map<String, Object> subtaskStatOne=new HashMap<>();
@@ -242,7 +253,9 @@ public class DayPoiJob extends AbstractStatJob {
 				subtaskStatOne.put("firstEditDate", "");
 				subtaskStatOne.put("firstCollectDate", "");
 				subtaskStatOne.put("waitWorkPoi", 0);
+				Long poiUploadNum = (long) 0;
 				if(taskPoiUploadNum.containsKey(subtaskId)){
+					poiUploadNum = taskPoiUploadNum.get(subtaskId);
 					subtaskStatOne.put("poiUploadNum", taskPoiUploadNum.get(subtaskId));
 				}
 				if(taskPoiFinishNum.containsKey(subtaskId)){
@@ -257,6 +270,20 @@ public class DayPoiJob extends AbstractStatJob {
 				if(taskPoiWaitWork.containsKey(subtaskId)){
 					subtaskStatOne.put("waitWorkPoi", taskPoiWaitWork.get(subtaskId));
 				}
+				Long poiActualAddNum = (long) 0;
+				Long poiActualDeleteNum = (long) 0;
+				if(poiActualAddNumMap.containsKey(subtaskId)){
+					poiActualAddNum = taskPoiWaitWork.get(subtaskId);
+					subtaskStatOne.put("poiActualAddNum", taskPoiWaitWork.get(subtaskId));
+				}
+				if(poiActualDeleteNumMap.containsKey(subtaskId)){
+					poiActualDeleteNum = poiActualDeleteNumMap.get(subtaskId);
+					subtaskStatOne.put("poiActualDeleteNum", poiActualDeleteNumMap.get(subtaskId));
+				}
+				if(poiUploadNum > (poiActualAddNum+poiActualDeleteNum)){
+					subtaskStatOne.put("poiActualUpdateNum", poiUploadNum - (poiActualAddNum+poiActualDeleteNum));
+				}
+				
 				subtaskStat.add(subtaskStatOne);
 			}
 			return subtaskStat;

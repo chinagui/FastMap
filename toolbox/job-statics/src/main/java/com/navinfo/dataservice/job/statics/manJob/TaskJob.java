@@ -9,9 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.bson.Document;
-
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
@@ -229,7 +227,8 @@ public class TaskJob extends AbstractStatJob {
 				}
 				//处理具体数据
 				Map<String, Object> taskMap = getTaskStat(task,taskManTimeline,dataMap,subActualStartTimeList,fccData);
-				
+
+
 				taskStatList.add(taskMap);
 			}
 			//处理数据
@@ -858,7 +857,14 @@ public class TaskJob extends AbstractStatJob {
 				Map<String,Object> subtask = new HashMap<String,Object>();
 				int subtaskId = (int) jso.get("subtaskId");
 				int poiUploadNum = (int) jso.get("poiUploadNum");
+				int poiActualAddNum = (int) jso.get("poiActualAddNum");
+				int poiActualUpdateNum = (int) jso.get("poiActualUpdateNum");
+				int poiActualDeleteNum = (int) jso.get("poiActualDeleteNum");
 				subtask.put("poiUploadNum", poiUploadNum);
+				subtask.put("poiActualAddNum", poiActualAddNum);
+				subtask.put("poiActualUpdateNum", poiActualUpdateNum);
+				subtask.put("poiActualDeleteNum", poiActualDeleteNum);
+				
 				stat.put(subtaskId, subtask);
 			}
 			return stat;
@@ -877,6 +883,9 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			int crowdTipsTotal = 0;
 			int multisourcePoiTotal = 0;
+			int poiActualAddNumSum = 0;
+			int poiActualUpdateNumSum = 0;
+			int poiActualDeleteNumSum = 0;
 			for (Map<String, Object> subtask : subtasks) {
 				int subtaskId = (int) subtask.get("subtaskId");
 				int workKind = (int) subtask.get("workKind");
@@ -898,10 +907,24 @@ public class TaskJob extends AbstractStatJob {
 						}
 					}
 				}
+				
+				poiActualAddNumSum+=(int) subtask.get("poiActualAddNum");
+				poiActualUpdateNumSum+=(int) subtask.get("poiActualUpdateNum");
+				poiActualDeleteNumSum+=(int) subtask.get("poiActualDeleteNum");
 			}
+			
+			//poiActualAddNum// POI实际新增个数【MT-CP-8】
+			//poiActualUpdateNum// POI实际修改个数【MT-CP-9】
+			//poiActualDeleteNum// POI实际删除个数【MT-CP-10】
+			
+			
 			Map<String,Integer> taskStat = new HashMap<String,Integer>();
 			taskStat.put("crowdTipsTotal", crowdTipsTotal);
 			taskStat.put("multisourcePoiTotal", multisourcePoiTotal);
+			
+			taskStat.put("poiActualAddNum", poiActualAddNumSum);
+			taskStat.put("poiActualUpdateNum", poiActualUpdateNumSum);
+			taskStat.put("poiActualDeleteNum", poiActualDeleteNumSum);
 			return taskStat;
 		} catch (Exception e) {
 			log.error("处理taskId("+task.getTaskId()+")subtask_day_poi统计数据报错,"+e.getMessage());
@@ -947,6 +970,7 @@ public class TaskJob extends AbstractStatJob {
 	 * @param taskManTimeline
 	 * @param dataMap
 	 * @param subActualStartTimeList 
+	 * @param subtaskIds 
 	 * @return
 	 * @throws Exception 
 	 */
@@ -1198,9 +1222,24 @@ public class TaskJob extends AbstractStatJob {
 				linkUpdateAndPlanLen = (double) dataMap.get("linkUpdateAndPlanLen");
 			}
 			
-			//POI实际新增个数(暂不统计)
-			//POI实际修改个数(暂不统计)
-			//POI实际删除个数(暂不统计)
+
+
+
+			//POI实际新增个数
+			if(dataMap.containsKey("poiActualAddNum")){
+				poiActualAddNum = (int) dataMap.get("poiActualAddNum");
+			}
+			
+			//POI实际修改个数
+			if(dataMap.containsKey("poiActualUpdateNum")){
+				poiActualUpdateNum = (int) dataMap.get("poiActualUpdateNum");
+			}
+			
+			//POI实际删除个数
+			if(dataMap.containsKey("poiActualDeleteNum")){
+				poiActualDeleteNum = (int) dataMap.get("poiActualDeleteNum");
+			}
+			
 			//POI实际鲜度验证个数
 			if(dataMap.containsKey("poiFreshNum")){
 				poiFreshNum = (int) dataMap.get("poiFreshNum");
@@ -1401,7 +1440,8 @@ public class TaskJob extends AbstractStatJob {
 			throw new Exception("处理数据出错:" + e.getMessage(), e);
 		}
 	}
-	
+
+
 	/**
 	 * 处理开始时间
 	 */

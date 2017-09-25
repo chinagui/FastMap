@@ -69,6 +69,7 @@ public class PersonJob extends AbstractStatJob {
 				double tipsAddLen = 0d;
 				long tipsAllNum = 0;
 				double fccUpdateLen = 0d;
+				double effectiveTime = 0d;
 				int poiAllNum = 0;
 				int poiUploadNum = 0;
 				int poiFreshNum = 0;
@@ -94,6 +95,7 @@ public class PersonJob extends AbstractStatJob {
 							endDate = fccMap.get("endDate").toString();
 							workTime = fccMap.get("workTime").toString();
 							fccUpdateLen = Double.valueOf(fccMap.get("fccUpdateLen").toString());
+							effectiveTime = Double.valueOf(fccMap.get("effectiveTime").toString());
 						}
 					}
 				}
@@ -137,6 +139,7 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("endDate", endDate);
 				dataMap.put("workTime", workTime);
 				dataMap.put("fccUpdateLen", fccUpdateLen);
+				dataMap.put("effectiveTime", effectiveTime);
 				dataMap.put("workDay", workDay);
 				dataMap.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 				keyMaps.add(dataMap);
@@ -317,6 +320,7 @@ public class PersonJob extends AbstractStatJob {
 			int userId = Integer.parseInt(fccJson.get("userId").toString());
 			int taskId = Integer.parseInt(fccJson.get("taskId").toString());
 			double fccUpdateLen = Double.valueOf(fccJson.get("linkLen").toString());
+			double effectiveTime = Double.valueOf(fccJson.get("effectiveTime").toString());
 			
 			String startCollectTime = (StringUtils.isBlank(fccJson.get("startCollectTime").toString()) ? df.format(new Date()) : fccJson.get("startCollectTime").toString());
 			String endCollectTime = (StringUtils.isBlank(fccJson.get("endCollectTime").toString()) ? df.format(new Date()) : fccJson.get("endCollectTime").toString());
@@ -340,6 +344,7 @@ public class PersonJob extends AbstractStatJob {
 			map.put("workTime", workTime);
 			map.put("fccUpdateLen", fccUpdateLen);
 			map.put("userId", userId);
+			map.put("effectiveTime", effectiveTime);
 			if(result.containsKey(taskId)){
 				tasks = (List<Map<String, Object>>) result.get(taskId);
 			}

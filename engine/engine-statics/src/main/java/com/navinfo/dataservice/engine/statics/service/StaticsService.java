@@ -609,6 +609,9 @@ public class StaticsService {
 				task.put("monthPoiLogUnFinishNum", monthPoiLogUnFinishNum);
 				task.put("roadPlanTotal", Double.valueOf(jso.get("roadPlanTotal").toString()));
 				task.put("poiPlanTotal", (int) jso.get("poiPlanTotal"));
+				task.put("roadPlanOut", (int) jso.get("roadPlanOut"));
+				task.put("collectTipsUploadNum", (int) jso.get("collectTipsUploadNum"));
+				task.put("tips2MarkNum", (int) jso.get("tips2MarkNum"));
 			}
 			return task;
 		} catch (Exception e) {

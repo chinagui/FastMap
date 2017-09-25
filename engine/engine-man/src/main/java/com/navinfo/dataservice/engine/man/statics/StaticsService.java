@@ -2605,7 +2605,7 @@ public class StaticsService {
 	public Map<String, Integer> getTaskProgress(Connection conn, int taskId) throws Exception {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
-			String sql = "select sk.status, sk.type from task sk where sk.task_id = "+ taskId;
+			String sql = "select p.type as programType, sk.status, sk.type from task sk, program p where sk.task_id = "+ taskId + "and p.program_id = sk.program_id";
 			log.info("getTaskProgress sql:" + sql);
 
 			return queryRunner.query(conn, sql, new ResultSetHandler<Map<String, Integer>>() {
@@ -2615,6 +2615,7 @@ public class StaticsService {
 					if(rs.next()) {
 						taskData.put("status", rs.getInt("status"));
 						taskData.put("type", rs.getInt("type"));
+						taskData.put("programType", rs.getInt("programType"));
 					}
 					return taskData;
 				}
@@ -2683,6 +2684,19 @@ public class StaticsService {
 				resultMap.put("monthPoiLogFinishNum", mongoTaskData.get("monthPoiLogFinishNum") == null ? 0 : mongoTaskData.get("monthPoiLogFinishNum"));
 			}
 		}
+		//modify by songhe 2017/09/25  需求变更
+		int programType = oricalTaskData.get("programType");
+		int roadPlanOut = 0;
+		int tips2MarkNum = 0;
+		if(4 == programType){
+			tips2MarkNum = mongoTaskData.get("collectTipsUploadNum") == null ? 0 : (int) mongoTaskData.get("collectTipsUploadNum");
+		}
+		if(1 == programType){
+			roadPlanOut = mongoTaskData.get("roadPlanOut") == null ? 0 : (int) mongoTaskData.get("roadPlanOut");
+			tips2MarkNum = mongoTaskData.get("tips2MarkNum") == null ? 0 : (int) mongoTaskData.get("tips2MarkNum");
+		}
+		resultMap.put("tips2MarkNum", tips2MarkNum);
+		resultMap.put("roadPlanOut", roadPlanOut);
 		return resultMap;
 	}
 	

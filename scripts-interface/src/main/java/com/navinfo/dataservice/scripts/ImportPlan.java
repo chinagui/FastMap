@@ -107,7 +107,7 @@ public class ImportPlan {
 						//这里每次一个新的blockPlan都需要重置groupID的查询次数
 						SELECT_TIMES = 0;
 						Map<String, Object> taskDataMap = blockPlan.getGroupId(map, conn);
-						//创建三个不同类型的任务
+						//创建两个不同类型的任务
 						blockPlan.creatTaskByBlockPlan(taskDataMap);
 						taskIds.addAll(blockPlan.taskCountInBlock(blockID, conn));
 					}
@@ -124,26 +124,27 @@ public class ImportPlan {
 		//发布项目
 		ImportPlan.pushProgram(programUpdateIDs);
 		//发布任务
-//		ImportPlan.pushTask(taskIds);
+		ImportPlan.pushTask(taskIds);
 		System.out.println("执行完成");
+		System.exit(0);
 	}
 	
 	
-//	/**
-//	 * 发布任务
-//	 * @param JSONArray
-//	 * 
-//	 * */
-//	public static void pushTask(JSONArray tasks){
-//		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
-//		try {
-//			if(tasks.size() > 0){
-//				TaskService.getInstance().taskPushMsg(userID, tasks);
-//			}
-//		} catch (Exception e) {
-//			System.out.println("任务发布失败");
-//		}
-//	}
+	/**
+	 * 发布任务
+	 * @param JSONArray
+	 * 
+	 * */
+	public static void pushTask(JSONArray tasks){
+		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
+		try {
+			if(tasks.size() > 0){
+				TaskService.getInstance().taskPushMsg(userID, tasks);
+			}
+		} catch (Exception e) {
+			System.out.println("任务发布失败");
+		}
+	}
 	
 	
 	/**
@@ -503,7 +504,7 @@ public class ImportPlan {
 //					taskJson.put("groupId", 0);
 //				}
 				taskJson.put("descp", taskDataMap.get("DESCP").toString());
-				taskJson.put("createUserId", 2);
+				taskJson.put("createUserId", userID);
 //				if(StringUtils.isNotBlank(taskDataMap.get("ROAD_PLAN_TOTAL").toString())){
 //					taskJson.put("roadPlanTotal", Integer.parseInt(taskDataMap.get("ROAD_PLAN_TOTAL").toString()));
 //				}

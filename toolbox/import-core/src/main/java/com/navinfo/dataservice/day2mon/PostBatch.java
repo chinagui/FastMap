@@ -112,13 +112,13 @@ public class PostBatch {
 	 */
 	private List<BasicObj> changeSourceFlag(String workItem, String sourceFlag) throws Exception {
 		List<Long> pidList = getPidByWorkItem(workItem);
-		log.info("changeSourceFlag:" + workItem + ",pids:" + pidList.toString());
+		//log.info("changeSourceFlag:" + workItem + ",pids:" + pidList.toString());
 		List<BasicObj> objList = new ArrayList<BasicObj>();
 		List<BasicObj> allObjs = opResult.getAllObjs();
 		for (Long pid : pidList) {
 			for (BasicObj obj : allObjs) {
 				if (obj.objPid() == pid) {
-					log.info("pid:" +pid);
+					//log.info("pid:" +pid);
 					List<BasicRow> nameList = obj.getSubrows().get("IX_POI_NAME");
 					IxPoiObj poiObj = (IxPoiObj) obj;
 					Long nameId = 0l;
@@ -171,7 +171,7 @@ public class PostBatch {
 	public void deteal200170() throws Exception {
 		int handler = 200170;
 		List<Long> pidList = getPidByHandler(handler);
-		log.info("特殊处理200170pids:" + pidList.toString());
+		//log.info("特殊处理200170pids:" + pidList.toString());
 		OperationResult operationResult = new OperationResult();
 		List<BasicObj> objList = new ArrayList<BasicObj>();
 		List<BasicObj> allObj = opResult.getAllObjs();

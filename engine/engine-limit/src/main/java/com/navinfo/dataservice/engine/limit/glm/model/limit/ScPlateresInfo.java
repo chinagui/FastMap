@@ -26,7 +26,7 @@ public class ScPlateresInfo implements IObj {
     private String infoContent;//    INFO_CONTENT	新闻内容
     private int complete = 1;//    COMPLETE	完成状态
     private String condition;//    CONDITION	限行长短期说明
-    private String memo;//    MEMO	备注
+    private String memo="";//    MEMO	备注
 
     public String getInfoIntelId() {
         return infoIntelId;
@@ -161,8 +161,8 @@ public class ScPlateresInfo implements IObj {
     }
 
     @Override
-    public int parentPKValue() {
-        return 0;
+    public String parentPKValue() {
+        return null;
     }
 
     @Override
@@ -184,37 +184,37 @@ public class ScPlateresInfo implements IObj {
 
             if (json.get(key) instanceof JSONArray) {
                 continue;
-            } else {
-                if (!"objStatus".equals(key)) {
+            }
+            if (!"objStatus".equals(key)) {
 
-                    Field field = this.getClass().getDeclaredField(key);
+                Field field = this.getClass().getDeclaredField(key);
 
-                    field.setAccessible(true);
+                field.setAccessible(true);
 
-                    Object objValue = field.get(this);
+                Object objValue = field.get(this);
 
-                    String oldValue;
+                String oldValue;
 
-                    if (objValue == null) {
-                        oldValue = "null";
+                if (objValue == null) {
+                    oldValue = "null";
+                } else {
+                    oldValue = String.valueOf(objValue);
+                }
+
+                String newValue = json.getString(key);
+
+                if (!newValue.equals(oldValue)) {
+                    Object value = json.get(key);
+
+                    if (value instanceof String) {
+                        changedFields.put(key, newValue.replace("'", "''"));
                     } else {
-                        oldValue = String.valueOf(objValue);
+                        changedFields.put(key, value);
                     }
 
-                    String newValue = json.getString(key);
-
-                    if (!newValue.equals(oldValue)) {
-                        Object value = json.get(key);
-
-                        if (value instanceof String) {
-                            changedFields.put(key, newValue.replace("'", "''"));
-                        } else {
-                            changedFields.put(key, value);
-                        }
-
-                    }
                 }
             }
+
         }
 
         return changedFields.size() > 0;

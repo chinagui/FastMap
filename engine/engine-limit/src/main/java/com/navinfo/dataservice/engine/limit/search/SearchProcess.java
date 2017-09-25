@@ -1,16 +1,14 @@
+
 package com.navinfo.dataservice.engine.limit.search;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
+import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresInfoSearch;
-import com.navinfo.dataservice.engine.limit.search.mate.ScPlateresGeometrySearch;
-import com.navinfo.dataservice.engine.limit.search.mate.ScPlateresGroupSearch;
-import com.navinfo.dataservice.engine.limit.search.mate.ScPlateresManoeuvreSearch;
-import com.navinfo.dataservice.engine.limit.search.mate.ScPlateresRdlinkSearch;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
-import net.sf.json.JSONArray;
+import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGeometrySearch;
+import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGroupSearch;
+import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresManoeuvreSearch;
+import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresRdlinkSearch;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonValueProcessor;
@@ -18,8 +16,6 @@ import net.sf.json.util.JSONUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -40,29 +36,29 @@ public class SearchProcess {
 
 	}
 
-	public List<IRow> searchMetaDataByCondition(LimitObjType type, JSONObject condition)
+	public int searchMetaDataByCondition(LimitObjType type, JSONObject condition, List<IRow> rows)
 			throws Exception {
-		List<IRow> rows = new ArrayList<>();
+		int total = 0;
 		try {
 			switch (type) {
 				case SCPLATERESGEOMETRY:
-					rows = new ScPlateresGeometrySearch(this.conn).searchDataByCondition(condition);
+					total = new ScPlateresGeometrySearch(this.conn).searchDataByCondition(condition,rows);
 					break;
 				case SCPLATERESGROUP:
-					rows = new ScPlateresGroupSearch(this.conn).searchDataByCondition(condition);
+					total = new ScPlateresGroupSearch(this.conn).searchDataByCondition(condition,rows);
 					break;
 
 				case SCPLATERESMANOEUVRE:
-					rows = new ScPlateresManoeuvreSearch(this.conn).searchDataByCondition(condition);
+					total = new ScPlateresManoeuvreSearch(this.conn).searchDataByCondition(condition,rows);
 					break;
 				case SCPLATERESRDLINK:
-					rows = new ScPlateresRdlinkSearch(this.conn).searchDataByCondition(condition);
+					total = new ScPlateresRdlinkSearch(this.conn).searchDataByCondition(condition,rows);
 					break;
 				default:
-					return rows;
+					return total;
 			}
 
-			return rows;
+			return total;
 		} catch (Exception e) {
 
 			throw e;
@@ -72,20 +68,20 @@ public class SearchProcess {
 		}
 	}
 
-	public List<IRow> searchLimitDataByCondition(LimitObjType type, JSONObject condition)
+	public int searchLimitDataByCondition(LimitObjType type, JSONObject condition,List<IRow> objList)
 			throws Exception {
-		List<IRow> rows = new ArrayList<>();
+		int total = 0;
 		try {
 			switch (type) {
 				 case SCPLATERESINFO:
-					rows = new ScPlateresInfoSearch(this.conn).searchDataByCondition(condition);
+					total = new ScPlateresInfoSearch(this.conn).searchDataByCondition(condition, objList);
 					break;
 
 				default:
-					return rows;
+					return total;
 			}
 
-			return rows;
+			return total;
 		} catch (Exception e) {
 
 			throw e;
@@ -94,7 +90,32 @@ public class SearchProcess {
 
 		}
 	}
+	
+	public JSONObject searchRdLinkDataByCondition(int type, JSONObject condition) throws Exception {
+		JSONObject result = new JSONObject();
 
+		RdLinkSearch search = new RdLinkSearch(this.conn);
+
+		try {
+			switch (type) {
+			case 1:
+			case 2:
+				result = search.searchDataByCondition(type, condition);
+				break;
+			case 3:
+				result = search.searchDataByPid(condition);
+			default:
+				return result;
+			}
+
+			return result;
+		} catch (Exception e) {
+
+			throw e;
+
+		}
+	}
+	
 	/**
 	 * 控制输出JSON的格式
 	 * 

@@ -16,7 +16,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -35,8 +34,6 @@ import net.sf.json.JSONObject;
  */
 public class MediumMonitorJob extends AbstractStatJob {
 
-	protected VMThreadPoolExecutor threadPoolExecutor;
-	
 	protected ManApi manApi = null;
 
 	/**

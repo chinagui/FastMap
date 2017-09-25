@@ -478,6 +478,16 @@ public class StringConverter
 
         return new String(b);
     }
+    
+    public static void manCreatDataUtils(StringBuffer insertPart, StringBuffer valuePart){
+    	if(insertPart != null && insertPart.toString().length() > 0){
+    		insertPart.append(" , ");
+    		if(valuePart == null){
+    			valuePart = new StringBuffer();
+    		}
+    		valuePart.append(" , ");
+    	}
+    }
 
 
     static int count(final String s, final char c) {

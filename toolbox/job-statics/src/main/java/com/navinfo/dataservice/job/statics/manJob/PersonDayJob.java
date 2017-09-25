@@ -25,7 +25,6 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -102,9 +101,12 @@ public class PersonDayJob extends AbstractStatJob {
 			//log.info("stats:" + JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 			
-		} catch (Exception e) {
+		}catch(Exception e) {
 			log.error(e.getMessage(), e);
-			throw new JobException(e.getMessage(),e);
+			shutDownPoolExecutor();
+			throw new JobException(e.getMessage(), e);
+		}finally{
+			shutDownPoolExecutor();
 		}
 	}
 	

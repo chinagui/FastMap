@@ -1,6 +1,9 @@
 package com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create;
 
+import java.sql.Connection;
+
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.engine.limit.Utils.PidApply;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
 import com.navinfo.dataservice.engine.limit.glm.iface.Result;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresManoeuvre;
@@ -9,15 +12,19 @@ public class Operation  implements IOperation{
 
 	private Command command = null;
 	
-	public Operation(Command command){
+	private Connection conn = null;
+	
+	public Operation(Command command,Connection conn){
 		this.command = command;
+		
+		this.conn = conn;
 	}
 	
 	@Override
-	public String run(Result result){
+	public String run(Result result) throws Exception{
 		ScPlateresManoeuvre manoeuvre = new ScPlateresManoeuvre();
 		
-		manoeuvre.setManoeuvreId(1002001);
+		manoeuvre.setManoeuvreId(PidApply.getInstance(this.conn).pidForInsertManoeuvre(this.command.getGroupId()));
 		manoeuvre.setGroupId(command.getGroupId());
 		manoeuvre.setVehicle(command.getVehicle());
 		manoeuvre.setAttribution(command.getAttribution());

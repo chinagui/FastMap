@@ -57,6 +57,40 @@ public class ScPlateresManoeuvreSearch {
         return manoeuvre;
     }
 
+    public int loadMaxManoeuvreId(String groupId) throws Exception {
+
+    	ScPlateresManoeuvre manoeuvre = new ScPlateresManoeuvre();
+
+        String sqlstr = "SELECT MAX(MANOEUVRE_ID) FROM SC_PLATERES_MANOEUVRE WHERE GROUP_ID = ?";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+        
+        int manoeuvreId = 0;
+
+        try {
+            pstmt = this.conn.prepareStatement(sqlstr);
+
+            pstmt.setString(1, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            if (resultSet.next()) {
+
+               manoeuvreId = resultSet.getInt(1);
+            }
+        } catch (Exception e) {
+
+            throw new Exception("查询GROUP_ID为：" + groupId + "的最大MANOEUVRE_ID异常");
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return manoeuvreId;
+    }
 
     public int searchDataByCondition(JSONObject condition, List<IRow> rows) throws Exception {
 

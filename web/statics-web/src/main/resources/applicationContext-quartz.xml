@@ -23,6 +23,7 @@
                 <ref bean="personTipsStat_Trigger" />
                 <ref bean="productMonitorStat_Trigger" />
 <!--                 <ref bean="poiQualityInitCountTable_Trigger" /> -->
+				<ref bean="dayProduceStat_Trigger" />
             </list>
         </property>
         <property name="quartzProperties">
@@ -138,6 +139,12 @@
 <!--         <property name="cronExpression" value="0 0 * * * ?" /> -->
 <!--     </bean> -->
     
+    <bean id="dayProduceStat_Trigger"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="dayProduceStat_detail" />
+        <property name="cronExpression" value="0 0 1 * * ?" />
+    </bean>
+    
     <bean id="poiDayStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="targetObject" ref="poiDayStat" />
         <property name="targetMethod" value="start" />
@@ -184,6 +191,11 @@
 <!--         <property name="concurrent" value="false" /> -->
 <!--     </bean> -->
    
+    <bean id="dayProduceStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="dayProduceStat" />
+        <property name="targetMethod" value="start" />
+        <property name="concurrent" value="false" />
+    </bean>
 	<!--  业务逻辑处理类 -->
 	<bean id="poiDayStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStatStarter"/>
 	<bean id="personDayStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.PersonDayStatStarter"/>
@@ -197,5 +209,6 @@
     <bean id="productMonitorStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.ProductMonitorStatStarter"/>
     
 <!-- 	<bean id="poiQualityInitCountTable" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiQualityInitCountTableStarter"/> -->
-	
+
+	<bean id="personDayStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.DayProduceStatStarter"/>
 </beans>

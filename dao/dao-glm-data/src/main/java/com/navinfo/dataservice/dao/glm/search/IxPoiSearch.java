@@ -1364,7 +1364,7 @@ public class IxPoiSearch implements ISearch {
 			// 名称相关字段
 			dataObj = getNamesNameFlagNameList(firstWordItem, secondWorkItem,
 					poi, dataObj);
-			log.info("取名称相关字段");
+			log.info("取地址相关字段");
 			// 地址相关字段
 			dataObj = getAddressesAddressList(firstWordItem, secondWorkItem,
 					poi, dataObj);
@@ -1767,18 +1767,18 @@ public class IxPoiSearch implements ISearch {
 	private JSONObject getEngNameBeforBatch(String firstWordItem,
 			String secondWorkItem, IxPoi poi, JSONObject dataObj)
 			throws Exception {
+		String oldOriginalEngName = "", newOriginalEngName = "", oldStandardEngName = "", newStandardEngName = "";
+		if(!("poi_englishname".equals(firstWordItem))){
+			dataObj.put("oldOriginalEngName", oldOriginalEngName);
+			dataObj.put("newOriginalEngName", newOriginalEngName);
+			dataObj.put("oldStandardEngName", oldStandardEngName);
+			dataObj.put("newStandardEngName", newStandardEngName);
+			return dataObj;
+		}
 		LogReader logReader = new LogReader(conn);
 		JSONObject result = new JSONObject();
 		List<IRow> nRows = poi.getNames();
-		String oldOriginalEngName = "", newOriginalEngName = "", oldStandardEngName = "", newStandardEngName = "";
 		try {
-			if(!("poi_englishname".equals(firstWordItem))){
-				dataObj.put("oldOriginalEngName", oldOriginalEngName);
-				dataObj.put("newOriginalEngName", newOriginalEngName);
-				dataObj.put("oldStandardEngName", oldStandardEngName);
-				dataObj.put("newStandardEngName", newStandardEngName);
-				return dataObj;
-			}
 			for (IRow nRow : nRows) {
 				IxPoiName name = (IxPoiName) nRow;
 				// 官方原始英文改前改后

@@ -1,7 +1,12 @@
 
 package com.navinfo.dataservice.engine.limit.search;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
+import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresInfoSearch;
@@ -9,6 +14,7 @@ import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGeometrySearch
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGroupSearch;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresManoeuvreSearch;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresRdlinkSearch;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonValueProcessor;
@@ -16,7 +22,9 @@ import net.sf.json.util.JSONUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 查询进程
@@ -26,6 +34,16 @@ public class SearchProcess {
 	private static final Logger logger = Logger.getLogger(SearchProcess.class);
 
 	Connection conn;
+	private int dbId;
+
+	public int getDbId() {
+		return dbId;
+	}
+
+	public void setDbId(int dbId) {
+		this.dbId = dbId;
+	}
+
 
 	public SearchProcess(Connection conn) throws Exception {
 
@@ -151,6 +169,101 @@ public class SearchProcess {
 
 		return jsonConfig;
 	}
+
+	/**
+	 * 根据瓦片空间查询
+	 *
+	 * @return 查询结果
+	 * @throws Exception
+	 */
+	public JSONObject searchDataByTileWithGap(List<LimitObjType> types, int x,
+											  int y, int z, int gap) throws Exception {
+
+		JSONObject json = new JSONObject();
+
+		try {
+
+			// 1.计算瓦片的几何
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+			Map<String, List<SearchSnapshot>> map = new HashMap<String, List<SearchSnapshot>>();
+
+				try {
+
+					conn = DBConnector.getInstance().getConnectionById(this.getDbId());
+
+					SearchFactory factory = new SearchFactory(conn);
+
+					factory.setDbId(dbId);
+
+					for (LimitObjType type : types) {
+
+						List<SearchSnapshot> list = null;
+
+						ISearch search = factory.createSearch(type);
+
+						list = search.searchDataByTileWithGap(x, y, z, gap);
+
+//						for (SearchSnapshot snapshot : list) {
+//							snapshot.setDbId(dbId);
+//						}
+						if (map.containsKey(type.toString())) {
+							List<SearchSnapshot> snapshots = map.get(type
+									.toString());
+
+							for (SearchSnapshot snapshot : list) {
+								if (!snapshots.contains(snapshot)) {
+									snapshots.add(snapshot);
+									continue;
+								}
+								if (snapshots.contains(snapshot)
+										&& snapshot.getDbId() == this.getDbId()) {
+									snapshots.remove(snapshot);
+									snapshots.add(snapshot);
+									continue;
+								}
+
+							}
+						} else {
+							map.put(type.toString(), list);
+						}
+
+					}
+				} catch (Exception e) {
+
+					throw e;
+
+				} finally {
+					if (conn != null) {
+						try {
+							conn.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+			for (Map.Entry<String, List<SearchSnapshot>> entry : map.entrySet()) {
+				JSONArray array = new JSONArray();
+
+				for (SearchSnapshot snap : entry.getValue()) {
+
+					array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
+				}
+
+				json.accumulate(entry.getKey(), array, getJsonConfig());
+
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+		}
+		return json;
+	}
+
 	public static void main(String[] args) throws Exception {
 
 

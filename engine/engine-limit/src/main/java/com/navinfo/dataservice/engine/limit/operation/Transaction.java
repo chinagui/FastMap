@@ -153,47 +153,44 @@ public class Transaction {
      *
      * @return 命令
      */
-    public AbstractCommand createCommand(String requester) throws Exception {
-        // 修改net.sf.JSONObject的bug：string转json对象损失精度问题（解决方案目前有两种，一种替换新的jar包以及依赖的包，第二种先转fastjson后再转net.sf）
-        com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(requester);
-        JSONObject json = JsonUtils.fastJson2netJson(fastJson);
+	public AbstractCommand createCommand(String requester) throws Exception {
+		// 修改net.sf.JSONObject的bug：string转json对象损失精度问题（解决方案目前有两种，一种替换新的jar包以及依赖的包，第二种先转fastjson后再转net.sf）
+		com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(requester);
+		JSONObject json = JsonUtils.fastJson2netJson(fastJson);
 
-        operType = Enum.valueOf(OperType.class, json.getString("command"));
-        objType = Enum.valueOf(LimitObjType.class, json.getString("type"));
-        if (json.containsKey("infect")) {
-            infect = json.getInt("infect");
-        }
+		operType = Enum.valueOf(OperType.class, json.getString("command"));
+		objType = Enum.valueOf(LimitObjType.class, json.getString("type"));
+		if (json.containsKey("infect")) {
+			infect = json.getInt("infect");
+		}
 
-        switch (objType) {
-            case SCPLATERESGROUP:
-                switch (operType) {
-                    case CREATE:
-                        return new Command(json, requester);
-//                    case UPDATE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Command(json, requester);
-//                    case DELETE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Command(json, requester);
-//                    case BREAK:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(json, requester);
-//                    case REPAIR:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink.Command(json, requester);
-//                    case DEPART:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode.Command(json, requester);
-//                    case UPDOWNDEPART:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Command(json, requester);
-//                    case CREATESIDEROAD:
-//                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Command(json, requester);
-//                    case BATCH:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Command(json, requester);
-//                    case BATCHDELETE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Command(json, requester);
-//                    case TOPOBREAK:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Command(json, requester);
-                }
+		switch (objType) {
+		case SCPLATERESGROUP:
+			switch (operType) {
+			case CREATE:
+				return new Command(json, requester);
+			}
+		case SCPLATERESMANOEUVRE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Command(json,
+						requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Command(json,
+						requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Command(json,
+						requester);
+			}
 
-        }
-        throw new Exception("不支持的操作类型");
-    }
+		case SCPLATERESRDLINK:
+			switch (operType) {
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Command(json, requester);
+			}
+		}
+		throw new Exception("不支持的操作类型");
+	}
 
     /**
      * 创建操作进程
@@ -202,38 +199,53 @@ public class Transaction {
      * @return 操作进程
      * @throws Exception
      */
-    public AbstractProcess createProcess(AbstractCommand command) throws Exception {
-        switch (objType) {
-            case SCPLATERESGROUP:
-                switch (operType) {
-                    case CREATE:
-                        return new Process(command);
-//                    case UPDATE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process(command);
-//                    case DELETE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Process(command);
-//                    case BREAK:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(command);
-//                    case DEPART:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode.Process(command);
-//                    case REPAIR:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink.Process(command);
-//                    case UPDOWNDEPART:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Process(command);
-//                    case CREATESIDEROAD:
-//                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Process(command);
-//                    case BATCH:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Process(command);
-//                    case BATCHDELETE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Process(command);
-//                    case TOPOBREAK:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Process(command);
-                }
-
-        }
-        throw new Exception("不支持的操作类型");
-
-    }
+	public AbstractProcess createProcess(AbstractCommand command) throws Exception {
+		switch (objType) {
+		case SCPLATERESGROUP:
+			switch (operType) {
+			case CREATE:
+				return new Process(command);
+//              case UPDATE:
+//              return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process(command);
+//          case DELETE:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Process(command);
+//          case BREAK:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(command);
+//          case DEPART:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode.Process(command);
+//          case REPAIR:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink.Process(command);
+//          case UPDOWNDEPART:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Process(command);
+//          case CREATESIDEROAD:
+//              return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Process(command);
+//          case BATCH:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Process(command);
+//          case BATCHDELETE:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Process(command);
+//          case TOPOBREAK:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Process(command);
+			}
+		case SCPLATERESMANOEUVRE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Process(
+						command);
+			}
+		case SCPLATERESRDLINK:
+			switch (operType) {
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Process(command);
+			}
+		}
+		throw new Exception("不支持的操作类型");
+	}
 
 
     /**
@@ -271,9 +283,8 @@ public class Transaction {
 
     }
 
-
-    public int getPid() {
-        return process.getResult().getPrimaryPid();
+    public String getId() {
+        return process.getResult().getPrimaryId();
     }
 
     public int getDbType() {

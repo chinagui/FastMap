@@ -10,7 +10,6 @@ import net.sf.json.JSONObject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,6 +21,39 @@ public class ScPlateresManoeuvreSearch {
 
     public ScPlateresManoeuvreSearch(Connection conn) {
         this.conn = conn;
+    }
+
+    public ScPlateresManoeuvre loadById(int manoeuvreId) throws Exception {
+
+    	ScPlateresManoeuvre manoeuvre = new ScPlateresManoeuvre();
+
+        String sqlstr = "SELECT * FROM SC_PLATERES_MANOEUVRE WHERE MANOEUVRE_ID=? ";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sqlstr);
+
+            pstmt.setInt(1, manoeuvreId);
+
+            resultSet = pstmt.executeQuery();
+
+            if (resultSet.next()) {
+
+                ReflectionAttrUtils.executeResultSet(manoeuvre, resultSet);
+            }
+        } catch (Exception e) {
+
+            throw new Exception("查询的ID为：" + manoeuvreId + "的" + manoeuvre.tableName().toUpperCase() + "不存在");
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return manoeuvre;
     }
 
 

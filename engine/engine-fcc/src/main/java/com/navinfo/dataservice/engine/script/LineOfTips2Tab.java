@@ -1,22 +1,32 @@
 package com.navinfo.dataservice.engine.script;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.sql.DataSource;
+
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
@@ -24,12 +34,14 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.BinaryPrefixComparator;
-import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.RowFilter;
+import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
+import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -37,8 +49,10 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.OracleConnectionManager;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion.Static;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -153,7 +167,7 @@ public class LineOfTips2Tab {
         	logger.debug("没有输入admin_name参数，即将提取所有省份符合要求的测线tips数据");
         	long startTime = System.currentTimeMillis();
         	List<String> rowkeyArray = getTipsRowkey();
-        	System.out.println("过滤查询到的测线tips条数：" + rowkeyArray.size());
+//        	logger.debug("过滤查询到的测线tips条数：" + rowkeyArray.size());
         	for (String rowkey : rowkeyArray) {
         		Map<String, String> tipsInfo = getTipsInfo(hbaseTipsTable,rowkey);
     			if(tipsInfo.isEmpty()){
@@ -163,9 +177,9 @@ public class LineOfTips2Tab {
     			writeToMif(tipsInfo);
     			tipsCount++;
 			}
-        	System.out.println("本次参加转tab的tips共有：" + tipsCount + "条");
+//        	logger.debug("本次参加转tab的tips共有：" + tipsCount + "条");
         	long endTime = System.currentTimeMillis();
-    		System.out.println("总共用时：" + (endTime-startTime) + "毫秒");
+        	logger.debug("本次任务已经完成，总共用时：" + (endTime-startTime) + "毫秒");
     		
     		 try {
 					if(hbaseTipsTable!=null) hbaseTipsTable.close();
@@ -183,25 +197,33 @@ public class LineOfTips2Tab {
         	 Connection tipsIdxConn = getTipsIdxConnection();
         	 
         	 long startTime = System.currentTimeMillis();
+        	 Set<String> tipsRowkey = new HashSet<>();
         	// 根据输入的adminName逐个提取对应的信息。
-		        for (String adminName : adminNameList) {		    				    		
+		        for (String adminName : adminNameList) {
 		    		String wkt = LineOfTips2Tab.getMeshNums(oracleConn,adminName);
-		    		List<String> rowkeyArray = getTipsRowkey(tipsIdxConn,wkt);
+		    		Set<String> rowkeyArray = getTipsRowkey(tipsIdxConn,wkt);
+		    		
+//		    		logger.debug("本次从tips索引库查询到" + adminName + "符合条件的测线tips条数为：" + rowkeyArray.size() + "条");
+		    		
 		    		for (String rowkey : rowkeyArray) {
-		    			Map<String, String> tipsInfo = getTipsInfo(hbaseTipsTable,rowkey);
-		    			if(tipsInfo.isEmpty()){
-		    				continue;
-		    			}
-		    			writeToMid(tipsInfo);
-		    			writeToMif(tipsInfo);
-		    			tipsCount++;
-		    		}
-		    								       											
+		    			tipsRowkey.add(rowkey);		    			
+		    		}		    								       											
 				}
 		        
-		        System.out.println("本次参加转tab的tips共有：" + tipsCount + "条");			
+		        for (String rowkey : tipsRowkey){
+		        	Map<String, String> tipsInfo = getTipsInfo(hbaseTipsTable,rowkey);
+	    			if(tipsInfo.isEmpty()){
+	    				continue;
+	    			}
+	    			
+	    			writeToMid(tipsInfo);
+	    			writeToMif(tipsInfo);
+	    			tipsCount++;
+		        }
+		        
+//		        logger.debug("本次参加转tab的tips共有：" + tipsCount + "条");			
 	    		long endTime = System.currentTimeMillis();
-	    		System.out.println("总共用时：" + (endTime-startTime) + "毫秒");
+	    		logger.debug("本次任务已经完成，总共用时：" + (endTime-startTime) + "毫秒");
 		        
 		        try {
 					if(oracleConn!=null) oracleConn.close();
@@ -226,7 +248,11 @@ public class LineOfTips2Tab {
 		long startOracle = System.currentTimeMillis();
 		Connection oracleConn  = OracleConnectionManager.getConnection(ip, sid, username, password);
 		long endOracle = System.currentTimeMillis();
-		System.out.println("获取数据库连接用时：" + (endOracle - startOracle) + "毫秒");			
+		logger.debug("获取配置数据库连接用时：" + (endOracle - startOracle) + "毫秒");	
+		logger.debug("=============================DBINFO==========================");
+		logger.debug("url:jdbc:oracle:thin:@" + ip + ":1521/" + sid);
+		logger.debug("username:" + username);
+		logger.debug("password:" + password);
 		return oracleConn;
 	}
 	
@@ -236,7 +262,7 @@ public class LineOfTips2Tab {
 		long startOracle = System.currentTimeMillis();
 		Connection tipsIdxConn = DBConnector.getInstance().getTipsIdxConnection();
 		long endOracle = System.currentTimeMillis();
-		System.out.println("获取数据库连接用时：" + (endOracle - startOracle) + "毫秒");			
+		logger.debug("获取tips索引库连接用时：" + (endOracle - startOracle) + "毫秒");			
 		return tipsIdxConn;
 	}
 	
@@ -246,7 +272,7 @@ public class LineOfTips2Tab {
 		long startOracle = System.currentTimeMillis();
 		org.apache.hadoop.hbase.client.Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 		long endOracle = System.currentTimeMillis();
-		System.out.println("获取数据库连接用时：" + (endOracle - startOracle) + "毫秒");
+		logger.debug("获取hbase数据库连接用时：" + (endOracle - startOracle) + "毫秒");
 		
 		Table htab = hbaseConn.getTable(TableName.valueOf(Bytes.toBytes(HBaseConstant.tipTab)));
 				
@@ -257,7 +283,6 @@ public class LineOfTips2Tab {
 	public static String getMeshNums(Connection conn,String adminName) throws Exception {
 		String sql = "SELECT MESHNUM FROM NI_ADMIN_MESH WHERE ADMIN_NAME = ?";	
 		
-		long startSelect = System.currentTimeMillis();
 		PreparedStatement pps = null;
 		if(StringUtils.isEmpty(adminName)){
 			sql = "SELECT MESHNUM FROM NI_ADMIN_MESH";
@@ -268,22 +293,18 @@ public class LineOfTips2Tab {
 		}
 		
 		ResultSet result = pps.executeQuery();
-		long endSelect = System.currentTimeMillis();
-		System.out.println("执行sql用时：" + (endSelect - startSelect) + "毫秒");
 		
 		Set<String> meshList = new HashSet<>();
 		
 		//判断查询结果是否为空,不为空则执行；为空则提示，并退出程序。
 		if (result.next()){
-			
-//			long startList = System.currentTimeMillis();			
+			//此处判断时已将指针下移了一位，必须先将该值取出放入集合中，否则下面while (result.next()) 执行时，缺少第一行记录
+			meshList.add(result.getString(1));		
 			result.setFetchSize(10000);
 			 while (result.next()) {
 				 meshList.add(result.getString(1));			 
 			}
-//			long endList = System.currentTimeMillis();
-			System.out.println(meshList.size());
-//			System.out.println("将查询结果放入Arraylist用时：" + (endList - startList) + "毫秒");
+//			 logger.debug("获取到的图幅号个数为：" + meshList.size());
 			
 		}else{
 			logger.error("输入的admin_name参数不正确，请重新输入。错误参数值为：" + adminName);
@@ -303,14 +324,14 @@ public class LineOfTips2Tab {
 	}
 	
 	//5.根据1中获得的wkt到tips索引库查询对应的测线（s_sourcetype=2001）tips的rowkey
-	public static List<String> getTipsRowkey(Connection tipsIdxConn,String wkt) throws Exception{       
+	public static Set<String> getTipsRowkey(Connection tipsIdxConn,String wkt) throws Exception{       
 		String isWkt = " sdo_filter(wkt,sdo_geometry(:1,8307)) = 'TRUE' ";
 		String sql = "SELECT ID FROM TIPS_INDEX WHERE " + isWkt + " AND S_SOURCETYPE = '2001'";
 		PreparedStatement pps = tipsIdxConn.prepareStatement(sql);
 		pps.setClob(1, ConnectionUtil.createClob(tipsIdxConn, wkt));
 		ResultSet result = pps.executeQuery();
 		result.setFetchSize(5000);
-		List<String> rowkeyArray = new ArrayList<>();
+		Set<String> rowkeyArray = new HashSet<>();
 		while(result.next()){
 			rowkeyArray.add(result.getString(1));
 		}
@@ -446,7 +467,7 @@ public class LineOfTips2Tab {
 		long startHbase = System.currentTimeMillis();
 		org.apache.hadoop.hbase.client.Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 		long endHbase = System.currentTimeMillis();
-		System.err.println("获取hbase连接用时：" + (endHbase - startHbase) + "毫秒");
+		logger.debug("获取hbase连接用时：" + (endHbase - startHbase) + "毫秒");
 		 Table htab = null;
 			try{
 				htab = hbaseConn.getTable(TableName.valueOf(Bytes.toBytes(HBaseConstant.tipTab)));

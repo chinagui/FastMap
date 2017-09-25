@@ -24,7 +24,7 @@ public class Operation implements IOperation {
         group.setPrinciple(this.command.getPrinciple());
         group.setInfoIntelId(this.command.getInfoIntelId());
 
-        result.insertObject(group, ObjStatus.INSERT, 0);
+        result.insertObject(group, ObjStatus.INSERT, group.getGroupId());
         return null;
     }
 }

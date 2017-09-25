@@ -564,6 +564,7 @@ public class ColumnCoreControl {
 			if (subtask == null) {
 				throw new Exception("subtaskid未找到数据");
 			}
+			logger.info("获取subtask,subtaskId:"+subtaskId);
 			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			int dbId = subtask.getDbId();
 			if(isQuality==1){

@@ -700,7 +700,10 @@ public class TaskService {
 				}
 				if(bean.getSubWorkKind(4)==1&&oldTask.getSubWorkKind(4)==0){
 					log.info("任务修改，变更多源，需自动创建多源子任务");
-					createCollectSubtaskByTask(4, bean);
+					Subtask subtask = createCollectSubtaskByTask(4, bean);
+					JSONArray subtaskIds = new JSONArray();
+					subtaskIds.add(subtask.getSubtaskId());
+					SubtaskService.getInstance().pushMsg(conn, userId, subtaskIds);
 				}
 			}
 			
@@ -5151,7 +5154,9 @@ public class TaskService {
 					+ "       T.PLAN_START_DATE,"
 					+ "       T.PLAN_END_DATE,"
 					+ "       T.CREATE_DATE,"
-					+ "       P.TYPE"
+					+ "       P.TYPE,"
+					+ "       P.PROGRAM_ID,"
+					+ "       P.INFOR_ID"
 					+ "  FROM TASK T, USER_GROUP U, USER_INFO I, PROGRAM P"
 					+ " WHERE T.GROUP_ID = U.GROUP_ID"
 					+ "   AND U.LEADER_ID = I.USER_ID"
@@ -5159,8 +5164,11 @@ public class TaskService {
 			if(!StringUtils.isEmpty(date)){
 				selectSql=selectSql+ "   AND T.CREATE_DATE > TO_DATE('"+date+"', 'yyyy-mm-dd')";
 			}
+			
+			//modify by songhe 2017/09/25
+			//查询对应省份名称
+			final Map<Integer, String> province = queryCityNameByProgram(conn);
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
-				
 				@Override
 				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
 					List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
@@ -5174,6 +5182,12 @@ public class TaskService {
 						task.put("planEndDate", DateUtils.format(rs.getTimestamp("PLAN_END_DATE"), DateUtils.DATE_WITH_SPLIT_YMD));
 						task.put("createDate", DateUtils.format(rs.getTimestamp("CREATE_DATE"), DateUtils.DATE_DEFAULT_FORMAT));
 						task.put("type", rs.getInt("type"));
+						int programId = rs.getInt("PROGRAM_ID");
+						String cityName = "";
+						if(province.containsKey(programId)){
+							cityName = province.get(programId);
+						}
+						task.put("province", cityName);
 						result.add(task);
 					}
 					return result;
@@ -5181,6 +5195,7 @@ public class TaskService {
 			};
 			QueryRunner run = new QueryRunner();
 			List<Map<String, Object>> result = run.query(conn,selectSql, rs);
+			
 			return result;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -5188,6 +5203,31 @@ public class TaskService {
 			throw new Exception("查询task对应的项目类型失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 根据项目Id和类型查询对应的城市名称
+	 * @throws Exception 
+	 * 
+	 * */
+	public Map<Integer, String> queryCityNameByProgram(Connection conn) throws Exception{
+		try{
+			String	sqlForCity = "SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID UNION SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID ";
+			ResultSetHandler<Map<Integer, String>> rs = new ResultSetHandler<Map<Integer, String>>() {
+				@Override
+				public Map<Integer, String> handle(ResultSet rs) throws SQLException {
+					Map<Integer, String> province = new HashMap<>();
+					while(rs.next()){
+						province.put(rs.getInt("PROGRAM_ID"), rs.getString("CITY_NAME"));
+					}	
+					return province;
+				}	
+			};
+			QueryRunner run = new QueryRunner();
+			return run.query(conn, sqlForCity, rs);
+		}catch(Exception e){
+			throw e;
 		}
 	}
 	

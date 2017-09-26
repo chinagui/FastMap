@@ -308,7 +308,7 @@ public class SolrController {
 		}
 		if (collectTaskIds.size() > 0) {
 			builder.append(solrIndexFiled);
-			builder.append("in (");
+			builder.append(" in (");
 			int index = 0;
 			for (int collectTaskId : collectTaskIds) {
 				if (index != 0)

@@ -62,9 +62,9 @@ public class DayPoiJob extends AbstractStatJob {
 					dbIds.add(region.getDailyDbId());
 				}
 			}
-			dbIds = new HashSet<Integer>();
+			//dbIds = new HashSet<Integer>();
 //			dbIds.add(13);
-//			log.info("dbIds:"+dbIds);
+			log.info("dbIds:"+dbIds);
 			//查询所有元数据库中的代理店的数据
 			Set<String> dealers = queryDealershipFromMeta();
 			
@@ -103,7 +103,7 @@ public class DayPoiJob extends AbstractStatJob {
 				result.get("grid_day_poi").addAll(entry.getValue().get("notaskStat"));
 			}
 			
-			//log.info("stats:" + JSONObject.fromObject(result).toString());
+			log.info("stats:" + JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 			
 		} catch (Exception e) {

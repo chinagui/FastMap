@@ -5161,8 +5161,11 @@ public class TaskService {
 			if(!StringUtils.isEmpty(date)){
 				selectSql=selectSql+ "   AND T.CREATE_DATE > TO_DATE('"+date+"', 'yyyy-mm-dd')";
 			}
+			
+			//modify by songhe 2017/09/25
+			//查询对应省份名称
+			final Map<Integer, String> province = queryCityNameByProgram(conn);
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
-				
 				@Override
 				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
 					List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
@@ -5176,8 +5179,12 @@ public class TaskService {
 						task.put("planEndDate", DateUtils.format(rs.getTimestamp("PLAN_END_DATE"), DateUtils.DATE_WITH_SPLIT_YMD));
 						task.put("createDate", DateUtils.format(rs.getTimestamp("CREATE_DATE"), DateUtils.DATE_DEFAULT_FORMAT));
 						task.put("type", rs.getInt("type"));
-						task.put("programId", rs.getInt("PROGRAM_ID"));
-						task.put("inforId", rs.getInt("INFOR_ID"));
+						int programId = rs.getInt("PROGRAM_ID");
+						String cityName = "";
+						if(province.containsKey(programId)){
+							cityName = province.get(programId);
+						}
+						task.put("province", cityName);
 						result.add(task);
 					}
 					return result;
@@ -5185,9 +5192,7 @@ public class TaskService {
 			};
 			QueryRunner run = new QueryRunner();
 			List<Map<String, Object>> result = run.query(conn,selectSql, rs);
-			//modify by songhe 2017/09/25
-			//查询对应省份名称
-			queryCityNameByProgram(conn, result);
+			
 			return result;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -5203,32 +5208,21 @@ public class TaskService {
 	 * @throws Exception 
 	 * 
 	 * */
-	public void queryCityNameByProgram(Connection conn, List<Map<String, Object>> programs) throws Exception{
+	public Map<Integer, String> queryCityNameByProgram(Connection conn) throws Exception{
 		try{
-			for(Map<String, Object> map : programs){
-				int programType = (int) map.get("type");
-				int programId = (int) map.get("programId");
-				String sqlForCity = "";
-				if(programType == 1){
-					sqlForCity = "SELECT C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID AND P.PROGRAM_ID = "+programId;
-				}else{
-					sqlForCity = "SELECT C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID AND P.PROGRAM_ID = "+programId;
-				}
-			
-				ResultSetHandler<String> rs = new ResultSetHandler<String>() {
-					@Override
-					public String handle(ResultSet rs) throws SQLException {
-						String cityName = "";
-						if(rs.next()){
-							cityName = rs.getString("CITY_NAME");
-						}	
-						return cityName;
+			String	sqlForCity = "SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID UNION SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID ";
+			ResultSetHandler<Map<Integer, String>> rs = new ResultSetHandler<Map<Integer, String>>() {
+				@Override
+				public Map<Integer, String> handle(ResultSet rs) throws SQLException {
+					Map<Integer, String> province = new HashMap<>();
+					while(rs.next()){
+						province.put(rs.getInt("PROGRAM_ID"), rs.getString("CITY_NAME"));
 					}	
-				};
-				QueryRunner run = new QueryRunner();
-				String name = run.query(conn, sqlForCity, rs);
-				map.put("province", name);
-			}
+					return province;
+				}	
+			};
+			QueryRunner run = new QueryRunner();
+			return run.query(conn, sqlForCity, rs);
 		}catch(Exception e){
 			throw e;
 		}

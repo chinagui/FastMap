@@ -34,7 +34,8 @@ import net.sf.json.JSONObject;
 public class TestInitPackage extends ClassPathXmlAppContextInit{
 	@Before
 	public void before(){
-		initContext(new String[]{"dubbo-consumer-datahub-test.xml"});//,"dubbo-scripts.xml"
+//		initContext(new String[]{"dubbo-consumer-datahub-test.xml"});
+		initContext(new String[]{"dubbo-test.xml"});//,"dubbo-scripts.xml"
 	}
 	
 	//@Test
@@ -132,7 +133,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 					
 				String output = path + admincode / 10000;
 
-				String filename = GdbDataExporter.run(conn, output, meshes);
+				String filename = GdbDataExporterSp9.run(conn, output, meshes);
 				
 				System.out.println("export admincode "+admincode+" success: "+filename);
 			}
@@ -356,7 +357,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 	}
 	
 	
-	@Test
+//	@Test
 	public void testExportColumnQcQualityRate() throws Exception{
 		JobScriptsInterface.initContext();
 		

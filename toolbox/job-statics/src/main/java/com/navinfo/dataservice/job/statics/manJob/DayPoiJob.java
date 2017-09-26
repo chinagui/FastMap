@@ -62,8 +62,8 @@ public class DayPoiJob extends AbstractStatJob {
 					dbIds.add(region.getDailyDbId());
 				}
 			}
-			dbIds = new HashSet<Integer>();
-			dbIds.add(13);
+//			dbIds = new HashSet<Integer>();
+//			dbIds.add(13);
 			log.info("dbIds:"+dbIds);
 			//查询所有元数据库中的代理店的数据
 			Set<String> dealers = queryDealershipFromMeta();
@@ -294,7 +294,7 @@ public class DayPoiJob extends AbstractStatJob {
 				
 				subtaskStat.add(subtaskStatOne);
 			}
-			log.info(subtaskStat);
+			//log.info(subtaskStat);
 			return subtaskStat;
 		}
 		

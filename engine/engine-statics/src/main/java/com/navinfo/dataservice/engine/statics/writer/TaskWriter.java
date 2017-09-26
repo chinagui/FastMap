@@ -7,7 +7,6 @@ import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
@@ -43,8 +42,18 @@ public class TaskWriter extends DefaultWriter {
 					String actualStartDate = (String) jso.get("actualStartDate");
 					String actualEndDate = (String) jso.get("actualEndDate");
 					int diffDate = (int) jso.get("diffDate");
-					float roadPlanTotalfloat = (float) jso.get("roadPlanTotal");
-					int roadPlanTotal=(int) roadPlanTotalfloat;
+					int roadPlanTotal=0;
+					try{
+						float roadPlanTotalfloat = (float) jso.get("roadPlanTotal");
+						roadPlanTotal=(int) roadPlanTotalfloat;
+					}catch (Exception e) {
+						try {
+							double roadPlanTotaldouble = (double) jso.get("roadPlanTotal");
+							roadPlanTotal=(int) roadPlanTotaldouble;
+						} catch (Exception e2) {
+							roadPlanTotal=(int) jso.get("roadPlanTotal");
+						}			
+					}
 					int poiPlanTotal = (int) jso.get("poiPlanTotal");
 					int notaskdata_poi_num = (int) jso.get("notaskPoiNum");
 					int notaskdata_tips_num = (int) jso.get("notaskTipsNum");

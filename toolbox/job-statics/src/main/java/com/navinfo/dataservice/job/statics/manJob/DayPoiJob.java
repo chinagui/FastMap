@@ -62,9 +62,9 @@ public class DayPoiJob extends AbstractStatJob {
 					dbIds.add(region.getDailyDbId());
 				}
 			}
-//			dbIds = new HashSet<Integer>();
+			dbIds = new HashSet<Integer>();
 //			dbIds.add(13);
-			log.info("dbIds:"+dbIds);
+//			log.info("dbIds:"+dbIds);
 			//查询所有元数据库中的代理店的数据
 			Set<String> dealers = queryDealershipFromMeta();
 			
@@ -176,7 +176,6 @@ public class DayPoiJob extends AbstractStatJob {
 //				log.info("dbId:"+dbId+"subtaskStatMap:" + subtaskStat);
 //				log.info("dbId:"+dbId+"taskStatMap:" + taskStat);
 //				log.info("dbId:"+dbId+"notaskStatMap:" + notaskStat);
-				
 				temp.put("subtaskStat", subtaskStat);
 				temp.put("taskStat", taskStat);
 				temp.put("notaskStat", notaskStat);
@@ -255,46 +254,44 @@ public class DayPoiJob extends AbstractStatJob {
 				subtaskStatOne.put("firstEditDate", "");
 				subtaskStatOne.put("firstCollectDate", "");
 				subtaskStatOne.put("waitWorkPoi", 0);
-				Long poiUploadNum = (long) 0;
+				long poiUploadNum = 0;
 				if(taskPoiUploadNum.containsKey(subtaskId)){
 					poiUploadNum = taskPoiUploadNum.get(subtaskId);
-					subtaskStatOne.put("poiUploadNum", taskPoiUploadNum.get(subtaskId));
+					subtaskStatOne.put("poiUploadNum",taskPoiUploadNum.get(subtaskId));
 				}
 				if(taskPoiFinishNum.containsKey(subtaskId)){
 					subtaskStatOne.put("poiFinishNum", taskPoiFinishNum.get(subtaskId));
 				}
 				if(subTaskDate.containsKey(subtaskId)){
-					subtaskStatOne.put("firstEditDate", subTaskDate.get(subtaskId));
+					subtaskStatOne.put("firstEditDate", (StringUtils.isEmpty(subTaskDate.get(subtaskId)))?"" : subTaskDate.get(subtaskId));
 				}
 				if(subTaskCollectDate.containsKey(subtaskId)){
-					subtaskStatOne.put("firstCollectDate", subTaskCollectDate.get(subtaskId));
+					subtaskStatOne.put("firstCollectDate", (StringUtils.isEmpty(subTaskCollectDate.get(subtaskId)))?"" : subTaskCollectDate.get(subtaskId));
 				}
 				if(taskPoiWaitWork.containsKey(subtaskId)){
 					subtaskStatOne.put("waitWorkPoi", taskPoiWaitWork.get(subtaskId));
 				}
-				Long poiActualAddNum = (long) 0;
-				
+				long poiActualAddNum = 0;				
 				if(poiActualAddNumMap.containsKey(subtaskId)){
-					poiActualAddNum = taskPoiWaitWork.get(subtaskId);
+					poiActualAddNum = poiActualAddNumMap.get(subtaskId);
 					
 				}
 				subtaskStatOne.put("poiActualAddNum", poiActualAddNum);
 				
-				Long poiActualDeleteNum = (long) 0;
+				long poiActualDeleteNum =  0;
 				if(poiActualDeleteNumMap.containsKey(subtaskId)){
 					poiActualDeleteNum = poiActualDeleteNumMap.get(subtaskId);
 				}
 				subtaskStatOne.put("poiActualDeleteNum", poiActualDeleteNum);
 				
-				Long poiActualUploadNum = (long) 0;
+				long poiActualUploadNum = 0;
 				if(poiUploadNum >= (poiActualAddNum+poiActualDeleteNum)){
 					poiActualUploadNum = poiUploadNum - (poiActualAddNum+poiActualDeleteNum);
 				}
-					subtaskStatOne.put("poiActualUpdateNum", poiActualUploadNum);
+				subtaskStatOne.put("poiActualUpdateNum", poiActualUploadNum);
 				
 				subtaskStat.add(subtaskStatOne);
 			}
-			//log.info(subtaskStat);
 			return subtaskStat;
 		}
 		

@@ -69,17 +69,24 @@ public class DefaultWriter {
 		log.info("start write2Mongo");
 		for(Object collectionNameTmp:messageJSON.keySet()){
 			String collectionName=String.valueOf(collectionNameTmp);
+			log.info("init "+collectionName);
 			//初始化统计collection
 			initMongoDb(collectionName,timestamp,identifyJson);
 			//统计信息入库
 			MongoDao md = new MongoDao(dbName);
 			List<Document> docs=new ArrayList<>();
 			for(Object tmp:messageJSON.getJSONArray(collectionName)){
-				Document resultDoc=new Document();				
-				resultDoc.putAll((JSONObject)tmp);
+				Document resultDoc=new Document();
+				JSONObject jsonTmp = (JSONObject) tmp;
+//				Iterator keyIter = jsonTmp.keys();
+//				while(keyIter.hasNext()){
+//					resultDoc.put(String.valueOf(keyIter.next()), jsonTmp.get(keyIter.next()));
+//				}
+				resultDoc.putAll(jsonTmp);
 				resultDoc.put("timestamp",timestamp);
 				docs.add(resultDoc);
 			}
+			log.info("insert "+collectionName+",size "+docs.size());
 			md.insertMany(collectionName, docs);
 		}
 		log.info("end write2Mongo");

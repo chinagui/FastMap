@@ -68,23 +68,31 @@ public class SubtaskJob extends AbstractStatJob {
 			
 			manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			//查询MAN_TIMELINE表获取相应的数据
+			log.info("查询MAN_TIMELINE表获取相应的数据");
 			String objName = "subtask";
 			Map<Integer, Map<String, Object>> manTimelineStart = manApi.queryManTimelineByObjName(objName,1);
 			Map<Integer, Map<String, Object>> manTimelineEnd = manApi.queryManTimelineByObjName(objName,0);
 			//执行统计
+			log.info("查询所有子任务信息");
 			List<Subtask> subtaskListNeedStat = OracleDao.getSubtaskListNeedStatistics();
 			//获取已关闭的统计
+			log.info("查询所有子任务统计信息");
 			List<Map<String, Object>> subtaskStatList = new ArrayList<Map<String, Object>>();
 			Map<Integer, Map<String, Object>> subtaskStatDataClose = getSubtaskStatData(timestamp);
+			log.info("查询所有日编子任务对应采集任务");
 			Map<Integer, Set<Integer>> referCTaskSet = OracleDao.getCollectTaskIdByDaySubtask();
 			
 			//查询mongo库处理数据
+			log.info("查询getDayPoiStatData最新统计");
 			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
+			log.info("查询getMonthPoiStatData最新统计");
 			Map<Integer, Map<String, Integer>> monthPoiStatData = getMonthPoiStatData(timestamp);
+			log.info("查询getTipsStatData最新统计");
 			Map<Integer, List<Map<String, Integer>>> tipsStatData = getTipsStatData(timestamp);
 //			Map<Integer, Map<String, Object>> subTipsStatData = getSubTipsStatData(timestamp);
 			//统计子任务数据
 			Iterator<Subtask> subtaskItr = subtaskListNeedStat.iterator();
+			log.info("统计信息汇总计算");
 			while(subtaskItr.hasNext()){
 				Subtask subtask = subtaskItr.next();
 				int subtaskId = subtask.getSubtaskId();

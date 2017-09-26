@@ -75,16 +75,21 @@ public class TaskJob extends AbstractStatJob {
 			
 			manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			//查询所有的任务
+			log.info("查询所有的任务");
 			List<Task> taskAll = manApi.queryTaskAll();
 			//查询所有任务的项目类型
+			log.info("查询所有任务的项目类型");
 			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
 			//所有已经分配子任务的任务id集合
+			log.info("所有已经分配子任务的任务id集合");
 			Set<Integer> taskIdsHasSubtask = manApi.queryTasksHasSubtask();
 			
 			//modify by songhe 2017/9/04
 			//查询task对应的tips转aumark数量
+			log.info("查询task对应的tips转aumark数量");
 			Map<Integer, Integer> tips2MarkMap = manApi.getTips2MarkNumByTaskId();
 			//查询mongo库中已统计的数据(状态为关闭)
+			log.info("查询mongo库中已统计的数据(状态为关闭)");
 			Map<Integer, Map<String, Object>> taskStatDataClose = getTaskStatData(timestamp);
 			if(taskStatDataClose.size() > 0){
 				taskStatList.addAll(taskStatDataClose.values());
@@ -92,6 +97,7 @@ public class TaskJob extends AbstractStatJob {
 			}
 			//处理从mongo库中获取的统计项
 			//处理需要统计的task
+			log.info("查询任务对应grid,以及筛选出需要统计的任务。已有的关闭任务不需要重复统计");
 			List<Task> taskList = new ArrayList<Task>();
 			for (Task task : taskAll) {
 				int status = task.getStatus();
@@ -128,33 +134,35 @@ public class TaskJob extends AbstractStatJob {
 			}
 			//查询MAN_TIMELINE表获取相应的数据
 			String objName = "task";
+			log.info("查询MAN_TIMELINE表获取相应的数据");
 			Map<Integer, Map<String, Object>> manTimeline = manApi.queryManTimelineByObjName(objName,0);
-			//查询mongo中task_grid_tips相应的统计数据
+			log.info("查询mongo中task_grid_tips相应的统计数据");
 			Map<Integer, Map<String, Object>> taskTipsStatData = getTaskTipsStatData(timestamp);
-			//查询mongo中fcc相应的统计数据
+			log.info("查询mongo中fcc相应的统计数据");
 			Map<Integer, Map<String, Object>> taskFccStatData = getTaskFccStatData(timestamp);
-			//查询mongo中task_day_poi相应的统计数据
+			log.info("查询mongo中task_day_poi相应的统计数据");
 			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
-			//查询mongo中grid_task_tips相应的统计数据
+			log.info("查询mongo中grid_task_tips相应的统计数据");
 			Map<Integer, Map<Integer, Map<String, Integer>>> gridTaskTipsStatData = getGridTaskTipsStatData(timestamp);
-			//查询mongo中grid_notask_tips相应的统计数据
+			log.info("查询mongo中grid_notask_tips相应的统计数据");
 			Map<Integer, Map<String, Integer>> gridNotaskTipsStatData = getGridNotaskTipsStatData(timestamp);
-			//查询mongo中poi月编相应的统计数据
+			log.info("查询mongo中poi月编相应的统计数据");
 			Map<Integer, Map<String, Integer>> monthPoiStatData = getMonthPoiStatData(timestamp);
-			//查询mongo中grid_day_poi相应的统计数据
+			log.info("查询mongo中grid_day_poi相应的统计数据");
 			Map<Integer, Map<String, Integer>> gridDayPoiStatData = getGridDayPoiStatData(timestamp);
-			//查询mongo中task_day_plan相应的统计数据
+			log.info("查询mongo中task_day_plan相应的统计数据");
 			Map<Integer, Map<String, Object>> taskDayPlanStatData = getTaskDayPlanStatData(timestamp);
-			//查询mongo中subtask_tips相应的统计数据
+			log.info("查询mongo中subtask_tips相应的统计数据");
 			Map<Integer, Map<String, Object>> subTipsStatData = getSubTipsStatData(timestamp);
-			//查询mongo中subtask_day_poi相应的统计数据
+			log.info("查询mongo中subtask_day_poi相应的统计数据");
 			Map<Integer, Map<String, Object>> subDayPoiStatData = getSubDayPoiStatData(timestamp);
-			//查询mongo中子任务的统计数据
+			log.info("查询mongo中子任务的统计数据");
 			Map<Integer, Map<String, Object>> subtaskStatData = getSubtaskStatData(timestamp);
-			
+			log.info("查询日编任务对应的采集任务集合");
 			Map<Integer, Set<Integer>> referCTaskSet = OracleDao.getCollectTaskIdByDayTask();
+			log.info("查询任务对应的子任务集合");
 			Map<Integer, Set<Subtask>> referSubtaskSet = OracleDao.getSubtaskByTaskId();
-			
+			log.info("统计信息汇总计算");
 			//统计任务数据
 			for(Task task : taskList){
 				int taskId = task.getTaskId();

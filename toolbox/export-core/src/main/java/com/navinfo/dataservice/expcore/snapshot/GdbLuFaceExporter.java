@@ -8,30 +8,28 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
-
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
-public class BkFaceExporter {
+public class GdbLuFaceExporter {
 	public static void run(Connection sqliteConn,
 			Statement stmt, Connection conn, String operateDate, Set<Integer> meshes)
 			throws Exception {
 		// creating a LINESTRING table
-		stmt.execute("create table gdb_bkFace(pid integer primary key)");
-		stmt.execute("select addgeometrycolumn('gdb_bkFace','geometry',4326,'GEOMETRY','XY')");
-		stmt.execute("select createspatialindex('gdb_bkFace','geometry')");
-		stmt.execute("alter table gdb_bkFace add display_style text;");
-		stmt.execute("alter table gdb_bkFace add display_text text;");
-		stmt.execute("alter table gdb_bkFace add meshid text;");
-		stmt.execute("alter table gdb_bkFace add kind integer;");
-		stmt.execute("alter table gdb_bkFace add op_date text;");
-		stmt.execute("alter table gdb_bkFace add op_lifecycle integer;");
+		stmt.execute("create table gdb_luFace(pid integer primary key)");
+		stmt.execute("select addgeometrycolumn('gdb_luFace','geometry',4326,'GEOMETRY','XY')");
+		stmt.execute("select createspatialindex('gdb_luFace','geometry')");
+		stmt.execute("alter table gdb_luFace add display_style text;");
+		stmt.execute("alter table gdb_luFace add display_text text;");
+		stmt.execute("alter table gdb_luFace add meshid text;");
+		stmt.execute("alter table gdb_luFace add kind integer;");
+		stmt.execute("alter table gdb_luFace add op_date text;");
+		stmt.execute("alter table gdb_luFace add op_lifecycle integer;");
 
-		String insertSql = "insert into gdb_bkFace values("
+		String insertSql = "insert into gdb_luFace values("
 				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
 		PreparedStatement prep =null;
 		PreparedStatement stmt2 =null;
@@ -40,19 +38,14 @@ public class BkFaceExporter {
 		try{
 			prep = sqliteConn.prepareStatement(insertSql);
 
-//			String sql = "select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
-
 			//******zl 2017.02.17 增加查询 lu_face表中  kind = 6 的数据 
-			String sql = " select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) " ;
-//						+ " union all "
-//						+ " select a.face_pid,a.geometry,a.mesh_id,106 kind from lu_face a where a.kind=6 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) ";
+			String sql = " select l.face_pid ,l.geometry,n.name , l.mesh_id,l.kind from lu_face l,lu_face_name n  where l.face_pid = n.face_pid(+) and n.name_groupid = 1 and (n.lang_code = 'CHI' OR n.lang_code = 'CHT') and l.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) " ;
 			Clob clob = conn.createClob();
 			clob.setString(1, StringUtils.join(meshes, ","));
 
 			stmt2 = conn.prepareStatement(sql);
 
 			stmt2.setClob(1, clob);
-//			stmt2.setClob(2, clob);
 			
 			resultSet = stmt2.executeQuery();
 
@@ -77,13 +70,13 @@ public class BkFaceExporter {
 
 				prep.setString(2, json.getString("geometry"));
 
-				prep.setString(3, json.getString("display_style"));
+				prep.setString(3, null);
 
-				prep.setString(4, json.getString("display_text"));
+				prep.setString(4, json.getString("name"));
 
 				prep.setString(5, json.getString("meshid"));
 
-				prep.setInt(6, json.getInt("kind"));
+				prep.setDouble(6, json.getInt("kind"));
 
 				prep.setString(7, json.getString("op_date"));
 
@@ -122,7 +115,11 @@ public class BkFaceExporter {
 
 		json.put("meshid", String.valueOf(meshid));
 
-		json.put("display_text", "");
+		String name = "";
+		if(rs.getString("name") != null && StringUtils.isNotEmpty(rs.getString("name"))){
+			name = rs.getString("name");
+		}
+		json.put("name", name);
 
 		json.put("display_style", "");
 

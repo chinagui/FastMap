@@ -700,7 +700,10 @@ public class TaskService {
 				}
 				if(bean.getSubWorkKind(4)==1&&oldTask.getSubWorkKind(4)==0){
 					log.info("任务修改，变更多源，需自动创建多源子任务");
-					createCollectSubtaskByTask(4, bean);
+					Subtask subtask = createCollectSubtaskByTask(4, bean);
+					JSONArray subtaskIds = new JSONArray();
+					subtaskIds.add(subtask.getSubtaskId());
+					SubtaskService.getInstance().pushMsg(conn, userId, subtaskIds);
 				}
 			}
 			

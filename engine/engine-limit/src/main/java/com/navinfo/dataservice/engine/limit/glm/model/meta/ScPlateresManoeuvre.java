@@ -261,7 +261,7 @@ public class ScPlateresManoeuvre implements IObj {
 
     @Override
     public String tableName() {
-        return "SC_PLATERES_ MANOEUVRE";
+        return "SC_PLATERES_MANOEUVRE";
     }
 
     @Override

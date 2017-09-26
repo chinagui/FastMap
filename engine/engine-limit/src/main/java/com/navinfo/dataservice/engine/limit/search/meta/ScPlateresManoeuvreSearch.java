@@ -59,8 +59,6 @@ public class ScPlateresManoeuvreSearch {
 
     public int loadMaxManoeuvreId(String groupId) throws Exception {
 
-    	ScPlateresManoeuvre manoeuvre = new ScPlateresManoeuvre();
-
         String sqlstr = "SELECT MAX(MANOEUVRE_ID) FROM SC_PLATERES_MANOEUVRE WHERE GROUP_ID = ?";
 
         PreparedStatement pstmt = null;

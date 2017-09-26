@@ -41,7 +41,10 @@ public class ScPlateresLinkSearch implements ISearch {
 
         String sqlStr = "SELECT * FROM SC_PLATERES_LINK WHERE ADMIN_CODE = ? ";
 
-        if (condition.containsKey("pageSize") && condition.containsKey("pageNum")) {
+        boolean Paging = (condition.containsKey("pageSize") && condition.containsKey("pageNum"));
+
+        if (Paging) {
+
             int pageSize = condition.getInt("pageSize");
             int pageNum = condition.getInt("pageNum");
 
@@ -76,11 +79,14 @@ public class ScPlateresLinkSearch implements ISearch {
 
                 ReflectionAttrUtils.executeResultSet(info, resultSet);
 
-                if (total == 0) {
+                if (Paging && total == 0) {
                     total = resultSet.getInt("TOTAL_ROW_NUM");
                 }
 
                 objList.add(info);
+            }
+            if (!Paging) {
+                total = objList.size();
             }
         } catch (Exception e) {
 

@@ -22,8 +22,6 @@ public interface ISearch {
      */
     public int searchDataByCondition(JSONObject condition, List<IRow> objList)
             throws Exception;
-
-
     /**
      * 通过瓦片号+缝隙获取数据
      */

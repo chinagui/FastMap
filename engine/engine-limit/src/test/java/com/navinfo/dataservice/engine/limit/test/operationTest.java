@@ -23,7 +23,28 @@ public class operationTest extends ClassPathXmlAppContextInit {
     @Test
     public void create01() throws Exception {
 
-        String parameter = "{ \"command\": \"CREATE\", \"type\": \"SCPLATERESGROUP\", \"data\": { \"groupType\": 1, \"adAdmin\":110000, \"infoIntelId\":\"ABC1528010\", \"principle\": \"test\" ,\"condition\":\"S\", }, \"dbId\": 13, \"subtaskId\": 846 } ";
+        String parameter = "{ \"command\": \"CREATE\", \"type\": \"SCPLATERESINFO\", infos: [{ infoIntelId: \"1\", infoCode: \"123\", adminCode: \"123\", url: \"123\", newsTime: \"123\", infoContent: \"123\", condition: \"1\", complete: 1, memo: \"123\" }] }";
+//        ScPlateresLink
+//                ScPlateresFace
+        //ScPlateresGeometry
+        //ScPlateresInfo
+        //ScPlateresManoeuvre
+        //ScPlateresRdLink
+        //ScPlateresInfo
+        Transaction t = new Transaction(parameter);
+
+        String msg = t.run();
+
+
+    }
+
+    @Test
+    public void create02() throws Exception {
+
+        String parameter = "{ \"command\": \"CREATE\", \"type\": \"SCPLATERESINFO\", infos: [{ infoIntelId: \"ABC1528015\", infoCode: \"S0502815854\", adminCode: \"11000\", url: \"WWW.ACBCDEEEEE.COM\", newsTime: \"20170925\", infoContent: \"增加永久限行\", condition: \"S\", complete: 1, memo: \"00000\" }] }";
+
+
+
 
 //        ScPlateresLink
 //                ScPlateresFace

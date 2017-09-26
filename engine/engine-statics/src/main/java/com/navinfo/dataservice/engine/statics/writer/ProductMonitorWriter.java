@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.statics.writer;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.navinfo.dataservice.engine.statics.service.StaticsService;
 
 import net.sf.json.JSONObject;
 
@@ -15,9 +14,10 @@ import net.sf.json.JSONObject;
 
 public class ProductMonitorWriter extends DefaultWriter {
 	public String getLatestStatic() throws Exception {
-//		return JSONObject.fromObject(StaticsService.getInstance().quickMonitor()).toString();
-		Map<String,Object> stat = new HashMap<String,Object>();
-		stat.put("test", "websocket测试");
-		return JSONObject.fromObject(stat).toString();
+		JSONObject data = new JSONObject();
+		String platForm = "productMonitor";
+		data.putAll(StaticsService.getInstance().getMongoMonitorData());
+		data.putAll(StaticsService.getInstance().getOracleMonitorData(platForm));
+		return data.toString();
 	}
 }

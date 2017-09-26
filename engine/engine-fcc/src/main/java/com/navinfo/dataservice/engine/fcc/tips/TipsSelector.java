@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -46,6 +47,7 @@ import org.hbase.async.KeyValue;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Tips查询
@@ -2317,7 +2319,27 @@ public class TipsSelector {
 		Connection tipsConn = DBConnector.getInstance().getTipsIdxConnection();
 		try {
 			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(tipsConn);
-			return tipsOp.query("select * from tips_index where " + builder);
+			List<TipsDao> resultTmp = tipsOp.query("select t.* from tips_index t where " + builder);
+			List<TipsDao> result = new ArrayList<>();
+			Set<String> codes = new HashSet<>();
+			if(taskType == TaskType.PROGRAM_TYPE_Q){
+				MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+				Map<String,Integer> codeEditMethMap  = metaApi.queryEditMethTipsCode();
+				//不在日编作业的值
+		        for(Entry<String, Integer> entry : codeEditMethMap.entrySet()){ 
+		        	if(0 != entry.getValue()){
+		        		codes.add(entry.getKey());
+		        	}
+		        }
+				for(TipsDao dao : resultTmp){
+					if(codes.contains(dao.getS_sourceType())){
+						result.add(dao);
+					}
+				}
+			}else{
+				result = resultTmp;
+			}
+			return result;
 		} finally {
 			DbUtils.closeQuietly(tipsConn);
 		}

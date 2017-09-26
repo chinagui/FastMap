@@ -65,6 +65,8 @@ public class DayPoiJob extends AbstractStatJob {
 					dbIds.add(region.getDailyDbId());
 				}
 			}
+			dbIds = new HashSet<Integer>();
+			dbIds.add(13);
 			log.info("dbIds:"+dbIds);
 			//查询所有元数据库中的代理店的数据
 			Set<String> dealers = queryDealershipFromMeta();
@@ -184,7 +186,7 @@ public class DayPoiJob extends AbstractStatJob {
 				stats.put(dbId, temp);
 				log.info("end dbId:"+dbId);
 			}catch(Exception e){
-				log.error("dbId("+dbId+")POI日库作业数据统计失败");
+				log.error("dbId("+dbId+")POI日库作业数据统计失败",e);
 				DbUtils.commitAndCloseQuietly(conn);
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
@@ -259,6 +261,7 @@ public class DayPoiJob extends AbstractStatJob {
 				}
 				subtaskStat.add(subtaskStatOne);
 			}
+			log.info(subtaskStat);
 			return subtaskStat;
 		}
 		
@@ -309,7 +312,7 @@ public class DayPoiJob extends AbstractStatJob {
 					+ " GROUP BY S.MEDIUM_TASK_ID";
 			Map<Integer, Long> taskPoiUnFreshNum=run.query(conn, sql, numRsHandler());
 			
-			sql="SELECT S.MEDIUM_TASK_ID, COUNT(1) NUM"
+			sql="SELECT S.MEDIUM_TASK_ID ID, COUNT(1) NUM"
 					+ "  FROM POI_EDIT_STATUS S, DATA_PLAN D"
 					+ " WHERE D.PID = S.PID"
 					+ "   AND D.DATA_TYPE = 1"
@@ -619,8 +622,8 @@ public class DayPoiJob extends AbstractStatJob {
 		 * */
 		public void statisticsNoTaskDataImp(Set<String> dealers, Map<Integer, Map<String, Integer>> notaskStat, String kindCode, String chain, STRUCT struct){
 			boolean poiType = false;
-			try {
-				Point geo;
+			Point geo=null;
+			try {				
 		    	geo = (Point) GeoTranslator.struct2Jts(struct);
 				double x = geo.getX();
 				double y = geo.getY();
@@ -646,7 +649,11 @@ public class DayPoiJob extends AbstractStatJob {
 				grid.put("noDealershipNum", noDealershipNum);
 				notaskStat.put(gridId, grid);
 			} catch (Exception e) {
-				log.error("处理任务，子任务，无任务数据坐标，无法获取到gridid:" + e.getMessage(), e);
+				if(geo==null){
+					log.error("处理任务，子任务，无任务数据坐标，无法获取到gridid:geo=null," + e.getMessage(), e);
+				}else{
+					log.error("处理任务，子任务，无任务数据坐标，无法获取到gridid:geo="+geo.toString()+"," + e.getMessage(), e);
+				}				
 			}
 		}
 		

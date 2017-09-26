@@ -3,7 +3,6 @@ package com.navinfo.dataservice.web.limit.controller;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
@@ -50,7 +49,7 @@ public class limitController extends BaseController {
 
             String objType = jsonReq.getString("type");
 
-            conn = DBConnector.getInstance().getMetaConnection();
+            conn = DBConnector.getInstance().getLimitConnection();
 
             JSONObject condition = jsonReq.getJSONObject("condition");
 

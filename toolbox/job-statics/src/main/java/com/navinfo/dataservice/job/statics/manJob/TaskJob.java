@@ -16,11 +16,13 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -150,12 +152,17 @@ public class TaskJob extends AbstractStatJob {
 			//查询mongo中子任务的统计数据
 			Map<Integer, Map<String, Object>> subtaskStatData = getSubtaskStatData(timestamp);
 			
+			Map<Integer, Set<Integer>> referCTaskSet = OracleDao.getCollectTaskIdByDayTask();
+			Map<Integer, Set<Subtask>> referSubtaskSet = OracleDao.getSubtaskByTaskId();
+			
 			//统计任务数据
 			for(Task task : taskList){
 				int taskId = task.getTaskId();
-				//查询子任务id
-				List<Map<String, Object>> subtaskList = manApi.querySubtaskByTaskId(taskId);
-				Set<Integer> collectTasks = manApi.getCollectTaskIdByDayTask(taskId);
+
+				Set<Integer> collectTasks = new HashSet<>();
+				if(referCTaskSet.containsKey(taskId)){
+					collectTasks=referCTaskSet.get(taskId);
+				}
 
 				//处理对应任务的tis2aumark数量
 				if(tips2MarkMap.containsKey(taskId)){
@@ -164,11 +171,15 @@ public class TaskJob extends AbstractStatJob {
 					task.setTips2MarkNum(0);
 				}
 				//获取子任务id
-				Set<Integer> subtaskIds = new HashSet<Integer>();
-				for (Map<String, Object> map : subtaskList) {
-					int subtaskId = (int) map.get("subtaskId");
-					subtaskIds.add(subtaskId);
+				Set<Subtask> subtaskSet = new HashSet<>();
+				if(referSubtaskSet.containsKey(taskId)){
+					subtaskSet=referSubtaskSet.get(taskId);
 				}
+				Set<Integer> subtaskIds=new HashSet<>();
+				for(Subtask s:subtaskSet){
+					subtaskIds.add(s.getSubtaskId());
+				}
+
 				//判断是否包含子任务
 				if(taskIdsHasSubtask.contains(taskId)){
 					task.setIsAssign(1);
@@ -188,13 +199,14 @@ public class TaskJob extends AbstractStatJob {
 				//处理grid_day_poi相应的统计数据
 				Map<String, Integer> gridDayPoiStat = handleGridDayPoiStatData(task, gridDayPoiStatData);
 				//处理subtask_tips相应的统计数据
-				Map<String, Integer> subTipsStat = handleSubTipsStatData(task, subtaskList, subTipsStatData);
+				Map<String, Integer> subTipsStat = handleSubTipsStatData(task, subtaskSet, subTipsStatData);
 				//处理subtask_day_poi相应的统计数据
-				Map<String, Integer> subDayPoiStat = handleSubDayPoiStatData(task, subtaskList, subDayPoiStatData);
+				Map<String, Integer> subDayPoiStat = handleSubDayPoiStatData(task, subtaskSet, subDayPoiStatData);
+				
 				//处理子任务相应的统计数据获取实际开始时间
 				List<String> subActualStartTimeList = handleSubtaskStatData(task, subtaskStatData, subtaskIds);
 				//处理子任务中已关闭的区域粗编子任务个数和所有区域粗编子任务个数
-				Map<String, Integer> subtaskAreaData = handleSubtaskArea(task, subtaskList);
+				Map<String, Integer> subtaskAreaData = handleSubtaskArea(task, subtaskSet);
 				
 				//处理mongo库中的查询数据
 				Map<String,Object> dataMap = new HashMap<String,Object>();
@@ -699,13 +711,15 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			Set<Integer> gridIds = task.getGridIds().keySet();
 			int notaskPoiNum = 0;
+			Map<String,Integer> taskStat = new HashMap<String,Integer>();
+			taskStat.put("notaskPoiNum", notaskPoiNum);
+			if(task.getType()!=0){return taskStat;}
 			for (Integer gridId : gridIds) {
 				if(gridDayPoiStatData.containsKey(gridId)){
 					Map<String, Integer> map = gridDayPoiStatData.get(gridId);
 					notaskPoiNum += map.get("poiNum");
 				}
 			}
-			Map<String,Integer> taskStat = new HashMap<String,Integer>();
 			taskStat.put("notaskPoiNum", notaskPoiNum);
 			return taskStat;
 		} catch (Exception e) {
@@ -802,14 +816,14 @@ public class TaskJob extends AbstractStatJob {
 	 * 处理subtask_tips相应的统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<String,Integer> handleSubTipsStatData(Task task,List<Map<String, Object>> subtasks,Map<Integer,Map<String,Object>> subTipsStatData) throws Exception{
+	public Map<String,Integer> handleSubTipsStatData(Task task,Set<Subtask> subtaskSet,Map<Integer,Map<String,Object>> subTipsStatData) throws Exception{
 		try {
 			//处理数据
 			int crowdTipsTotal = 0;
 			int inforTipsTotal = 0;
-			for (Map<String, Object> subtask : subtasks) {
-				int subtaskId = (int) subtask.get("subtaskId");
-				int workKind = (int) subtask.get("workKind");
+			for (Subtask subtask : subtaskSet) {
+				int subtaskId = subtask.getSubtaskId();
+				int workKind = subtask.getWorkKind();
 				//众包
 				if(workKind == 2){
 					if(task.getSubWorkKind(2) == 1){
@@ -878,7 +892,7 @@ public class TaskJob extends AbstractStatJob {
 	 * 处理subtask_day_poi相应的统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<String,Integer> handleSubDayPoiStatData(Task task,List<Map<String, Object>> subtasks,Map<Integer,Map<String,Object>> subDayPoiStatData) throws Exception{
+	public Map<String,Integer> handleSubDayPoiStatData(Task task,Set<Subtask> subtaskSet,Map<Integer,Map<String,Object>> subDayPoiStatData) throws Exception{
 		try {
 			//处理数据
 			int crowdTipsTotal = 0;
@@ -886,9 +900,9 @@ public class TaskJob extends AbstractStatJob {
 			int poiActualAddNumSum = 0;
 			int poiActualUpdateNumSum = 0;
 			int poiActualDeleteNumSum = 0;
-			for (Map<String, Object> subtask : subtasks) {
-				int subtaskId = (int) subtask.get("subtaskId");
-				int workKind = (int) subtask.get("workKind");
+			for (Subtask subtask : subtaskSet) {
+				int subtaskId =subtask.getSubtaskId();
+				int workKind =subtask.getWorkKind();
 				//众包
 				if(workKind == 2){
 					if(task.getSubWorkKind(2) == 1){
@@ -944,14 +958,14 @@ public class TaskJob extends AbstractStatJob {
 	 * 处理子任务中已关闭的区域粗编子任务个数和所有区域粗编子任务个数
 	 * @throws ServiceException 
 	 */
-	public Map<String,Integer> handleSubtaskArea(Task task,List<Map<String, Object>> subtasks) throws Exception{
+	public Map<String,Integer> handleSubtaskArea(Task task,Set<Subtask> subtaskSet) throws Exception{
 		try {
 			//处理数据
 			int areaAllNum = 0;
 			int areaCloseNum = 0;
-			for (Map<String, Object> subtask : subtasks) {
-				int type = (int) subtask.get("type");
-				int status = (int) subtask.get("status");
+			for (Subtask subtask : subtaskSet) {
+				int type = subtask.getType();
+				int status = subtask.getStatus();
 				//一体化_区域粗编_日编
 				if(type == 4){
 					if(status == 0){

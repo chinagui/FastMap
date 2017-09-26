@@ -2331,7 +2331,7 @@ public class TipsSelector {
 		Connection tipsConn = DBConnector.getInstance().getTipsIdxConnection();
 		try {
 			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(tipsConn);
-			return tipsOp.query("select t.* from tips_index t where " + builder);
+			return tipsOp.query("select * from tips_index where " + builder);
 		} finally {
 			DbUtils.closeQuietly(tipsConn);
 		}

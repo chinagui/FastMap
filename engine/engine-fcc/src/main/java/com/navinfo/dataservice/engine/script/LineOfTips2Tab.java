@@ -103,32 +103,32 @@ public class LineOfTips2Tab {
         
 	    
         // 母库信息
-        String gdb_db_ip = props.getProperty("gdb_db_ip");
-        String gdb_db_sid = props.getProperty("gdb_db_sid");
-        String gdb_db_username = props.getProperty("gdb_db_username");
-        String gdb_db_password = props.getProperty("gdb_db_password");
+        String metadata_db_ip = props.getProperty("metadata_db_ip");
+        String metadata_db_sid = props.getProperty("metadata_db_sid");
+        String metadata_db_username = props.getProperty("metadata_db_username");
+        String metadata_db_password = props.getProperty("metadata_db_password");
         
         
-        // 需要转换的Tips范围，根据admin_name查询获得meshid,admin_name可以是多个
-        String adminNames = new String(props.getProperty("admin_name").getBytes("ISO8859-1"), "UTF-8"); 
+        // 需要转换的Tips范围，根据province查询获得meshid,province可以是多个
+        String provinces = new String(props.getProperty("province").getBytes("ISO8859-1"), "UTF-8"); 
         
-        //测试是否获取到adminNames
-        //System.err.println("输入的范围参数为" + adminNames);
+        //测试是否获取到province
+        //System.err.println("输入的范围参数为" + provinces);
               	       
-        if (StringUtils.isEmpty(gdb_db_ip)) {
-        	logger.error("没有输入gdb_db_ip参数，请输入");
+        if (StringUtils.isEmpty(metadata_db_ip)) {
+        	logger.error("没有输入metadata_db_ip参数，请输入");
             return;
         }
-        if (StringUtils.isEmpty(gdb_db_sid)) {
-        	logger.error("没有输入gdb_db_service_name参数，请输入");
+        if (StringUtils.isEmpty(metadata_db_sid)) {
+        	logger.error("没有输入metadata_db_service_name参数，请输入");
             return;
         }
-        if (StringUtils.isEmpty(gdb_db_username)) {
-        	logger.error("没有输入gdb_db_username参数，请输入");
+        if (StringUtils.isEmpty(metadata_db_username)) {
+        	logger.error("没有输入metadata_db_username参数，请输入");
             return;
         }
-        if (StringUtils.isEmpty(gdb_db_password)) {
-        	logger.error("没有输入gdb_db_password参数，请输入");
+        if (StringUtils.isEmpty(metadata_db_password)) {
+        	logger.error("没有输入metadata_db_password参数，请输入");
             return;
         }
         
@@ -163,8 +163,8 @@ public class LineOfTips2Tab {
         
         Table hbaseTipsTable = getHbaseTipsTable();
         
-        if (StringUtils.isEmpty(adminNames)) {
-        	logger.debug("没有输入admin_name参数，即将提取所有省份符合要求的测线tips数据");
+        if (StringUtils.isEmpty(provinces)) {
+        	logger.debug("没有输入province参数，即将提取所有省份符合要求的测线tips数据");
         	long startTime = System.currentTimeMillis();
         	List<String> rowkeyArray = getTipsRowkey();
 //        	logger.debug("过滤查询到的测线tips条数：" + rowkeyArray.size());
@@ -189,21 +189,21 @@ public class LineOfTips2Tab {
     		
         }else{
         	
-        	 List<String> adminNameList = new ArrayList<>(Arrays.asList(adminNames
+        	 List<String> provinceList = new ArrayList<>(Arrays.asList(provinces
         	           .split(",")));
         	 
-        	 Connection oracleConn = getConnection(gdb_db_ip,gdb_db_sid,gdb_db_username,gdb_db_password);
+        	 Connection oracleConn = getConnection(metadata_db_ip,metadata_db_sid,metadata_db_username,metadata_db_password);
         	 
         	 Connection tipsIdxConn = getTipsIdxConnection();
         	 
         	 long startTime = System.currentTimeMillis();
         	 Set<String> tipsRowkey = new HashSet<>();
-        	// 根据输入的adminName逐个提取对应的信息。
-		        for (String adminName : adminNameList) {
-		    		String wkt = LineOfTips2Tab.getMeshNums(oracleConn,adminName);
+        	// 根据输入的province逐个提取对应的信息。
+		        for (String province : provinceList) {
+		    		String wkt = LineOfTips2Tab.getMeshNums(oracleConn,province);
 		    		Set<String> rowkeyArray = getTipsRowkey(tipsIdxConn,wkt);
 		    		
-//		    		logger.debug("本次从tips索引库查询到" + adminName + "符合条件的测线tips条数为：" + rowkeyArray.size() + "条");
+//		    		logger.debug("本次从tips索引库查询到" + province + "符合条件的测线tips条数为：" + rowkeyArray.size() + "条");
 		    		
 		    		for (String rowkey : rowkeyArray) {
 		    			tipsRowkey.add(rowkey);		    			
@@ -242,7 +242,7 @@ public class LineOfTips2Tab {
 		
 	}
 	
-	//1.根据输入的数据库信息获取连接（ni_admin_mesh）
+	//1.根据输入的数据库信息获取连接（sc_partition_meshlist）
 	public static Connection getConnection(String ip,String sid,String username,String password) throws Exception {
 		
 		long startOracle = System.currentTimeMillis();
@@ -279,17 +279,17 @@ public class LineOfTips2Tab {
 		return htab;
 	}
 	
-	//4.根据输入的admin_name参数，获得要转换的Tips所在的图幅号,直接将图幅号转为wkt
-	public static String getMeshNums(Connection conn,String adminName) throws Exception {
-		String sql = "SELECT MESHNUM FROM NI_ADMIN_MESH WHERE ADMIN_NAME = ?";	
+	//4.根据输入的province参数，获得要转换的Tips所在的图幅号,直接将图幅号转为wkt
+	public static String getMeshNums(Connection conn,String province) throws Exception {
+		String sql = "SELECT MESH FROM SC_PARTITION_MESHLIST WHERE PROVINCE = ?";	
 		
 		PreparedStatement pps = null;
-		if(StringUtils.isEmpty(adminName)){
-			sql = "SELECT MESHNUM FROM NI_ADMIN_MESH";
+		if(StringUtils.isEmpty(province)){
+			sql = "SELECT MESH FROM SC_PARTITION_MESHLIST";
 			pps = conn.prepareStatement(sql);
 		}else{
 			pps = conn.prepareStatement(sql);
-			pps.setString(1, adminName);
+			pps.setString(1, province);
 		}
 		
 		ResultSet result = pps.executeQuery();
@@ -307,7 +307,7 @@ public class LineOfTips2Tab {
 //			 logger.debug("获取到的图幅号个数为：" + meshList.size());
 			
 		}else{
-			logger.error("输入的admin_name参数不正确，请重新输入。错误参数值为：" + adminName);
+			logger.error("输入的province参数不正确，请重新输入。错误参数值为：" + province);
 			System.exit(0);
 		}
 				

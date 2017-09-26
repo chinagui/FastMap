@@ -88,6 +88,7 @@ public class BkFaceExporter {
 				prep.setString(7, json.getString("op_date"));
 
 				prep.setInt(8, json.getInt("op_lifecycle"));
+				
 
 				prep.executeUpdate();
 

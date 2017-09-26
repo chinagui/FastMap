@@ -31,6 +31,7 @@ public class GdbCmkFaceExporter {
 
 		String insertSql = "insert into gdb_cmkFace values("
 				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
+//				+ "?,  ?, ?, ?, ?, ?, ?)";
 		PreparedStatement prep =null;
 		PreparedStatement stmt2 =null;
 		ResultSet resultSet =null;
@@ -41,7 +42,9 @@ public class GdbCmkFaceExporter {
 			//******zl 2017.02.17 增加查询 lu_face表中  kind = 6 的数据 
 			String sql = " select a.face_pid,a.geometry,"
 					+ " (select c.name from ix_poi_name c where c.poi_pid = b.poi_pid and c.name_class = 1 and c.name_type =2 and c.lang_code = 'CHI') name, a.mesh_id ,a.height "
-					+ "  from CMG_BUILDFACE  a ,CMG_BUILDING_POI b   where a.building_pid = b.building_pid(+)  and  a.data_source = 4 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) " ;
+					+ "  from CMG_BUILDFACE  a ,CMG_BUILDING_POI b   where a.building_pid = b.building_pid(+)  "
+					+ " and  a.data_source = 4 "
+					+ " and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) " ;
 			Clob clob = conn.createClob();
 			clob.setString(1, StringUtils.join(meshes, ","));
 
@@ -72,7 +75,7 @@ public class GdbCmkFaceExporter {
 
 				prep.setString(2, json.getString("geometry"));
 
-				prep.setString(3, null);
+				prep.setString(3, json.getString("display_style"));
 
 				prep.setString(4, json.getString("name"));
 
@@ -83,6 +86,7 @@ public class GdbCmkFaceExporter {
 				prep.setString(7,  json.getString("op_date"));
 
 				prep.setInt(8, json.getInt("op_lifecycle"));
+				
 
 				prep.executeUpdate();
 

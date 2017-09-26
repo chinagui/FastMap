@@ -70,7 +70,7 @@ public class GdbLuFaceExporter {
 
 				prep.setString(2, json.getString("geometry"));
 
-				prep.setString(3, null);
+				prep.setString(3, json.getString("display_style"));
 
 				prep.setString(4, json.getString("name"));
 

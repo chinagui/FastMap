@@ -1,0 +1,12 @@
+﻿1. fm_sys/xxxx.sql
+	功能：xxxxxx
+	目标库：fm_sys
+	author：xx
+
+
+
+2.fm_man/20170922_man_sql.txt
+功能：月编作业组字段
+目标库：fm_man
+author：songhe
+

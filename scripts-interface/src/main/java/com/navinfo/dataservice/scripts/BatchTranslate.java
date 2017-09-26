@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
+import com.navinfo.navicommons.exception.ServiceException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
@@ -77,7 +78,15 @@ public class BatchTranslate {
         dbId = request.optInt("dbId", Integer.MIN_VALUE);
     }
 
+    private void check(JSONObject request) throws ServiceException{
+        if (StringUtils.isEmpty(request.optString("tableName", ""))) {
+            throw new ServiceException("请求参数(tableName)不能为空!");
+        }
+    }
+
     public JSONObject execute(JSONObject request) throws Exception {
+        check(request);
+
         logger.info("batch translate start...");
         Long time = System.currentTimeMillis();
 

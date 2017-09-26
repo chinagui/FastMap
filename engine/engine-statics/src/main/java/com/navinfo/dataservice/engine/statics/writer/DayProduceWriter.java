@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.engine.statics.writer;
 
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 import org.bson.Document;
 import com.mongodb.BasicDBObject;
@@ -24,22 +22,18 @@ public class DayProduceWriter extends DefaultWriter{
 			//初始化统计collection,删除当天的统计记录
 			initMongoDbByDate(collectionName,timestamp);
 			
-			List<Map<String,Double>> list = (List<Map<String, Double>>) messageJSON.get(collectionName);
+			JSONObject jObj = messageJSON.getJSONObject(collectionName);
 			
-			Iterator<Map<String, Double>> it = list.iterator();
-            while (it.hasNext()) {
-            	Map<String, Double> map = (Map<String, Double>) it.next();
                //统计信息入库
     			Document resultDoc=new Document();
-    			resultDoc.put("dpUpdateRoad",map.get("dpUpdateRoad"));
-    			resultDoc.put("dpAddRoad",map.get("dpAddRoad"));
-    			resultDoc.put("dpUpdatePoi",map.get("dpUpdatePoi"));
-    			resultDoc.put("dpAddPoi",map.get("dpAddPoi"));
-    			resultDoc.put("dpAverage",map.get("dpAverage"));
-    	
+    			resultDoc.put("dpUpdateRoad",jObj.getDouble("dpUpdateRoad"));
+    			resultDoc.put("dpAddRoad",jObj.getDouble("dpAddRoad"));
+    			resultDoc.put("dpUpdatePoi",jObj.getInt("dpUpdatePoi"));
+    			resultDoc.put("dpAddPoi",jObj.getInt("dpAddPoi"));
+    			resultDoc.put("dpAverage",jObj.getJSONObject("dpAverage"));
+    			resultDoc.put("timestamp",timestamp);
     			MongoDao md = new MongoDao(dbName);
     			md.insertOne(collectionName, resultDoc);
-            }
 			
 		}
 		log.info("end write2Mongo");
@@ -77,7 +71,7 @@ public class DayProduceWriter extends DefaultWriter{
 		
 		String dateStr = timestamp.substring(0,8); 
 		// 删除当天的统计数据
-		log.info("删除时间点相同的重复统计数据 mongo "+collectionName+",timestamp="+timestamp);
+		log.info("删除当天的统计数据 mongo "+collectionName+",timestamp="+timestamp+" ,dateStr="+dateStr);
 		Pattern pattern = Pattern.compile("^"+dateStr);
 		BasicDBObject query = new BasicDBObject("timestamp", pattern);
 		

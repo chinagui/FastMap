@@ -217,7 +217,7 @@ public class DayProduceJob extends AbstractStatJob {
 			dayProduceMap.put("dpUpdatePoi", dpUpdatePoi);
 			dayProduceMap.put("dpAddPoi", dpAddPoi);
 			
-			log.debug("调用日出品统计接口出错 result:"+result);
+			log.debug("调用日出品统计接口成功 result:"+result);
 		}catch(Exception e){
 			try{
 			}catch(Exception ex){

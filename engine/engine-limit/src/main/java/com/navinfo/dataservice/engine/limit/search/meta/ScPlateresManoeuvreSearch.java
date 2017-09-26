@@ -93,14 +93,14 @@ public class ScPlateresManoeuvreSearch {
     public int searchDataByCondition(JSONObject condition, List<IRow> rows) throws Exception {
 
     	if(!condition.containsKey("groupId")){
-    		throw new Exception("为给定GROUP_ID,无法查询SC_PLATERES_MANOEUVRE信息");
+    		throw new Exception("未给定GROUP_ID,无法查询SC_PLATERES_MANOEUVRE信息");
     	}
     	
     	String groupId = condition.getString("groupId");
         StringBuilder sql = new StringBuilder();
         
-        sql.append("SELECT *, (SELECT COUNT(1) FROM SC_PLATERES_MANOEUVRE) AS TOTAL_NUM_ROW FROM SC_PLATERES_MANOEUVRE WHERE GROUP_ID = ");
-        sql.append("'" + groupId + "'");        
+        sql.append("WITH query AS (SELECT * FROM SC_PLATERES_MANOEUVRE WHERE GROUP_ID = ?)");
+        sql.append(" SELECT query.*, (SELECT COUNT(1) FROM query) AS TOTAL_NUM_ROW FROM query FOR UPDATE NOWAIT");       
 
         int total = 0;
         PreparedStatement pstmt = null;
@@ -109,6 +109,8 @@ public class ScPlateresManoeuvreSearch {
 
         try {
             pstmt = this.conn.prepareStatement(sql.toString());
+            
+            pstmt.setString(1, groupId);
 
             resultSet = pstmt.executeQuery();
 

@@ -210,5 +210,5 @@
     
 <!-- 	<bean id="poiQualityInitCountTable" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiQualityInitCountTableStarter"/> -->
 
-	<bean id="personDayStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.DayProduceStatStarter"/>
+	<bean id="dayProduceStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.DayProduceStatStarter"/>
 </beans>

@@ -271,18 +271,24 @@ public class DayPoiJob extends AbstractStatJob {
 					subtaskStatOne.put("waitWorkPoi", taskPoiWaitWork.get(subtaskId));
 				}
 				Long poiActualAddNum = (long) 0;
-				Long poiActualDeleteNum = (long) 0;
+				
 				if(poiActualAddNumMap.containsKey(subtaskId)){
 					poiActualAddNum = taskPoiWaitWork.get(subtaskId);
-					subtaskStatOne.put("poiActualAddNum", taskPoiWaitWork.get(subtaskId));
+					
 				}
+				subtaskStatOne.put("poiActualAddNum", poiActualAddNum);
+				
+				Long poiActualDeleteNum = (long) 0;
 				if(poiActualDeleteNumMap.containsKey(subtaskId)){
 					poiActualDeleteNum = poiActualDeleteNumMap.get(subtaskId);
-					subtaskStatOne.put("poiActualDeleteNum", poiActualDeleteNumMap.get(subtaskId));
 				}
-				if(poiUploadNum > (poiActualAddNum+poiActualDeleteNum)){
-					subtaskStatOne.put("poiActualUpdateNum", poiUploadNum - (poiActualAddNum+poiActualDeleteNum));
+				subtaskStatOne.put("poiActualDeleteNum", poiActualDeleteNum);
+				
+				Long poiActualUploadNum = (long) 0;
+				if(poiUploadNum >= (poiActualAddNum+poiActualDeleteNum)){
+					poiActualUploadNum = poiUploadNum - (poiActualAddNum+poiActualDeleteNum);
 				}
+					subtaskStatOne.put("poiActualUpdateNum", poiActualUploadNum);
 				
 				subtaskStat.add(subtaskStatOne);
 			}

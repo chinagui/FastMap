@@ -84,20 +84,4 @@ public class DayProduceWriter extends DefaultWriter{
 		mdao.deleteMany(collectionName, query);
 	}
 	
-	public static void main(String[] args) {
-		java.text.DecimalFormat   df   =new   java.text.DecimalFormat("#.00"); 
-//		getAvgMap.put("updateRoad", Double.parseDouble(df.format(updateRoad)));
-//		getAvgMap.put("addRoad", Double.parseDouble(df.format(addRoad)));
-		double a = 2.3;
-		double b = 5.5;
-		int c = 3 ;
-		int d = 10 ;
-		System.out.println(Double.parseDouble(df.format(a/b)));
-		System.out.println(df.format(a/b));
-		
-		System.out.println("int :"+((float)c/d) + "  :"+((float)d/c));
-		System.out.println(Double.parseDouble(df.format(c/d)));
-		System.out.println(df.format(c/d));
-		
-	}
 }

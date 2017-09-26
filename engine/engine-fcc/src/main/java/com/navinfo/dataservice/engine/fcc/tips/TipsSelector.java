@@ -2257,18 +2257,17 @@ public class TipsSelector {
 		Map<String, int[]> statsMap = new HashMap<>();
 		Set<String> codes = new HashSet<>();
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		Map<String,Integer> codeEditMethMap  = metaApi.queryEditMethTipsCode();
+		//不需要日编作业的值
+        for(Entry<String, Integer> entry : codeEditMethMap.entrySet()){ 
+        	if(0 == entry.getValue()){
+        		codes.add(entry.getKey());
+        	}
+        }
 		for (TipsDao tip : tipsList) {
-			Map<String,Integer> codeEditMethMap  = metaApi.queryEditMethTipsCode();
-			//不需要日编作业的值
-	        for(Entry<String, Integer> entry : codeEditMethMap.entrySet()){ 
-	        	if(0 == entry.getValue()){
-	        		codes.add(entry.getKey());
-	        	}
-	        }
 			if(codes.contains(tip.getS_sourceType())){
 				continue;
 			}
-		
 			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 			JSONObject snapshot = JSONObject.fromObject(tip, jsonConfig);
 			JSONObject geoJson = snapshot.getJSONObject("wkt");// 统计坐标

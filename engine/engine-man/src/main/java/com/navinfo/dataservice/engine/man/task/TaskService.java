@@ -1213,6 +1213,155 @@ public class TaskService {
 						}
 					}
 				}
+				//任务自定义条件筛选
+				if ("sStatus".equals(key)) {	
+					conditionSql+="  AND TASK_LIST.status IN ("+condition.getJSONArray(key).join(",")+")";
+				}
+				if ("sType".equals(key)) {	
+					conditionSql+="  AND TASK_LIST.type IN ("+condition.getJSONArray(key).join(",")+")";
+				}
+				if ("sProgress".equals(key)) {	
+					//正常PROGRESS = 1
+					//15提前完成，16逾期完成
+					JSONArray progress = condition.getJSONArray(key);
+					if(progress.isEmpty()){
+						continue;
+					}	
+					List<String> progressListTmp = new ArrayList<String>();
+					for(Object i:progress){
+						int tmp=(int) i;						
+						if(tmp==1){
+							progressListTmp.add("TASK_LIST.PROGRESS=1");
+						}
+						if(tmp==2){
+							progressListTmp.add("TASK_LIST.DIFF_DATE > 0");
+						}
+						if(tmp==3){
+							progressListTmp.add("TASK_LIST.DIFF_DATE < 0");
+						}						
+					}
+					conditionSql+="  AND ("+StringUtils.join(progressListTmp," OR ")+") ";
+				}
+				if ("sWorkKind".equals(key)) {	
+					JSONArray progress = condition.getJSONArray(key);
+					if(progress.isEmpty()){
+						continue;
+					}	
+					List<String> progressListTmp = new ArrayList<String>();
+					for(Object i:progress){
+						int tmp=(int) i;						
+						if(tmp==1){
+							progressListTmp.add("TASK_LIST.work_kind like '1|%'");
+						}
+						if(tmp==2){
+							progressListTmp.add("TASK_LIST.work_kind like '1|1|%' or TASK_LIST.work_kind like '0|1|%'");
+						}
+						if(tmp==3){
+							progressListTmp.add("TASK_LIST.work_kind like '%|1|1' or TASK_LIST.work_kind like '%|1|0'");
+						}	
+						if(tmp==4){
+							progressListTmp.add("TASK_LIST.work_kind like '%|1'");
+						}
+					}
+					conditionSql+="  AND ("+StringUtils.join(progressListTmp," OR ")+") ";
+				}
+				if ("sLot".equals(key)) {	
+					conditionSql+="  AND TASK_LIST.lot IN ("+condition.getJSONArray(key).join(",")+")";
+				}
+				if ("sGroupId".equals(key)) {	
+					conditionSql+="  AND TASK_LIST.group_id ="+condition.getInt(key);
+				}
+				if ("sPlanStart".equals(key)) {	
+					JSONObject startJson = condition.getJSONObject(key);
+					if(startJson.isEmpty()){
+						continue;
+					}	
+					int logic=startJson.getInt("logic");
+					if(logic==1){
+						conditionSql+="  AND TASK_LIST.plan_start_date < to_date("+startJson.getString("content")+",'yyyymmdd')";
+					}else if(logic==2){
+						conditionSql+="  AND TASK_LIST.plan_start_date > to_date("+startJson.getString("content")+",'yyyymmdd')";
+					}
+				}
+				if ("sPlanEnd".equals(key)) {	
+					JSONObject endJson = condition.getJSONObject(key);
+					if(endJson.isEmpty()){
+						continue;
+					}	
+					int logic=endJson.getInt("logic");
+					if(logic==1){
+						conditionSql+="  AND TASK_LIST.plan_start_date < to_date("+endJson.getString("content")+",'yyyymmdd')";
+					}else if(logic==2){
+						conditionSql+="  AND TASK_LIST.plan_start_date > to_date("+endJson.getString("content")+",'yyyymmdd')";
+					}
+				}
+				if ("sDescp".equals(key)) {	
+					JSONObject descpJson = condition.getJSONObject(key);
+					if(descpJson.isEmpty()){
+						continue;
+					}	
+					int logic=descpJson.getInt("logic");
+					if(logic==1){
+						conditionSql+="  AND TASK_LIST.descp LIKE '%" + descpJson.getString("content") +"%'";
+					}else if(logic==2){
+						conditionSql+="  AND TASK_LIST.descp NOT LIKE '%" + descpJson.getString("content") +"%'";;
+					}
+				}
+				if ("sProgramType".equals(key)) {	
+					conditionSql+="  AND TASK_LIST.programType =" + condition.getInt(key);
+				}
+				//0无1未转换(-1,3)2进行中(1)3已完成(2)
+				if ("sNoTaskStatus".equals(key)) {
+					JSONArray progress = condition.getJSONArray(key);
+					if(progress.isEmpty()){
+						continue;
+					}	
+					JSONArray progressListTmp=new JSONArray();
+					for(Object i:progress){
+						int tmp=(int) i;
+						if(tmp==0){continue;}
+						if(tmp==1){
+							progressListTmp.add(-1);
+							progressListTmp.add(3);
+						}
+						if(tmp==2){
+							progressListTmp.add(1);
+						}
+						if(tmp==3){
+							progressListTmp.add(2);
+						}						
+					}
+					if(progressListTmp.size()>0){
+						conditionSql+="  AND TASK_LIST.programType=1 and TASK_LIST.task_id!=0 and TASK_LIST.other2medium_Status in ("+progressListTmp.join(",")+")";
+					}
+				}
+				//0无1未转换(-1)2进行中(1)3成功(2)4失败(3)TISP2MARK
+				if ("sMarkStatus".equals(key)) {	
+					JSONArray progress = condition.getJSONArray(key);
+					if(progress.isEmpty()){
+						continue;
+					}	
+					JSONArray progressListTmp=new JSONArray();
+					for(Object i:progress){
+						int tmp=(int) i;
+						if(tmp==0){continue;}
+						if(tmp==1){
+							progressListTmp.add(-1);
+						}
+						if(tmp==2){
+							progressListTmp.add(1);
+						}
+						if(tmp==3){
+							progressListTmp.add(2);
+						}	
+						if(tmp==4){
+							progressListTmp.add(3);
+						}
+					}
+					if(progressListTmp.size()>0){
+						conditionSql+="  AND TASK_LIST.programType=1 AND TASK_LIST.STATUS=0 and TASK_LIST.task_id!=0 and TASK_LIST.TISP2MARK in ("+progressListTmp.join(",")+")";
+					}
+				}
 			}
 			
 			if(!progressList.isEmpty()){
@@ -1260,6 +1409,9 @@ public class TaskService {
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
 			sb.append("                       T.TYPE,");
 			sb.append("                       T.GROUP_ID,");
+			sb.append("                       T.work_kind,");
+			sb.append("                       T.lot,");
+			sb.append("                       T.descp,");
 			sb.append("                       UG.GROUP_NAME,");
 			sb.append("                       T.PLAN_START_DATE,");
 			sb.append("                       T.PLAN_END_DATE,");
@@ -1309,6 +1461,9 @@ public class TaskService {
 			sb.append("	                          4             STATUS,");
 			sb.append("	                          NULL          TYPE,");
 			sb.append("	                          NULL          GROUP_ID,");
+			sb.append("                       '0|0|0|0' work_kind,");
+			sb.append("                       0 lot,");
+			sb.append("                       '' descp,");
 			sb.append("                           NULL          GROUP_NAME,");
 			sb.append("	                          NULL          PLAN_START_DATE,");
 			sb.append("	                          NULL          PLAN_END_DATE,");
@@ -1343,6 +1498,9 @@ public class TaskService {
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
 			sb.append("                       T.TYPE,");
 			sb.append("                       T.GROUP_ID,");
+			sb.append("                       T.work_kind,");
+			sb.append("                       T.lot,");
+			sb.append("                       t.descp,");
 			sb.append("                       UG.GROUP_NAME,");
 			sb.append("                       T.PLAN_START_DATE,");
 			sb.append("                       T.PLAN_END_DATE,");

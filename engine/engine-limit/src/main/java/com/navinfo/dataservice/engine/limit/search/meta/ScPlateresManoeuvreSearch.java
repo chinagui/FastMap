@@ -10,7 +10,6 @@ import net.sf.json.JSONObject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +23,74 @@ public class ScPlateresManoeuvreSearch {
         this.conn = conn;
     }
 
+    public ScPlateresManoeuvre loadById(int manoeuvreId,String groupId) throws Exception {
+
+    	ScPlateresManoeuvre manoeuvre = new ScPlateresManoeuvre();
+
+        String sqlstr = "SELECT * FROM SC_PLATERES_MANOEUVRE WHERE MANOEUVRE_ID = ? AND GROUP_ID = ?";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sqlstr);
+
+            pstmt.setInt(1, manoeuvreId);
+            pstmt.setString(2, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            if (resultSet.next()) {
+
+                ReflectionAttrUtils.executeResultSet(manoeuvre, resultSet);
+            }
+        } catch (Exception e) {
+
+            throw new Exception("查询的ID为：" + manoeuvreId + ",GROUP_ID为" + groupId + "的" + manoeuvre.tableName().toUpperCase() + "不存在");
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return manoeuvre;
+    }
+
+    public int loadMaxManoeuvreId(String groupId) throws Exception {
+
+    	ScPlateresManoeuvre manoeuvre = new ScPlateresManoeuvre();
+
+        String sqlstr = "SELECT MAX(MANOEUVRE_ID) FROM SC_PLATERES_MANOEUVRE WHERE GROUP_ID = ?";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+        
+        int manoeuvreId = 0;
+
+        try {
+            pstmt = this.conn.prepareStatement(sqlstr);
+
+            pstmt.setString(1, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            if (resultSet.next()) {
+
+               manoeuvreId = resultSet.getInt(1);
+            }
+        } catch (Exception e) {
+
+            throw new Exception("查询GROUP_ID为：" + groupId + "的最大MANOEUVRE_ID异常");
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return manoeuvreId;
+    }
 
     public int searchDataByCondition(JSONObject condition, List<IRow> rows) throws Exception {
 

@@ -1614,6 +1614,7 @@ public class ProgramService {
 			if(dataJson.containsKey("inforId")){
 				appendSql=appendSql+" AND T.INFOR_ID="+dataJson.getInt("inforId");
 			}
+			//modify by songhe 2017/09/25 需求变更添加feedbackDate，isAdopted，denyReason字段
 			String sql="WITH T AS"
 					+ " (SELECT P.PROGRAM_ID,"
 					+ "         P.NAME                     PROGRAM_NAME,"
@@ -1632,6 +1633,9 @@ public class ProgramService {
 					+ "         I.PLAN_STATUS,"
 					+ "         I.NEWS_DATE,"		
 					+ "         I.EXPECT_DATE,"
+					+ "         I.FEEDBACK_DATE,"
+					+ "         I.DENY_REASON,"
+					+ "         I.IS_ADOPTED,"
 					+ "         P.CREATE_USER_ID,"
 					+ "         U.USER_REAL_NAME           CREATE_USER_NAME,"
 					+ "         P.PLAN_START_DATE,"
@@ -1664,6 +1668,9 @@ public class ProgramService {
 					+ "         I.PLAN_STATUS,"
 					+ "         I.NEWS_DATE,"
 					+ "         I.EXPECT_DATE,"
+					+ "         I.FEEDBACK_DATE,"
+					+ "         I.DENY_REASON,"
+					+ "         I.IS_ADOPTED,"
 					+ "         0,"
 					+ "         NULL,"
 					+ "         NULL,"
@@ -1715,14 +1722,17 @@ public class ProgramService {
 						map.put("producePlanStartDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_START_DATE")));
 						map.put("producePlanEndDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_END_DATE")));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						//情报反馈状态=未采纳时，显示未采纳原因
+						map.put("isAdopted", rs.getInt("IS_ADOPTED"));
+						map.put("denyReason", rs.getString("DENY_REASON"));
+						map.put("feedbackDate", DateUtils.dateToString(rs.getTimestamp("FEEDBACK_DATE")));
 						return map;
 					}
 					return map;
 				}
 	    	};
 	    	QueryRunner run = new QueryRunner();
-	    	Map<String, Object> programMap = run.query(conn, sql, rsHandler);
-	    	return programMap;
+	    	return run.query(conn, sql, rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

@@ -169,28 +169,34 @@ public class Transaction {
                 switch (operType) {
                     case CREATE:
                         return new Command(json, requester);
-//                    case UPDATE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Command(json, requester);
-//                    case DELETE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Command(json, requester);
-//                    case BREAK:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(json, requester);
-//                    case REPAIR:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink.Command(json, requester);
-//                    case DEPART:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode.Command(json, requester);
-//                    case UPDOWNDEPART:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Command(json, requester);
-//                    case CREATESIDEROAD:
-//                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Command(json, requester);
-//                    case BATCH:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Command(json, requester);
-//                    case BATCHDELETE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Command(json, requester);
-//                    case TOPOBREAK:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Command(json, requester);
+                }
+            case SCPLATERESMANOEUVRE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Command(json,
+                                requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Command(json,
+                                requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Command(json,
+                                requester);
+                }
+            case SCPLATERESINFO:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.create.Command(json,
+                                requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.update.Command(json,
+                                requester);
                 }
 
+            case SCPLATERESRDLINK:
+                switch (operType) {
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Command(json, requester);
+                }
         }
         throw new Exception("不支持的操作类型");
     }
@@ -208,31 +214,55 @@ public class Transaction {
                 switch (operType) {
                     case CREATE:
                         return new Process(command);
-//                    case UPDATE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process(command);
-//                    case DELETE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Process(command);
-//                    case BREAK:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(command);
-//                    case DEPART:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode.Process(command);
-//                    case REPAIR:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink.Process(command);
-//                    case UPDOWNDEPART:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Process(command);
-//                    case CREATESIDEROAD:
-//                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Process(command);
-//                    case BATCH:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Process(command);
-//                    case BATCHDELETE:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Process(command);
-//                    case TOPOBREAK:
-//                        return new com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Process(command);
+//              case UPDATE:
+//              return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process(command);
+//          case DELETE:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Process(command);
+//          case BREAK:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(command);
+//          case DEPART:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode.Process(command);
+//          case REPAIR:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink.Process(command);
+//          case UPDOWNDEPART:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Process(command);
+//          case CREATESIDEROAD:
+//              return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Process(command);
+//          case BATCH:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Process(command);
+//          case BATCHDELETE:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Process(command);
+//          case TOPOBREAK:
+//              return new com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Process(command);
                 }
-
+            case SCPLATERESMANOEUVRE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Process(
+                                command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Process(
+                                command);
+                }
+            case SCPLATERESINFO:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.update.Process(
+                                command);
+                }
+            case SCPLATERESRDLINK:
+                switch (operType) {
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Process(command);
+                }
         }
         throw new Exception("不支持的操作类型");
-
     }
 
 

@@ -52,7 +52,37 @@ public class ScPlateresGroupSearch {
         return group;
     }
 
+	public String loadMaxGroupId(String infoIntelId) throws Exception {
 
+		String sqlstr = "SELECT MAX(GROUP_ID) FROM SC_PLATERES_GROUP WHERE INFO_INTEL_ID = ? ";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		String groupId = "";
+
+		try {
+			pstmt = this.conn.prepareStatement(sqlstr);
+
+			pstmt.setString(1, infoIntelId);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				groupId = resultSet.getString(1);
+			}
+		} catch (Exception e) {
+
+			throw new Exception("查询的INFO_INTEL_ID为：" + infoIntelId + "的" + "GROUP信息异常");
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return groupId;
+	}
 
 
     public int searchDataByCondition(JSONObject condition,List<IRow> rows) throws Exception {

@@ -26,7 +26,7 @@ public class ScPlateresInfo implements IObj {
     private String infoContent;//    INFO_CONTENT	新闻内容
     private int complete = 1;//    COMPLETE	完成状态
     private String condition;//    CONDITION	限行长短期说明
-    private String memo;//    MEMO	备注
+    private String memo="";//    MEMO	备注
 
     public String getInfoIntelId() {
         return infoIntelId;

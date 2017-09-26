@@ -2321,8 +2321,8 @@ public class TipsSelector {
 			TipsIndexOracleOperator tipsOp = new TipsIndexOracleOperator(tipsConn);
 			List<TipsDao> resultTmp = tipsOp.query("select t.* from tips_index t where " + builder);
 			List<TipsDao> result = new ArrayList<>();
-			Set<String> codes = new HashSet<>();
 			if(taskType == TaskType.PROGRAM_TYPE_Q){
+				Set<String> codes = new HashSet<>();
 				MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 				Map<String,Integer> codeEditMethMap  = metaApi.queryEditMethTipsCode();
 				//不在日编作业的值

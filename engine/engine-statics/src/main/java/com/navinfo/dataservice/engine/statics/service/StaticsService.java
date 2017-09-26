@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.statics.service;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,11 +13,16 @@ import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.QueryOperators;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
@@ -25,9 +33,13 @@ import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.expect.ExpectStatusMain;
 import com.navinfo.dataservice.engine.statics.expect.PoiCollectExpectMain;
@@ -44,6 +56,7 @@ import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
 import com.navinfo.dataservice.engine.statics.roadmonthly.RoadMonthlyMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
 public class StaticsService {
@@ -52,6 +65,8 @@ public class StaticsService {
 	private static final String PROGRAM = "program";
 	private static final String CITY = "city";
 	private static final String BLOCK = "block";
+	private static final String MONGO_PRODUCT_MONITOR = "product_monitor";
+	
 
 	private StaticsService() {
 	}
@@ -863,6 +878,155 @@ public class StaticsService {
 		}
 	}
 	
+	/**返回fm_stat_crowd中的blcokcode及经纬度坐标的列表
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray crowdInfoList() throws Exception {
+		String querySql = "select f.block_code,f.x,f.y from fm_stat_crowd f";
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>(){
+
+				@Override
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					JSONArray data = new JSONArray();
+					while(rs.next()){
+						JSONObject obj = new JSONObject();
+						try{
+							obj.put("blockCode", rs.getString("block_code"));
+							obj.put("x", rs.getDouble("x"));
+							obj.put("y", rs.getDouble("y"));
+							
+							data.add(obj);
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+					return data;
+				}
+
+			};
+			return run.query(conn, querySql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**创建外业采集子任务的（subtask表work_kind=1,status in (1,0)的city）cityId及admin_geo的经纬度坐标
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray commonInfoListCity() throws Exception {
+		String querySql = "select c.city_id,c.admin_geo.sdo_point.x x,c.admin_geo.sdo_point.y y from city c where city_id in "
+				+ "(select city_id from block where block_id in "
+				+ "(select block_id from task where task_id in "
+				+ "(select task_id from subtask where work_kind=1 and status in (0,1))))";
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>(){
+
+				@Override
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					JSONArray dataList = new JSONArray();
+					while(rs.next()){
+						JSONObject city = new JSONObject();
+						try{
+							city.put("cityId", rs.getInt("city_id"));
+							city.put("x", rs.getDouble("x"));
+							city.put("y", rs.getDouble("y"));
+							
+							dataList.add(city);
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+					return dataList;
+				}
+			};
+			return run.query(conn, querySql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**查询mongo库中fm_stat.product_monitor中的统计值
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getMongoMonitorData() throws Exception {
+		JSONObject data = new JSONObject();
+		try{
+			String dbName=SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
+			MongoDao md = new MongoDao(dbName);
+			MongoCollection<Document> collections = md.getDatabase().getCollection(MONGO_PRODUCT_MONITOR);
+			// 查询时间戳最新的统计
+			Document doc = collections.find().sort(new BasicDBObject("timestamp",-1)).first();
+			if(doc != null){
+				JSONObject statics = JSONObject.fromObject(doc);
+				if(statics.containsKey("_id")){
+					statics.remove("_id");
+				}
+				data.putAll(statics);
+			}
+			return data;
+		}catch(Exception e){
+			e.printStackTrace();
+			throw e;
+		}
+	}
+	
+	/**获取man库中man_config中的统计值
+	 * @param platForm
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getOracleMonitorData(String platForm) throws Exception{
+		String querySql = "select m.conf_key, m.conf_value from man_config m where m.platform=? ";
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>(){
+
+				@Override
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					JSONObject statics = new JSONObject();
+					while(rs.next()){
+						String confKey = rs.getString("conf_key");
+						String confValue = rs.getString("conf_value");
+						if(StringUtils.isNotEmpty(confValue) && confValue.contains("{") && confValue.contains("}")){
+							statics.put(confKey, JSONObject.fromObject(confValue));
+						}else{
+							statics.put(confKey, confValue);
+						}
+					}
+					return statics;
+				}
+			};
+			return run.query(conn, querySql, rsHandler, platForm);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+	}
+	
 	public static void main(String[] args) throws Exception {
 		
 //		String wkt = "POLYGON ((116.55736132939865 40.37309069499443, 116.88314510913636 40.37309069499443, 116.88314510913636 40.25788148053289, 116.55736132939865 40.25788148053289, 116.55736132939865 40.37309069499443))";
@@ -876,6 +1040,12 @@ public class StaticsService {
 //		StaticsService.getInstance().getLatestStatByGrids(grids, PoiDailyMain.col_name_grid, RoadDailyMain.col_name_grid);
 		
 //		StaticsService.getInstance().getChangeStatByGrids(grids, 0, 2, "20160620");
+		
+		JSONObject a = JSONObject.fromObject("{\"a\":1}");
+		JSONObject b = JSONObject.fromObject("{\"b\":2}");
+		a.putAll(b);
+		System.out.println(a.toString());
+		
 	}
 
 

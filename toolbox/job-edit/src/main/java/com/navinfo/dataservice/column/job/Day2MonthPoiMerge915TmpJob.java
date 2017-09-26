@@ -306,7 +306,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 									result, monthConn).execute();
 							new Classifier(checkResult, monthConn).execute();
 							log.info("开始执行后批处理");
-							new PostBatch(result, monthConn).execute915();
+							new PostBatch(result, monthConn).execute();
 							log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
 							updateField(result, monthConn);
 
@@ -345,7 +345,7 @@ public class Day2MonthPoiMerge915TmpJob extends AbstractJob {
 							result, monthConn).execute();
 					new Classifier(checkResult, monthConn).execute();
 					log.info("开始执行后批处理");
-					new PostBatch(result, monthConn).execute915();
+					new PostBatch(result, monthConn).execute();
 					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
 					updateField(result, monthConn);
 

@@ -5,6 +5,7 @@ import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
 import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresInfo;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import java.sql.Connection;
@@ -141,22 +142,30 @@ public class ScPlateresInfoSearch  {
         }
 
         if (obj.containsKey("complete")) {
-            String complete = obj.getString("complete");
+            JSONArray complete = obj.getJSONArray("complete");
 
-            if (complete != null && !complete.isEmpty()) {
-                sql.append(" AND COMPLETE IN ");
-                sql.append("(" + complete + ")");
-            }
+			if (complete != null && complete.size() != 0) {
+				sql.append(" AND COMPLETE IN (");
+				sql.append(complete.toString().replace("[", "").replace("]", "")+ ")");
+			}
         }
 
-        if (obj.containsKey("condition")) {
-            String condition = obj.getString("condition");
+		if (obj.containsKey("condition")) {
+			JSONArray condition = obj.getJSONArray("condition");
 
-            if (condition != null && !condition.isEmpty()) {
-                sql.append(" AND CONDITION IN ");
-                sql.append("(" + condition + ")");
-            }
-        }
+			if (condition != null && condition.size() != 0) {
+				sql.append(" AND CONDITION IN (");
+
+				for (int i = 0; i < condition.size(); i++) {
+					if (i > 0) {
+						sql.append(",");
+					}
+					sql.append("'" + condition.getString(i) + "'");
+				}
+
+				sql.append(")");
+			}
+		}
 
         //sql.append(" AND rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " for update nowait");
     }

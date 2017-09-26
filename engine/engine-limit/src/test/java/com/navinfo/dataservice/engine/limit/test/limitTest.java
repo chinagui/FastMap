@@ -19,6 +19,7 @@ import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.operation.Transaction;
 import com.navinfo.dataservice.engine.limit.search.SearchProcess;
 import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
+import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -35,7 +36,7 @@ public class limitTest extends ClassPathXmlAppContextInit{
 
 	@Test
 	public void testInfosearch(){
-		String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":\"11000\",\"infoCode\":\"\",\"startTime\":\"20170915\",\"endTime\":\"20170920\",\"complete\":\"1,2,3\",\"condition\":\"'S','D'\",\"pageSize\":20,\"pageNum\":1}}";
+		String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":\"110000\",\"infoCode\":\"\",\"startTime\":\"20170915\",\"endTime\":\"20170920\",\"complete\":\"[1,2,3]\",\"condition\":\"['S','D']\",\"pageSize\":20,\"pageNum\":1}}";
         Connection conn = null;
 
         try {

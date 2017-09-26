@@ -49,6 +49,12 @@ public class PidApply {
 		return newGroupId;
 	} 
 	
+	/**
+	 * manoeuvre的pid申请
+	 * @param groupId
+	 * @return
+	 * @throws Exception
+	 */
 	public int pidForInsertManoeuvre(String groupId) throws Exception{
 		
 		ScPlateresManoeuvreSearch search = new ScPlateresManoeuvreSearch(this.conn);

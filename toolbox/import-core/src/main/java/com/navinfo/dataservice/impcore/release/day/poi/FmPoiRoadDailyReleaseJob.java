@@ -135,7 +135,7 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 			int regionId=releaseFmIdbDailyPoiRequest.getRegionId();//按大区库执行
 			
 			List<Region> regions = new ArrayList<Region>();
-			if(regionId!=0){//按照指定大区库进行日落月
+			if(regionId!=0){//按照指定大区库进行日出品
 				Region r = manApi.queryByRegionId(regionId);
 				regions.add(r);
 			}else{
@@ -163,7 +163,7 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 				//在man库中，创建一条出品任务记录
 				newTaskId=createReleaseTask(String.valueOf(releaseFlag));
 				//修改项目的出品状态为 进行中
-				updateProduceStatus(projects,1,manApi);
+				if(regionId==0){updateProduceStatus(projects,1,manApi);}
 				//修改出品过程表的出品状态为 筛选log中
 				updateReleaseTaskStatus(newTaskId,oldTaskId,1,jobId,String.valueOf(projects),null);
 				try{
@@ -175,14 +175,14 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					logFlush(regions,tempTabInfo,databhubApi);
 				}catch(Exception e){
 					//修改项目的出品状态为 失败
-					updateProduceStatus(projects,3,manApi);
+					if(regionId==0){updateProduceStatus(projects,3,manApi);}
 					throw new JobException(e);
 				}
 			}else{
 				//在man库中，创建一条补出品任务记录
 				newTaskId=createReleaseTask(String.valueOf(releaseFlag));
 				//修改项目的出品状态为 进行中
-				updateProduceStatus(projects,1,manApi);
+				if(regionId==0){updateProduceStatus(projects,1,manApi);}
 				//修改出品过程表的出品状态为 刷履历中,写入临时表信息
 				updateReleaseTaskStatus(newTaskId,oldTaskId,2,jobId,null,tempTabInfo);
 				try{
@@ -190,12 +190,12 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					logFlush(regions,tempTabInfo,databhubApi);
 				}catch(Exception e){
 					//修改项目的出品状态为 失败
-					updateProduceStatus(projects,3,manApi);
+					if(regionId==0){updateProduceStatus(projects,3,manApi);}
 					throw new JobException(e);
 				}
 			}
 			//修改项目出品状态为 成功
-			updateProduceStatus(projects,2,manApi);
+			if(regionId==0){updateProduceStatus(projects,2,manApi);}
 			//修改出品过程表的出品状态为 成功
 			updateReleaseTaskStatus(newTaskId,oldTaskId,3,jobId,null,null);
 			this.log.info("调用出品转换api");
@@ -268,14 +268,14 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 		List<Connection> dailyUpdateStatusConns= new ArrayList<Connection>();
 		//出品库链接集合：这个链接是用来像出品库刷数据的；
 		List<Connection> releaseConns= new ArrayList<Connection>();
+		//20170921  去掉poi库
 		//poi出品库信息
-		DbInfo releaseDbP = getReleaseDbConn(datahubApi,"POI");
-		OracleSchema releaseDbSchemaP = new OracleSchema(
-				DbConnectConfig.createConnectConfig(releaseDbP.getConnectParam()));
-		Connection releaseDbConnP = releaseDbSchemaP.getPoolDataSource().getConnection();
-		releaseConns.add(releaseDbConnP);
+		//DbInfo releaseDbP = getReleaseDbConn(datahubApi,"POI");
+		//OracleSchema releaseDbSchemaP = new OracleSchema(
+		//		DbConnectConfig.createConnectConfig(releaseDbP.getConnectParam()));
+		//Connection releaseDbConnP = releaseDbSchemaP.getPoolDataSource().getConnection();
+		//releaseConns.add(releaseDbConnP);
 		//poi+road 出品库信息
-		//要放开
 		DbInfo releaseDbR = getReleaseDbConn(datahubApi,"ROAD");
 		OracleSchema releaseDbSchemaR = new OracleSchema(
 				DbConnectConfig.createConnectConfig(releaseDbR.getConnectParam()));
@@ -294,17 +294,17 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 				String tempR=tempTabInfo.get(region.getRegionId().toString()).get("road");	
 				
 				//刷poi出品库
-				log.info("1.1 开始将日库（"+region.getDailyDbId().toString()+"）poi履历（temptable:"+tempP+"）刷新到P出品库：");
-				FlushResult flushResultPP= new DailyReleaseLogFlusher(dailyDbSchema,dailyConn,releaseDbConnP,true,tempP,"").flush();
-				if(0!=flushResultPP.getFailedTotal()){
-					throw new Exception("存在刷履历失败的log,请查看:"+flushResultPP.getTempFailLogTable());
-				}
-				log.info("1.2 开始将poi履历搬到P出品库：logtotal:"+String.valueOf(flushResultPP.getTotal()));
-				if(0!=flushResultPP.getTotal()){
-					logMover = new DailyReleaseMover(dailyDbSchema, releaseDbSchemaP, tempP, flushResultPP.getTempFailLogTable());
-					logMovers.add(logMover);
-					logMover.move();
-				}
+//				log.info("1.1 开始将日库（"+region.getDailyDbId().toString()+"）poi履历（temptable:"+tempP+"）刷新到P出品库：");
+//				FlushResult flushResultPP= new DailyReleaseLogFlusher(dailyDbSchema,dailyConn,releaseDbConnP,true,tempP,"").flush();
+//				if(0!=flushResultPP.getFailedTotal()){
+//					throw new Exception("存在刷履历失败的log,请查看:"+flushResultPP.getTempFailLogTable());
+//				}
+//				log.info("1.2 开始将poi履历搬到P出品库：logtotal:"+String.valueOf(flushResultPP.getTotal()));
+//				if(0!=flushResultPP.getTotal()){
+//					logMover = new DailyReleaseMover(dailyDbSchema, releaseDbSchemaP, tempP, flushResultPP.getTempFailLogTable());
+//					logMovers.add(logMover);
+//					logMover.move();
+//				}
 				
 				
 				//刷poi+road出品库
@@ -441,7 +441,7 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 			}
 			
 		}catch(Exception e){
-			if(releaseDbConnP!=null)releaseDbConnP.rollback();
+			//if(releaseDbConnP!=null)releaseDbConnP.rollback();
 			if(releaseDbConnR!=null)releaseDbConnR.rollback();
 			for(Connection d2conn:dailyUpdateStatusConns){
 				DbUtils.rollbackAndCloseQuietly(d2conn);
@@ -456,7 +456,7 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 			throw e;
 			
 		}finally{
-			DbUtils.commitAndCloseQuietly(releaseDbConnP);
+			//DbUtils.commitAndCloseQuietly(releaseDbConnP);
 			DbUtils.commitAndCloseQuietly(releaseDbConnR);
 			//这个链接是用来写入错误履历的，因此不需要回滚。别的操作慎用这个链接；
 			for(Connection dconn:dailyConns){

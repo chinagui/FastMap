@@ -114,12 +114,10 @@ public class PostBatch {
 		List<Long> pidList = getPidByWorkItem(workItem);
 		//log.info("changeSourceFlag:" + workItem + ",pids:" + pidList.toString());
 		List<BasicObj> objList = new ArrayList<BasicObj>();
+		List<BasicObj> allObjs = opResult.getAllObjs();
 		for (Long pid : pidList) {
-			List<BasicObj> allObjs = opResult.getAllObjs();
 			for (BasicObj obj : allObjs) {
-				IxPoi ixPoi = (IxPoi) obj.getMainrow();
-
-				if (ixPoi.getPid() == pid) {
+				if (obj.objPid() == pid) {
 					//log.info("pid:" +pid);
 					List<BasicRow> nameList = obj.getSubrows().get("IX_POI_NAME");
 					IxPoiObj poiObj = (IxPoiObj) obj;
@@ -145,11 +143,12 @@ public class PostBatch {
 						for (BasicRow flag : flagListCopy) {
 							IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
 							String flagCode = poiFlag.getFlagCode();
-							if ("FM-YW-20-014".equals(workItem) && (!("110020070000".equals(flagCode)
-									|| "110020080000".equals(flagCode) || "110020090000".equals(flagCode)))) {
-								lastSourceFlag = flagCode;
-							}
+							
 							if (poiFlag.getNameId() == nameId || poiFlag.getNameId() == standardNameId) {
+								if ("FM-YW-20-014".equals(workItem) && (!("110020070000".equals(flagCode)
+										|| "110020080000".equals(flagCode) || "110020090000".equals(flagCode)))) {
+									lastSourceFlag = flagCode;
+								}
 								poiObj.deleteSubrow(poiFlag);
 							}
 						}
@@ -160,8 +159,9 @@ public class PostBatch {
 						IxPoiNameFlag poiFlag = poiObj.createIxPoiNameFlag(nameId);
 						poiFlag.setFlagCode(sourceFlag);
 					}
+					// add to operation result;
+					objList.add(obj);
 				}
-				objList.add(obj);
 			}
 		}
 		return objList;
@@ -175,11 +175,10 @@ public class PostBatch {
 		//log.info("特殊处理200170pids:" + pidList.toString());
 		OperationResult operationResult = new OperationResult();
 		List<BasicObj> objList = new ArrayList<BasicObj>();
+		List<BasicObj> allObj = opResult.getAllObjs();
 		for (Long pid : pidList) {
-			List<BasicObj> allObj = opResult.getAllObjs();
 			for (BasicObj obj : allObj) {
-				IxPoi ixPoi = (IxPoi) obj.getMainrow();
-				if (ixPoi.getPid() == pid) {
+				if (obj.objPid() == pid) {
 					objList.add(obj);
 				}
 			}
@@ -263,11 +262,10 @@ public class PostBatch {
 		log.info("特殊处理200150:" + pidList.toString());
 		OperationResult operationResult = new OperationResult();
 		List<BasicObj> objList = new ArrayList<BasicObj>();
+		List<BasicObj> allObj = opResult.getAllObjs();
 		for (Long pid : pidList) {
-			List<BasicObj> allObj = opResult.getAllObjs();
 			for (BasicObj obj : allObj) {
-				IxPoi ixPoi = (IxPoi) obj.getMainrow();
-				if (ixPoi.getPid() == pid) {
+				if (obj.objPid() == pid) {
 					objList.add(obj);
 				}
 			}

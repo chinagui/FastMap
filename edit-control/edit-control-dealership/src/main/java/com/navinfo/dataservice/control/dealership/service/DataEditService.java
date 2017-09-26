@@ -1909,7 +1909,7 @@ public class DataEditService {
 			boolean need2Degree = false;//需要两公里扩圈
 			Geometry point = null;
 			if(StringUtils.isNotBlank(poiNum)){//①输入条件包含POI_NUM时，仅根据POI_NUM查询，其它条件不作为查询条件；
-				sb.append("SELECT PID FROM IX_POI WHERE POI_NUM = :1 ");
+				sb.append("SELECT PID FROM IX_POI WHERE U_RECORD <> 2 AND POI_NUM = :1 ");
 				flag = true;
 			}else {
 				if(StringUtils.isNotBlank(location)){//②输入条件不包含POI_NUM且包含poi(x,y)显示坐标时，则根据POI显示坐标关联2公里和输入名称、地址、或者电话进行查询(接口参数中坐标为POI显示坐标)；
@@ -1990,7 +1990,7 @@ public class DataEditService {
 		if(StringUtils.isNotBlank(telephone)){
 			sb.append(", ix_poi_contact pc ");
 		}
-		sb.append(" WHERE 1=1 ");
+		sb.append(" WHERE p.U_RECORD <> 2 ");
 		if(need2Degree){
 			sb.append("AND sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE' ");
 		}

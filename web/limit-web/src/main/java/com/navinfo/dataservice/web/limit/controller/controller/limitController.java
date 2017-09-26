@@ -1,4 +1,4 @@
-package com.navinfo.daraservice.web.limit;
+package com.navinfo.dataservice.web.limit.controller.controller;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;

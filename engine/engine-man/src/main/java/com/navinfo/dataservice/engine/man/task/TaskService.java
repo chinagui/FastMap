@@ -701,9 +701,11 @@ public class TaskService {
 				if(bean.getSubWorkKind(4)==1&&oldTask.getSubWorkKind(4)==0){
 					log.info("任务修改，变更多源，需自动创建多源子任务");
 					Subtask subtask = createCollectSubtaskByTask(4, bean);
-					JSONArray subtaskIds = new JSONArray();
-					subtaskIds.add(subtask.getSubtaskId());
-					SubtaskService.getInstance().pushMsg(conn, userId, subtaskIds);
+					if(0 != subtask.getExeGroupId()){
+						JSONArray subtaskIds = new JSONArray();
+						subtaskIds.add(subtask.getSubtaskId());
+						SubtaskService.getInstance().pushMsg(conn, userId, subtaskIds);
+					}
 				}
 			}
 			
@@ -5213,7 +5215,8 @@ public class TaskService {
 	 * */
 	public Map<Integer, String> queryCityNameByProgram(Connection conn) throws Exception{
 		try{
-			String	sqlForCity = "SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID UNION SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID ";
+			String	sqlForCity = "SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID "
+					+ "UNION ALL SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID ";
 			ResultSetHandler<Map<Integer, String>> rs = new ResultSetHandler<Map<Integer, String>>() {
 				@Override
 				public Map<Integer, String> handle(ResultSet rs) throws SQLException {

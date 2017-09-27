@@ -166,13 +166,14 @@ public class DiffService {
 					for (IxDealershipSource j : editPart1.get(t)) {
 						boolean sameTel = StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim())).equals(StringUtil.sortPhone(StringUtil.contactFormat(j.getTelephone().trim())));
 						boolean samePostCode = false;	
+						boolean sameAddr = i.getAddress().equals(j.getAddress());
 						if(i.getPostCode()!=null&&j.getPostCode()!=null){
 							samePostCode = i.getPostCode().equals(j.getPostCode());	
 						}
 						if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
 							samePostCode = true;
 						
-						if (checkAddrSim(i, j) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
+						if ((sameAddr||checkAddrSim(i, j)) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
 							resultDpAttrDiff = new IxDealershipResult(i);
 							insertList.add(resultDpAttrDiff);
 							

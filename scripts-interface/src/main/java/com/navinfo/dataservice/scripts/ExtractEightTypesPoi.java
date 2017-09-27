@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
+import java.io.File;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -82,6 +83,11 @@ public class ExtractEightTypesPoi {
 			exportEightTypesPois.addAll(deleteEightTypesPois);
 			
 			String dir = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathPoi) + "/extractPoi/" + excelName + ".db";
+			
+			File file = new File(dir);
+			if(!file.getParentFile().isDirectory()){
+				file.getParentFile().mkdirs();
+			}
 			
 			Connection sqliteConn = ExportEightTypes2Sqlite.createSqlite(dir);
 			ExportEightTypes2Sqlite.exportEightTypesPoi(sqliteConn, exportEightTypesPois);

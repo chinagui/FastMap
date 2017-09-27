@@ -2189,11 +2189,13 @@ public class SubtaskService {
 		//20170330 by zxy若是快线子任务，则需调整对应的快线项目
 		//这里修改为快线才调整，中线不调整
 		int programType = getTaskBySubtaskId(subtask.getSubtaskId()).get("programType");	
+		//programType=4;
 		if(programType == 4 && (subtask.getStage() == 0 || subtask.getStage() == 1)){
 			//获取规划外GRID信息
 			log.info("调整子任务本身范围");
 
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
+			//gridIdsToInsert.put(59567402, 2);
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
@@ -2209,7 +2211,9 @@ public class SubtaskService {
 //					TaskOperation.changeTaskGridByGrids(conn, grids, subtask);
 //				}
 				
-				if(taskChangeNum>0){					
+				if(taskChangeNum>0){
+					log.info("调整子任务对应任务geo:"+subtask.getTaskId());
+					TaskService.getInstance().updateTaskGeo(conn, subtask.getTaskId());
 					//20170330 by zxy若是快线子任务，则需调整对应的快线项目
 					log.info("调整子任务对应快线项目范围");
 					int programCount = ProgramService.getInstance().changeProgramGridByTask(conn,subtask.getTaskId());
@@ -2227,7 +2231,12 @@ public class SubtaskService {
 						//modify by songhe
 						//sql里面删除了task.type =3 二代编辑任务的筛选条件，二代编辑任务不进行动态调整
 						log.info("采集子任务 调整日编任务范围");
-						TaskOperation.changeDayCmsTaskGridByCollectTask(conn,subtask.getTaskId());
+						int dayNum=TaskOperation.changeDayCmsTaskGridByCollectTask(conn,subtask.getTaskId());
+						if(dayNum>0){
+							int dayTaskId=TaskOperation.getDayTaskGridByCollectTask(conn,subtask.getTaskId());
+							log.info("调整子任务对应日编任务geo:"+dayTaskId);
+							TaskService.getInstance().updateTaskGeo(conn, dayTaskId);
+						}
 						//调整日编区域子任务范围		
 						log.info("采集子任务 调整日编区域子任务范围");
 						int regionChange=SubtaskOperation.changeDayRegionSubtaskByCollectTask(conn, subtask.getTaskId());
@@ -2263,7 +2272,8 @@ public class SubtaskService {
 								}
 							}
 							TaskOperation.insertTaskGridMapping(conn,monthTasks.getTaskId(), newGrids);
-							
+							log.info("调整子任务对应月编任务geo:"+monthTasks.getTaskId());
+							TaskService.getInstance().updateTaskGeo(conn, monthTasks.getTaskId());
 							
 							log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编子任务范围更新操作");
 							SubtaskOperation.changeMonthSubtaskGridByTask(conn, subtask.getTaskId());

@@ -98,8 +98,8 @@ public class TipsJob extends AbstractStatJob {
 				
 				tipsTaskMap = gridTipsTaskMap.get(key);
 				
-				int subtaskEditAllNum = tipsTaskMap.containsKey("subtaskEditAllNum")?(int) tipsTaskMap.get("subtaskEditAllNum"):0;
-				int subtaskEditFinishNum = tipsTaskMap.containsKey("subtaskEditFinishNum")?(int)tipsTaskMap.get("subtaskEditFinishNum"):0;
+//				int subtaskEditAllNum = tipsTaskMap.containsKey("subtaskEditAllNum")?(int) tipsTaskMap.get("subtaskEditAllNum"):0;
+//				int subtaskEditFinishNum = tipsTaskMap.containsKey("subtaskEditFinishNum")?(int)tipsTaskMap.get("subtaskEditFinishNum"):0;
 				int taskEditAllNum = tipsTaskMap.containsKey("taskEditAllNum")?(int)tipsTaskMap.get("taskEditAllNum"):0;
 				int taskNoEditAllNum = tipsTaskMap.containsKey("taskNoEditAllNum")?(int)tipsTaskMap.get("taskNoEditAllNum"):0;
 				int taskCreateByEditNum = tipsTaskMap.containsKey("taskCreateByEditNum")?(int) tipsTaskMap.get("taskCreateByEditNum"):0;
@@ -107,13 +107,13 @@ public class TipsJob extends AbstractStatJob {
 				
 				int stage = rs.getInt("stage");
 				if(rs.getInt("t_dEditStatus")==2){
-					subtaskEditAllNum++;
+//					subtaskEditAllNum++;
 					if(stage==1||stage==2||stage==6||stage==7){
 						taskEditFinishNum++;
 					}
 				}
 				
-				subtaskEditFinishNum++;
+//				subtaskEditFinishNum++;
 				
 				String sourceType = rs.getString("s_sourceType");
 				
@@ -135,8 +135,8 @@ public class TipsJob extends AbstractStatJob {
 						}
 					}
 				}
-				tipsTaskMap.put("subtaskEditAllNum", subtaskEditAllNum);
-				tipsTaskMap.put("subtaskEditFinishNum", subtaskEditFinishNum);
+//				tipsTaskMap.put("subtaskEditAllNum", subtaskEditAllNum);
+//				tipsTaskMap.put("subtaskEditFinishNum", subtaskEditFinishNum);
 				tipsTaskMap.put("taskEditAllNum", taskEditAllNum);
 				tipsTaskMap.put("taskNoEditAllNum", taskNoEditAllNum);
 				tipsTaskMap.put("taskCreateByEditNum", taskCreateByEditNum);

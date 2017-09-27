@@ -69,9 +69,7 @@ public class ExportDeepQcQualityRate {
 			
 			manConn = DBConnector.getInstance().getManConnection();
 			
-			int dbId = searchMonthDbId(manConn);//查询月库dbId
-			if(0==dbId){throw new Exception("对应月库不存在");}
-			monthConn = DBConnector.getInstance().getConnectionById(dbId);
+			monthConn = DBConnector.getInstance().getMkConnection();
 			
 			String excelName = "deep_quality_rate_list_"+startDate+"_"+endDate;
 
@@ -87,9 +85,9 @@ public class ExportDeepQcQualityRate {
 					"深度信息-停车场", "深度信息-停车场质检量", "深度信息-停车场错误量", "深度信息-汽车租赁", "深度信息-汽车租赁质检量", "深度信息-汽车租赁错误量"};
 
 			try {
-				String path = SystemConfigFactory.getSystemConfig().getValue(
-						PropConstant.downloadFilePathPoi)+"/poiQuality/deepQcQualityRate";
-//				String path = "D:/"; 
+//				String path = SystemConfigFactory.getSystemConfig().getValue(
+//						PropConstant.downloadFilePathPoi)+"/poiQuality/deepQcQualityRate";
+				String path = "D:/"; 
 				File file = new File(path+"/" + excelName + ".xls");
 				if(!file.getParentFile().isDirectory()){
 					file.getParentFile().mkdirs();
@@ -306,35 +304,6 @@ public class ExportDeepQcQualityRate {
 		}
 	}
 
-	/**
-	 * 查询月库dbId
-	 * @return
-	 * @throws Exception
-	 */
-	private static int searchMonthDbId(Connection conn) throws Exception {
-		String sql  = "SELECT DISTINCT MONTHLY_DB_ID FROM REGION ORDER BY MONTHLY_DB_ID";
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			pstmt = conn.prepareStatement(sql);
-			resultSet = pstmt.executeQuery();
-			
-			if(resultSet.next()){
-				return resultSet.getInt(1);
-			}
-			return 0;
-			
-		} catch (Exception e) {
-			DbUtils.rollback(conn);
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-		
-	}
-	
 	
 	public static void main(String[] args) throws Exception {
 		initContext();

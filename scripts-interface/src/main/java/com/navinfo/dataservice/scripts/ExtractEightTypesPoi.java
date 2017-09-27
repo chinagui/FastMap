@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
+import java.io.File;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -62,11 +63,7 @@ public class ExtractEightTypesPoi {
 		Connection metaConn = null;
 		try {
 			
-			int dbId = searchMonthDbId();//查询月库dbId
-			if(0 == dbId){
-				throw new Exception("对应月库不存在");
-			}
-			monthConn = DBConnector.getInstance().getConnectionById(dbId);
+			monthConn = DBConnector.getInstance().getMkConnection();
 			metaConn = DBConnector.getInstance().getMetaConnection();
 			manConn = DBConnector.getInstance().getManConnection();
 					
@@ -86,6 +83,11 @@ public class ExtractEightTypesPoi {
 			exportEightTypesPois.addAll(deleteEightTypesPois);
 			
 			String dir = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathPoi) + "/extractPoi/" + excelName + ".db";
+			
+			File file = new File(dir);
+			if(!file.getParentFile().isDirectory()){
+				file.getParentFile().mkdirs();
+			}
 			
 			Connection sqliteConn = ExportEightTypes2Sqlite.createSqlite(dir);
 			ExportEightTypes2Sqlite.exportEightTypesPoi(sqliteConn, exportEightTypesPois);
@@ -544,36 +546,6 @@ public class ExtractEightTypesPoi {
 		}
 		
 		return list;
-	}
-	
-	/**
-	 * 查询月库dbId
-	 * @return
-	 * @throws Exception
-	 */
-	private static int searchMonthDbId() throws Exception {
-		Connection conn = null;
-		String sql  = "SELECT DISTINCT MONTHLY_DB_ID FROM REGION ORDER BY MONTHLY_DB_ID";
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			pstmt = conn.prepareStatement(sql);
-			resultSet = pstmt.executeQuery();
-			
-			if(resultSet.next()){
-				return resultSet.getInt(1);
-			}
-			return 0;
-			
-		} catch (Exception e) {
-			DbUtils.rollback(conn);
-			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-		
 	}
 	
 	/**

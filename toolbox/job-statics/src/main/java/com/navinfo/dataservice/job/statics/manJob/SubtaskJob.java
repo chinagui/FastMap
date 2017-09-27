@@ -314,8 +314,9 @@ public class SubtaskJob extends AbstractStatJob {
 					data = tipsStat.get(gridId);
 				}
 				int taskId = (int) jso.get("taskId");
-				int subtaskEditAllNum = (int) jso.get("subtaskEditAllNum");
-				int subtaskEditFinishNum = (int) jso.get("subtaskEditFinishNum");
+				//modify by songhe 2017/09/26 统计变更subtask统计脚本
+				int subtaskEditAllNum = (int) jso.get("taskEditAllNum");
+				int subtaskEditFinishNum = (int) jso.get("taskEditFinishNum");
 				subtask.put("subtaskEditAllNum", subtaskEditAllNum);
 				subtask.put("subtaskEditFinishNum", subtaskEditFinishNum);
 				subtask.put("taskId", taskId);

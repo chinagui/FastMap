@@ -38,9 +38,7 @@ public class ExportColumnQcQualityRate {
 		Connection conn = null;
 		try {
 			
-			int dbId = searchMonthDbId();//查询月库dbId
-			if(0==dbId){throw new Exception("对应月库不存在");}
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getMkConnection();
 			
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			String excelName = "column_quality_rate_list_"+startDate+"_"+endDate;
@@ -126,37 +124,6 @@ public class ExportColumnQcQualityRate {
 	}
 
 
-
-	/**
-	 * 查询月库dbId
-	 * @return
-	 * @throws Exception
-	 */
-	private static int searchMonthDbId() throws Exception {
-		Connection conn = null;
-		String sql  = "SELECT DISTINCT monthly_db_id FROM REGION";
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			pstmt = conn.prepareStatement(sql);
-			resultSet = pstmt.executeQuery();
-			
-			if(resultSet.next()){
-				return resultSet.getInt(1);
-			}
-			
-			return 0;
-			
-		} catch (Exception e) {
-			DbUtils.rollback(conn);
-			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-		
-	}
 
 
 	private static List<ColumnQcQualityRate> searchColumnQcQualityRateListByDate(String startDate, String endDate,

@@ -101,8 +101,8 @@ public class DiffService {
 					editPart1.get(t).add(i);
 				}
 
-				//上传一览表与全国一览表中分类、品牌、电话均相同，且地址相同但邮编不同或地址不同但邮编相同
-				t = hash(i.getChain().trim() + StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim())) + i.getKindCode().trim());
+				//上传一览表与全国一览表中分类、品牌、电话,名称均相同，且地址相同但邮编不同或地址不同但邮编相同
+				t = hash(i.getChain().trim() + StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim())) + i.getKindCode().trim()+ i.getName().trim());
 				if (editPart2.get(t) == null) {
 					List<IxDealershipSource> dsList = new ArrayList<IxDealershipSource>();
 					dsList.add(i);
@@ -166,13 +166,14 @@ public class DiffService {
 					for (IxDealershipSource j : editPart1.get(t)) {
 						boolean sameTel = StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim())).equals(StringUtil.sortPhone(StringUtil.contactFormat(j.getTelephone().trim())));
 						boolean samePostCode = false;	
+						boolean sameAddr = i.getAddress().equals(j.getAddress());
 						if(i.getPostCode()!=null&&j.getPostCode()!=null){
 							samePostCode = i.getPostCode().equals(j.getPostCode());	
 						}
 						if((i.getPostCode() == null || "".equals(i.getPostCode()))&&(j.getPostCode() == null || "".equals(j.getPostCode())))
 							samePostCode = true;
 						
-						if (checkAddrSim(i, j) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
+						if ((sameAddr||checkAddrSim(i, j)) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
 							resultDpAttrDiff = new IxDealershipResult(i);
 							insertList.add(resultDpAttrDiff);
 							
@@ -189,8 +190,8 @@ public class DiffService {
 					if (flag)
 						continue;
 				}
-				//上传一览表与全国一览表中分类、品牌、电话均相同，且地址相同但邮编不同或地址不同但邮编相同
-				t = hash(i.getChain().trim() + StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim()))+ i.getKindCode().trim());
+				//上传一览表与全国一览表中分类、品牌、电话,名称均相同，且地址相同但邮编不同或地址不同但邮编相同
+				t = hash(i.getChain().trim() + StringUtil.sortPhone(StringUtil.contactFormat(i.getTelephone().trim()))+ i.getKindCode().trim() + i.getName().trim());
 				if (editPart2.get(t) != null&&editPart2.get(t).size()!=0) {
 					for (IxDealershipSource j : editPart2.get(t)) {
 						boolean sameAddr = i.getAddress().equals(j.getAddress());

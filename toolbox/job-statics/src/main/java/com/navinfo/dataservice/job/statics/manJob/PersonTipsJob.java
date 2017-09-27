@@ -17,6 +17,8 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 
 import java.io.IOException;
@@ -78,7 +80,7 @@ public class PersonTipsJob extends AbstractStatJob {
     private Map<Integer, JSONObject> getSubTaskLineStat(final String timestamp) throws Exception {
         java.sql.Connection orclConn = null;
         try {
-            String sqlLineQuery = "SELECT T.S_MSUBTASKID, T.ID, T.WKTLOCATION, T.T_LIFECYCLE\n" +
+            String sqlLineQuery = "SELECT T.S_MSUBTASKID, T.ID, T.WKTLOCATION, T.T_LIFECYCLE, t.S_SOURCETYPE\n" +
                     "  FROM TIPS_INDEX T\n" +
                     " WHERE T.S_MSUBTASKID <> 0\n" +
                     "   AND T.S_SOURCETYPE = '2001'\n" +
@@ -101,6 +103,25 @@ public class PersonTipsJob extends AbstractStatJob {
                             //中线任务号
                             int s_mSubTaskId = rs.getInt("S_MSUBTASKID");
                             String rowkey = rs.getString("ID");
+
+                            //20170927 新增里程区分测线来源统计
+                            //测线来源src=0（GPS测线手持端）和2（自绘测线）
+                            String sourceType = rs.getString("S_SOURCETYPE");
+                            if(sourceType.equals("2001")) {
+                                Get get = new Get(rowkey.getBytes());
+                                get.addColumn("data".getBytes(), "deep".getBytes());
+                                Result result = htab.get(get);
+                                if(result == null || result.isEmpty()) {
+                                    continue;
+                                }
+                                JSONObject deepJSON = JSONObject.fromObject(new String(result.getValue(
+                                        "data".getBytes(), "deep".getBytes())));
+                                int src = deepJSON.getInt("src");
+                                if(src != 0 && src != 2) {
+                                    continue;
+                                }
+                            }
+
                             long tipsAllNum = 0;
                             double newLength = 0;
                             JSONObject statObj = null;

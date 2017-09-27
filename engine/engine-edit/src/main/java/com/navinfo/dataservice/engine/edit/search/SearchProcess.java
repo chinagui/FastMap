@@ -39,6 +39,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
+import com.navinfo.dataservice.dao.glm.search.IxPointaddressSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
@@ -216,6 +217,10 @@ public class SearchProcess {
 						if (type == ObjType.IXPOI) {
 							IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
 							list = ixPoiSearch.searchDataByTileWithGap(x, y, z,
+									gap, this.getArray());
+						}else if(type == ObjType.IX_POINTADDRESS) {
+							IxPointaddressSearch ixPointaddressSearch = new IxPointaddressSearch(conn);
+							list = ixPointaddressSearch.searchDataByTileWithGap(x, y, z,
 									gap, this.getArray());
 						} else {
 							ISearch search = factory.createSearch(type);

@@ -46,15 +46,15 @@ public class CreateCMSTaskPhase extends JobPhase {
             //更新状态为进行中
             jobProgressOperator.updateStatus(jobProgress);
             conn.commit();
-
-            if (lastJobProgress.getStatus() == JobProgressStatus.NODATA) {
+            //中线采集子任务tips2mark：=4时，不继续执行
+            //中线采集任务，快线项目tips2mark=4时，继续执行
+            if (lastJobProgress.getStatus() == JobProgressStatus.NODATA&&jobRelation.getItemType()==ItemType.SUBTASK) {
                 //如果无数据，不需要创建cms任务
             	jobProgress.setStatus(JobProgressStatus.NODATA);
             	jobProgressOperator.updateStatus(jobProgress);
                 //JobService.getInstance().updateJobProgress(jobProgress.getPhaseId(), jobProgress.getStatus(), jobProgress.getOutParameter());
                 return jobProgress.getStatus();
             }
-
             //业务逻辑
             Map<String, Object> cmsInfo = Tips2MarkUtils.getItemInfo(conn, jobRelation.getItemId(), jobRelation.getItemType());
             JSONObject parameter = new JSONObject();
@@ -108,9 +108,18 @@ public class CreateCMSTaskPhase extends JobPhase {
                 jobProgress.setMessage(jobProgress.getMessage() + ex.getMessage());
             }
             if (res != null) {
+            	//msg:{"status":1}//1创建2没创建.判断cms接口执行成功，是否有创建cms任务，若创建，则赋值执行成功；否则赋值无数据，表示未创建cms任务
                 boolean success = res.getBoolean("success");
                 if (success) {
-                    jobProgress.setStatus(JobProgressStatus.SUCCESS);
+                	try{
+	                	if(res.containsKey("msg")&&res.getJSONObject("msg").containsKey("status")){
+	                		int status=res.getJSONObject("msg").getInt("status");
+	                		if(status==1){jobProgress.setStatus(JobProgressStatus.SUCCESS);}
+	                		else{jobProgress.setStatus(JobProgressStatus.NODATA);}
+	                	}else{jobProgress.setStatus(JobProgressStatus.SUCCESS);}
+                	}catch (Exception e) {
+                		 jobProgress.setStatus(JobProgressStatus.SUCCESS);
+					}                   
                 } else {
                     log.error("phaseId:"+jobProgress.getPhaseId()+",cms error msg:" + res.get("msg"));
                     jobProgress.setStatus(JobProgressStatus.FAILURE);

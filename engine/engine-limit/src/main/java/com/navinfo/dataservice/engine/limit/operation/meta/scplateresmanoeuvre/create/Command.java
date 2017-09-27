@@ -135,10 +135,10 @@ public class Command extends AbstractCommand {
 		this.charSwitch = data.getInt("charSwitch");
 		this.charToNum = data.getString("charToNum");
 		this.tailNumber = data.getString("tailNumber");
-		this.platecolor = data.getString("platecolor");
+		this.platecolor = data.getString("plateColor");
 		this.energyType = data.getString("energyType");
 		this.gasEmisstand = data.getString("gasEmisstand");
-		this.seatnum = data.getInt("seatnum");
+		this.seatnum = data.getInt("seatNum");
 		this.vehicleLength = data.getDouble("vehicleLength");
 		this.resWeigh = data.getDouble("resWeigh");
 		this.resAxleCount = data.getInt("resAxleCount");

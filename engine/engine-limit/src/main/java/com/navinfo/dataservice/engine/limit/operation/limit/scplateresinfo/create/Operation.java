@@ -28,7 +28,10 @@ public class Operation  implements IOperation {
             info.setUrl(infoObj.getString("url"));
             info.setNewsTime(infoObj.getString("newsTime"));
             info.setInfoContent(infoObj.getString("infoContent"));
-            info.setCondition(infoObj.getString("condition"));
+
+            if (infoObj.containsKey("condition")) {
+                info.setCondition(infoObj.getString("condition"));
+            }
 
             if (infoObj.containsKey("complete")) {
                 info.setComplete(infoObj.getInt("complete"));

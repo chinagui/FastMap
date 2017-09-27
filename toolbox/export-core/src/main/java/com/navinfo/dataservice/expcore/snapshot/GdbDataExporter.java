@@ -95,6 +95,15 @@ public class GdbDataExporter {
 			System.out.println("exporting adface :time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 	
 			AdFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
+			
+			//********2017.09.26 zl*********
+			System.out.println("exporting gdb_cmkFace :time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
+			
+			GdbCmkFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
+			
+			System.out.println("exporting gdb_luFace :time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
+			
+			GdbLuFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 	
 			sqliteConn.close();
 			

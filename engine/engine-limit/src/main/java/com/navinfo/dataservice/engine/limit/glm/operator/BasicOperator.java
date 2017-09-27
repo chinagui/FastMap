@@ -310,6 +310,7 @@ public class BasicOperator extends AbstractOperator {
             String primaryPk = String.valueOf(row.getClass().getMethod(M_PARENTPK).invoke(row));
             String primaryPkValue = String.valueOf(row.getClass().getMethod(M_PARENTPKVALUE).invoke(row));
 
+            strWhereSql.append("=");
             strWhereSql.append(primaryKeyValue);
             strWhereSql.append(" and ");
             strWhereSql.append(primaryPk);

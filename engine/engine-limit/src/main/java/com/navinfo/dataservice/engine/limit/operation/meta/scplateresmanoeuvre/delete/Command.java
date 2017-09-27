@@ -1,25 +1,28 @@
 package com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete;
 
+import java.util.List;
+
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresManoeuvre;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand{
 	private String requester;
 
-	private int manoeuvreId = 0;
+	private JSONArray manoeuvreId;
 
 	private JSONObject content;
 
-	private ScPlateresManoeuvre manoeuvre;
+	private List<ScPlateresManoeuvre> manoeuvre;
 	
 	private String groupId;
 
-	public int getManoeuvreId() {
+	public JSONArray getManoeuvreId() {
 		return this.manoeuvreId;
 	}
 
@@ -27,11 +30,11 @@ public class Command extends AbstractCommand{
 		return this.content;
 	}
 
-	public ScPlateresManoeuvre getManoeuvre() {
+	public List<ScPlateresManoeuvre> getManoeuvre() {
 		return this.manoeuvre;
 	}
 
-	public void setManoeuvre(ScPlateresManoeuvre value) {
+	public void setManoeuvre(List<ScPlateresManoeuvre> value) {
 		this.manoeuvre = value;
 	}
 	
@@ -42,10 +45,8 @@ public class Command extends AbstractCommand{
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
-		JSONObject data = json.getJSONObject("data");
-		this.manoeuvreId = data.getInt("objId");
-		this.content = data.getJSONObject("data");
-		this.groupId = data.getString("groupId");
+		this.manoeuvreId = json.getJSONArray("objId");
+		this.groupId = json.getString("groupId");
 	}
 
 	@Override

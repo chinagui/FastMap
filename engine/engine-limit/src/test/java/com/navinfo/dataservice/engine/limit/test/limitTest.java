@@ -16,8 +16,10 @@ import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
+import com.navinfo.dataservice.engine.limit.operation.Transaction;
 import com.navinfo.dataservice.engine.limit.search.SearchProcess;
 import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
+import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -33,8 +35,10 @@ public class limitTest extends ClassPathXmlAppContextInit{
 	
 
 	@Test
-	public void test01(){
-		String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":\"11000\",\"infoCode\":\"\",\"startTime\":\"20170915\",\"endTime\":\"20170920\",\"complete\":\"1,2,3\",\"condition\":\"'S','D'\",\"pageSize\":20,\"pageNum\":1}}";
+	public void testInfosearch(){
+		//String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":\"110000\",\"infoCode\":\"\",\"startTime\":\"20170915\",\"endTime\":\"20170920\",\"complete\":\"[1,2,3]\",\"condition\":\"['S','D']\",\"pageSize\":20,\"pageNum\":1}}";
+        String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110000,\"infoCode\":\"\",\"startTime\":\"20170926\",\"endTime\":\"20170926\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
+		
         Connection conn = null;
 
         try {
@@ -53,14 +57,19 @@ public class limitTest extends ClassPathXmlAppContextInit{
             int total = p.searchLimitDataByCondition(
                     LimitObjType.valueOf(objType), condition,objList);
 
+            JSONObject result = new JSONObject();
             JSONArray array = new JSONArray();
 
             for (IRow obj : objList) {
-			    JSONObject json = obj.Serialize(ObjLevel.FULL);
-			    json.put("geoLiveType", objType);
-			    array.add(json);
-			}
-			System.out.print(array);
+                JSONObject json = obj.Serialize(ObjLevel.FULL);
+                json.put("geoLiveType", objType);
+                array.add(json);
+            }
+
+            result.put("total", total);
+            result.put("data", array);
+            
+			System.out.print(result);
         } catch (Exception e) {
 
             log.error(e.getMessage(), e);           
@@ -98,5 +107,65 @@ public class limitTest extends ClassPathXmlAppContextInit{
         JSONObject result = p.searchRdLinkDataByCondition(type, condition);
         
         System.out.println(result);
+	}
+	
+	@Test
+	public void testMetaSearch() throws Exception {
+		//String parameter = "{\"type\":\"SCPLATERESGROUP\",\"condition\":{\"adminArea\":110000,\"groupType\":\"1,2\",\"pageSize\":20,\"pageNum\":1}}";
+        //String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"condition\":{\"groupId\":\"S1100000002\"}}";
+		String parameter = "{\"type\":\"SCPLATERESGROUP\",\"condition\":{\"adminArea\":110000}}";
+		
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			conn = DBConnector.getInstance().getLimitConnection();
+
+			JSONObject condition = jsonReq.getJSONObject("condition");
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<IRow> objList = new ArrayList<>();
+			int count = p.searchMetaDataByCondition(LimitObjType.valueOf(objType), condition, objList);
+
+			JSONObject result = new JSONObject();
+			JSONArray array = new JSONArray();
+
+			for (IRow obj : objList) {
+				JSONObject json = obj.Serialize(ObjLevel.FULL);
+				json.put("geoLiveType", objType);
+				array.add(json);
+			}
+
+			result.put("total", count);
+			result.put("data", array);
+
+			System.out.println(result);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		 }
+	}
+	
+	@Test
+	public void testRun() throws Exception{
+		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"CREATE\",\"data\":{\"groupId\":\"S1100000002\",\"vehicle\":\"1|2\",\"attribution\":\"1|2\",\"restrict\":\"京G\",\"tempPlate\":2,\"tempPlateNum\":0,\"charSwitch\":2,\"charToNum\":1,\"tailNumber\":\"1|2|3\",\"plateColor\":\"1|2\",\"energyType\":\"1|2|3\",\"gasEmisstand\":\"1\",\"seatNum\":10,\"vehicleLength\":5.5,\"resWeigh\":15.0,\"resAxleLoad\":15.0,\"resAxleCount\":3,\"startDate\":\"20170915\",\"endDate\":\"20170922\",\"resDatetype\":\"1|2\",\"time\":\"20170922\",\"specFlag\":\"1|2\"}}";
+		
+		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"UPDATE\",\"groupId\":\"S1100000002\",\"objId\":1,\"data\":{\"vehicle\":\"1|2\",\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"DELETE\",\"groupId\":\"S1100000002\",\"objId\":[1,2]}";
+		Transaction t = new Transaction(parameter);
+		
+		t.run();
 	}
 }

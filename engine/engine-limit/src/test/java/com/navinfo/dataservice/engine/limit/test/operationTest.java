@@ -59,4 +59,15 @@ public class operationTest extends ClassPathXmlAppContextInit {
 
 
     }
+
+    @Test
+    public void create03() throws Exception {
+
+        String parameter = "{ \"command\": \"UPDATE\", \"type\": \"SCPLATERESGROUP\",objId: \"S1100000011\", data: { infoIntelId: \"ABC1528010\", groupType: 2 ,principle:\"3\" ,\"objStatus\":\"UPDATE\"} }";
+        Transaction t = new Transaction(parameter);
+
+        String msg = t.run();
+
+
+    }
 }

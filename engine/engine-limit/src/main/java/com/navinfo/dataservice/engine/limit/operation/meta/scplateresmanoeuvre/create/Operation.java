@@ -32,7 +32,9 @@ public class Operation  implements IOperation{
 		manoeuvre.setTempPlate(command.getTempPlate());
 		manoeuvre.setTempPlateNum(command.getTempPlateNum());
 		manoeuvre.setCharSwitch(command.getCharSwitch());
+		manoeuvre.setCharToNum(command.getCharToNum());
 		manoeuvre.setTailNumber(command.getTailNumber());
+		manoeuvre.setPlatecolor(command.getPlatecolor());
 		manoeuvre.setEnergyType(command.getEnergyType());
 		manoeuvre.setGasEmisstand(command.getGasEmisstand());
 		manoeuvre.setSeatnum(command.getSeatnum());
@@ -46,7 +48,7 @@ public class Operation  implements IOperation{
 		manoeuvre.setTime(command.getTime());
 		manoeuvre.setSpecFlag(command.getSpecFlag());
 		
-		result.insertObject(manoeuvre, ObjStatus.INSERT, String.valueOf(manoeuvre.getManoeuvreId()));
+		result.insertObject(manoeuvre, ObjStatus.INSERT, manoeuvre.getGroupId() + manoeuvre.getManoeuvreId());
         return null;
 	}
 }

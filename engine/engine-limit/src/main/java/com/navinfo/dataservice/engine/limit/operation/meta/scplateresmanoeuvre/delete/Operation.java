@@ -13,8 +13,12 @@ public class Operation implements IOperation{
 	}
 
 	@Override
-	public String run(Result result) throws Exception{
-		result.insertObject(command.getManoeuvre(), ObjStatus.DELETE, command.getGroupId() + command.getManoeuvreId());
+	public String run(Result result) throws Exception {
+
+		for (int i = 0; i < command.getManoeuvre().size(); i++) {
+			result.insertObject(command.getManoeuvre().get(i), ObjStatus.DELETE,
+					command.getGroupId() + command.getManoeuvre().get(i).getManoeuvreId());
+		}
 		return null;
 	}
 

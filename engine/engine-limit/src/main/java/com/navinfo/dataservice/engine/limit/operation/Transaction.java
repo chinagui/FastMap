@@ -3,8 +3,6 @@ package com.navinfo.dataservice.engine.limit.operation;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
-import com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.create.Command;
-import com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.create.Process;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
@@ -168,8 +166,17 @@ public class Transaction {
             case SCPLATERESGROUP:
                 switch (operType) {
                     case CREATE:
-                        return new Command(json, requester);
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.create.Command(json,
+                                requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.update.Command(json,
+                                requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete.Command(json,
+                                requester);
+
                 }
+                break;
             case SCPLATERESMANOEUVRE:
                 switch (operType) {
                     case CREATE:
@@ -182,6 +189,7 @@ public class Transaction {
                         return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Command(json,
                                 requester);
                 }
+                break;
             case SCPLATERESINFO:
                 switch (operType) {
                     case CREATE:
@@ -191,7 +199,7 @@ public class Transaction {
                         return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.update.Command(json,
                                 requester);
                 }
-
+                break;
             case SCPLATERESRDLINK:
                 switch (operType) {
                     case UPDATE:
@@ -213,28 +221,16 @@ public class Transaction {
             case SCPLATERESGROUP:
                 switch (operType) {
                     case CREATE:
-                        return new Process(command);
-//              case UPDATE:
-//              return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process(command);
-//          case DELETE:
-//              return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Process(command);
-//          case BREAK:
-//              return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(command);
-//          case DEPART:
-//              return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode.Process(command);
-//          case REPAIR:
-//              return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink.Process(command);
-//          case UPDOWNDEPART:
-//              return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Process(command);
-//          case CREATESIDEROAD:
-//              return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Process(command);
-//          case BATCH:
-//              return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Process(command);
-//          case BATCHDELETE:
-//              return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Process(command);
-//          case TOPOBREAK:
-//              return new com.navinfo.dataservice.engine.edit.operation.topo.topobreakin.Process(command);
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.update.Process(
+                                command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete.Process(
+                                command);
                 }
+                break;
             case SCPLATERESMANOEUVRE:
                 switch (operType) {
                     case CREATE:
@@ -247,6 +243,7 @@ public class Transaction {
                         return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Process(
                                 command);
                 }
+                break;
             case SCPLATERESINFO:
                 switch (operType) {
                     case CREATE:
@@ -256,6 +253,7 @@ public class Transaction {
                         return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.update.Process(
                                 command);
                 }
+                break;
             case SCPLATERESRDLINK:
                 switch (operType) {
                     case UPDATE:

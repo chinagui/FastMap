@@ -44,9 +44,15 @@ public class DefaultWriter {
 		write2Mongo(timestamp,identifyJson,messageJSON.getJSONObject("statResult"));	
 		write2Other(timestamp,messageJSON.getJSONObject("statResult"));
 		pushEndMsg(jobType,timestamp,identify,identifyJson);
-		String staticMessage=getLatestStatic();
-		if(!StringUtils.isEmpty(staticMessage)){
-			pushWebSocket(staticMessage,jobType);
+		try{
+			log.info("start 获取统计消息");
+			String staticMessage=getLatestStatic();		
+			log.info("end 获取统计消息");
+			if(!StringUtils.isEmpty(staticMessage)){
+				pushWebSocket(staticMessage,jobType);
+			}
+		}catch (Exception e) {
+			log.error("获取统计消息或发送socket失败", e);
 		}
 		log.info("end write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
 	}
@@ -167,7 +173,9 @@ public class DefaultWriter {
 	
 	public void pushWebSocket(String staticMessage,String staticType) {
 		try {
+			log.info("start socket推送");
             SysMsgPublisher.publishManStaticMsg(staticMessage,staticType);
+            log.info("end socket推送");
         } catch (Exception ex) {
             log.error("publishManJobMsg error:" + ExceptionUtils.getStackTrace(ex));
         }

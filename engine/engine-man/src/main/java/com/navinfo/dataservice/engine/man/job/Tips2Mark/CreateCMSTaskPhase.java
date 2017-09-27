@@ -83,7 +83,7 @@ public class CreateCMSTaskPhase extends JobPhase {
             parameter.put("fieldDbName", auDb.getDbUserName());
             
             //modify by songhe 2017/09/27  增加参数周出品外业成果库信息
-            DbInfo auWeekDb = datahub.getOnlyDbByType("metaRoad");
+            DbInfo auWeekDb = datahub.getOnlyDbByType("gen2AuWeek");
             parameter.put("fieldWeekDbIp", auWeekDb.getDbServer().getIp());
             parameter.put("fieldWeekDbName", auWeekDb.getDbUserName());
             

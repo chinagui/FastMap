@@ -19,31 +19,27 @@ public class PidApply {
 		this.conn = conn;
 	}
 	
-	public String pidForInsertGroup(String infoIntelId,int adAdmin) throws Exception{
+	public String pidForInsertGroup(String infoIntelId,int adAdmin,String condition) throws Exception{
 		
 		String newGroupId = "";
 		
 		ScPlateresGroupSearch search = new ScPlateresGroupSearch(this.conn);
 		
 		String maxGroupId = search.loadMaxGroupId(infoIntelId);
-		
-		if(maxGroupId==null || maxGroupId.isEmpty()){
-			
-			ScPlateresInfoSearch infoSearch = new ScPlateresInfoSearch(this.conn);
-			
-			ScPlateresInfo info = infoSearch.loadById(infoIntelId);
-			
-			newGroupId = info.getCondition() +  String.valueOf(adAdmin).substring(0, 4) + "000001";
-			
-		}else{
-			
+
+		if (maxGroupId == null || maxGroupId.isEmpty()) {
+
+			newGroupId = condition + String.valueOf(adAdmin).substring(0, 4) + "000001";
+
+		} else {
+
 			String num = maxGroupId.substring(6);
-			
+
 			int number = Integer.valueOf(num);
-			
-			number ++;
-			
-			newGroupId = maxGroupId.substring(0, 5) + String.format("%06d", number);			
+
+			number++;
+
+			newGroupId = maxGroupId.substring(0, 5) + String.format("%06d", number);
 		}
 		
 		return newGroupId;

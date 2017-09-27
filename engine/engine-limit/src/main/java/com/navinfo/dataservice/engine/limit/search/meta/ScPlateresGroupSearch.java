@@ -4,6 +4,8 @@ import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresGroup;
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import java.sql.Connection;
@@ -138,46 +140,46 @@ public class ScPlateresGroupSearch {
         return total;
     }
     
-    private void componentSql(JSONObject obj,StringBuilder sql){
+	private void componentSql(JSONObject obj, StringBuilder sql) {
 
-        if (obj.containsKey("infoCode")) {
-            String infoCode = obj.getString("infoCode");
+		if (obj.containsKey("infoCode")) {
+			String infoCode = obj.getString("infoCode");
 
-            if (infoCode != null && !infoCode.isEmpty()) {
-                sql.append(" INFO_INTEL_ID = ");
-                sql.append("'" + infoCode + "'");
-            }
-        }
+			if (infoCode != null && !infoCode.isEmpty()) {
+				sql.append(" INFO_INTEL_ID = ");
+				sql.append("'" + infoCode + "'");
+			}
+		}
 
-        if (obj.containsKey("adminArea")) {
-            String admin = obj.getString("adminArea");
+		if (obj.containsKey("adminArea")) {
+			String admin = obj.getString("adminArea");
 
-            if (!sql.toString().endsWith("WHERE")){
-            	sql.append(" AND");
-            }
-            
-            if (admin != null && !admin.isEmpty()) {
-                sql.append(" AD_ADMIN = ");
-                sql.append(admin);
-            }
-        }
-        
-        if (obj.containsKey("groupId")) {
-            String groupId = obj.getString("groupId");
+			if (!sql.toString().endsWith("WHERE")) {
+				sql.append(" AND");
+			}
 
-            if (groupId != null && !groupId.isEmpty()) {
-                sql.append(" AND GROUP_ID = ");
-                sql.append("'" + groupId + "'");
-            }
-        }
+			if (admin != null && !admin.isEmpty()) {
+				sql.append(" AD_ADMIN = ");
+				sql.append(admin);
+			}
+		}
 
-        if (obj.containsKey("groupType")) {
-            String groupType = obj.getString("groupType");
+		if (obj.containsKey("groupId")) {
+			String groupId = obj.getString("groupId");
 
-            if (groupType != null && !groupType.isEmpty()) {
-                sql.append(" AND GROUP_TYPE IN ");
-                sql.append("(" + groupType + ")");
-            }
-        }
-    }
+			if (groupId != null && !groupId.isEmpty()) {
+				sql.append(" AND GROUP_ID = ");
+				sql.append("'" + groupId + "'");
+			}
+		}
+
+		if (obj.containsKey("groupType")) {
+			JSONArray groupType = obj.getJSONArray("groupType");
+
+			if (groupType != null && groupType.size() != 0) {
+				sql.append(" AND GROUP_TYPE IN ");
+				sql.append("(" + groupType.toString().replace("[", "").replace("]", "") + ")");
+			}
+		}
+	}
 }

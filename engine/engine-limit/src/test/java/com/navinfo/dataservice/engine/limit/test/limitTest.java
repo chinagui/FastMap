@@ -162,7 +162,8 @@ public class limitTest extends ClassPathXmlAppContextInit{
 	public void testRun() throws Exception{
 		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"CREATE\",\"data\":{\"groupId\":\"S1100000002\",\"vehicle\":\"1|2\",\"attribution\":\"1|2\",\"restrict\":\"京G\",\"tempPlate\":2,\"tempPlateNum\":0,\"charSwitch\":2,\"charToNum\":1,\"tailNumber\":\"1|2|3\",\"plateColor\":\"1|2\",\"energyType\":\"1|2|3\",\"gasEmisstand\":\"1\",\"seatNum\":10,\"vehicleLength\":5.5,\"resWeigh\":15.0,\"resAxleLoad\":15.0,\"resAxleCount\":3,\"startDate\":\"20170915\",\"endDate\":\"20170922\",\"resDatetype\":\"1|2\",\"time\":\"20170922\",\"specFlag\":\"1|2\"}}";
 		
-		String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"UPDATE\",\"groupId\":\"S1100000002\",\"objId\":1,\"data\":{\"vehicle\":\"1|2\",\"objStatus\":\"UPDATE\"}}";
+		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"UPDATE\",\"groupId\":\"S1100000002\",\"objId\":1,\"data\":{\"vehicle\":\"1|2\",\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"DELETE\",\"groupId\":\"S1100000002\",\"objId\":[1,2]}";
 		Transaction t = new Transaction(parameter);
 		
 		t.run();

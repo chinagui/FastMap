@@ -36,7 +36,9 @@ public class limitTest extends ClassPathXmlAppContextInit{
 
 	@Test
 	public void testInfosearch(){
-		String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":\"110000\",\"infoCode\":\"\",\"startTime\":\"20170915\",\"endTime\":\"20170920\",\"complete\":\"[1,2,3]\",\"condition\":\"['S','D']\",\"pageSize\":20,\"pageNum\":1}}";
+		//String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":\"110000\",\"infoCode\":\"\",\"startTime\":\"20170915\",\"endTime\":\"20170920\",\"complete\":\"[1,2,3]\",\"condition\":\"['S','D']\",\"pageSize\":20,\"pageNum\":1}}";
+        String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110000,\"infoCode\":\"\",\"startTime\":\"20170926\",\"endTime\":\"20170926\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
+		
         Connection conn = null;
 
         try {
@@ -55,14 +57,19 @@ public class limitTest extends ClassPathXmlAppContextInit{
             int total = p.searchLimitDataByCondition(
                     LimitObjType.valueOf(objType), condition,objList);
 
+            JSONObject result = new JSONObject();
             JSONArray array = new JSONArray();
 
             for (IRow obj : objList) {
-			    JSONObject json = obj.Serialize(ObjLevel.FULL);
-			    json.put("geoLiveType", objType);
-			    array.add(json);
-			}
-			System.out.print(array);
+                JSONObject json = obj.Serialize(ObjLevel.FULL);
+                json.put("geoLiveType", objType);
+                array.add(json);
+            }
+
+            result.put("total", total);
+            result.put("data", array);
+            
+			System.out.print(result);
         } catch (Exception e) {
 
             log.error(e.getMessage(), e);           
@@ -104,8 +111,10 @@ public class limitTest extends ClassPathXmlAppContextInit{
 	
 	@Test
 	public void testMetaSearch() throws Exception {
-		String parameter = "{\"type\":\"SCPLATERESGROUP\",\"condition\":{\"adminArea\":110000,\"groupType\":\"1,2\",\"pageSize\":20,\"pageNum\":1}}";
-
+		//String parameter = "{\"type\":\"SCPLATERESGROUP\",\"condition\":{\"adminArea\":110000,\"groupType\":\"1,2\",\"pageSize\":20,\"pageNum\":1}}";
+        //String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"condition\":{\"groupId\":\"S1100000002\"}}";
+		String parameter = "{\"type\":\"SCPLATERESGROUP\",\"condition\":{\"adminArea\":110000}}";
+		
 		Connection conn = null;
 
 		try {
@@ -151,8 +160,9 @@ public class limitTest extends ClassPathXmlAppContextInit{
 	
 	@Test
 	public void testRun() throws Exception{
-		String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"CREATE\",\"data\":{\"groupId\":\"S1100000002\",\"vehicle\":\"1|2|3\",\"attribution\":\"1|2\",\"restrict\":\"京G\",\"tempPlate\":2,\"tempPlateNum\":0,\"charSwitch\":2,\"charToNum\":1,\"tailNumber\":\"1|2|3\",\"plateColor\":\"1|2\",\"energyType\":\"1|2|3\",\"gasEmisstand\":\"1\",\"seatNum\":10,\"vehicleLength\":5.5,\"resWeigh\":15.0,\"resAxleLoad\":15.0,\"resAxleCount\":3,\"startDate\":\"20170915\",\"endDate\":\"20170922\",\"resDatetype\":\"1|2\",\"time\":\"20170922\",\"specFlag\":\"1|2\"}}";
+		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"CREATE\",\"data\":{\"groupId\":\"S1100000002\",\"vehicle\":\"1|2\",\"attribution\":\"1|2\",\"restrict\":\"京G\",\"tempPlate\":2,\"tempPlateNum\":0,\"charSwitch\":2,\"charToNum\":1,\"tailNumber\":\"1|2|3\",\"plateColor\":\"1|2\",\"energyType\":\"1|2|3\",\"gasEmisstand\":\"1\",\"seatNum\":10,\"vehicleLength\":5.5,\"resWeigh\":15.0,\"resAxleLoad\":15.0,\"resAxleCount\":3,\"startDate\":\"20170915\",\"endDate\":\"20170922\",\"resDatetype\":\"1|2\",\"time\":\"20170922\",\"specFlag\":\"1|2\"}}";
 		
+		String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"UPDATE\",\"groupId\":\"S1100000002\",\"objId\":1,\"data\":{\"vehicle\":\"1|2\",\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		
 		t.run();

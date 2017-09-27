@@ -42,10 +42,8 @@ public class Command extends AbstractCommand{
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
-		JSONObject data = json.getJSONObject("data");
-		this.manoeuvreId = data.getInt("objId");
-		this.content = data.getJSONObject("data");
-		this.groupId = data.getString("groupId");
+		this.manoeuvreId = json.getInt("objId");
+		this.groupId = json.getString("groupId");
 	}
 
 	@Override

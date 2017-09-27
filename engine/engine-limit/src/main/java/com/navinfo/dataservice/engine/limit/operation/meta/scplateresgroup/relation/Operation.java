@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete;
+package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.relation;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
@@ -23,10 +23,14 @@ public class Operation implements IOperation {
 
     private void DelGroup(Result result) {
 
-        for (ScPlateresGroup group:command.getGroups()) {
+        for (ScPlateresGroup group : command.getGroups()) {
 
-            result.insertObject(group, ObjStatus.DELETE, group.getGroupId());
+            if (!group.getInfoIntelId().equals(command.getInfoIntelId())) {
+
+                group.changedFields().put("infoIntelId",command.getInfoIntelId());
+
+                result.insertObject(group, ObjStatus.UPDATE, group.getGroupId());
+            }
         }
-
     }
 }

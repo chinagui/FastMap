@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete;
+package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.relation;
 
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
@@ -17,7 +17,7 @@ public class Command extends AbstractCommand {
 
     private List<String>groupIds=new ArrayList<>();
 
-    private List<ScPlateresGroup> groups=new ArrayList<>();
+    private List<ScPlateresGroup> groups = new ArrayList<>();
 
     public List<String> getGroupIds() {
         return groupIds;
@@ -31,6 +31,12 @@ public class Command extends AbstractCommand {
         this.groups = groups;
     }
 
+    private String infoIntelId="";
+
+    public String getInfoIntelId() {
+        return infoIntelId;
+    }
+
     private boolean isCheckInfect = false;
 
     public boolean isCheckInfect() {
@@ -38,18 +44,17 @@ public class Command extends AbstractCommand {
     }
 
     public Command(JSONObject json, String requester) {
+
         this.requester = requester;
 
-        if (json.containsKey("infect") && json.getInt("infect") == 1) {
-            this.isCheckInfect = true;
-        }
+        infoIntelId = json.getString("infoIntelId");
 
         groupIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("objIds")));
     }
 
     @Override
     public OperType getOperType() {
-        return OperType.DELETE;
+        return OperType.RELATION;
     }
 
     @Override

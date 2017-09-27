@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresManoeuvre;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.limit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Command;
@@ -16,7 +20,13 @@ public class Process extends AbstractProcess<Command> {
 
         ScPlateresManoeuvreSearch search = new ScPlateresManoeuvreSearch(this.getConn());
 
-        this.getCommand().setManoeuvre(search.loadById(getCommand().getManoeuvreId(),getCommand().getGroupId()));
+        List<ScPlateresManoeuvre>  results = new ArrayList<>();
+        
+        for(int i = 0 ; i<this.getCommand().getManoeuvreId().size(); i++ ){
+        	results.add(search.loadById(this.getCommand().getManoeuvreId().getInt(i),getCommand().getGroupId()));
+        }
+        
+        this.getCommand().setManoeuvre(results);
 
         return true;
     }

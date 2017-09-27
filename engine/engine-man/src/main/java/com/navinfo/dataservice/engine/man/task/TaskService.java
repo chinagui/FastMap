@@ -54,6 +54,7 @@ import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
@@ -226,7 +227,7 @@ public class TaskService {
 	 * @throws Exception
 	 */
 	public int createWithBean(Connection conn,Task bean) throws Exception{
-		int taskId=0;
+		int taskId=bean.getTaskId();
 		try{
 			/*与block关联的常规任务
 			 * 1.修改同类型task的latest
@@ -237,15 +238,19 @@ public class TaskService {
 				List<Integer> blockList = new ArrayList<Integer>();
 				blockList.add(bean.getBlockId());
 				BlockOperation.openBlockByBlockIdList(conn,blockList);
-			}	
+			}
+			
 			//创建任务
-			taskId=TaskOperation.getNewTaskId(conn);
-			bean.setTaskId(taskId);
+			if(taskId==0){
+				taskId=TaskOperation.getNewTaskId(conn);
+				bean.setTaskId(taskId);
+			}
 			TaskOperation.insertTask(conn, bean);
 			
 			// 插入TASK_GRID_MAPPING
 			if(bean.getGridIds() != null){
 				TaskOperation.insertTaskGridMapping(conn, bean);
+				TaskService.getInstance().updateTaskGeo(conn, bean.getTaskId());
 			}
 			
 		}catch(Exception e){
@@ -3453,36 +3458,7 @@ public class TaskService {
 		}
 	}
 
-	/**
-	 * @param conn
-	 * @param bean
-	 * @throws Exception 
-	 */
-	public void createWithBeanWithTaskId(Connection conn, Task bean) throws Exception {
-		try{
-			/*与block关联的常规任务
-			 * 1.修改同类型task的latest
-			 * 2.如果block没有开启则开启block
-			 */
-			if(bean.getBlockId()!=0){
-				TaskOperation.updateLatest(conn,bean.getProgramId(),bean.getRegionId(),bean.getBlockId(),bean.getType());
-				List<Integer> blockList = new ArrayList<Integer>();
-				blockList.add(bean.getBlockId());
-				BlockOperation.openBlockByBlockIdList(conn,blockList);
-			}	
-			//创建任务
-			TaskOperation.insertTask(conn, bean);
-			
-			// 插入TASK_GRID_MAPPING
-			if(bean.getGridIds() != null){
-				TaskOperation.insertTaskGridMapping(conn, bean);
-			}
-			
-		}catch(Exception e){
-			log.error(e.getMessage(), e);
-			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-		}
-	}
+	
 
 	public void batchQuickTask(int dbId, int subtaskId,
 			int taskId, JSONArray pois, JSONArray tips) throws Exception{
@@ -5075,6 +5051,19 @@ public class TaskService {
 			throw new Exception("查询已经分配子任务的任务失败，原因为:" + e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+    
+    public void updateTaskGeo(Connection conn,int taskId)throws Exception{
+		try{
+			Map<Integer, Integer> gridMap = getGridMapByTaskId(conn, taskId);
+			JSONArray newGrids=new JSONArray();
+			newGrids.addAll(gridMap.keySet());
+			TaskOperation.updateTaskGeo(conn, GridUtils.grids2Wkt(newGrids), taskId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
 	

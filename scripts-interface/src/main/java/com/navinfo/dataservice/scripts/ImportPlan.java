@@ -40,10 +40,8 @@ public class ImportPlan {
 	//这里添加一个默认的日期格式，用于转换
 	private static final String DEFAULT_FORMATE = "yyyy-MM-dd HH:mm:ss";
 	private static final String DEFAULT_TIME = " 12:00:00";
-	//用于记录查询groupID的次数
-	private static int SELECT_TIMES = 0;
 	//这里没有tocken，没办法从tocken中获取userid，只能先写死一个数据库存在的值直接赋值
-	private static final long userID= 0;
+	private static final long userID = 0;
 
 	SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
@@ -104,11 +102,9 @@ public class ImportPlan {
 					//查询对应block下是否已经有任务存在，该block下没有数据的时候执行创建
 					JSONArray tasks = blockPlan.taskCountInBlock(blockID, conn);
 					if(tasks.size() == 0){
-						//这里每次一个新的blockPlan都需要重置groupID的查询次数
-						SELECT_TIMES = 0;
-						Map<String, Object> taskDataMap = blockPlan.getGroupId(map, conn);
+						blockPlan.getGroupId(map, conn);
 						//创建两个不同类型的任务
-						blockPlan.creatTaskByBlockPlan(taskDataMap);
+						blockPlan.creatTaskByBlockPlan(map);
 						taskIds.addAll(blockPlan.taskCountInBlock(blockID, conn));
 					}
 				}
@@ -488,9 +484,9 @@ public class ImportPlan {
 					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
 						taskJson.put("planStartDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())));
 					}
-//					if(taskDataMap.containsKey("MONTH_GROUP_ID") && StringUtils.isNotBlank(taskDataMap.get("MONTH_GROUP_ID").toString())){
-//						taskJson.put("groupId", Integer.parseInt(taskDataMap.get("MONTH_GROUP_ID").toString()));
-//					}
+					if(taskDataMap.containsKey("MONTH_GROUP_ID") && StringUtils.isNotBlank(taskDataMap.get("MONTH_GROUP_ID").toString())){
+						taskJson.put("groupId", Integer.parseInt(taskDataMap.get("MONTH_GROUP_ID").toString()));
+					}
 				}
 //				else{
 //					taskJson.put("type", 3);
@@ -603,38 +599,33 @@ public class ImportPlan {
 	 * 这里groupID有两种，所以执行两个查询全部放到map中
 	 * 
 	 */
-	public Map<String, Object> getGroupId(final Map<String, Object> taskMap, Connection conn) throws Exception{
+	public void getGroupId(Map<String, Object> taskMap, Connection conn) throws Exception{
 
 		try{
 			QueryRunner run = new QueryRunner();
 			String cityName = taskMap.get("CITY_NAME").toString();
 			
-			String sql = "select ug.group_id as colection_id from user_group ug where ug.group_name = (" 
+			String sql = "select ug.group_id from user_group ug where ug.group_name = (" 
 					+ "select t.COLLECT_GROUP_NAME from admin_group_mapping t, city c "
 					+ "where t.admin_code = c.admin_id "
 					+ "and c.city_name = '" + cityName + "')";
 					
-			String selsect ="select ug.group_id as month_id from user_group ug where ug.group_name = ("
+			String selsect ="select ug.group_id from user_group ug where ug.group_name = ("
 					+ "select t.edit_group_name from admin_group_mapping t, city c where t.admin_code = c.admin_id "
 					+ "and c.city_name = '"+ cityName + "')";
 
-			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
-				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int group = 0;
 					if (rs.next()) {
-						//这里一次查询直接查询出两种类型的groupID，以免不同的type类型赋值groupID时再执行一次查询
-						if(SELECT_TIMES == 0){
-							taskMap.put("MONTH_GROUP_ID", rs.getInt("month_id"));
-						}else{
-							taskMap.put("COLECTION_GROUP_ID", rs.getInt("colection_id"));
-						}
-						SELECT_TIMES++;
+						group = rs.getInt("group_id");
 					}
-					return taskMap;
+					return group;
 				}
 			};
 			
-			run.query(conn, selsect, rsHandler);	
-			return run.query(conn, sql, rsHandler);	
+			taskMap.put("MONTH_GROUP_ID", run.query(conn, selsect, rsHandler));
+			taskMap.put("COLECTION_GROUP_ID", run.query(conn, sql, rsHandler));
 		}catch(Exception e){
 			throw new Exception(e);
 		}

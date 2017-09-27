@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.job.statics.manJob;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
@@ -32,6 +35,10 @@ import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Table;
 
 /**
  *  
@@ -214,20 +221,25 @@ public class TipsJob extends AbstractStatJob {
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
+        Table htab = null;
+
 		try{
-			String baseAddLenSql = " WKTLOCATION from tips_index where s_sourceType in (2001,2002) AND t_lifecycle=3 " ;
+            htab = HBaseConnector.getInstance().getConnection()
+                    .getTable(TableName.valueOf(HBaseConstant.tipTab));
+
+			String baseAddLenSql = " WKTLOCATION,ID,S_SOURCETYPE from tips_index where s_sourceType in (2001,2002) AND t_lifecycle=3 " ;
 			String sql = "SELECT s_mtaskid,"+baseAddLenSql+" AND s_mtaskid <> 0 ORDER BY s_mtaskid";//中线新增测线
 
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			
-			compomentTipsAddLenMap(rs,tipsAddLenList);
+			compomentTipsAddLenMap(rs,tipsAddLenList,htab);
 			
 			String sql1 = "SELECT s_qtaskid,"+baseAddLenSql+" AND s_qtaskid <> 0 ORDER BY s_qtaskid";//快线新增测线
 			pstmt = conn.prepareStatement(sql1);
 			rs = pstmt.executeQuery();
 			
-			compomentTipsAddLenMap(rs,tipsAddLenList);
+			compomentTipsAddLenMap(rs,tipsAddLenList,htab);
 			
 			String baseTipsUploadNumSql = " COUNT(1) FROM tips_index WHERE t_tipstatus =2 AND " ;
 			String sql2 = "SELECT s_mtaskid,"+baseTipsUploadNumSql+" s_mtaskid <> 0 GROUP BY s_mtaskid";//中线采集上传
@@ -277,6 +289,13 @@ public class TipsJob extends AbstractStatJob {
 		}finally{
 			DBUtils.closeResultSet(rs);
 			DBUtils.closeStatement(pstmt);
+            if(htab != null) {
+                try {
+                    htab.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 		}
 	}
 	
@@ -290,7 +309,7 @@ public class TipsJob extends AbstractStatJob {
 	}
 	
 	
-	public void compomentTipsAddLenMap(ResultSet rs,List<Map<String, Object>> taskGridTipsList) throws SQLException{
+	public void compomentTipsAddLenMap(ResultSet rs,List<Map<String, Object>> taskGridTipsList, Table htab) throws SQLException, IOException {
 		int taskId = 0;
 		double tipsAddLen = 0.0;
 		Map<String, Object> taskGridTipsMap = null;
@@ -302,7 +321,26 @@ public class TipsJob extends AbstractStatJob {
 				taskGridTipsMap.put("taskId",taskId);
 				taskGridTipsList.add(taskGridTipsMap);
 			}
-			 
+
+            //20170927 新增里程区分测线来源统计
+            //测线来源src=0（GPS测线手持端）和2（自绘测线）
+            String sourceType = rs.getString("S_SOURCETYPE");
+            if(sourceType.equals("2001")) {
+                String rowkey = rs.getString("ID");
+                Get get = new Get(rowkey.getBytes());
+                get.addColumn("data".getBytes(), "deep".getBytes());
+                Result result = htab.get(get);
+                if(result == null || result.isEmpty()) {
+                    continue;
+                }
+                JSONObject deepJSON = JSONObject.fromObject(new String(result.getValue(
+                        "data".getBytes(), "deep".getBytes())));
+                int src = deepJSON.getInt("src");
+                if(src != 0 && src != 2) {
+                    continue;
+                }
+            }
+
 			
 			STRUCT geoStruct=(STRUCT) rs.getObject("wktlocation");
 			Geometry geometry = null;

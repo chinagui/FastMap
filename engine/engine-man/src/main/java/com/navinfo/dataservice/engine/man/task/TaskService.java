@@ -1190,8 +1190,25 @@ public class TaskService {
 					}
 				}
 				//任务自定义条件筛选
+				//order_status来表示这个排序的先后顺序。分别是开启1>待分配2>草稿3>未规划4>100%(已完成)5>已关闭6
+				//sStatus:[]//1未规划2草稿3待分配4进行中5已关闭:进行中指的status=1开启，待分配指的没有任何子任务
 				if ("sStatus".equals(key)) {	
-					conditionSql+="  AND TASK_LIST.status IN ("+condition.getJSONArray(key).join(",")+")";
+					JSONArray progress = condition.getJSONArray(key);
+					if(progress.isEmpty()){
+						continue;
+					}	
+					JSONArray statusListTmp=new JSONArray();
+					for(Object i:progress){
+						int tmp=(int) i;
+						if(tmp==1){statusListTmp.add(4);}
+						if(tmp==2){statusListTmp.add(3);}
+						if(tmp==3){statusListTmp.add(2);}
+						if(tmp==4){statusListTmp.add(1);statusListTmp.add(2);statusListTmp.add(5);}
+						if(tmp==5){statusListTmp.add(6);}
+					}
+					if(statusListTmp.size()>0){
+						conditionSql+="  AND TASK_LIST.order_status in ("+statusListTmp.join(",")+")";
+					}
 				}
 				if ("sType".equals(key)) {	
 					conditionSql+="  AND TASK_LIST.type IN ("+condition.getJSONArray(key).join(",")+")";

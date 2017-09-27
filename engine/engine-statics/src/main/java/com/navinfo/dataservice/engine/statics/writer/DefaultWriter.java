@@ -45,14 +45,14 @@ public class DefaultWriter {
 		write2Other(timestamp,messageJSON.getJSONObject("statResult"));
 		pushEndMsg(jobType,timestamp,identify,identifyJson);
 		try{
-			log.info("start 获取统计消息");
+			log.info("start getLatestStatic");
 			String staticMessage=getLatestStatic();		
-			log.info("end 获取统计消息");
+			log.info("end getLatestStatic");
 			if(!StringUtils.isEmpty(staticMessage)){
 				pushWebSocket(staticMessage,jobType);
 			}
 		}catch (Exception e) {
-			log.error("获取统计消息或发送socket失败", e);
+			log.error("getLatestStatic or pushsocket error", e);
 		}
 		log.info("end write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
 	}
@@ -173,9 +173,9 @@ public class DefaultWriter {
 	
 	public void pushWebSocket(String staticMessage,String staticType) {
 		try {
-			log.info("start socket推送");
+			log.info("start pushWebSocket");
             SysMsgPublisher.publishManStaticMsg(staticMessage,staticType);
-            log.info("end socket推送");
+            log.info("end pushWebSocket");
         } catch (Exception ex) {
             log.error("publishManJobMsg error:" + ExceptionUtils.getStackTrace(ex));
         }

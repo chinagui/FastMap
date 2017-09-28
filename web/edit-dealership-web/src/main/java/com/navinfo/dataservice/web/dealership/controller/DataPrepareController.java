@@ -342,7 +342,7 @@ public class DataPrepareController extends BaseController {
 			
 			StringBuilder sb = new StringBuilder();
 			sb.append(userId).append("_").append(DateUtils.dateToString(new Date(), "yyyyMMddHHmmss")).append("_附加成果导出");
-			String excelName = sb.toString();
+			String excelName = "代理店品牌数据导出";
 			
 			ExportExcel<AdditionResultEntity> ex = new ExportExcel<AdditionResultEntity>();  
 

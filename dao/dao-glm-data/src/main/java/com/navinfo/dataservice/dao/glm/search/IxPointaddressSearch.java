@@ -116,7 +116,6 @@ public class IxPointaddressSearch implements ISearch {
 
 				m.put("e", resultSet.getString("DP_NAME"));
 
-				m.put("g", resultSet.getInt("ROW_ID") == 0 ? 0 : 1);
 				m.put("quickFlag", resultSet.getInt("quick_task_id") == 0 ? 0
 						: 1);
 				m.put("mediumFlag", resultSet.getInt("medium_task_id") == 0 ? 0

@@ -1,8 +1,8 @@
 export NLS_LANG=.AL32UTF8
-source ./update_fm_man.conf
+source ./update_fm_sys.conf
 
 
-sqlplus $fmman_url @./fmman_db.sql
+sqlplus $fmsys_url @./20170928_sys_sql.sql
 
 
 

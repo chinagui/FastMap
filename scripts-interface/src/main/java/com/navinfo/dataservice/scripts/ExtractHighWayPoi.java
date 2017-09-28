@@ -107,6 +107,8 @@ public class ExtractHighWayPoi {
 			regionConMap = queryAllRegionConn();
 			for (Connection regionConn : regionConMap.values()) {
 				Set<Long> deletePidList = searchDeletePidExtractHighWayPoi(condition, regionConn);//删除履历，日落月成功,叶子节点HighWayPoiList（日库）
+				updatePidList.removeAll(deletePidList);//如果一条pid既有修改履历也有删除履历，需在修改履历的pidList和删除履历pidList求差集，以删除为准。
+				insertPidList.removeAll(deletePidList);//如果一条pid既有新增履历也有删除履历，需在新增履历的pidList和删除履历pidList求差集，以删除为准。
 				if(!CollectionUtils.isEmpty(deletePidList)){
 					filterChildPidListByParent(deletePidList,2, regionConn);//筛选出符合条件修改履历的子pidList
 					convertPidListToHighWayList(deletePidList, 2, regionConn);//组装成HighWayList

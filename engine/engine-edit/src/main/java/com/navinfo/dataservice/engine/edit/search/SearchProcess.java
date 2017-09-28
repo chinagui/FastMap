@@ -218,7 +218,7 @@ public class SearchProcess {
 							IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
 							list = ixPoiSearch.searchDataByTileWithGap(x, y, z,
 									gap, this.getArray());
-						}else if(type == ObjType.IX_POINTADDRESS) {
+						}else if(type == ObjType.IXPOINTADDRESS) {
 							IxPointaddressSearch ixPointaddressSearch = new IxPointaddressSearch(conn);
 							list = ixPointaddressSearch.searchDataByTileWithGap(x, y, z,
 									gap, this.getArray());

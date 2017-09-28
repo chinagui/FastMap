@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -15,6 +18,9 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -68,8 +74,8 @@ public class IxPointaddressSearch implements ISearch {
 		if (noQFilter != null) {
 			if (noQFilter.size() > 0) {
 				sb.append("SELECT A.*, B.STATUS,B.QUICK_TASK_ID,"
-						+ "B.MEDIUM_TASK_ID  FROM TMP1 A,DAY_EDIT_STATUS B "
-						+ " WHERE A.PID = B.PID AND B.ELEMENT=1 AND B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
+						+ "B.MEDIUM_TASK_ID  FROM TMP1 A,pointaddress_edit_status B "
+						+ " WHERE A.PID = B.PID AND B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
 				if (noQFilter.contains(1) && noQFilter.size() == 1) {
 					sb.append(" AND B.MEDIUM_TASK_ID <> 0 ");
 
@@ -181,4 +187,13 @@ public class IxPointaddressSearch implements ISearch {
 		return list;
 	}
 
+	
+//	public JSONObject searchMainDataByPid(int pid) throws Exception {
+//		List pidList=new ArrayList();
+//		pidList.add(pid);
+//		Set<String> tableSet=new HashSet<String>;
+//		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, 
+//				ObjectName.IX_POI, tabNames.get(ObjectName.IX_POI), false,
+//				pidList, true, true);
+//	}
 }

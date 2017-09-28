@@ -84,9 +84,7 @@ public class ExportDeepQcProblem {
 			
 			manConn = DBConnector.getInstance().getManConnection();
 			
-			int dbId = searchMonthDbId(manConn);//查询月库dbId
-			if(0==dbId){throw new Exception("对应月库不存在");}
-			monthConn = DBConnector.getInstance().getConnectionById(dbId);
+			monthConn = DBConnector.getInstance().getMkConnection();
 			
 			String excelName = "deep_qc_problem_list_"+ DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 			String timeContidion  = " D.QC_TIME BETWEEN TO_DATE('"+startDate+" 00:00:00','yyyyMMdd hh24:mi:ss') AND TO_DATE('"+endDate+" 23:59:59','yyyyMMdd hh24:mi:ss')";
@@ -187,36 +185,6 @@ public class ExportDeepQcProblem {
 	}
 
 
-
-
-	/**
-	 * 查询月库dbId
-	 * @return
-	 * @throws Exception
-	 */
-	private static int searchMonthDbId(Connection conn) throws Exception {
-		String sql  = "SELECT DISTINCT MONTHLY_DB_ID FROM REGION ORDER BY MONTHLY_DB_ID";
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			pstmt = conn.prepareStatement(sql);
-			resultSet = pstmt.executeQuery();
-			
-			if(resultSet.next()){
-				return resultSet.getInt(1);
-			}
-			return 0;
-			
-		} catch (Exception e) {
-			DbUtils.rollback(conn);
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-		
-	}
 	
 	/**
 	 * 根据日期筛选pid

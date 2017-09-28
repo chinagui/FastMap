@@ -22,6 +22,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
@@ -29,6 +30,7 @@ import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 
 import net.sf.json.JSONObject;
 
@@ -66,22 +68,31 @@ public class SubtaskJob extends AbstractStatJob {
 			
 			manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			//查询MAN_TIMELINE表获取相应的数据
+			log.info("查询MAN_TIMELINE表获取相应的数据");
 			String objName = "subtask";
 			Map<Integer, Map<String, Object>> manTimelineStart = manApi.queryManTimelineByObjName(objName,1);
 			Map<Integer, Map<String, Object>> manTimelineEnd = manApi.queryManTimelineByObjName(objName,0);
 			//执行统计
+			log.info("查询所有子任务信息");
 			List<Subtask> subtaskListNeedStat = OracleDao.getSubtaskListNeedStatistics();
 			//获取已关闭的统计
+			log.info("查询所有子任务统计信息");
 			List<Map<String, Object>> subtaskStatList = new ArrayList<Map<String, Object>>();
 			Map<Integer, Map<String, Object>> subtaskStatDataClose = getSubtaskStatData(timestamp);
+			log.info("查询所有日编子任务对应采集任务");
+			Map<Integer, Set<Integer>> referCTaskSet = OracleDao.getCollectTaskIdByDaySubtask();
 			
 			//查询mongo库处理数据
+			log.info("查询getDayPoiStatData最新统计");
 			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
+			log.info("查询getMonthPoiStatData最新统计");
 			Map<Integer, Map<String, Integer>> monthPoiStatData = getMonthPoiStatData(timestamp);
+			log.info("查询getTipsStatData最新统计");
 			Map<Integer, List<Map<String, Integer>>> tipsStatData = getTipsStatData(timestamp);
 //			Map<Integer, Map<String, Object>> subTipsStatData = getSubTipsStatData(timestamp);
 			//统计子任务数据
 			Iterator<Subtask> subtaskItr = subtaskListNeedStat.iterator();
+			log.info("统计信息汇总计算");
 			while(subtaskItr.hasNext()){
 				Subtask subtask = subtaskItr.next();
 				int subtaskId = subtask.getSubtaskId();
@@ -89,13 +100,13 @@ public class SubtaskJob extends AbstractStatJob {
 					subtaskStatList.add(subtaskStatDataClose.get(subtaskId));
 					continue;
 				}
-				//获取grid
-				Map<Integer, Integer> gridIds = manApi.getGridIdMapBySubtaskId(subtaskId);
-				subtask.setGridIds(gridIds);
+				//获取grid//日编月编用
+//				Map<Integer, Integer> gridIds = manApi.getGridIdMapBySubtaskId(subtaskId);
+//				subtask.setGridIds(gridIds);
 				
 				Set<Integer> collectionTasks = new HashSet<>();
-				if(subtask.getStage() == 1){
-					collectionTasks = manApi.getCollectTaskIdByDaySubtask(subtask.getSubtaskId());
+				if(subtask.getStage() == 1&&referCTaskSet.containsKey(subtask.getSubtaskId())){
+					collectionTasks = referCTaskSet.get(subtask.getSubtaskId());
 				}
 				//获取相应的统计数据
 				Map<String, Object> subManTimelineStart = null;
@@ -257,10 +268,13 @@ public class SubtaskJob extends AbstractStatJob {
 	public Map<String,Integer> handleMonthPoiStatData(Subtask subtask,Map<Integer,Map<String,Integer>> monthPoiStat) throws Exception{
 		try {
 			//处理子任务与grid的关系
-			List<Integer> gridIds = subtask.getGridIds();
+			String geowkt=subtask.getGeometry();
+			Set<String> gridIds = CompGeometryUtil.geo2GridsWithoutBreak(GeoTranslator.wkt2Geometry(geowkt));
+			
 			int monthPoiLogTotalNum = 0;
 			int monthPoiLogFinishNum = 0;
-			for (Integer gridId : gridIds) {
+			for (String gridIdStr : gridIds) {
+				int gridId=Integer.valueOf(gridIdStr);
 				if(monthPoiStat.containsKey(gridId)){
 					Map<String, Integer> map = monthPoiStat.get(gridId);
 					monthPoiLogTotalNum += map.get("logAllNum");
@@ -300,8 +314,9 @@ public class SubtaskJob extends AbstractStatJob {
 					data = tipsStat.get(gridId);
 				}
 				int taskId = (int) jso.get("taskId");
-				int subtaskEditAllNum = (int) jso.get("subtaskEditAllNum");
-				int subtaskEditFinishNum = (int) jso.get("subtaskEditFinishNum");
+				//modify by songhe 2017/09/26 统计变更subtask统计脚本
+				int subtaskEditAllNum = (int) jso.get("taskEditAllNum");
+				int subtaskEditFinishNum = (int) jso.get("taskEditFinishNum");
 				subtask.put("subtaskEditAllNum", subtaskEditAllNum);
 				subtask.put("subtaskEditFinishNum", subtaskEditFinishNum);
 				subtask.put("taskId", taskId);
@@ -323,11 +338,13 @@ public class SubtaskJob extends AbstractStatJob {
 	public Map<String,Integer> handleTipsStatData(Subtask subtask,Map<Integer,List<Map<String,Integer>>> tipsStatData, Set<Integer> collectionTasks) throws Exception{
 		try {
 			//处理子任务与grid的关系
-			List<Integer> gridIds = subtask.getGridIds();
+			String geowkt=subtask.getGeometry();
+			Set<String> gridIds = CompGeometryUtil.geo2GridsWithoutBreak(GeoTranslator.wkt2Geometry(geowkt));
 
 			int tipsAllNum = 0;
 			int tipsFinishNum = 0;
-			for (Integer gridId : gridIds) {
+			for (String gridIdStr : gridIds) {
+				int gridId=Integer.valueOf(gridIdStr);
 				if(tipsStatData.containsKey(gridId)){
 					List<Map<String, Integer>> gridDatas = tipsStatData.get(gridId);
 					for(Map<String, Integer> map : gridDatas){

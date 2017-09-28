@@ -45,21 +45,46 @@ public class ConvertUtil {
     }
 
     public static String trimSymbolSpace(String sourceText){
-        sourceText = sourceText.replaceAll("@", " ");
+        sourceText = sourceText.replaceAll(" \\@ ", "@");
+        sourceText = sourceText.replaceAll("\\@ ", "@");
+        sourceText = sourceText.replaceAll(" \\@", "@");
+
         sourceText = sourceText.replaceAll(" \\)", ")");
+        sourceText = sourceText.replaceAll(" \\) ", ") ");
         sourceText = sourceText.replaceAll(" \\( ", " (");
         sourceText = sourceText.replaceAll("\\( ", "(");
+
+        sourceText = sourceText.replaceAll(" \\, ", ", ");
+        sourceText = sourceText.replaceAll(" \\: ", ": ");
+        sourceText = sourceText.replaceAll(" \\; ", "; ");
+
         sourceText = sourceText.replaceAll(" \\. ", ".");
+        sourceText = sourceText.replaceAll("\\. ", ".");
+        sourceText = sourceText.replaceAll(" \\.", ".");
+
         sourceText = sourceText.replaceAll(" \\' ", "'");
-        sourceText = sourceText.replaceAll(" & ", "&");
-        sourceText = sourceText.replaceAll("& ", "&");
-        sourceText = sourceText.replaceAll(" &", "&");
-        sourceText = sourceText.replaceAll(" - ", "-");
-        sourceText = sourceText.replaceAll("- ", "-");
+
+        //sourceText = sourceText.replaceAll(" \\& ", "&");
+        //sourceText = sourceText.replaceAll("\\& ", "&");
+        //sourceText = sourceText.replaceAll(" \\&", "&");
+
+        sourceText = sourceText.replaceAll(" \\- ", "-");
+        sourceText = sourceText.replaceAll("\\- ", "-");
+        sourceText = sourceText.replaceAll(" \\-", "-");
+
+        sourceText = sourceText.replaceAll(" \\_ ", "_");
+        sourceText = sourceText.replaceAll("\\_ ", "_");
+        sourceText = sourceText.replaceAll(" \\_", "_");
+
         sourceText = sourceText.replaceAll(" \\+ ", "+");
         sourceText = sourceText.replaceAll("\\+ ", "+");
-        sourceText = sourceText.replaceAll(" / ", "/");
-        sourceText = sourceText.replaceAll("/ ", "/");
+
+        sourceText = sourceText.replaceAll(" \\/ ", "/");
+        sourceText = sourceText.replaceAll("\\/ ", "/");
+        sourceText = sourceText.replaceAll(" \\/", "/");
+
+        sourceText = sourceText.replaceAll(" \\$ ", "\\$");
+
         return sourceText.trim();
     }
 

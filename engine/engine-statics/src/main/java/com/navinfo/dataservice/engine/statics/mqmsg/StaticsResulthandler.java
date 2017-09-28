@@ -15,7 +15,6 @@ public class StaticsResulthandler implements MsgHandler  {
 	@Override
 	public void handle(String message) {
 		try {
-			// 解析保存到man库infor表中
 			save(message);
 		} catch (Exception e) {
 			log.warn("接收到info_change消息,但保存失败，该消息已消费。message：" + message);

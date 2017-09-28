@@ -25,7 +25,7 @@ public class PidApply {
 		
 		ScPlateresGroupSearch search = new ScPlateresGroupSearch(this.conn);
 		
-		String maxGroupId = search.loadMaxGroupId(infoIntelId);
+		String maxGroupId = search.loadMaxGroupId(condition+ String.valueOf(adAdmin).substring(0, 4));
 
 		if (maxGroupId == null || maxGroupId.isEmpty()) {
 

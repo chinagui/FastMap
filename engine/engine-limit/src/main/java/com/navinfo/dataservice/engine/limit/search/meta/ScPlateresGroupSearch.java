@@ -54,9 +54,9 @@ public class ScPlateresGroupSearch {
         return group;
     }
 
-	public String loadMaxGroupId(String infoIntelId) throws Exception {
+	public String loadMaxGroupId(String key) throws Exception {
 
-		String sqlstr = "SELECT MAX(GROUP_ID) FROM SC_PLATERES_GROUP WHERE INFO_INTEL_ID = ? ";
+        String sqlstr = "SELECT MAX(GROUP_ID) FROM SC_PLATERES_GROUP WHERE GROUP_ID LIKE '" + key + "%'";
 
 		PreparedStatement pstmt = null;
 
@@ -67,7 +67,7 @@ public class ScPlateresGroupSearch {
 		try {
 			pstmt = this.conn.prepareStatement(sqlstr);
 
-			pstmt.setString(1, infoIntelId);
+
 
 			resultSet = pstmt.executeQuery();
 
@@ -77,7 +77,7 @@ public class ScPlateresGroupSearch {
 			}
 		} catch (Exception e) {
 
-			throw new Exception("查询的INFO_INTEL_ID为：" + infoIntelId + "的" + "GROUP信息异常");
+			throw new Exception("查询GROUP信息异常");
 
 		} finally {
 			DBUtils.closeResultSet(resultSet);

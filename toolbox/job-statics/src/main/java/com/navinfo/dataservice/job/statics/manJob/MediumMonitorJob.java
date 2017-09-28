@@ -54,7 +54,9 @@ public class MediumMonitorJob extends AbstractStatJob {
 			
 //			Map<String,Map<String,Object>> result = new HashMap<String,Map<String,Object>>();
 //			result.put("medium_monitor", getStats());
-			Map<String,Object> statsMap = getStats();
+			MediumMonitorJobRequest statReq = (MediumMonitorJobRequest)request;
+			String timestamp = statReq.getTimestamp();
+			Map<String,Object> statsMap = getStats(timestamp);
 			JSONArray stats = new JSONArray();
 //			JSONObject statsjson = JSONObject.fromObject(statsMap);
 			stats.add(statsMap);
@@ -76,7 +78,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 	}
 	
 	
-	public Map<String,Object> getStats() {
+	public Map<String,Object> getStats(String timestamp) {
 		manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		/*List<Map<String, Integer>> quickProgramMapList = null;
 		List<Map<String,String>> stats = new ArrayList<>();
@@ -109,31 +111,37 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("closeNum", getCloseNum());
 			
 			BasicDBObject queryProgram = new BasicDBObject();
+			queryProgram.put("timestamp", timestamp);
 			queryProgram.put("normalClosed", 1);
 			queryProgram.put("type", 1);		
 			mediumMonitorMap.put("normalClosedNum",queryCountInMongo(md, "program", queryProgram));
 			
 			BasicDBObject queryProgram1 = new BasicDBObject();
+			queryProgram1.put("timestamp", timestamp);
 			queryProgram1.put("advanceClosed", 1);
 			queryProgram1.put("type", 1);		
 			mediumMonitorMap.put("advanceClosedNum", queryCountInMongo(md, "program", queryProgram1));
 			
 			BasicDBObject queryProgram2 = new BasicDBObject();
+			queryProgram2.put("timestamp", timestamp);
 			queryProgram2.put("overdueClosed", 1);
 			queryProgram2.put("type", 1);
 			mediumMonitorMap.put("overdueClosedNum", queryCountInMongo(md, "program", queryProgram2));
 			
 			BasicDBObject queryProgram3 = new BasicDBObject();
+			queryProgram3.put("timestamp", timestamp);
 			queryProgram3.put("type", 0);
 			queryProgram3.put("programType", 1);
 			mediumMonitorMap.put("roadPlanIn", queryDatasAvgInMongo(md, "task", queryProgram3,"roadPlanIn"));
 			
 			BasicDBObject queryProgram4 = new BasicDBObject();
+			queryProgram4.put("timestamp", timestamp);
 			queryProgram4.put("type", 1);
 			double collectLink17UpdateTotal = queryDatasSumInMongo(md, "program", queryProgram4,"collectLink17UpdateTotal");
 			mediumMonitorMap.put("collectLink17UpdateTotal", collectLink17UpdateTotal);
 			
 			BasicDBObject queryProgram5 = new BasicDBObject();
+			queryProgram5.put("timestamp", timestamp);
 			queryProgram5.put("type", 1);
 			double link17AllLen = queryDatasSumInMongo(md, "program", queryProgram5,"link17AllLen");
 			mediumMonitorMap.put("link17AllLen", link17AllLen);
@@ -141,12 +149,14 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("roadActualCoverPercent", roadActualCoverPercent.intValue());
 			
 			BasicDBObject queryProgram6 = new BasicDBObject();
+			queryProgram6.put("timestamp", timestamp);
 			queryProgram6.put("type", 0);
 			queryProgram6.put("programType", 1);
 			mediumMonitorMap.put("poiPlanIn", queryDatasAvgInMongo(md, "task", queryProgram6,"poiPlanIn"));
 			
 			 
 			BasicDBObject queryProgram7 = new BasicDBObject();
+			queryProgram7.put("timestamp", timestamp);
 			queryProgram7.put("type", 0);
 			queryProgram7.put("programType", 1);
 			double poiActualTotal = queryDatasSumInMongo(md, "task", queryProgram7,"poiFinishNum");
@@ -154,6 +164,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			
 			 
 			BasicDBObject queryProgram8 = new BasicDBObject();
+			queryProgram8.put("timestamp", timestamp);
 			queryProgram8.put("type", 0);
 			queryProgram8.put("programType", 1);
 			double poiAllNum = queryDatasSumInMongo(md, "task", queryProgram8,"poiAllNum");
@@ -163,12 +174,14 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("poiActualCoverPercent", poiActualCoverPercent.intValue());
 			
 			BasicDBObject queryProgram9 = new BasicDBObject();
+			queryProgram9.put("timestamp", timestamp);
 			queryProgram9.put("programType", 1);
 			queryProgram9.put("type", 0);
 			Double collectWorkDate = queryDatasSumInMongo(md, "task", queryProgram9,"workDate");
 			mediumMonitorMap.put("collectWorkDate", collectWorkDate.intValue());
 			
 			BasicDBObject queryProgram10 = new BasicDBObject();
+			queryProgram10.put("timestamp", timestamp);
 			queryProgram10.put("programType", 1);
 			queryProgram10.put("type", 0);
 			Double collectPlanDate = queryDatasSumInMongo(md, "task", queryProgram10,"planDate");
@@ -181,11 +194,13 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("planPercent", planPercent);
 			
 			BasicDBObject queryProgram11 = new BasicDBObject();
+			queryProgram11.put("timestamp", timestamp);
 			queryProgram11.put("type", 1);
 			double collectLinkUpdateTotal = queryDatasSumInMongo(md, "program", queryProgram11,"collectLinkUpdateTotal");
 			mediumMonitorMap.put("collectLinkUpdateTotal", collectLinkUpdateTotal);
 			
 			BasicDBObject queryProgram12 = new BasicDBObject();
+			queryProgram12.put("timestamp", timestamp);
 			queryProgram12.put("type", 0);
 			queryProgram12.put("isassign", 0);
 			queryProgram12.put("programType", 1);
@@ -200,6 +215,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("workRoadPlanTotal", workRoadPlanTotal);
 			
 			BasicDBObject queryProgram14 = new BasicDBObject();
+			queryProgram14.put("timestamp", timestamp);
 			queryProgram14.put("type", 0);
 			queryProgram14.put("status", 0);
 			queryProgram14.put("programType", 1);
@@ -213,6 +229,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("roadActualPercent", DoubleUtil.keepSpecDecimal(roadActualPercent,2));
 			
 			BasicDBObject queryProgram16 = new BasicDBObject();
+			queryProgram16.put("timestamp", timestamp);
 			queryProgram16.put("type", 0);
 			queryProgram16.put("isassign", 0);
 			queryProgram16.put("programType", 1);
@@ -226,6 +243,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("workPoiPlanTotal", workPoiPlanTotal);
 			
 			BasicDBObject queryProgram18 = new BasicDBObject();
+			queryProgram18.put("timestamp", timestamp);
 			queryProgram18.put("type", 0);
 			queryProgram18.put("status", 0);
 			queryProgram18.put("programType", 1);
@@ -243,12 +261,14 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("collectActualPercent", (roadActualPercent*0.33+poiActualPercent*0.67));
 			
 			BasicDBObject queryProgram19 = new BasicDBObject();
+			queryProgram19.put("timestamp", timestamp);
 			queryProgram19.put("type", 2);
 			queryProgram19.put("programType", 1);
 			double monthPoiPlanOut = queryDatasSumInMongo(md, "task", queryProgram19,"poiPlanOut");
 			mediumMonitorMap.put("monthPoiPlanOut", monthPoiPlanOut);
 			
 			BasicDBObject queryProgram20 = new BasicDBObject();
+			queryProgram20.put("timestamp", timestamp);
 			queryProgram20.put("type", 0);
 			queryProgram20.put("programType", 1);
 			double poiPlanTotal = queryDatasSumInMongo(md, "task", queryProgram20,"poiPlanOut");
@@ -278,6 +298,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("monthPlanPercent", a.intValue());
 			
 			BasicDBObject queryProgram22 = new BasicDBObject();
+			queryProgram22.put("timestamp", timestamp);
 			queryProgram22.put("type", 2);
 			queryProgram22.put("programType", 1);
 			Double monthPoiFinishNum = queryDatasSumInMongo(md, "task", queryProgram22,"monthPoiFinishNum");
@@ -288,6 +309,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			
 			
 			BasicDBObject queryProgram23 = new BasicDBObject();
+			queryProgram23.put("timestamp", timestamp);
 			queryProgram23.put("type", 2);
 			queryProgram23.put("status", 0);
 			queryProgram23.put("programType", 1);
@@ -301,12 +323,14 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("monthActualPercent", monthActualPercent.intValue());
 			
 			BasicDBObject queryProgram24 = new BasicDBObject();
+			queryProgram24.put("timestamp", timestamp);
 			queryProgram24.put("type", 0);
 			queryProgram24.put("programType", 1);
 			Double roadPlanTotal = queryDatasSumInMongo(md, "task", queryProgram24,"roadPlanTotal");
 			mediumMonitorMap.put("roadPlanTotal", roadPlanTotal.intValue());
 			
 			BasicDBObject queryProgram25 = new BasicDBObject();
+			queryProgram25.put("timestamp", timestamp);
 			queryProgram25.put("type", 0);
 			queryProgram25.put("programType", 1);
 			Double roadPlanOut = queryDatasSumInMongo(md, "task", queryProgram25,"roadPlanOut");
@@ -319,18 +343,21 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("tipsPlanNum", tipsPlanNum);
 			
 			BasicDBObject queryProgram26 = new BasicDBObject();
+			queryProgram26.put("timestamp", timestamp);
 			queryProgram26.put("type", 0);
 			queryProgram26.put("programType", 1);
 			Double tipsActualNum = queryDatasSumInMongo(md, "task", queryProgram26,"collectTipsUploadNum");
 			mediumMonitorMap.put("tipsActualNum", tipsActualNum);
 			
 			BasicDBObject queryProgram27 = new BasicDBObject();
+			queryProgram27.put("timestamp", timestamp);
 			queryProgram27.put("type", 0);
 			queryProgram27.put("programType", 1);
 			Double tips2MarkNum = queryDatasSumInMongo(md, "task", queryProgram27,"tips2MarkNum");
 			mediumMonitorMap.put("tips2MarkNum", tips2MarkNum);
 			
 			BasicDBObject queryProgram28 = new BasicDBObject();
+			queryProgram28.put("timestamp", timestamp);
 			queryProgram28.put("type", 2);
 			queryProgram28.put("programType", 1);
 			Double monthDay2MonthNum = queryDatasSumInMongo(md, "task", queryProgram28,"day2MonthNum");

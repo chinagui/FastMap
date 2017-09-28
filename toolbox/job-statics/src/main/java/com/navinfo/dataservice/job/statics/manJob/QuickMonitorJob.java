@@ -53,8 +53,10 @@ public class QuickMonitorJob extends AbstractStatJob {
 	public String stat() throws JobException {
 		try {
 			long t = System.currentTimeMillis();
+			QuickMonitorJobRequest statReq = (QuickMonitorJobRequest)request;
+			String timestamp = statReq.getTimestamp();
 			
-			Map<String,Object> statsMap = getStats();
+			Map<String,Object> statsMap = getStats(timestamp);
 			JSONArray stats = new JSONArray();
 //			JSONObject statsjson = JSONObject.fromObject(statsMap);
 			stats.add(statsMap);
@@ -76,7 +78,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 	}
 	
 	
-	public Map<String,Object> getStats() {
+	public Map<String,Object> getStats(String timestamp) {
 		manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		/*List<Map<String, Integer>> quickProgramMapList = null;
 		List<Map<String,String>> stats = new ArrayList<>();
@@ -110,32 +112,38 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("workNum", getWorkNum());
 			
 			BasicDBObject queryProgram = new BasicDBObject();
+			queryProgram.put("timestamp", timestamp);
 			queryProgram.put("status", 0);
 			queryProgram.put("type", 4);			
 			quickMonitorMap.put("unproduceCloseNum",queryCountInMongo(md, "program", queryProgram));
 			
 			BasicDBObject queryProgram1 = new BasicDBObject();
+			queryProgram1.put("timestamp", timestamp);
 			queryProgram1.put("isProduce", 1);
 			queryProgram1.put("type", 4);
 			quickMonitorMap.put("produceNum", queryCountInMongo(md, "program", queryProgram1));
 			
 			BasicDBObject queryProgramTotal = new BasicDBObject();
+			queryProgramTotal.put("timestamp", timestamp);
 			queryProgramTotal.put("type", 4);
 			int programTotal = queryCountInMongo(md, "program", queryProgramTotal);
 			
 			BasicDBObject queryProgram2 = new BasicDBObject();
+			queryProgram2.put("timestamp", timestamp);
 			queryProgram2.put("status", 2);
 			queryProgram2.put("type", 4);
 			//草稿项目
 			int programDraftTotal = queryCountInMongo(md, "program", queryProgram2);
 			
 			BasicDBObject queryProgram3 = new BasicDBObject();
+			queryProgram3.put("timestamp", timestamp);
 			queryProgram3.put("advanceClosed", 1);
 			queryProgram3.put("type", 4);
 			//提前关闭项目
 			int programAdvanceClosedTotal = queryCountInMongo(md, "program", queryProgram3);
 			
 			BasicDBObject queryProgram4= new BasicDBObject();
+			queryProgram4.put("timestamp", timestamp);
 			queryProgram4.put("isOverDue", 2);
 			queryProgram4.put("type", 4);
 			//逾期项目
@@ -146,16 +154,19 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("advanceNum",programAdvanceClosedTotal);
 			
 			BasicDBObject queryProgram5 = new BasicDBObject();
+			queryProgram5.put("timestamp", timestamp);
 			queryProgram5.put("collectAdvanceClosed", 1);
 			queryProgram5.put("type", 4);
 			quickMonitorMap.put("collectAdvanceNum", queryCountInMongo(md, "program", queryProgram5));
 			
 			BasicDBObject queryProgram6 = new BasicDBObject();
+			queryProgram6.put("timestamp", timestamp);
 			queryProgram6.put("dayAdvanceClosed", 1);
 			queryProgram6.put("type", 4);
 			quickMonitorMap.put("dayAdvanceNum", queryCountInMongo(md, "program", queryProgram6));
 			
 			BasicDBObject queryProgram7 = new BasicDBObject();
+			queryProgram7.put("timestamp", timestamp);
 			queryProgram7.put("produceAdvanceClosed", 1);
 			queryProgram7.put("type", 4);
 			quickMonitorMap.put("produceAdvanceNum", queryCountInMongo(md, "program", queryProgram7));
@@ -163,6 +174,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("overdueNum", programOverDueTotal);
 			
 			BasicDBObject queryProgram8 = new BasicDBObject();
+			queryProgram8.put("timestamp", timestamp);
 			queryProgram8.put("collectOverdue", 1);
 			queryProgram8.put("type", 4);
 			quickMonitorMap.put("collectOverdueNum", queryCountInMongo(md, "program", queryProgram8));
@@ -171,6 +183,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("collectOverdueReasonNum", getOverdueResonMap(0));
 			
 			BasicDBObject queryProgram9 = new BasicDBObject();
+			queryProgram9.put("timestamp", timestamp);
 			queryProgram9.put("dayOverdue", 1);
 			queryProgram9.put("type", 4);
 			quickMonitorMap.put("dayOverdueNum", queryCountInMongo(md, "program", queryProgram9));
@@ -178,11 +191,13 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("dayOverdueReasonNum", getOverdueResonMap(1));
 			
 			BasicDBObject queryProgram10 = new BasicDBObject();
+			queryProgram10.put("timestamp", timestamp);
 			queryProgram10.put("produceOverdue", 1);
 			queryProgram10.put("type", 4);
 			quickMonitorMap.put("produceOverdueNum", queryCountInMongo(md, "program", queryProgram10));
 			 
 			BasicDBObject queryProgram11 = new BasicDBObject();
+			queryProgram11.put("timestamp", timestamp);
 			queryProgram11.put("type", 4);
 			Map<String,Integer> statMap = getStatDataInMongo(md, "program", queryProgram11);
 			quickMonitorMap.put("roadPlanTotal",statMap.get("roadPlanTotal"));
@@ -202,37 +217,44 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("dayEditTipsFinishNum", statMap.get("dayEditTipsFinishNum"));
 			
 			BasicDBObject queryProgram12 = new BasicDBObject();
+			queryProgram12.put("timestamp", timestamp);
 			queryProgram12.put("isDay2Month", 1);	
 			queryProgram12.put("type", 4);
 			quickMonitorMap.put("day2MonthNum", queryCountInMongo(md, "program", queryProgram12));
 			
 			BasicDBObject queryProgram13 = new BasicDBObject();
+			queryProgram13.put("timestamp", timestamp);
 			queryProgram13.put("isDay2Month", 0);
 			queryProgram13.put("type", 4);
 			quickMonitorMap.put("noday2MonthNum", queryCountInMongo(md, "program", queryProgram13));
 			
 			BasicDBObject queryProgram14 = new BasicDBObject();
+			queryProgram14.put("timestamp", timestamp);
 			queryProgram14.put("isTips2Mark", 1);
 			queryProgram14.put("type", 4);
 			quickMonitorMap.put("aumarkNum", queryCountInMongo(md, "program", queryProgram14));
 			
 			BasicDBObject queryProgram15 = new BasicDBObject();
+			queryProgram15.put("timestamp", timestamp);
 			queryProgram15.put("isTips2Mark", 0);	
 			queryProgram15.put("type", 4);
 			quickMonitorMap.put("noAumarkNum", queryCountInMongo(md, "program", queryProgram15));
 			
 			//获取时间平均值
 			BasicDBObject queryProgram16 = new BasicDBObject();
+			queryProgram16.put("timestamp", timestamp);
 			queryProgram16.put("type", 0);	
 			queryProgram16.put("programType", 4);
 			quickMonitorMap.put("collectAverageDate", getDateAvgInMongo(md, "task",queryProgram16,"actualStartDate","actualEndDate"));
 			
 			BasicDBObject queryProgram17 = new BasicDBObject();
+			queryProgram17.put("timestamp", timestamp);
 			queryProgram17.put("type", 1);	
-			queryProgram17.put("programType", 1);
+			queryProgram17.put("programType", 4);
 			quickMonitorMap.put("dayAverageDate", getDateAvgInMongo(md, "task",queryProgram17,"actualStartDate","actualEndDate"));
 			
 			BasicDBObject queryProgram18 = new BasicDBObject();
+			queryProgram18.put("timestamp", timestamp);
 			queryProgram18.put("type", 4);	
 			quickMonitorMap.put("produceAverageDate", getDateAvgInMongo(md, "program",queryProgram18,"actualEndDate","produceDate"));
 			
@@ -241,6 +263,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("poiPercent", getPoiPercent());
 			
 			BasicDBObject queryProgram19 = new BasicDBObject();
+			queryProgram19.put("timestamp", timestamp);
 			queryProgram19.put("type", 4);	
 			Map<String,Map<String,Integer>> cityDetailMap = getCityDetailMapInMongo(md, "program", queryProgram19);
 			quickMonitorMap.put("cityDetail", cityDetailMap);

@@ -701,9 +701,11 @@ public class TaskService {
 				if(bean.getSubWorkKind(4)==1&&oldTask.getSubWorkKind(4)==0){
 					log.info("任务修改，变更多源，需自动创建多源子任务");
 					Subtask subtask = createCollectSubtaskByTask(4, bean);
-					JSONArray subtaskIds = new JSONArray();
-					subtaskIds.add(subtask.getSubtaskId());
-					SubtaskService.getInstance().pushMsg(conn, userId, subtaskIds);
+					if(0 != subtask.getExeGroupId()){
+						JSONArray subtaskIds = new JSONArray();
+						subtaskIds.add(subtask.getSubtaskId());
+						SubtaskService.getInstance().pushMsg(conn, userId, subtaskIds);
+					}
 				}
 			}
 			
@@ -2435,7 +2437,8 @@ public class TaskService {
 					+ "       UG.GROUP_NAME,"
 					+ "       T.REGION_ID,"
 					+ "       I.METHOD,"
-					+ "       I.ADMIN_NAME,I.INFOR_STAGE"
+					+ "       I.ADMIN_NAME,I.INFOR_STAGE,"
+					+ "       T.UPLOAD_METHOD"
 					+ "  FROM TASK T, BLOCK B, PROGRAM P, USER_GROUP UG, USER_INFO U, INFOR I"
 					+ " WHERE T.BLOCK_ID = B.BLOCK_ID(+)"
 					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
@@ -2483,6 +2486,7 @@ public class TaskService {
 						task.setRoadPlanIn(rs.getInt("ROAD_PLAN_IN"));
 						task.setRoadPlanOut(rs.getInt("ROAD_PLAN_OUT"));
 						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						task.setUploadMethod(rs.getString("UPLOAD_METHOD"));
 					}
 					return task;
 				}
@@ -3615,7 +3619,7 @@ public class TaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind");
+			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind,t.region_id,t.lot");
 			sb.append("   FROM TASK T ");
 			sb.append("  WHERE T.PROGRAM_ID = " + programId);
 			
@@ -3635,6 +3639,8 @@ public class TaskService {
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						task.setWorkKind(rs.getString("WORK_KIND"));
+						task.setRegionId(rs.getInt("region_id"));
+						task.setLot(rs.getInt("LOT"));
 						try {
 							task.setGridIds(getGridMapByTaskId(conn,task.getTaskId()));
 						} catch (Exception e) {
@@ -5230,7 +5236,8 @@ public class TaskService {
 	 * */
 	public Map<Integer, String> queryCityNameByProgram(Connection conn) throws Exception{
 		try{
-			String	sqlForCity = "SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID UNION SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID ";
+			String	sqlForCity = "SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID "
+					+ "UNION ALL SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID ";
 			ResultSetHandler<Map<Integer, String>> rs = new ResultSetHandler<Map<Integer, String>>() {
 				@Override
 				public Map<Integer, String> handle(ResultSet rs) throws SQLException {

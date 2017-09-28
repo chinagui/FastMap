@@ -7,7 +7,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
-import com.navinfo.dataservice.engine.man.job.JobService;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
@@ -15,7 +14,6 @@ import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -92,6 +90,14 @@ public class Tips2MarkPhase extends JobPhase {
             parameter.put("au_db_password", auDb.getDbUserPasswd());
             parameter.put("au_db_sid", auDb.getDbServer().getServiceName());
             parameter.put("au_db_port", auDb.getDbServer().getPort());
+            //modify by songhe 2017/09/27   其实json的传参内容应该修改一下。。。
+            DbInfo auWeekDb = datahub.getOnlyDbByType("gen2AuWeek");
+            parameter.put("au_week_db_ip", auWeekDb.getDbServer().getIp());
+            parameter.put("au_week_db_username", auWeekDb.getDbUserName());
+            parameter.put("au_week_db_password", auWeekDb.getDbUserPasswd());
+            parameter.put("au_week_db_sid", auWeekDb.getDbServer().getServiceName());
+            parameter.put("au_week_db_port", auWeekDb.getDbServer().getPort());
+            
             parameter.put("types", "");
             parameter.put("phaseId", jobProgress.getPhaseId());
             if (jobRelation.getItemType() == ItemType.PROJECT) {

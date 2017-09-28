@@ -174,6 +174,9 @@ public class Transaction {
                     case DELETE:
                         return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete.Command(json,
                                 requester);
+                    case RELATION:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.relation.Command(json,
+                                requester);
 
                 }
                 break;
@@ -228,6 +231,9 @@ public class Transaction {
                                 command);
                     case DELETE:
                         return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete.Process(
+                                command);
+                    case RELATION:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.relation.Process(
                                 command);
                 }
                 break;

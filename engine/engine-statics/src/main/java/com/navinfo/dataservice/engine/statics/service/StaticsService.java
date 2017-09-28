@@ -11,24 +11,19 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.QueryOperators;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
@@ -36,9 +31,7 @@ import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.expect.ExpectStatusMain;
@@ -48,7 +41,6 @@ import com.navinfo.dataservice.engine.statics.expect.PoiMonthlyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadDailyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadMonthlyExpectMain;
-import com.navinfo.dataservice.engine.statics.overview.OverviewMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.poimonthly.PoiMonthlyMain;
@@ -60,6 +52,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
 public class StaticsService {
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	private static final String QUICK_MONITOR = "quick_monitor";
 	private static final String MEDIUM_MONITOR = "medium_monitor";
 	private static final String PROGRAM = "program";
@@ -638,14 +631,17 @@ public class StaticsService {
 	 */
 	public Map<String, Object> quickMonitor() throws Exception{
 		try {
+			log.info("start quickMonitor");
 			MongoDao mongoDao = new MongoDao(SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat));
 			FindIterable<Document> findIterable = mongoDao.find(QUICK_MONITOR,null).sort(new BasicDBObject("timestamp",-1));
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<String, Object> task = new HashMap<>();
+			log.info("quickMonitor operate latest mongo stat");
 			//处理数据
 			if(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
+				log.info("latest mongo stat:"+jso);
 				task.putAll(jso);
 				JSONObject collectOverdueReasonNum = JSONObject.fromObject(jso.get("collectOverdueReasonNum"));
 				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
@@ -667,6 +663,7 @@ public class StaticsService {
 				JSONArray cityDetail2=reFormCity(cityDetail ,8);
 				task.put("cityDetail",cityDetail2);
 			}
+			log.info("end quickMonitor");
 			return task;
 		} catch (Exception e) {
 			throw e;
@@ -681,11 +678,13 @@ public class StaticsService {
 	 * @return
 	 */
 	private JSONArray reFormCity(JSONObject originJson,int top){
+		log.info("latest mongo stat :"+originJson);
 		if(originJson.size()==0){
 			return new JSONArray();
 		}
-		List<Map<String,Object>> keyList=new ArrayList<>();
+		Map<Integer,Map<String,Object>> keyList=new HashMap();
 		Iterator iter = originJson.keys();
+		int index=0;
 		while(iter.hasNext()){
 			String key = String.valueOf(iter.next());
 			JSONObject value = JSONObject.fromObject(originJson.get(key));
@@ -693,7 +692,8 @@ public class StaticsService {
 			tMap.put("name", key);
 			tMap.put("count", value.get("total"));
 			tMap.put("link", value.get("roadActualTotal"));
-			keyList.add(tMap);
+			keyList.put(index,tMap);
+			index++;
 		}
 		//冒泡排序
 		for (int i = 0; i < keyList.size() -1; i++){    //最多做n-1趟排序
@@ -711,12 +711,12 @@ public class StaticsService {
             		tMap.put("name", j1key);
             		tMap.put("count", j1Value);
         			tMap.put("link",j1Value2);
-            		keyList.add(j, tMap);
+            		keyList.put(j, tMap);
             		Map<String,Object> t1Map=new HashMap<>();
             		t1Map.put("name", jkey);
             		t1Map.put("count", jValue);
         			t1Map.put("link",jValue2);
-            		keyList.add(j+1, t1Map);
+            		keyList.put(j+1, t1Map);
                }
            }
        }
@@ -738,18 +738,21 @@ public class StaticsService {
 	 * @return
 	 */
 	private JSONArray reForm(JSONObject originJson,int top,boolean getOther){
+		log.info("latest mongo stat :"+originJson);
 		if(originJson.size()==0){
 			return new JSONArray();
 		}
-		List<Map<String,Object>> keyList=new ArrayList<>();
+		Map<Integer,Map<String,Object>> keyList=new HashMap();
 		Iterator iter = originJson.keys();
+		int index=0;
 		while(iter.hasNext()){
 			String key = String.valueOf(iter.next());
 			int value = (int)originJson.get(key);
 			Map<String,Object> tMap=new HashMap<>();
 			tMap.put("name", key);
 			tMap.put("percent", value);
-			keyList.add(tMap);
+			keyList.put(index, tMap);
+			index++;
 		}
 		//冒泡排序
 		for (int i = 0; i < keyList.size() -1; i++){    //最多做n-1趟排序
@@ -764,11 +767,11 @@ public class StaticsService {
             		Map<String,Object> tMap=new HashMap<>();
             		tMap.put("name", j1key);
         			tMap.put("percent", j1Value);
-            		keyList.add(j, tMap);
+            		keyList.put(j, tMap);
             		Map<String,Object> t1Map=new HashMap<>();
             		t1Map.put("name", jkey);
         			t1Map.put("percent", jValue);
-            		keyList.add(j+1, t1Map);
+            		keyList.put(j+1, t1Map);
                }
            }
        }
@@ -1041,10 +1044,9 @@ public class StaticsService {
 		
 //		StaticsService.getInstance().getChangeStatByGrids(grids, 0, 2, "20160620");
 		
-		JSONObject a = JSONObject.fromObject("{\"a\":1}");
-		JSONObject b = JSONObject.fromObject("{\"b\":2}");
-		a.putAll(b);
-		System.out.println(a.toString());
+		JSONObject a = JSONObject.fromObject("{\"车辆故障\":2,\"设备故障\":1,\"现场变化大\":10,\"天气影响\":6,\"人员变动\":1,\"整体规划变更\":11,\"其他原因\":66}");
+		JSONArray b = StaticsService.getInstance().reForm(a, 4, true);
+		System.out.println(b.toString());
 		
 	}
 

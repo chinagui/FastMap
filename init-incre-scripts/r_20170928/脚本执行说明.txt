@@ -1,0 +1,16 @@
+﻿1. fm_sys/xxxx.sql
+	功能：xxxxxx
+	目标库：fm_sys
+	author：xx
+
+
+
+2.fm_man/20170928_man_sql.sql
+功能：周版本库信息，task表结构变更
+目标库：fm_man
+author：songhe
+
+重要说明：说明1：第二条sql：周版本库对应sys库的两条更新语句中的两个serverID需要对应修改为原来的版本库的信息之后再执行语句！！！！
+
+第一条sql语句中的数据库用户名，密码根据需要自行修改，serverID的值域修改为对应的前一个说明（即说明1）中的serverID
+

@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -247,67 +246,48 @@ public class CreateCMSTaskPhase extends JobPhase {
     	Connection dailyConn = null;
     	Map<String, Object> result = new HashMap<>();
     	try{
-    		Map<Integer, ArrayList<Integer>> taskMap = new HashMap<Integer, ArrayList<Integer>>();
     		QueryRunner run = new QueryRunner();
-    		for(Task task : tasks){
-    			Region region = RegionService.getInstance().query(conn, task.getRegionId());
-    			int DbId = region.getDailyDbId();
-    			int taskId = task.getTaskId();
-    			if(taskMap.containsKey(DbId)){
-    				taskMap.get(DbId).add(taskId);
-    			}else{
-    				ArrayList<Integer> taskIds = new ArrayList<>();
-    				taskIds.add(taskId);
-    				taskMap.put(DbId, taskIds);
-    			}
-    		}
+    		Region region = null;
     		Set<Integer> meshs = new HashSet<>();
-    		Set<Integer> pids = new HashSet<>();
-    		for(Entry<Integer, ArrayList<Integer>> entry : taskMap.entrySet()){  
-    			dailyConn = DBConnector.getInstance().getConnectionById(entry.getKey());
-//        		String sql = "select distinct t.mesh_id from IX_POI t where exists "
-//            			+ "(select ts.pid from POI_EDIT_STATUS ts where ts.medium_task_id in "
-//            			+ entry.getValue().toString().replace("[", "(").replace("]", ")")+" and ts.pid = t.pid)";
+    		for(Task task : tasks){
+    			region = RegionService.getInstance().query(conn, task.getRegionId());
+    			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+    			
+    			String taskType = "medium_task_id";
+    	    	if(jobRelation.getItemType() == ItemType.PROJECT || 4 == task.getProgramType()){
+    	    		taskType = "quick_task_id";
+    	    	}
         		
-        		if(entry.getValue().size() > 0){
-        			String poiSql = "select ts.pid from POI_EDIT_STATUS ts where ts.medium_task_id in"
-                			+ entry.getValue().toString().replace("[", "(").replace("]", ")");
-            		
-            		log.info("querypoiSql :" + poiSql);
-            		
-            		ResultSetHandler<Set<Integer>> handler = new ResultSetHandler<Set<Integer>>() {
-            			public Set<Integer> handle(ResultSet rs) throws SQLException {
-            				Set<Integer> result = new HashSet<>();
-            				while(rs.next()) {
-            					result.add(rs.getInt("pid"));
-            				}
-            				return result;
-            			}
-            		};
-            		pids.addAll(run.query(dailyConn, poiSql, handler));
-        		}
+        		String poiSql = "select count(1) from POI_EDIT_STATUS ts where ts."+taskType+" = "+task.getTaskId();
             	
-        		if(pids.size() > 0){
-//        			String sql = "select t.mesh_id from IX_POI t where t.pid in ("
-//                			+ pids.toString().replace("[", "(").replace("]", ")");
-            		String sql = "select t.mesh_id from IX_POI t where exists "
-        			+ "(select ts.pid from POI_EDIT_STATUS ts where ts.medium_task_id in "
-        			+ entry.getValue().toString().replace("[", "(").replace("]", ")")+" and ts.pid = t.pid)";
-            		ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
-            			public Set<Integer> handle(ResultSet rs) throws SQLException {
-            				Set<Integer> result = new HashSet<Integer>();
-            				while(rs.next()) {
-            					result.add(rs.getInt("mesh_id"));
-            				}
-            				return result;
+            	log.info("querypoiSql :" + poiSql);
+            	
+            	ResultSetHandler<Integer> handler = new ResultSetHandler<Integer>() {
+            		public Integer handle(ResultSet rs) throws SQLException {
+            			int count = 0;
+            			while(rs.next()) {
+            				count = rs.getInt("count(1)");
             			}
-            		};
-            		meshs.addAll(run.query(dailyConn, sql, rsHandler));
-        			}
-        		}
-        		 
+            			return count;
+            		}
+            	};
+            	int poiCount = run.query(dailyConn, poiSql, handler);
+            	result.put("poiPlanLoad", poiCount);
+            	
+            	String sql = "select distinct t.mesh_id from IX_POI t, POI_EDIT_STATUS ts where ts." + taskType+" = " + task.getTaskId() + " and ts.pid = t.pid";
+                ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
+                	public Set<Integer> handle(ResultSet rs) throws SQLException {
+                		Set<Integer> result = new HashSet<Integer>();
+                		while(rs.next()) {
+                			result.add(rs.getInt("mesh_id"));
+                		}
+                		return result;
+                	}
+                };
+                meshs.addAll(run.query(dailyConn, sql, rsHandler));
+        	}
+            	
     		result.put("poiMeshes", meshs);
-    		result.put("poiPlanLoad", pids.size());
     	}catch(Exception e){
     		log.error("queryMeshesByTasks error" + e.getMessage(), e);
     		throw e;

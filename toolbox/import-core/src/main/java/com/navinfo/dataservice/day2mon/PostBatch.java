@@ -143,11 +143,12 @@ public class PostBatch {
 						for (BasicRow flag : flagListCopy) {
 							IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
 							String flagCode = poiFlag.getFlagCode();
-							if ("FM-YW-20-014".equals(workItem) && (!("110020070000".equals(flagCode)
-									|| "110020080000".equals(flagCode) || "110020090000".equals(flagCode)))) {
-								lastSourceFlag = flagCode;
-							}
+							
 							if (poiFlag.getNameId() == nameId || poiFlag.getNameId() == standardNameId) {
+								if ("FM-YW-20-014".equals(workItem) && (!("110020070000".equals(flagCode)
+										|| "110020080000".equals(flagCode) || "110020090000".equals(flagCode)))) {
+									lastSourceFlag = flagCode;
+								}
 								poiObj.deleteSubrow(poiFlag);
 							}
 						}

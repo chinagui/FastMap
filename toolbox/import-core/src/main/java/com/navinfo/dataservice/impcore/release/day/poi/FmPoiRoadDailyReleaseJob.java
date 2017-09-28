@@ -135,7 +135,7 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 			int regionId=releaseFmIdbDailyPoiRequest.getRegionId();//按大区库执行
 			
 			List<Region> regions = new ArrayList<Region>();
-			if(regionId!=0){//按照指定大区库进行日落月
+			if(regionId!=0){//按照指定大区库进行日出品
 				Region r = manApi.queryByRegionId(regionId);
 				regions.add(r);
 			}else{

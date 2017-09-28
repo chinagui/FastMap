@@ -21,6 +21,7 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringConverter;
@@ -1431,7 +1432,7 @@ public class TaskOperation {
 		}
 	}
 
-	public static void changeDayCmsTaskGridByCollectTask(Connection conn,int taskId) throws Exception {
+	public static int changeDayCmsTaskGridByCollectTask(Connection conn,int taskId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 			//modify by songhe
@@ -1442,6 +1443,7 @@ public class TaskOperation {
 					+ "    FROM TASK_GRID_MAPPING M, TASK S, TASK UT"
 					+ "   WHERE M.TASK_ID = "+taskId
 					+ "     AND S.TASK_ID = M.TASK_ID"
+					+ "     AND ut.region_id = s.region_id"
 					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
 					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
 					+ "     AND UT.TYPE = 1"
@@ -1451,14 +1453,50 @@ public class TaskOperation {
 					+ "   WHERE S.TASK_ID = "+taskId
 					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
 					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND ut.region_id = s.region_id"
 					+ "     AND UT.TASK_ID = T.TASK_ID"
 					+ "     AND UT.TYPE = 1";
-			run.update(conn, createMappingSql);
+			return run.update(conn, createMappingSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-		}
-		
+		}		
+	}
+	/**
+	 *获取采集任务对应的日编任务id
+	 * @param conn
+	 * @param taskId
+	 * @return
+	 * @throws Exception
+	 */
+	public static int getDayTaskGridByCollectTask(Connection conn,int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			//modify by songhe
+			//删除task.type对应=3的二代编辑任务
+			String createMappingSql = "SELECT UT.TASK_ID"
+					+ "    FROM TASK S, TASK UT"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND ut.region_id = s.region_id"
+					+ "     AND UT.latest = 1"
+					+ "     AND UT.TYPE = 1";
+			return run.query(conn, createMappingSql, new ResultSetHandler<Integer>(){
+
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						return rs.getInt("TASK_ID");
+					}
+					return 0;
+				}
+				
+			});
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}		
 	}
 	
 	/**
@@ -1496,6 +1534,29 @@ public class TaskOperation {
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}	
+	
+	/**
+	 * @Title: updateSubtask
+	 * @Description: 修改子任务(修)(第七迭代)
+	 * @param conn
+	 * @param bean
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月7日 下午2:21:21 
+	 */
+	public static void updateTaskGeo(Connection conn,String geoStr,int taskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String baseSql = "update TASK set GEOMETRY=? where TASK_ID="+taskId;			
+			log.info("updatetask sql:" + baseSql);
+			run.update(conn,baseSql,GeoTranslator.wkt2Struct(conn,geoStr));			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
 		}
 	}
 }

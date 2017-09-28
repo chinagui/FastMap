@@ -2410,7 +2410,7 @@ public class DataPrepareService {
 		try{
 			QueryRunner run = new QueryRunner();
 			
-			String sql = "SELECT PRIORITY, CONTACT_TYPE FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND CONTACT IN ( ? ) AND P.POI_NUM = ? ";
+			String sql = "SELECT T.PRIORITY, T.CONTACT_TYPE FROM IX_POI P, IX_POI_CONTACT T WHERE P.PID = T.POI_PID AND T.CONTACT IN (?) AND P.POI_NUM = ?";
 			ResultSetHandler<Map<String, List<String>>> rs = new ResultSetHandler<Map<String, List<String>>>() {
 				Map<String, List<String>> result = new HashMap<>();
 				@Override

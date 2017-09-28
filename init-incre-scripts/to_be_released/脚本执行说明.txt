@@ -1,5 +1,5 @@
-﻿1. fm_sys/xxxx.sql
-	功能：xxxxxx
-	目标库：fm_sys
-	author：xx
+﻿1. fm_man/task_geo.sql
+	功能：任务增加geometry
+	目标库：fm_man
+	author：张晓毅
 

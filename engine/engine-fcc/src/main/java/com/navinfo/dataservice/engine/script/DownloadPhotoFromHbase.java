@@ -39,7 +39,7 @@ public class DownloadPhotoFromHbase {
 	private static Logger log = LoggerRepos.getLogger(DownloadPhotoFromHbase.class);
 	static ClassPathXmlApplicationContext context =null;
 	static String savePath;		
-	static String rootPath="图形提取"; 
+	static String rootPath="PhotoFetch"; 
 	static String tpPath;
 	static String ptnPath;
 	static String filePath;
@@ -237,7 +237,8 @@ public class DownloadPhotoFromHbase {
 			}
 										
 		if ("1401".equals(s_sourcetype)) {
-			tpPath="方向看板";				
+			//SIGNBOARD：方向看板
+			tpPath="SIGNBOARD";				
 		}
 		
 		if("1406".equals(s_sourcetype)){
@@ -245,11 +246,14 @@ public class DownloadPhotoFromHbase {
 			int deep_tips_tp = integer.intValue();
 			//deep_tips中tp值：1是  普通道路路口实景图，2 是 高速出口实景图， 3 是 高速入口实景图。
 			if (1==deep_tips_tp) {
-				tpPath="普通路口实景图";
+				//REALIMAGE1：普通路口实景图
+				tpPath="REALIMAGE1";
 			} else if (2==deep_tips_tp) {
-				tpPath="高速出口实景图";
+				//REALIMAGE2：高速出口实景图
+				tpPath="REALIMAGE2";
 			} else if (3==deep_tips_tp) {
-				tpPath="高速入口实景图";
+				//REALIMAGE3：高速入口实景图
+				tpPath="REALIMAGE3";
 			}
 			
 		}

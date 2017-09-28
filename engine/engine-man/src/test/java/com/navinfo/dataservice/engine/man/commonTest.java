@@ -5,8 +5,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
@@ -27,8 +29,11 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskRefer;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskReferOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -78,6 +83,18 @@ public class commonTest extends InitApplication {
 				   values.toArray() );
 		conn.commit();
 		System.out.println("end"); 
+	}
+	
+	@Test
+	public void testGeo() throws Exception {
+		String geoStr="POLYGON ((128.625 47.084029, 128.75 47.08415, 128.75 47.093501, 128.75 47.122943, 128.75 47.333333, 129.689098 47.333333, 129.680362 47.290626, 129.738477 47.175437, 129.696211 47.146164, 129.65457 47.085808, 129.632357 47.053612, 129.559322 46.947751, 129.573596 46.916667, 128.625 46.916667, 128.625 47.084029))";
+		Geometry geo = GeoTranslator.wkt2Geometry(geoStr);
+		Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
+		Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+		for(String gridId:grids){
+			gridIdMap.put(gridId, 1);
+		}
+		String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(grids));
 	}
 	
 	/*@Test

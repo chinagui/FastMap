@@ -123,10 +123,10 @@ public class PointAddressService {
 		builder.append(" IP.PID, IP.DPR_NAME, IP.DP_NAME, IP.MEMO, DS.FRESH_VERIFIED AS FRESHNESS_VEFICATION, DS.RAW_FIELDS, ");
 		builder.append(" (SELECT COUNT(N.RULEID) FROM NI_VAL_EXCEPTION N, CK_RESULT_OBJECT C WHERE N.MD5_CODE = C.MD5_CODE AND IP.PID = C.PID(+) ");
 		builder.append(" AND C.TABLE_NAME = 'IX_POINTADDRESS' AND N.RULEID IN " + ckRules + " ) AS ERRORCOUNT ");
-		builder.append(" FROM IX_POINTADDRESS IP, (SELECT * FROM IX_POINTADDRESS_NAME WHERE LANG_CODE = 'CHI') IPN, DAY_EDIT_STATUS DS ");
+		builder.append(" FROM IX_POINTADDRESS IP, (SELECT * FROM IX_POINTADDRESS_NAME WHERE LANG_CODE = 'CHI') IPN, POINTADDRESS_EDIT_STATUS DS ");
 		builder.append(" WHERE IP.PID = IPN.PID(+) AND IP.PID = DS.PID ");
 		
-		builder.append(" AND DS.WORK_TYPE = 1 AND DS.ELEMENT = 1 AND DS.STATUS = " + status + " ");
+		builder.append(" AND DS.WORK_TYPE = 1 AND DS.STATUS = " + status + " ");
 		builder.append(" AND (DS.QUICK_SUBTASK_ID = " + subtaskId + " OR DS.MEDIUM_SUBTASK_ID = " + subtaskId + " ) ");
 
 		if (!pidName.isEmpty()) {

@@ -244,17 +244,20 @@ public class QuickMonitorJob extends AbstractStatJob {
 			BasicDBObject queryProgram16 = new BasicDBObject();
 			queryProgram16.put("timestamp", timestamp);
 			queryProgram16.put("type", 0);	
+			queryProgram16.put("status", 0);	
 			queryProgram16.put("programType", 4);
 			quickMonitorMap.put("collectAverageDate", getDateAvgInMongo(md, "task",queryProgram16,"actualStartDate","actualEndDate"));
 			
 			BasicDBObject queryProgram17 = new BasicDBObject();
 			queryProgram17.put("timestamp", timestamp);
+			queryProgram16.put("status", 0);	
 			queryProgram17.put("type", 1);	
 			queryProgram17.put("programType", 4);
 			quickMonitorMap.put("dayAverageDate", getDateAvgInMongo(md, "task",queryProgram17,"actualStartDate","actualEndDate"));
 			
 			BasicDBObject queryProgram18 = new BasicDBObject();
 			queryProgram18.put("timestamp", timestamp);
+			queryProgram16.put("status", 0);	
 			queryProgram18.put("type", 4);	
 			quickMonitorMap.put("produceAverageDate", getDateAvgInMongo(md, "program",queryProgram18,"actualEndDate","produceDate"));
 			

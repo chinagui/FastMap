@@ -126,17 +126,17 @@ public class PointAddressService {
 		builder.append(" FROM IX_POINTADDRESS IP, (SELECT * FROM IX_POINTADDRESS_NAME WHERE LANG_CODE = 'CHI') IPN, DAY_EDIT_STATUS DS ");
 		builder.append(" WHERE IP.PID = IPN.PID(+) AND IP.PID = DS.PID ");
 		
-		builder.append(" AND DS.WORK_TYPE = 1 AND DS.STATUS = " + status + " ");
+		builder.append(" AND DS.WORK_TYPE = 1 AND DS.ELEMENT = 1 AND DS.STATUS = " + status + " ");
 		builder.append(" AND (DS.QUICK_SUBTASK_ID = " + subtaskId + " OR DS.MEDIUM_SUBTASK_ID = " + subtaskId + " ) ");
 
 		if (!pidName.isEmpty()) {
 			Pattern pattern = Pattern.compile("[0-9]*");
 			Matcher isNum = pattern.matcher(pidName);
 			if (isNum.matches()) {
-				builder.append(" AND (IP.PID = " + pidName + " OR IPN.NAME LIKE '%" + pidName + "%') ");
+				builder.append(" AND (IP.PID = " + pidName + " OR IPN.FULLNAME LIKE '%" + pidName + "%') ");
 			} else {
 				if (StringUtils.isNotBlank(pidName)) {
-					builder.append(" AND IPN.NAME LIKE '%" + pidName + "%'");
+					builder.append(" AND IPN.FULLNAME LIKE '%" + pidName + "%'");
 				}
 			}
 		}

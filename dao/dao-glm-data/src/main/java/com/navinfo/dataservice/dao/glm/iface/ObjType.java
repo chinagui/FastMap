@@ -213,7 +213,7 @@ public enum ObjType {
 	MISSROADTENGXUN,
 	
 	//点门牌相关模型
-	IX_POINTADDRESS;
+	IXPOINTADDRESS;
 	
 	
 }

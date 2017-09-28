@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete;
+package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.relation;
 
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresGroup;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;

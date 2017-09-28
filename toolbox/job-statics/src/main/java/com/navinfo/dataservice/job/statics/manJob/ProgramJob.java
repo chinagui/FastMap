@@ -96,36 +96,35 @@ public class ProgramJob extends AbstractStatJob {
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer, Object> stat = new HashMap<Integer, Object>();
 			
-			//统计数据
-			float roadPlanTotal = 0f;
-			double roadActualTotal = 0d;
-			double collectLinkUpdateTotal = 0d;
-			int poiPlanTotal = 0;
-			int poiActualTotal = 0;
-			int poiAllNum = 0;
-			int collectTipsUploadNum = 0;
-			double collectLink17UpdateTotal = 0d;
-			double link17AllLen = 0d;
-			int roadPlanOut = 0;
-			int dayEditTipsFinishNum = 0;
-			int day2MonthNum = 0;
-			int tips2MarkNum = 0;
-			int poiFinishNum = 0;
-			int monthPoiFinishNum = 0;
-			
-			String taskCreateDate = "";
-			String collectAcutalStartDate = "";
-			String collectAcutalEndDate = "";
-			String dayAcutalStartDate = "";
-			String dayAcutalEndDate = "";
-			String monthAcutalStartDate = "";
-			String monthAcutalEndDate = "";
-			
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				int programId = (int) jso.get("programId");
+				//统计数据
+				float roadPlanTotal = 0f;
+				double roadActualTotal = 0d;
+				double collectLinkUpdateTotal = 0d;
+				int poiPlanTotal = 0;
+				int poiActualTotal = 0;
+				int poiAllNum = 0;
+				int collectTipsUploadNum = 0;
+				double collectLink17UpdateTotal = 0d;
+				double link17AllLen = 0d;
+				int roadPlanOut = 0;
+				int dayEditTipsFinishNum = 0;
+				int day2MonthNum = 0;
+				int tips2MarkNum = 0;
+				int poiFinishNum = 0;
+				int monthPoiFinishNum = 0;
+				
+				String taskCreateDate = "";
+				String collectAcutalStartDate = "";
+				String collectAcutalEndDate = "";
+				String dayAcutalStartDate = "";
+				String dayAcutalEndDate = "";
+				String monthAcutalStartDate = "";
+				String monthAcutalEndDate = "";
 				//按批次统计数量
 				JSONObject lot1Poi = new JSONObject();
 				JSONObject lot2Poi = new JSONObject();

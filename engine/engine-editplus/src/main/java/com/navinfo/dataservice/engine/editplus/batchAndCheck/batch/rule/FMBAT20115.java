@@ -35,7 +35,7 @@ public class FMBAT20115 extends BasicBatchRule {
 
     @Override
     public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-        //init(batchDataList);
+        //init(batchDataList); 
     }
 
     private void init(Connection conn, Collection<BasicObj> batchDataList) throws Exception {

@@ -937,6 +937,7 @@ public class SubtaskOperation {
 			sb.append(" ,ST.GEOMETRY");
 			sb.append(" ,ST.EXE_USER_ID");
 			sb.append(" ,ST.EXE_GROUP_ID");
+			sb.append(" ,ST.WORK_KIND");
 			sb.append(" ,R.DAILY_DB_ID");
 			sb.append(" ,R.MONTHLY_DB_ID");
 			sb.append(" ,RR.GEOMETRY REFER_GEOMETRY");
@@ -946,8 +947,9 @@ public class SubtaskOperation {
 			sb.append(" AND ST.REFER_ID = RR.ID(+)");
 			sb.append(" AND (ST.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql+ ")");
 			
+			//modify by songhe 2017/09/28  采集端增加返回值 子任务的work_kind并若 platForm=0则，返回work_kind in (1,5)的记录。
 			if(0 == platForm){
-				sb.append(" AND ST.WORK_KIND = 1");
+				sb.append(" AND ST.WORK_KIND in ( 1, 5) ");
 			}
 			if (dataJson.containsKey("stage")) {
 				sb.append(" AND ST.STAGE = " + dataJson.getInt("stage"));
@@ -996,6 +998,7 @@ public class SubtaskOperation {
 						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
 						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
+						subtask.put("workKind", rs.getInt("WORK_KIND"));
 						
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));

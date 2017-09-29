@@ -110,12 +110,45 @@ public class PointAddressController extends BaseController {
 				return new ModelAndView("jsonView", fail("parameter参数不能为空"));
 			}
 			
-			JSONObject result = pointAddressService.release(parameter, tokenObj.getUserId());
 
-			return new ModelAndView("jsonView", success(result));
+			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	
+	/**
+	 * 3米范围之内是否有点门牌
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/pointaddress/queryPointAddress")
+	public ModelAndView queryPointAddress(HttpServletRequest request) throws ServletException, IOException {
+		
+		try{
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int dbId = dataJson.getInt("dbId");
+			double xGuide = dataJson.getDouble("longitude");
+			double yGuide = dataJson.getDouble("latitude");
+			
+			int ret = pointAddressService.queryPointAddress(dbId, xGuide, yGuide);
+			return new ModelAndView("jsonView", success(ret));
+		}catch(Exception e){
+			logger.error("获取3米范围之内是否有点门牌失败，原因："+ e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
 }

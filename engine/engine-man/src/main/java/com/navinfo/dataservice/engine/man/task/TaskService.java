@@ -54,6 +54,7 @@ import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
@@ -242,7 +243,7 @@ public class TaskService {
 	 * @throws Exception
 	 */
 	public int createWithBean(Connection conn,Task bean) throws Exception{
-		int taskId=0;
+		int taskId=bean.getTaskId();
 		try{
 			/*与block关联的常规任务
 			 * 1.修改同类型task的latest
@@ -253,15 +254,19 @@ public class TaskService {
 				List<Integer> blockList = new ArrayList<Integer>();
 				blockList.add(bean.getBlockId());
 				BlockOperation.openBlockByBlockIdList(conn,blockList);
-			}	
+			}
+			
 			//创建任务
-			taskId=TaskOperation.getNewTaskId(conn);
-			bean.setTaskId(taskId);
+			if(taskId==0){
+				taskId=TaskOperation.getNewTaskId(conn);
+				bean.setTaskId(taskId);
+			}
 			TaskOperation.insertTask(conn, bean);
 			
 			// 插入TASK_GRID_MAPPING
 			if(bean.getGridIds() != null){
 				TaskOperation.insertTaskGridMapping(conn, bean);
+				TaskService.getInstance().updateTaskGeo(conn, bean.getTaskId());
 			}
 			
 		}catch(Exception e){
@@ -701,9 +706,11 @@ public class TaskService {
 				if(bean.getSubWorkKind(4)==1&&oldTask.getSubWorkKind(4)==0){
 					log.info("任务修改，变更多源，需自动创建多源子任务");
 					Subtask subtask = createCollectSubtaskByTask(4, bean);
-					JSONArray subtaskIds = new JSONArray();
-					subtaskIds.add(subtask.getSubtaskId());
-					SubtaskService.getInstance().pushMsg(conn, userId, subtaskIds);
+					if(0 != subtask.getExeGroupId()){
+						JSONArray subtaskIds = new JSONArray();
+						subtaskIds.add(subtask.getSubtaskId());
+						SubtaskService.getInstance().pushMsg(conn, userId, subtaskIds);
+					}
 				}
 			}
 			
@@ -2435,7 +2442,8 @@ public class TaskService {
 					+ "       UG.GROUP_NAME,"
 					+ "       T.REGION_ID,"
 					+ "       I.METHOD,"
-					+ "       I.ADMIN_NAME,I.INFOR_STAGE"
+					+ "       I.ADMIN_NAME,I.INFOR_STAGE,"
+					+ "       T.UPLOAD_METHOD"
 					+ "  FROM TASK T, BLOCK B, PROGRAM P, USER_GROUP UG, USER_INFO U, INFOR I"
 					+ " WHERE T.BLOCK_ID = B.BLOCK_ID(+)"
 					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
@@ -2483,6 +2491,7 @@ public class TaskService {
 						task.setRoadPlanIn(rs.getInt("ROAD_PLAN_IN"));
 						task.setRoadPlanOut(rs.getInt("ROAD_PLAN_OUT"));
 						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						task.setUploadMethod(rs.getString("UPLOAD_METHOD"));
 					}
 					return task;
 				}
@@ -3615,7 +3624,7 @@ public class TaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind");
+			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind,t.region_id,t.lot");
 			sb.append("   FROM TASK T ");
 			sb.append("  WHERE T.PROGRAM_ID = " + programId);
 			
@@ -3635,6 +3644,8 @@ public class TaskService {
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						task.setWorkKind(rs.getString("WORK_KIND"));
+						task.setRegionId(rs.getInt("region_id"));
+						task.setLot(rs.getInt("LOT"));
 						try {
 							task.setGridIds(getGridMapByTaskId(conn,task.getTaskId()));
 						} catch (Exception e) {
@@ -3655,36 +3666,7 @@ public class TaskService {
 		}
 	}
 
-	/**
-	 * @param conn
-	 * @param bean
-	 * @throws Exception 
-	 */
-	public void createWithBeanWithTaskId(Connection conn, Task bean) throws Exception {
-		try{
-			/*与block关联的常规任务
-			 * 1.修改同类型task的latest
-			 * 2.如果block没有开启则开启block
-			 */
-			if(bean.getBlockId()!=0){
-				TaskOperation.updateLatest(conn,bean.getProgramId(),bean.getRegionId(),bean.getBlockId(),bean.getType());
-				List<Integer> blockList = new ArrayList<Integer>();
-				blockList.add(bean.getBlockId());
-				BlockOperation.openBlockByBlockIdList(conn,blockList);
-			}	
-			//创建任务
-			TaskOperation.insertTask(conn, bean);
-			
-			// 插入TASK_GRID_MAPPING
-			if(bean.getGridIds() != null){
-				TaskOperation.insertTaskGridMapping(conn, bean);
-			}
-			
-		}catch(Exception e){
-			log.error(e.getMessage(), e);
-			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-		}
-	}
+	
 
 	public void batchQuickTask(int dbId, int subtaskId,
 			int taskId, JSONArray pois, JSONArray tips) throws Exception{
@@ -5230,7 +5212,8 @@ public class TaskService {
 	 * */
 	public Map<Integer, String> queryCityNameByProgram(Connection conn) throws Exception{
 		try{
-			String	sqlForCity = "SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID UNION SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID ";
+			String	sqlForCity = "SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID "
+					+ "UNION ALL SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID ";
 			ResultSetHandler<Map<Integer, String>> rs = new ResultSetHandler<Map<Integer, String>>() {
 				@Override
 				public Map<Integer, String> handle(ResultSet rs) throws SQLException {
@@ -5314,6 +5297,19 @@ public class TaskService {
 			throw new Exception("查询已经分配子任务的任务失败，原因为:" + e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+    
+    public void updateTaskGeo(Connection conn,int taskId)throws Exception{
+		try{
+			Map<Integer, Integer> gridMap = getGridMapByTaskId(conn, taskId);
+			JSONArray newGrids=new JSONArray();
+			newGrids.addAll(gridMap.keySet());
+			TaskOperation.updateTaskGeo(conn, GridUtils.grids2Wkt(newGrids), taskId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
 	

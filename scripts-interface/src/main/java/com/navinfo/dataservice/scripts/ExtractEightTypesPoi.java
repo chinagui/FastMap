@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
+import java.io.File;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,6 +53,9 @@ public class ExtractEightTypesPoi {
 	private static Map<String, Integer> manAdminCodeMap = new HashMap<>();
 	private static Map<Integer, Connection> allRegionConn = new HashMap<>();
 	private static int valExceptionId = 1;
+	final static Map<Long,String> insertAdminCodeMap = new HashMap<>();
+	final static Map<Long,String> updateAdminCodeMap = new HashMap<>();
+	final static Map<Connection, List<Long>> connPidsMap = new HashMap<>();
 	
 	public static void execute(String startDate,String endDate) throws Exception {
 		
@@ -62,11 +66,7 @@ public class ExtractEightTypesPoi {
 		Connection metaConn = null;
 		try {
 			
-			int dbId = searchMonthDbId();//查询月库dbId
-			if(0 == dbId){
-				throw new Exception("对应月库不存在");
-			}
-			monthConn = DBConnector.getInstance().getConnectionById(dbId);
+			monthConn = DBConnector.getInstance().getMkConnection();
 			metaConn = DBConnector.getInstance().getMetaConnection();
 			manConn = DBConnector.getInstance().getManConnection();
 					
@@ -76,9 +76,18 @@ public class ExtractEightTypesPoi {
 			
 			String excelName = "partition_result_data_" + DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 			
-			List<EightTypesPoi> insertEightTypesPois = searchInsertPidExtractEightTypesPoi(monthConn, manConn, startDate, endDate);
-			List<EightTypesPoi> updateEightTypesPois = searchUpdatePidExtractEightTypesPoi(monthConn, manConn, startDate, endDate);
-			List<EightTypesPoi> deleteEightTypesPois = searchDeletePidExtractEightTypesPoi(allRegionConn, manConn, startDate, endDate);
+			Map<Long, Map<String, Object>> insertMap = searchInsertPidExtractEightTypesPoi(monthConn, startDate, endDate);
+			Map<Long, Map<String, Object>> updateMap = searchUpdatePidExtractEightTypesPoi(monthConn, startDate, endDate);
+			Map<Long, Map<String, Object>> deleteMap = searchDeletePidExtractEightTypesPoi(allRegionConn, startDate, endDate);
+			
+			updateMap.keySet().removeAll(insertMap.keySet());
+			updateMap.keySet().removeAll(deleteMap.keySet());
+			insertMap.keySet().removeAll(deleteMap.keySet());
+			
+			List<EightTypesPoi> insertEightTypesPois = insertAndUpdateResultSet2EightTypesPoi(manConn, insertAdminCodeMap, insertMap);
+			List<EightTypesPoi> updateEightTypesPois = insertAndUpdateResultSet2EightTypesPoi(manConn, updateAdminCodeMap, updateMap);
+			List<EightTypesPoi> deleteEightTypesPois = deleteResultSet2EightTypesPoi(manConn, connPidsMap, deleteMap);
+			
 			
 			List<EightTypesPoi> exportEightTypesPois = new ArrayList<>();
 			exportEightTypesPois.addAll(insertEightTypesPois);
@@ -86,6 +95,11 @@ public class ExtractEightTypesPoi {
 			exportEightTypesPois.addAll(deleteEightTypesPois);
 			
 			String dir = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathPoi) + "/extractPoi/" + excelName + ".db";
+			
+			File file = new File(dir);
+			if(!file.getParentFile().isDirectory()){
+				file.getParentFile().mkdirs();
+			}
 			
 			Connection sqliteConn = ExportEightTypes2Sqlite.createSqlite(dir);
 			ExportEightTypes2Sqlite.exportEightTypesPoi(sqliteConn, exportEightTypesPois);
@@ -111,7 +125,7 @@ public class ExtractEightTypesPoi {
 	 * @return
 	 * @throws Exception
 	 */
-	private static List<EightTypesPoi> searchInsertPidExtractEightTypesPoi(Connection monthConn, Connection manConn, String startDate, String endDate) throws Exception {
+	private static Map<Long, Map<String, Object>> searchInsertPidExtractEightTypesPoi(Connection monthConn, String startDate, String endDate) throws Exception {
 		StringBuilder insertSql = new StringBuilder();
 		
 		insertSql.append("SELECT P.PID,															  ");
@@ -140,7 +154,6 @@ public class ExtractEightTypesPoi {
 		insertSql.append("           AND LD.OP_TP = 1)											  ");
 		
 		log.info("查询新增poi SQL：" + insertSql.toString());
-		final Map<Long,String> adminCodeMap = new HashMap<>();
 		try {
 			QueryRunner run = new QueryRunner();
 			Map<Long,Map<String, Object>> insertMap = run.query(monthConn, insertSql.toString(), new ResultSetHandler<Map<Long,Map<String, Object>>>() {
@@ -151,7 +164,7 @@ public class ExtractEightTypesPoi {
 						String kindCode = rs.getString("KIND_CODE");
 						String meshId = rs.getString("MESH_ID");
 						String adminId = rs.getString("ADMIN_ID");
-						adminCodeMap.put(pid, adminId);
+						insertAdminCodeMap.put(pid, adminId);
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						Geometry poiGeo = null;
 						try {
@@ -185,7 +198,7 @@ public class ExtractEightTypesPoi {
 			log.info("================== 新增poi ： totalNum ： " + insertMap.size() + " ==================");
 			
 			//TODO
-			return insertAndUpdateResultSet2EightTypesPoi(manConn, adminCodeMap, insertMap);
+			return insertMap;
 			
 		} catch (Exception e) {
 			log.error(e.getMessage());
@@ -202,7 +215,7 @@ public class ExtractEightTypesPoi {
 	 * @return
 	 * @throws Exception
 	 */
-	private static List<EightTypesPoi> searchDeletePidExtractEightTypesPoi(Map<Integer, Connection> allRegionConn, Connection manConn, String startDate, String endDate) throws Exception {
+	private static Map<Long,Map<String, Object>> searchDeletePidExtractEightTypesPoi(Map<Integer, Connection> allRegionConn, String startDate, String endDate) throws Exception {
 		StringBuilder deteleSql = new StringBuilder();
 		
 		deteleSql.append("SELECT P.PID, P.KIND_CODE, P.MESH_ID, P.GEOMETRY, N.NAME				  ");
@@ -227,7 +240,6 @@ public class ExtractEightTypesPoi {
 		
 		log.info("查询删除poi SQL：" + deteleSql.toString());
 		Map<Long,Map<String, Object>> deleteMap = new HashMap<>();
-		final Map<Connection, List<Long>> connPidsMap = new HashMap<>();
 		try {
 			QueryRunner run = new QueryRunner();
 			
@@ -282,48 +294,9 @@ public class ExtractEightTypesPoi {
 			
 			log.info("================== 删除poi ： totalNum ： " + deleteMap.size() + " ==================");
 			
+			return deleteMap;
+			
 			//TODO
-			Map<Long, Long> pidSubtaskId = new HashMap<>(); 
-			for (Entry<Connection, List<Long>> entry : connPidsMap.entrySet()) {
-				if(!CollectionUtils.isEmpty(entry.getValue())){
-					Map<Long, Long> pidSubtaskIdOrQualitySubtaskId = querySubtaskId(entry.getKey(), entry.getValue());
-					Map<Long, Long> regionPidSubtaskId = subtaskIdIsQuality(manConn, pidSubtaskIdOrQualitySubtaskId);
-					pidSubtaskId.putAll(regionPidSubtaskId);
-				}
-			}
-			
-			List<EightTypesPoi> list = new ArrayList<>();
-			for (Entry<Long, Map<String, Object>> entry : deleteMap.entrySet()) {
-				EightTypesPoi eightTypesPoi = new EightTypesPoi();
-				
-				eightTypesPoi.setValExceptionId(valExceptionId);
-				eightTypesPoi.setGroupId(0);
-				eightTypesPoi.setLevel(0);
-				eightTypesPoi.setRuleId(0);
-				eightTypesPoi.setSituation("NULL");
-				eightTypesPoi.setInformation((String) entry.getValue().get("information"));
-				eightTypesPoi.setSuggestion("NULL");
-				eightTypesPoi.setLocation((String) entry.getValue().get("location"));
-				eightTypesPoi.setTargets((String) entry.getValue().get("targets"));
-				eightTypesPoi.setAdditionInfo((Integer) entry.getValue().get("additionInfo"));
-				eightTypesPoi.setScopeFlag(1);
-				eightTypesPoi.setCreated(DateUtils.longToString(System.currentTimeMillis(), "yyyy/MM/dd HH:mm"));
-				eightTypesPoi.setUpdated(DateUtils.longToString(System.currentTimeMillis(), "yyyy/MM/dd HH:mm"));
-				eightTypesPoi.setMeshId((String) entry.getValue().get("meshId"));
-				eightTypesPoi.setProvinceName("NULL");
-				eightTypesPoi.setTaskId(pidSubtaskId.get(entry.getKey()));
-				eightTypesPoi.setQaStatus(2);
-				eightTypesPoi.setWorker("NULL");
-				eightTypesPoi.setQaWorker("NULL");
-				eightTypesPoi.setReserved("NULL");
-				eightTypesPoi.setTaskName("NULL");
-				eightTypesPoi.setLogType(0);
-				
-				valExceptionId ++;
-				list.add(eightTypesPoi);
-			}
-			
-			return list;
 			
 		} catch (Exception e) {
 			log.error(e.getMessage());
@@ -338,7 +311,7 @@ public class ExtractEightTypesPoi {
 	 * @return
 	 * @throws Exception
 	 */
-	private static List<EightTypesPoi> searchUpdatePidExtractEightTypesPoi(Connection monthConn, Connection manConn, String startDate, String endDate) throws Exception {
+	private static Map<Long, Map<String, Object>> searchUpdatePidExtractEightTypesPoi(Connection monthConn, String startDate, String endDate) throws Exception {
 		StringBuilder updateSql = new StringBuilder();
 		
 		updateSql.append("SELECT P.PID,															  ");
@@ -428,7 +401,6 @@ public class ExtractEightTypesPoi {
 		updateSql.append("           AND LD.FD_LST LIKE '%GEOMETRY%') 							  ");
 		
 		log.info("查询改分类，改名称及改显示坐标SQL：" + updateSql.toString());
-		final Map<Long,String> adminCodeMap = new HashMap<>();
 		try {
 			QueryRunner run = new QueryRunner();
 			Map<Long,Map<String, Object>> updateMap = run.query(monthConn, updateSql.toString(), new ResultSetHandler<Map<Long,Map<String, Object>>>() {
@@ -462,15 +434,15 @@ public class ExtractEightTypesPoi {
 							String name = rs.getString("NAME");
 							String adminId = rs.getString("ADMIN_ID");
 							
-							adminCodeMap.put(pid, adminId);
+							updateAdminCodeMap.put(pid, adminId);
 							
 							StringBuilder information = new StringBuilder();
 							if ("NAME".equals(flag)){
 								information.append("POI改名称：").append(name).append("|").append(kindCode);
 							} else if ("KIND_CODE".equals(flag)){
-								information.append("POI改分类：").append(name).append(kindCode);
+								information.append("POI改分类：").append(name).append("|").append(kindCode);
 							} else if ("GEOMETRY".equals(flag)){
-								information.append("POI改位移：").append(name).append(kindCode);
+								information.append("POI改位移：").append(name).append("|").append(kindCode);
 							}
 							String location = new StringBuilder().append("POINT（").append(xShow).append(" ").append(yShow).append("）").toString();
 							String targets = new StringBuilder().append("[IX_POI,").append(String.valueOf(pid)).append("]").toString();
@@ -491,7 +463,7 @@ public class ExtractEightTypesPoi {
 			log.info("================== 修改poi ： totalNum ： " + updateMap.size() + " ==================");
 			
 			//TODO
-			return insertAndUpdateResultSet2EightTypesPoi(manConn, adminCodeMap, updateMap);
+			return updateMap;
 			
 		} catch (Exception e) {
 			log.error(e.getMessage());
@@ -521,17 +493,17 @@ public class ExtractEightTypesPoi {
 			eightTypesPoi.setLevel(0);
 			eightTypesPoi.setRuleId(0);
 			eightTypesPoi.setSituation("NULL");
-			eightTypesPoi.setInformation((String) entry.getValue().get("information"));
+			eightTypesPoi.setInformation((String) entry.getValue().get("information") == null ? "" : (String) entry.getValue().get("information"));
 			eightTypesPoi.setSuggestion("NULL");
-			eightTypesPoi.setLocation((String) entry.getValue().get("location"));
-			eightTypesPoi.setTargets((String) entry.getValue().get("targets"));
-			eightTypesPoi.setAdditionInfo((Integer) entry.getValue().get("additionInfo"));
+			eightTypesPoi.setLocation((String) entry.getValue().get("location") == null ? "" : (String) entry.getValue().get("location"));
+			eightTypesPoi.setTargets((String) entry.getValue().get("targets") == null ? "" : (String) entry.getValue().get("targets"));
+			eightTypesPoi.setAdditionInfo((Integer) entry.getValue().get("additionInfo") == null ? 0 : (Integer) entry.getValue().get("additionInfo"));
 			eightTypesPoi.setScopeFlag(1);
-			eightTypesPoi.setCreated(DateUtils.longToString(System.currentTimeMillis(), "yyyy/MM/dd HH:mm"));
-			eightTypesPoi.setUpdated(DateUtils.longToString(System.currentTimeMillis(), "yyyy/MM/dd HH:mm"));
-			eightTypesPoi.setMeshId((String) entry.getValue().get("meshId"));
+			eightTypesPoi.setCreated(DateUtils.longToString(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss"));
+			eightTypesPoi.setUpdated(DateUtils.longToString(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss"));
+			eightTypesPoi.setMeshId((String) entry.getValue().get("meshId") == null ? "" : (String) entry.getValue().get("meshId"));
 			eightTypesPoi.setProvinceName("NULL");
-			eightTypesPoi.setTaskId(pidSubtaskId.get(entry.getKey()));
+			eightTypesPoi.setTaskId(pidSubtaskId.get(entry.getKey()) == null ? 0L : pidSubtaskId.get(entry.getKey()));
 			eightTypesPoi.setQaStatus(2);
 			eightTypesPoi.setWorker("NULL");
 			eightTypesPoi.setQaWorker("NULL");
@@ -546,34 +518,48 @@ public class ExtractEightTypesPoi {
 		return list;
 	}
 	
-	/**
-	 * 查询月库dbId
-	 * @return
-	 * @throws Exception
-	 */
-	private static int searchMonthDbId() throws Exception {
-		Connection conn = null;
-		String sql  = "SELECT DISTINCT MONTHLY_DB_ID FROM REGION ORDER BY MONTHLY_DB_ID";
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			pstmt = conn.prepareStatement(sql);
-			resultSet = pstmt.executeQuery();
-			
-			if(resultSet.next()){
-				return resultSet.getInt(1);
+	private static List<EightTypesPoi> deleteResultSet2EightTypesPoi(Connection manConn, Map<Connection, List<Long>> connPidsMap, Map<Long, Map<String, Object>> deleteMap) throws Exception {
+		Map<Long, Long> pidSubtaskId = new HashMap<>(); 
+		for (Entry<Connection, List<Long>> entry : connPidsMap.entrySet()) {
+			if(!CollectionUtils.isEmpty(entry.getValue())){
+				Map<Long, Long> pidSubtaskIdOrQualitySubtaskId = querySubtaskId(entry.getKey(), entry.getValue());
+				Map<Long, Long> regionPidSubtaskId = subtaskIdIsQuality(manConn, pidSubtaskIdOrQualitySubtaskId);
+				pidSubtaskId.putAll(regionPidSubtaskId);
 			}
-			return 0;
-			
-		} catch (Exception e) {
-			DbUtils.rollback(conn);
-			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 		
+		List<EightTypesPoi> list = new ArrayList<>();
+		for (Entry<Long, Map<String, Object>> entry : deleteMap.entrySet()) {
+			EightTypesPoi eightTypesPoi = new EightTypesPoi();
+			
+			eightTypesPoi.setValExceptionId(valExceptionId);
+			eightTypesPoi.setGroupId(0);
+			eightTypesPoi.setLevel(0);
+			eightTypesPoi.setRuleId(0);
+			eightTypesPoi.setSituation("NULL");
+			eightTypesPoi.setInformation((String) entry.getValue().get("information") == null ? "" : (String) entry.getValue().get("information"));
+			eightTypesPoi.setSuggestion("NULL");
+			eightTypesPoi.setLocation((String) entry.getValue().get("location") == null ? "" : (String) entry.getValue().get("location"));
+			eightTypesPoi.setTargets((String) entry.getValue().get("targets") == null ? "" : (String) entry.getValue().get("targets"));
+			eightTypesPoi.setAdditionInfo((Integer) entry.getValue().get("additionInfo") == null ? 0 : (Integer) entry.getValue().get("additionInfo"));
+			eightTypesPoi.setScopeFlag(1);
+			eightTypesPoi.setCreated(DateUtils.longToString(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss"));
+			eightTypesPoi.setUpdated(DateUtils.longToString(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss"));
+			eightTypesPoi.setMeshId((String) entry.getValue().get("meshId") == null ? "" : (String) entry.getValue().get("meshId"));
+			eightTypesPoi.setProvinceName("NULL");
+			eightTypesPoi.setTaskId(pidSubtaskId.get(entry.getKey()) == null ? 0L : pidSubtaskId.get(entry.getKey()));
+			eightTypesPoi.setQaStatus(2);
+			eightTypesPoi.setWorker("NULL");
+			eightTypesPoi.setQaWorker("NULL");
+			eightTypesPoi.setReserved("NULL");
+			eightTypesPoi.setTaskName("NULL");
+			eightTypesPoi.setLogType(0);
+			
+			valExceptionId ++;
+			list.add(eightTypesPoi);
+		}
+		
+		return list;
 	}
 	
 	/**

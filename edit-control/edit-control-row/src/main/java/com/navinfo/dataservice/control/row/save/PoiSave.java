@@ -348,7 +348,7 @@ public class PoiSave {
 			// 鲜度验证保存时调用
 			String condition = " QUICK_SUBTASK_ID = 0 AND QUICK_TASK_ID = 0 AND MEDIUM_SUBTASK_ID = 0 AND MEDIUM_TASK_ID = 0";
 			sb.append(" UPDATE poi_edit_status SET status = 2 ,QUICK_SUBTASK_ID = CASE WHEN "+ condition +" THEN "+qst+" ELSE QUICK_SUBTASK_ID END,");
-			sb.append(" QUICK_TASK_ID = CASE WHEN"+ condition +" THEN "+qt+" ELSE QUICK_SUBTASK_ID END,");
+			sb.append(" QUICK_TASK_ID = CASE WHEN"+ condition +" THEN "+qt+" ELSE QUICK_TASK_ID END,");
 			sb.append(" MEDIUM_SUBTASK_ID = CASE WHEN"+ condition +" THEN "+mst+" ELSE MEDIUM_SUBTASK_ID END,");
 			sb.append(" MEDIUM_TASK_ID = CASE WHEN"+ condition +" THEN "+mt+" ELSE MEDIUM_TASK_ID END WHERE pid in ("+pids+")");			
 		}

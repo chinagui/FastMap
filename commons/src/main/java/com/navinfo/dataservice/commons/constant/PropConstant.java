@@ -137,4 +137,7 @@ public class PropConstant {
     
     //深度信息质检率系数
     public static final String deepQcQualityRateRatio = "extract.deep.qc.quality.rate.ratio";
+    
+    //日出品统计接口
+    public static final String dayProduceStatUrl = "day.produce.stat.url";
 }

@@ -29,6 +29,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.search.IxPointaddressSearch;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
@@ -253,7 +254,12 @@ public class EditController extends BaseController {
 					return new ModelAndView("jsonView", success());
 				}
 
-			} else {
+			}else if("IXPOIADDRESS".equals(objType)){
+				int pid = jsonReq.getInt("pid");
+				IxPointaddressSearch ixPointaddressSearch = new IxPointaddressSearch(conn);
+				return new ModelAndView("jsonView", success(ixPointaddressSearch.searchMainDataByPid(pid)));
+			}
+			else{
 				int pid = jsonReq.getInt("pid");
 
 				SearchProcess p = new SearchProcess(conn);

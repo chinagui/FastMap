@@ -71,9 +71,7 @@ public class ExtractHighWayPoi {
 		
 		try {
 			
-			int monDbId = searchMonthDbId();//查询月库dbId
-			if(0==monDbId){throw new Exception("对应月库不存在");}
-			monthConn = DBConnector.getInstance().getConnectionById(monDbId);
+			monthConn = DBConnector.getInstance().getMkConnection();
 			
 			StringBuilder sb = new StringBuilder();
 			 
@@ -109,6 +107,8 @@ public class ExtractHighWayPoi {
 			regionConMap = queryAllRegionConn();
 			for (Connection regionConn : regionConMap.values()) {
 				Set<Long> deletePidList = searchDeletePidExtractHighWayPoi(condition, regionConn);//删除履历，日落月成功,叶子节点HighWayPoiList（日库）
+				updatePidList.removeAll(deletePidList);//如果一条pid既有修改履历也有删除履历，需在修改履历的pidList和删除履历pidList求差集，以删除为准。
+				insertPidList.removeAll(deletePidList);//如果一条pid既有新增履历也有删除履历，需在新增履历的pidList和删除履历pidList求差集，以删除为准。
 				if(!CollectionUtils.isEmpty(deletePidList)){
 					filterChildPidListByParent(deletePidList,2, regionConn);//筛选出符合条件修改履历的子pidList
 					convertPidListToHighWayList(deletePidList, 2, regionConn);//组装成HighWayList
@@ -148,6 +148,8 @@ public class ExtractHighWayPoi {
 				poiList.add(highWayPoi);
 			}
 			
+			log.info("poiList---------------"+pidHighWayPoiMap.keySet());
+			
 			ExportExcel<HighWayPoi> ex = new ExportExcel<HighWayPoi>();
 
 			String[] headers = { "省份", "任务名称", "子PID", "图幅", "坐标", "数据状态","批次"};
@@ -167,7 +169,7 @@ public class ExtractHighWayPoi {
 				ex.exportExcel("内业作业HW与高速出入口变化记录表",headers, poiList, out, "yyyy-MM-dd HH:mm:ss");
 				out.close();
 
-				System.out.println("excel导出成功！");
+				log.info("excel导出成功！");
 			} catch (Exception e) {
 				log.error(e.getMessage());
 				throw e;
@@ -643,37 +645,6 @@ public class ExtractHighWayPoi {
 	}
 
 
-
-	/**
-	 * 查询月库dbId
-	 * @return
-	 * @throws Exception
-	 */
-	private static int searchMonthDbId() throws Exception {
-		Connection conn = null;
-		String sql  = "SELECT DISTINCT monthly_db_id FROM REGION ORDER BY monthly_db_id";
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			pstmt = conn.prepareStatement(sql);
-			resultSet = pstmt.executeQuery();
-			
-			if(resultSet.next()){
-				return resultSet.getInt(1);
-			}
-			
-			return 0;
-			
-		} catch (Exception e) {
-			DbUtils.rollback(conn);
-			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-		
-	}
 
 	/**
 	 * 查询全部region，并返回regionId和Conn的map

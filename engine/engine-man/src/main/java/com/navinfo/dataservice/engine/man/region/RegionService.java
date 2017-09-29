@@ -173,7 +173,6 @@ public class RegionService {
 			};
 			return run.query(conn, selectSql, rsHandler, regionId);			
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
 		} 

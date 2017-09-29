@@ -15,11 +15,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
-
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
@@ -33,7 +31,6 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.vividsolutions.jts.geom.Point;
-
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -65,6 +62,8 @@ public class DayPoiJob extends AbstractStatJob {
 					dbIds.add(region.getDailyDbId());
 				}
 			}
+			//dbIds = new HashSet<Integer>();
+//			dbIds.add(13);
 			log.info("dbIds:"+dbIds);
 			//查询所有元数据库中的代理店的数据
 			Set<String> dealers = queryDealershipFromMeta();
@@ -104,7 +103,7 @@ public class DayPoiJob extends AbstractStatJob {
 				result.get("grid_day_poi").addAll(entry.getValue().get("notaskStat"));
 			}
 			
-			//log.info("stats:" + JSONObject.fromObject(result).toString());
+			log.info("stats:" + JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 			
 		}catch(Exception e) {
@@ -180,14 +179,13 @@ public class DayPoiJob extends AbstractStatJob {
 //				log.info("dbId:"+dbId+"subtaskStatMap:" + subtaskStat);
 //				log.info("dbId:"+dbId+"taskStatMap:" + taskStat);
 //				log.info("dbId:"+dbId+"notaskStatMap:" + notaskStat);
-				
 				temp.put("subtaskStat", subtaskStat);
 				temp.put("taskStat", taskStat);
 				temp.put("notaskStat", notaskStat);
 				stats.put(dbId, temp);
 				log.info("end dbId:"+dbId);
 			}catch(Exception e){
-				log.error("dbId("+dbId+")POI日库作业数据统计失败");
+				log.error("dbId("+dbId+")POI日库作业数据统计失败",e);
 				DbUtils.commitAndCloseQuietly(conn);
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
@@ -230,12 +228,26 @@ public class DayPoiJob extends AbstractStatJob {
 			
 			Map<Integer, String> subTaskCollectDate = queryFirstCollectDate(conn);
 			
+			//查询poi实际新增个数
+			sql  = "select a.stk_id ID,count(1) NUM  from log_detail d,log_operation o,log_action a  "
+					+ "where  d.op_id = o.op_id and o.act_id = a.act_id   "
+					+ "and d.tb_nm = 'IX_POI' AND d.op_tp = 1 GROUP BY a.stk_id  ";
+			Map<Integer, Long> poiActualAddNumMap=run.query(conn, sql, numRsHandler());
+			
+			//查询poi实际删除个数
+			sql  = "select s.medium_subtask_id ID  ,count(1) NUM from ix_poi i,poi_edit_status s  "
+					+ "where i.pid = s.pid and s.status in (1,2,3) and s.medium_subtask_id  != 0  "
+					+ "and i.u_record =2 group by s.medium_subtask_id ";
+			Map<Integer, Long> poiActualDeleteNumMap=run.query(conn, sql, numRsHandler());
+			
 			Set<Integer> subtaskIdSet=new HashSet<>();
 			subtaskIdSet.addAll(taskPoiUploadNum.keySet());
 			subtaskIdSet.addAll(taskPoiFinishNum.keySet());
 			subtaskIdSet.addAll(taskPoiWaitWork.keySet());
 			subtaskIdSet.addAll(subTaskDate.keySet());
 			subtaskIdSet.addAll(subTaskCollectDate.keySet());
+			subtaskIdSet.addAll(poiActualAddNumMap.keySet());
+			subtaskIdSet.addAll(poiActualDeleteNumMap.keySet());
 			List<Map<String, Object>> subtaskStat = new ArrayList<Map<String, Object>>();
 			for (int subtaskId:subtaskIdSet){
 				Map<String, Object> subtaskStatOne=new HashMap<>();
@@ -245,21 +257,42 @@ public class DayPoiJob extends AbstractStatJob {
 				subtaskStatOne.put("firstEditDate", "");
 				subtaskStatOne.put("firstCollectDate", "");
 				subtaskStatOne.put("waitWorkPoi", 0);
+				long poiUploadNum = 0;
 				if(taskPoiUploadNum.containsKey(subtaskId)){
-					subtaskStatOne.put("poiUploadNum", taskPoiUploadNum.get(subtaskId));
+					poiUploadNum = taskPoiUploadNum.get(subtaskId);
+					subtaskStatOne.put("poiUploadNum",taskPoiUploadNum.get(subtaskId));
 				}
 				if(taskPoiFinishNum.containsKey(subtaskId)){
 					subtaskStatOne.put("poiFinishNum", taskPoiFinishNum.get(subtaskId));
 				}
 				if(subTaskDate.containsKey(subtaskId)){
-					subtaskStatOne.put("firstEditDate", subTaskDate.get(subtaskId));
+					subtaskStatOne.put("firstEditDate", (StringUtils.isEmpty(subTaskDate.get(subtaskId)))?"" : subTaskDate.get(subtaskId));
 				}
 				if(subTaskCollectDate.containsKey(subtaskId)){
-					subtaskStatOne.put("firstCollectDate", subTaskCollectDate.get(subtaskId));
+					subtaskStatOne.put("firstCollectDate", (StringUtils.isEmpty(subTaskCollectDate.get(subtaskId)))?"" : subTaskCollectDate.get(subtaskId));
 				}
 				if(taskPoiWaitWork.containsKey(subtaskId)){
 					subtaskStatOne.put("waitWorkPoi", taskPoiWaitWork.get(subtaskId));
 				}
+				long poiActualAddNum = 0;				
+				if(poiActualAddNumMap.containsKey(subtaskId)){
+					poiActualAddNum = poiActualAddNumMap.get(subtaskId);
+					
+				}
+				subtaskStatOne.put("poiActualAddNum", poiActualAddNum);
+				
+				long poiActualDeleteNum =  0;
+				if(poiActualDeleteNumMap.containsKey(subtaskId)){
+					poiActualDeleteNum = poiActualDeleteNumMap.get(subtaskId);
+				}
+				subtaskStatOne.put("poiActualDeleteNum", poiActualDeleteNum);
+				
+				long poiActualUploadNum = 0;
+				if(poiUploadNum >= (poiActualAddNum+poiActualDeleteNum)){
+					poiActualUploadNum = poiUploadNum - (poiActualAddNum+poiActualDeleteNum);
+				}
+				subtaskStatOne.put("poiActualUpdateNum", poiActualUploadNum);
+				
 				subtaskStat.add(subtaskStatOne);
 			}
 			return subtaskStat;
@@ -312,7 +345,7 @@ public class DayPoiJob extends AbstractStatJob {
 					+ " GROUP BY S.MEDIUM_TASK_ID";
 			Map<Integer, Long> taskPoiUnFreshNum=run.query(conn, sql, numRsHandler());
 			
-			sql="SELECT S.MEDIUM_TASK_ID, COUNT(1) NUM"
+			sql="SELECT S.MEDIUM_TASK_ID ID, COUNT(1) NUM"
 					+ "  FROM POI_EDIT_STATUS S, DATA_PLAN D"
 					+ " WHERE D.PID = S.PID"
 					+ "   AND D.DATA_TYPE = 1"
@@ -622,8 +655,8 @@ public class DayPoiJob extends AbstractStatJob {
 		 * */
 		public void statisticsNoTaskDataImp(Set<String> dealers, Map<Integer, Map<String, Integer>> notaskStat, String kindCode, String chain, STRUCT struct){
 			boolean poiType = false;
-			try {
-				Point geo;
+			Point geo=null;
+			try {				
 		    	geo = (Point) GeoTranslator.struct2Jts(struct);
 				double x = geo.getX();
 				double y = geo.getY();
@@ -649,7 +682,11 @@ public class DayPoiJob extends AbstractStatJob {
 				grid.put("noDealershipNum", noDealershipNum);
 				notaskStat.put(gridId, grid);
 			} catch (Exception e) {
-				log.error("处理任务，子任务，无任务数据坐标，无法获取到gridid:" + e.getMessage(), e);
+				if(geo==null){
+					log.error("处理任务，子任务，无任务数据坐标，无法获取到gridid:geo=null," + e.getMessage(), e);
+				}else{
+					log.error("处理任务，子任务，无任务数据坐标，无法获取到gridid:geo="+geo.toString()+"," + e.getMessage(), e);
+				}				
 			}
 		}
 		

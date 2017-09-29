@@ -265,13 +265,13 @@ public class MediumMonitorJob extends AbstractStatJob {
 			queryProgram19.put("type", 2);
 			queryProgram19.put("programType", 1);
 			double monthPoiPlanOut = queryDatasSumInMongo(md, "task", queryProgram19,"poiPlanOut");
-			mediumMonitorMap.put("monthPoiPlanOut", monthPoiPlanOut);
+			mediumMonitorMap.put("monthPoiPlanOut", Math.floor(monthPoiPlanOut*1.1));
 			
 			BasicDBObject queryProgram20 = new BasicDBObject();
 			queryProgram20.put("timestamp", timestamp);
 			queryProgram20.put("type", 0);
 			queryProgram20.put("programType", 1);
-			double poiPlanTotal = queryDatasSumInMongo(md, "task", queryProgram20,"poiPlanOut");
+			double poiPlanTotal = queryDatasSumInMongo(md, "task", queryProgram20,"poiPlanTotal");
 			mediumMonitorMap.put("poiPlanTotal", poiPlanTotal);
 			
 			String monthPlanStartDate = getStartOrEndDate("task","plan_start_date",2,"");

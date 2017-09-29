@@ -4,7 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -14,7 +18,11 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -68,8 +76,8 @@ public class IxPointaddressSearch implements ISearch {
 		if (noQFilter != null) {
 			if (noQFilter.size() > 0) {
 				sb.append("SELECT A.*, B.STATUS,B.QUICK_TASK_ID,"
-						+ "B.MEDIUM_TASK_ID  FROM TMP1 A,DAY_EDIT_STATUS B "
-						+ " WHERE A.PID = B.PID AND B.ELEMENT=1 AND B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
+						+ "B.MEDIUM_TASK_ID  FROM TMP1 A,pointaddress_edit_status B "
+						+ " WHERE A.PID = B.PID AND B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
 				if (noQFilter.contains(1) && noQFilter.size() == 1) {
 					sb.append(" AND B.MEDIUM_TASK_ID <> 0 ");
 
@@ -181,4 +189,62 @@ public class IxPointaddressSearch implements ISearch {
 		return list;
 	}
 
-}
+	
+	public JSONObject searchMainDataByPid(int pid) throws Exception {
+		JSONObject json=new JSONObject();
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT I.PID, I.IDCODE, I.X_GUIDE, I.Y_GUIDE, I.GEOMETRY, I.GUIDE_LINK_PID, I.ROW_ID,I.DPR_NAME,");
+		sb.append("I.DP_NAME,I.MEMOIRE,I.MEMO,I.U_RECORD, ");
+		sb.append("P.STATUS,P.FRESH_VERIFIED,P.RAW_FIELDS FROM IX_POINTADDRESS I,POINTADDRESS_EDIT_STATUS P WHERE I.PID=P.PID AND I.PID="+pid);
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			log.info(sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				json.put("pid",resultSet.getInt("PID"));
+				json.put("idcode",resultSet.getString("IDCODE"));
+				json.put("xGuide",resultSet.getDouble("X_GUIDE"));
+				json.put("yGuide",resultSet.getDouble("Y_GUIDE"));
+			
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+				json.put("geometry",geojson);
+				json.put("guideLinkPid", resultSet.getInt("GUIDE_LINK_PID"));
+				json.put("rowId", resultSet.getString("ROW_ID"));
+				json.put("dprName", resultSet.getString("DPR_NAME"));
+
+				json.put("dpName", resultSet.getString("DP_NAME"));
+				json.put("memoire", resultSet.getString("MEMOIRE"));
+				json.put("memo", resultSet.getString("MEMO"));
+				json.put("uRecord", resultSet.getInt("U_RECORD"));
+				json.put("verifiedFlag", resultSet.getInt("FRESH_VERIFIED"));
+				json.put("status", resultSet.getInt("STATUS"));
+				json.put("rawFields", resultSet.getInt("RAW_FIELDS"));
+				json.put("geoLiveType",ObjType.IXPOINTADDRESS.toString());
+				
+			}
+			return json;
+		} catch (Exception e) {
+			throw new Exception(e);
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+	}
+	}}

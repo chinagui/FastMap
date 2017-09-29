@@ -118,7 +118,7 @@ public class ScPlateresInfoSearch  {
             String infoCode = obj.getString("infoCode");
 
             if (infoCode != null && !infoCode.isEmpty()) {
-                sql.append(" AND INFO_CODE = ");
+                sql.append(" AND INFO_INTEL_ID = ");
                 sql.append("'" + infoCode + "'");
             }
         }

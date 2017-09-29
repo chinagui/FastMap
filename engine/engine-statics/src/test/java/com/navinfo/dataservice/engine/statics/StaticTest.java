@@ -19,6 +19,7 @@ import com.navinfo.dataservice.engine.statics.service.StaticsService;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.navicommons.exception.ServiceException;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -106,4 +107,41 @@ public class StaticTest {
 		}
 	}
 	
+	@Test
+	public void testCrowdInfo(){
+		try {
+			JSONArray data = StaticsService.getInstance().crowdInfoList();
+			System.out.println(data.toString());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	@Test
+	public void testCommonInfo(){
+		try {
+			JSONArray data = StaticsService.getInstance().commonInfoListCity();
+			System.out.println(data.toString());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testMonitorData(){
+		JSONObject data = new JSONObject();
+		String platForm = "productMonitor";
+		try {
+			data.putAll(StaticsService.getInstance().getMongoMonitorData());
+			data.putAll(StaticsService.getInstance().getOracleMonitorData(platForm));
+			System.out.println(data.toString());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 }

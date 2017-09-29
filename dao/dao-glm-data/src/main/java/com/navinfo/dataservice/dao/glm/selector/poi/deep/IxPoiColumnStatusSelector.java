@@ -1132,7 +1132,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			}
 			sb.append("  GROUP BY p1.second_work_item");
 
-
+			logger.info(sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
 			 
 			Clob geoClob =ConnectionUtil.createClob(conn);
@@ -1219,6 +1219,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 				sb.append("	AND s1.QC_FLAG = 1");
 			}
 			sb.append(" GROUP BY c1.second_work_item");
+			logger.info(sb.toString());
 
 			pstmt = conn.prepareStatement(sb.toString());
 			 

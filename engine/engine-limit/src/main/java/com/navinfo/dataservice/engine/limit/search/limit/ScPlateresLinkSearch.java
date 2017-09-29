@@ -159,5 +159,38 @@ public class ScPlateresLinkSearch implements ISearch {
         return list;
     }
 
+    public String loadMaxKeyId(String groupId) throws Exception{
+    	StringBuilder sql = new StringBuilder();
 
+        sql.append(" SELECT MAX(GEOMETRY_ID) FROM SC_PLATERES_LINK WHERE GROUP_ID = ? ");
+
+        PreparedStatement pstmt = null;
+ 
+        String geometryId = "";
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql.toString());
+            
+            pstmt.setString(1, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                geometryId = resultSet.getString(1);
+                
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return geometryId;
+    }
 }

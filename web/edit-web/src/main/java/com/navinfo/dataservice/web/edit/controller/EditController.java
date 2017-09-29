@@ -254,12 +254,10 @@ public class EditController extends BaseController {
 					return new ModelAndView("jsonView", success());
 				}
 
-//			}else if(ObjType.IXPOIADDRESS.equals(objType)){
-//				IxPointaddressSearch ixPointaddressSearch = new IxPointaddressSearch(conn);
-//				JSONObject json =new JSONObject(); 
-////				ixPointaddressSearch.searchDataByTileWithGap(x, y, z,
-////						gap, this.getArray());
-//				return new ModelAndView("jsonView", success(json));
+			}else if(ObjType.IXPOIADDRESS.equals(objType)){
+				int pid = jsonReq.getInt("pid");
+				IxPointaddressSearch ixPointaddressSearch = new IxPointaddressSearch(conn);
+				return new ModelAndView("jsonView", success(ixPointaddressSearch.searchMainDataByPid(pid)));
 			}
 			else{
 				int pid = jsonReq.getInt("pid");

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -188,12 +189,61 @@ public class IxPointaddressSearch implements ISearch {
 	}
 
 	
-//	public JSONObject searchMainDataByPid(int pid) throws Exception {
-//		List pidList=new ArrayList();
-//		pidList.add(pid);
-//		Set<String> tableSet=new HashSet<String>;
-//		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, 
-//				ObjectName.IX_POI, tabNames.get(ObjectName.IX_POI), false,
-//				pidList, true, true);
-//	}
-}
+	public JSONObject searchMainDataByPid(int pid) throws Exception {
+		JSONObject json=new JSONObject();
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT I.PID, I.IDCODE, I.X_GUIDE, I.Y_GUIDE, I.GEOMETRY, I.GUIDE_LINK_PID, I.ROW_ID,I.DPR_NAME,");
+		sb.append("I.DP_NAME,I.MEMOIRE,I.MEMO,I.U_RECORD, ");
+		sb.append("P.STATUS,P.FRESH_VERIFIED,P.RAW_FIELDS FROM IX_POINTADDRESS I,POINTADDRESS_EDIT_STATUS P WHERE I.PID=P.PID AND I.PID="+pid);
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			log.info(sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				json.put("pid",resultSet.getInt("PID"));
+				json.put("idcode",resultSet.getString("IDCODE"));
+				json.put("xGuide",resultSet.getDouble("X_GUIDE"));
+				json.put("yGuide",resultSet.getDouble("Y_GUIDE"));
+			
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+				json.put("geometry",geojson);
+				json.put("guideLinkPid", resultSet.getInt("GUIDE_LINK_PID"));
+				json.put("rowId", resultSet.getString("ROW_ID"));
+				json.put("dprName", resultSet.getString("DPR_NAME"));
+
+				json.put("dpName", resultSet.getString("DP_NAME"));
+				json.put("memoire", resultSet.getString("MEMOIRE"));
+				json.put("memo", resultSet.getString("MEMO"));
+				json.put("uRecord", resultSet.getInt("U_RECORD"));
+				json.put("verifiedFlag", resultSet.getInt("FRESH_VERIFIED"));
+				json.put("status", resultSet.getInt("STATUS"));
+				json.put("rawFields", resultSet.getInt("RAW_FIELDS"));
+				json.put("geoLiveType"," IXPOINTADDRESS");
+				
+			}
+			return json;
+		} catch (Exception e) {
+			throw new Exception(e);
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+	}
+	}}

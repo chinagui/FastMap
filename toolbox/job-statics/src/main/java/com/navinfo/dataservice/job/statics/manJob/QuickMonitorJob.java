@@ -740,16 +740,16 @@ public class QuickMonitorJob extends AbstractStatJob {
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				
 				if(jso.containsKey("roadPlanTotal")){
-					poiPlanTotal += jso.getInt("roadPlanTotal");
+					roadPlanTotal += jso.getInt("roadPlanTotal");
 				}
 				if(jso.containsKey("roadActualTotal")){
-					poiPlanTotal += jso.getInt("roadActualTotal");
+					roadActualTotal += jso.getInt("roadActualTotal");
 				}
 				if(jso.containsKey("poiPlanTotal")){
 					poiPlanTotal += jso.getInt("poiPlanTotal");
 				}
 				if(jso.containsKey("poiActualTotal")){
-					poiPlanTotal += jso.getInt("poiActualTotal");
+					poiActualTotal += jso.getInt("poiActualTotal");
 				}
 				if(jso.containsKey("collectTipsUploadNum")){
 					collectTipsUploadNum += jso.getInt("collectTipsUploadNum");

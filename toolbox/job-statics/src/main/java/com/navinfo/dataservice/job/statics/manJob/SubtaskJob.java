@@ -214,6 +214,9 @@ public class SubtaskJob extends AbstractStatJob {
 				int poiUploadNum = (int) jso.get("poiUploadNum");
 				int poiFinishNum = (int) jso.get("poiFinishNum");
 				int waitWorkPoi = (int) jso.get("waitWorkPoi");
+				int poiActualAddNum = (int) jso.get("poiActualAddNum");
+				int poiActualUpdateNum = (int) jso.get("poiActualUpdateNum");
+				int poiActualDeleteNum = (int) jso.get("poiActualDeleteNum");
 				String firstEditDate = (String) jso.get("firstEditDate");
 				String firstCollectDate = (String) jso.get("firstCollectDate");
 				subtask.put("poiCollectUploadNum", poiUploadNum);
@@ -221,6 +224,9 @@ public class SubtaskJob extends AbstractStatJob {
 				subtask.put("firstEditDate", firstEditDate);
 				subtask.put("firstCollectDate", firstCollectDate);
 				subtask.put("waitWorkPoi", waitWorkPoi);
+				subtask.put("poiActualAddNum", poiActualAddNum);
+				subtask.put("poiActualUpdateNum", poiActualUpdateNum);
+				subtask.put("poiActualDeleteNum", poiActualDeleteNum);
 				stat.put(subtaskId, subtask);
 			}
 			return stat;
@@ -448,6 +454,9 @@ public class SubtaskJob extends AbstractStatJob {
 		int percent = 0;
 		int programType=0;
 		int waitWorkPoi = 0;
+		int poiActualAddNum= 0;
+		int poiActualUpdateNum= 0;
+		int poiActualDeleteNum= 0;
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			//当前时间
@@ -477,6 +486,9 @@ public class SubtaskJob extends AbstractStatJob {
 				poiFinishNum = (int) subDayPoiStat.get("poiFinishNum");
 				//待作业的POI个数
 				waitWorkPoi = (int) subDayPoiStat.get("waitWorkPoi");
+				poiActualAddNum=(int)subDayPoiStat.get("poiActualAddNum");
+				poiActualUpdateNum=(int)subDayPoiStat.get("poiActualUpdateNum");
+				poiActualDeleteNum=(int)subDayPoiStat.get("poiActualDeleteNum");
 			}
 			//计划天数
 			if(subtask.getPlanStartDate() != null && subtask.getPlanEndDate() != null){
@@ -673,7 +685,9 @@ public class SubtaskJob extends AbstractStatJob {
 			subtaskMap.put("percent",percent );
 			subtaskMap.put("programType",programType );
 			subtaskMap.put("waitWorkPoi", waitWorkPoi );
-			
+			subtaskMap.put("poiActualAddNum", poiActualAddNum );
+			subtaskMap.put("poiActualUpdateNum", poiActualUpdateNum );
+			subtaskMap.put("poiActualDeleteNum", poiActualDeleteNum );
 			return subtaskMap;
 		} catch (Exception e) {
 			log.error("处理数据出错:" + e.getMessage(), e);

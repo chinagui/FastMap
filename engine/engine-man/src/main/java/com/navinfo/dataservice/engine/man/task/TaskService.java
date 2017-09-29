@@ -264,7 +264,7 @@ public class TaskService {
 			TaskOperation.insertTask(conn, bean);
 			
 			// 插入TASK_GRID_MAPPING
-			if(bean.getGridIds() != null){
+			if(bean.getGridIds() != null && bean.getGridIds().size() > 0){
 				TaskOperation.insertTaskGridMapping(conn, bean);
 				TaskService.getInstance().updateTaskGeo(conn, bean.getTaskId());
 			}

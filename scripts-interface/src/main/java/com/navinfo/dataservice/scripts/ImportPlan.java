@@ -289,14 +289,19 @@ public class ImportPlan {
 	public JSONArray taskCountInBlock(int blockID, Connection conn) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String sql = "select t.task_id from task t where t.block_id = " + blockID;
+			String sql = "select t.task_id, t.type, t.GROUP_ID from task t where t.block_id = " + blockID;
 
 			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
 				public JSONArray handle(ResultSet rs) throws SQLException {
 					//1有数据，不创建任务；0无数据，创建任务
 					JSONArray tasks = new JSONArray();
 					while(rs.next()){
-						tasks.add(rs.getInt("task_id"));
+						int type = rs.getInt("type");
+						int groupId = rs.getInt("GROUP_ID");
+						//采集任务有没有作业组都可以发布,非采集任务必须有作业组
+						if(groupId != 0 || type == 0){
+							tasks.add(rs.getInt("task_id"));
+						}
 					}
 					return tasks;
 				}
@@ -611,7 +616,7 @@ public class ImportPlan {
 					+ "and c.city_name = '" + cityName + "')";
 					
 			String selsect ="select ug.group_id from user_group ug where ug.group_name = ("
-					+ "select t.edit_group_name from admin_group_mapping t, city c where t.admin_code = c.admin_id "
+					+ "select t.month_group_name from admin_group_mapping t, city c where t.admin_code = c.admin_id "
 					+ "and c.city_name = '"+ cityName + "')";
 
 			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {

@@ -929,16 +929,12 @@ public class TaskJob extends AbstractStatJob {
 						}
 					}
 				}
-				if(subDayPoiStatData.containsKey("poiActualAddNum")){
-					poiActualAddNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualAddNum").toString());
+				if(subDayPoiStatData.containsKey(subtaskId)){
+					Map<String, Object> map = subDayPoiStatData.get(subtaskId);
+					poiActualAddNumSum+=Integer.parseInt(map.get("poiActualAddNum").toString());
+					poiActualUpdateNumSum+=Integer.parseInt(map.get("poiActualUpdateNum").toString());
+					poiActualDeleteNumSum+=Integer.parseInt(map.get("poiActualDeleteNum").toString());
 				}
-				if(subDayPoiStatData.containsKey("poiActualUpdateNum")){
-					poiActualUpdateNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualUpdateNum").toString());
-				}
-				if(subDayPoiStatData.containsKey("poiActualDeleteNum")){
-					poiActualDeleteNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualDeleteNum").toString());
-				}
-				
 //				poiActualUpdateNumSum+=(int) subtask.get("poiActualUpdateNum");
 //				poiActualDeleteNumSum+=(int) subtask.get("poiActualDeleteNum");
 			}

@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.control.row.pointaddress.PointAddressSave;
 import com.navinfo.dataservice.control.row.pointaddress.PointAddressService;
 
 import net.sf.json.JSONObject;
@@ -54,6 +56,62 @@ public class PointAddressController extends BaseController {
 				}
 			}
 			JSONObject result = pointAddressService.getPointAddressList(parameter);
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	/**
+	 * 点门牌保存接口
+	 * 
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/pointaddress/rowDataSave")
+	public ModelAndView poiSave(HttpServletRequest request) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				return new ModelAndView("jsonView", fail("parameter参数不能为空"));
+			}
+			
+			JSONObject result = PointAddressSave.getInstance().save(parameter, tokenObj.getUserId());
+
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	/**
+	 * 点门牌提交接口
+	 * 
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/pointaddress/release")
+	public ModelAndView poiRelease(HttpServletRequest request) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				return new ModelAndView("jsonView", fail("parameter参数不能为空"));
+			}
+			
+			JSONObject result = pointAddressService.release(parameter, tokenObj.getUserId());
+
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

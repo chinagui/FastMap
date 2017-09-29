@@ -2103,7 +2103,7 @@ public class ProgramService {
 							}
 						}
 					}
-					TaskService.getInstance().createWithBeanWithTaskId(conn, t);
+					TaskService.getInstance().createWithBean(conn, t);
 				}
 			}
 		}catch(Exception e){

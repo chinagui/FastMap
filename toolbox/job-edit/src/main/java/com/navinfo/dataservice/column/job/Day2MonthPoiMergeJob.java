@@ -544,7 +544,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				result = parseLog(logMoveResult, monthConn);
 				if(result.getAllObjs().size()>0){
 					log.info("开始进行深度信息打标记");
-					new DeepInfoMarker(result,monthConn).execute();
+					new DeepInfoMarker(result,monthConn,logMoveResult.getLogOperationTempTable()).execute();
 					log.info("开始执行前批");
 					new PreBatch(result, monthConn).execute();
 					log.info("开始执行检查");
@@ -555,7 +555,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
 					updateField(result, monthConn);
 
-					batchPoi( result,  monthConn);
+					batchPoi(result, monthConn,logMoveResult.getLogOperationTempTable());
 				}
 				updateLogCommitStatus(dailyConn,tempOpTable);
 			}
@@ -1016,8 +1016,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		return json;
 	}
 
-	private void batchPoi(OperationResult opResult, Connection conn)
-			throws Exception {
+	private void batchPoi(OperationResult opResult, Connection conn,
+			String opTempTable) throws Exception {
 
 		List<Long> pids = new ArrayList<>();// 所有poiPid
 
@@ -1033,7 +1033,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		
 
 		LogOpTypeStat stat = new LogOpTypeStat(conn);
-		Map<Integer,Collection<Long>> updatedObjs = stat.getOpTypeByPids(ObjectName.IX_POI, ObjectName.IX_POI, pids, null, null);
+		Map<Integer, Collection<Long>> updatedObjs = stat.getOpTypeByTempOpTable(ObjectName.IX_POI, ObjectName.IX_POI,opTempTable);
 		
 		Collection<Long> addPids = updatedObjs.get(1);// 作业季新增poiPid
 		Collection<Long> updatePids = updatedObjs.get(3);// 作业季修改poiPid
@@ -1285,17 +1285,17 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				conn);
 
 		log.info("外业任务编号");
-		this.updateBatchPoi(pids, this.getFieldTaskIdSql(), conn);
+		this.updateBatchPoi(this.getFieldTaskIdSql(opTempTable), conn);
 
 		log.info("批几何调整标识 精编标识  数据采集版本");
-		this.updateBatchPoi(pids, this.getBatchPoiCommonSql(), conn);
+		this.updateBatchPoi(this.getBatchPoiCommonSql(opTempTable), conn);
 
 		log.info("批验证标识");
 		Collection<Long> metaPids = this.getMetaPidsForPoi(conn);
 		metaPids.retainAll(pids);
 		pids.removeAll(metaPids);
 		this.updateBatchPoi(metaPids, this.getVerifiedParaSql(3), conn);
-		this.updateBatchPoi(pids, this.getVerifiedParaSql(9), conn);
+		this.updateBatchPoi(this.getVerifiedParaSql(9,opTempTable), conn);
 	}
 
 	private String getStateParaSql(int state) {
@@ -1413,6 +1413,12 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 	}
 
+	private String getVerifiedParaSql(int verifiedFlag,String opTempTable) {
+		return "update ix_poi p set verified_flag = "
+				+ verifiedFlag
+				+ "  where  pid in (SELECT DISTINCT ld.ob_pid FROM  log_detail ld,"+opTempTable+" tp WHERE tp.op_id=ld.op_id AND ld.ob_nm='IX_POI' )";
+	}
+	
 	private String getVerifiedParaSql(int verifiedFlag) {
 		return "update ix_poi p set verified_flag = "
 				+ verifiedFlag
@@ -1422,14 +1428,14 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	/**
 	 * 几何调整标识 精编标识  数据采集版本
 	 */
-	private String getBatchPoiCommonSql() {
+	private String getBatchPoiCommonSql(String opTempTable) {
 		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(
 				PropConstant.seasonVersion);
 		return " UPDATE ix_poi p    \n"
 				+ "   SET p.geo_adjust_flag = 1 ,\n"
 				+ "       p.full_attr_flag = 1 ,  \n"
 				+ "       p.data_version = '" + gdbVersion + "'   \n"
-				+ "     WHERE p.pid in (select to_number(column_value) from table(clob_to_table(?))) \n";
+				+ "     WHERE p.pid in (SELECT DISTINCT ld.ob_pid FROM  log_detail ld,"+opTempTable+" tp WHERE tp.op_id=ld.op_id AND ld.ob_nm='IX_POI' ) \n";
 	}
 
 	private String getUpdatePoiOldXGuideSql() {
@@ -1462,7 +1468,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?))) \n";
 	}
 
-	private String getFieldTaskIdSql() {
+	private String getFieldTaskIdSql(String opTempTable) {
 		return "MERGE INTO IX_POI P\n"
 				+ "USING (SELECT T2.OB_PID, MAX(A.STK_ID) STK_ID\n"
 				+ "         FROM LOG_OPERATION O2,\n"
@@ -1471,14 +1477,15 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				+ "                 FROM LOG_DETAIL D1,\n"
 				+ "                      LOG_OPERATION O1,\n"
 				+ "                      (SELECT D.OB_PID, MAX(O.OP_DT) MAX_DT\n"
-				+ "                         FROM LOG_DETAIL D, LOG_OPERATION O, LOG_ACTION A1\n"
+				+ "                         FROM LOG_DETAIL D, LOG_OPERATION O, LOG_ACTION A1,"+opTempTable+" tp \n"
 				+ "                        WHERE D.OB_NM = 'IX_POI'\n"
 				+ "                          AND D.OP_ID = O.OP_ID\n"
+				+ "                          AND O.OP_ID = tp.OP_ID\n"
 				+ "                          AND A1.ACT_ID = O.ACT_ID\n"
 				+ "                          AND A1.STK_ID <> 0\n"
-				+ "                          AND D.OB_PID IN\n"
-				+ "                              (SELECT TO_NUMBER(COLUMN_VALUE)\n"
-				+ "                                 FROM TABLE(CLOB_TO_TABLE(?)))\n"
+//				+ "                          AND D.OB_PID IN\n"
+//				+ "                              (SELECT TO_NUMBER(COLUMN_VALUE)\n"
+//				+ "                                 FROM TABLE(CLOB_TO_TABLE(?)))\n"
 				+ "                        GROUP BY D.OB_PID) T\n"
 				+ "                WHERE D1.OP_ID = O1.OP_ID\n"
 				+ "                  AND T.MAX_DT = O1.OP_DT\n"
@@ -1534,7 +1541,19 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
+	private void updateBatchPoi(String sql, Connection conn) throws Exception {
 
+		PreparedStatement pstmt = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 	public static void main(String[] args) throws JobException{
 		new Day2MonthPoiMergeJob(null).execute();
 	}

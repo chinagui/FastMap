@@ -19,6 +19,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -123,10 +124,10 @@ public class PointAddressService {
 		builder.append(" IP.PID, IP.DPR_NAME, IP.DP_NAME, IP.MEMO, DS.FRESH_VERIFIED AS FRESHNESS_VEFICATION, DS.RAW_FIELDS, ");
 		builder.append(" (SELECT COUNT(N.RULEID) FROM NI_VAL_EXCEPTION N, CK_RESULT_OBJECT C WHERE N.MD5_CODE = C.MD5_CODE AND IP.PID = C.PID(+) ");
 		builder.append(" AND C.TABLE_NAME = 'IX_POINTADDRESS' AND N.RULEID IN " + ckRules + " ) AS ERRORCOUNT ");
-		builder.append(" FROM IX_POINTADDRESS IP, (SELECT * FROM IX_POINTADDRESS_NAME WHERE LANG_CODE = 'CHI') IPN, DAY_EDIT_STATUS DS ");
+		builder.append(" FROM IX_POINTADDRESS IP, (SELECT * FROM IX_POINTADDRESS_NAME WHERE LANG_CODE = 'CHI') IPN, POINTADDRESS_EDIT_STATUS DS ");
 		builder.append(" WHERE IP.PID = IPN.PID(+) AND IP.PID = DS.PID ");
 		
-		builder.append(" AND DS.WORK_TYPE = 1 AND DS.ELEMENT = 1 AND DS.STATUS = " + status + " ");
+		builder.append(" AND DS.WORK_TYPE = 1 AND DS.STATUS = " + status + " ");
 		builder.append(" AND (DS.QUICK_SUBTASK_ID = " + subtaskId + " OR DS.MEDIUM_SUBTASK_ID = " + subtaskId + " ) ");
 
 		if (!pidName.isEmpty()) {
@@ -206,6 +207,32 @@ public class PointAddressService {
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+
+	/**
+	 * 3米范围之内是否有点门牌(1 : 有 ；2 ： 否)
+	 * @param dbId
+	 * @param xGuide
+	 * @param yGuide
+	 * @return
+	 * @throws Exception
+	 */
+	public int queryPointAddress(int dbId, double xGuide, double yGuide) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			QueryRunner run = new QueryRunner();
+			String sql = "SELECT COUNT(1) FROM IX_POINTADDRESS T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, NAVI_GEOM.CREATEPOINT(?, ?), 'DISTANCE=3 UNIT=METER') = 'TRUE'";
+			
+			int ret = run.queryForInt(conn, sql, xGuide, yGuide);
+			
+			return ret >= 1 ? 1 : 0;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	

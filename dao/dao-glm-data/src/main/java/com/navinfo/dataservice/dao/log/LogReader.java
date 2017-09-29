@@ -740,7 +740,7 @@ public class LogReader {
 		sb.append(" AND LO.OP_ID = LD.OP_ID");
 		sb.append(" AND LA.OP_CMD = ?");
 		sb.append(" AND LD.TB_NM = ?");
-		sb.append(" AND LD.TB_ROW_ID = ?");
+		sb.append(" AND LD.TB_ROW_ID = hextoraw(?)");
 		sb.append(" ORDER BY LO.OP_SEQ DESC) where rownum=1");
 
 		PreparedStatement pstmt = null;

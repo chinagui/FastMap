@@ -12,12 +12,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.statics.service.StaticsApiImpl;
 import com.navinfo.dataservice.engine.statics.service.StaticsService;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -120,4 +120,59 @@ public class StaticsController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 *应用场景：管理/监控_大屏众包展示
+	 */
+	@RequestMapping(value = "/crowdInfo")
+	public ModelAndView crowdInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		try {
+			
+			JSONArray data = StaticsService.getInstance().crowdInfoList();
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 *应用场景：管理/监控_大屏自采展示
+	 *原则：创建外业采集子任务的city返回（subtask表work_kind=1，status in (1,0)的city）
+	 */
+	@RequestMapping(value = "/commonInfo")
+	public ModelAndView commonInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		try {
+			
+			JSONArray data = StaticsService.getInstance().commonInfoListCity();
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 *应用场景: 管理/监控_大屏详细统计
+	 *原则: Man_config中有默认值,若没有具体的统计结果,则取默认值返回
+	 */
+	@RequestMapping(value = "/productMonitor")
+	public ModelAndView productMonitor(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		try {
+			
+			JSONObject data = new JSONObject();
+			String platForm = "productMonitor";
+			data.putAll(StaticsService.getInstance().getMongoMonitorData());
+			data.putAll(StaticsService.getInstance().getOracleMonitorData(platForm));
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	
 }

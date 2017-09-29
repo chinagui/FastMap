@@ -75,7 +75,7 @@ public class PidApply {
 	 * @return
 	 * @throws Exception
 	 */
-	public String pidForInsertGeometry(String groupId, LimitObjType type) throws Exception {
+	public String pidForInsertGeometry(String groupId, LimitObjType type, int... seq) throws Exception {
 
 		String newGeometryId = "";
 
@@ -108,6 +108,10 @@ public class PidApply {
 			int number = Integer.valueOf(num);
 
 			number++;
+
+			if (seq.length != 0) {
+				number += seq[0];
+			}
 
 			newGeometryId = newGeometryId.substring(0, length - 6) + String.format("%06d", number);
 		}

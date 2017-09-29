@@ -56,6 +56,7 @@ public class DayProduceJob extends AbstractStatJob {
 			result.put("day_produce",dayProduceStatByUrlMap);
 
 			log.info("end stat "+statReq.getJobType());
+			log.info(result.toString());
 			log.debug("所有日出品数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			return result.toString();

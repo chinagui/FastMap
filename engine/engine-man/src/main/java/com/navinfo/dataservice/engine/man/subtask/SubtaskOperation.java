@@ -928,7 +928,7 @@ public class SubtaskOperation {
 			if(programType == 4){
 				subtaskType = "QUICK_SUBTASK_ID";
 			}
-			String sql = "select t.status from pointaddress_edit_status t where t." + subtaskType + " = " + subtaskId;
+			String sql = "select count(1), t.status from pointaddress_edit_status t where t." + subtaskType + " = " + subtaskId + " group by t.status";
 			log.info("查询点门牌信息sql:" + sql);
 			//点门牌数据结果查询
 			return run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>(){
@@ -940,15 +940,16 @@ public class SubtaskOperation {
 					int pointWaitWork = 0;
 					while(rs.next()){
 						int status = rs.getInt("status");
+						int count = rs.getInt("count(1)");
 						switch(status){
 						case 1:
-							pointCommit++;
+							pointCommit = count;
 							break;
 						case 2:
-							pointWorked++;
+							pointWorked = count;
 							break;
 						case 3:
-							pointWaitWork++;
+							pointWaitWork = count;
 							break;
 						}
 					}

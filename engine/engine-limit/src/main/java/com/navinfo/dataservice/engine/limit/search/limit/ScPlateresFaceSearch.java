@@ -6,7 +6,7 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
-import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresInfo;
+import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresFace;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -74,7 +74,7 @@ public class ScPlateresFaceSearch implements ISearch {
 
             while (resultSet.next()) {
 
-                ScPlateresInfo info = new ScPlateresInfo();
+                ScPlateresFace info = new ScPlateresFace();
 
                 ReflectionAttrUtils.executeResultSet(info, resultSet);
 
@@ -193,5 +193,40 @@ public class ScPlateresFaceSearch implements ISearch {
         return geometryId;
     }
     
+    public ScPlateresFace loadById(String geomId) throws Exception{
+       	
+    	ScPlateresFace info = new ScPlateresFace();
+   	 
+    	StringBuilder sql = new StringBuilder();
+
+        sql.append(" SELECT * FROM SC_PLATERES_FACE WHERE GEOMETRY_ID = ? ");
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql.toString());
+            
+            pstmt.setString(1, geomId);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+            	ReflectionAttrUtils.executeResultSet(info, resultSet);
+                
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return info;
+    }
 
 }

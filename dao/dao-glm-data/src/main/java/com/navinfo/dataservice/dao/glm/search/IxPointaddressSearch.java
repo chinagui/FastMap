@@ -18,6 +18,7 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -223,7 +224,7 @@ public class IxPointaddressSearch implements ISearch {
 				json.put("verifiedFlag", resultSet.getInt("FRESH_VERIFIED"));
 				json.put("status", resultSet.getInt("STATUS"));
 				json.put("rawFields", resultSet.getInt("RAW_FIELDS"));
-				json.put("geoLiveType"," IXPOINTADDRESS");
+				json.put("geoLiveType",ObjType.IXPOINTADDRESS.toString());
 				
 			}
 			return json;

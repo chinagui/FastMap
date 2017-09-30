@@ -25,6 +25,8 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -162,6 +164,7 @@ public class ColumnCoreControl {
 				// 申请数据
 				// TODO
 			}
+			logger.info("applyData count:"+totalCount);
 			logger.info("applyData over");
 			return totalCount;
 

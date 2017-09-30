@@ -91,12 +91,14 @@ public class Tips2MarkPhase extends JobPhase {
             parameter.put("au_db_sid", auDb.getDbServer().getServiceName());
             parameter.put("au_db_port", auDb.getDbServer().getPort());
             //modify by songhe 2017/09/27   其实json的传参内容应该修改一下。。。
-            DbInfo auWeekDb = datahub.getOnlyDbByType("gen2AuWeek");
-            parameter.put("au_week_db_ip", auWeekDb.getDbServer().getIp());
-            parameter.put("au_week_db_username", auWeekDb.getDbUserName());
-            parameter.put("au_week_db_password", auWeekDb.getDbUserPasswd());
-            parameter.put("au_week_db_sid", auWeekDb.getDbServer().getServiceName());
-            parameter.put("au_week_db_port", auWeekDb.getDbServer().getPort());
+            if (jobRelation.getItemType() == ItemType.PROJECT) {
+                DbInfo auWeekDb = datahub.getOnlyDbByType("gen2AuWeek");
+                parameter.put("au_week_db_ip", auWeekDb.getDbServer().getIp());
+                parameter.put("au_week_db_username", auWeekDb.getDbUserName());
+                parameter.put("au_week_db_password", auWeekDb.getDbUserPasswd());
+                parameter.put("au_week_db_sid", auWeekDb.getDbServer().getServiceName());
+                parameter.put("au_week_db_port", auWeekDb.getDbServer().getPort());
+            }
             
             parameter.put("types", "");
             parameter.put("phaseId", jobProgress.getPhaseId());

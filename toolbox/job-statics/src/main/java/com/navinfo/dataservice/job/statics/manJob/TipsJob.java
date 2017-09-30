@@ -291,19 +291,18 @@ public class TipsJob extends AbstractStatJob {
 	
 	
 	public void compomentTipsAddLenMap(ResultSet rs,List<Map<String, Object>> taskGridTipsList) throws SQLException{
-		int taskId = 0;
-		double tipsAddLen = 0.0;
+		int taskId = 0;		
 		Map<String, Object> taskGridTipsMap = null;
-
+		DecimalFormat df=new DecimalFormat("0.00");
 		while(rs.next()){
 			if(taskId!=rs.getInt(1)) {
 				taskGridTipsMap = new HashMap<>(); 
 				taskId = rs.getInt(1);
 				taskGridTipsMap.put("taskId",taskId);
-				taskGridTipsList.add(taskGridTipsMap);
-			}
-			 
-			
+				taskGridTipsMap.put("tipsAddLen",df.format(0.0).toString());
+				taskGridTipsList.add(taskGridTipsMap);				
+			}		 
+			double tipsAddLen = Double.valueOf((String) taskGridTipsMap.get("tipsAddLen"));
 			STRUCT geoStruct=(STRUCT) rs.getObject("wktlocation");
 			Geometry geometry = null;
 			try {
@@ -315,8 +314,7 @@ public class TipsJob extends AbstractStatJob {
 			if(geometry==null){
 				continue;
 			}
-			tipsAddLen+=GeometryUtils.getLinkLength(geometry);//根据geometry求里程
-			DecimalFormat df=new DecimalFormat("0.00");
+			tipsAddLen+=GeometryUtils.getLinkLength(geometry);//根据geometry求里程			
 			taskGridTipsMap.put("tipsAddLen",df.format(tipsAddLen).toString());
 		}
 	}

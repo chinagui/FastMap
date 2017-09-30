@@ -215,7 +215,7 @@ public class TipsJob extends AbstractStatJob {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try{
-			String baseAddLenSql = " WKTLOCATION from tips_index where s_sourceType in (2001,2002) AND t_lifecycle=3 " ;
+			String baseAddLenSql = " WKTLOCATION from tips_index where s_sourceType = '2001' AND t_lifecycle=3 " ;
 			String sql = "SELECT s_mtaskid,"+baseAddLenSql+" AND s_mtaskid <> 0 ORDER BY s_mtaskid";//中线新增测线
 
 			pstmt = conn.prepareStatement(sql);

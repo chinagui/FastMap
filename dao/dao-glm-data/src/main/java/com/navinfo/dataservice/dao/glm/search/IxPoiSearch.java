@@ -43,6 +43,13 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 import oracle.sql.STRUCT;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class IxPoiSearch implements ISearch {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
@@ -65,6 +72,11 @@ public class IxPoiSearch implements ISearch {
 	private Map<String, String> CHISHORT;
 
 	private Map<String, String> ALIASNAME;
+	
+	/**
+	 * 初始线程池
+	 */
+	private ExecutorService exec = Executors.newFixedThreadPool(5);
 
 	public IxPoiSearch(Connection conn) {
 		super();
@@ -1171,6 +1183,71 @@ public class IxPoiSearch implements ISearch {
 		throw e;
 	}
 	}
+	
+	public JSONObject searchColumnDataByPid(String firstWordItem,
+			String secondWorkItem, int pid, long userId, int status,
+			JSONObject classifyRules, JSONObject ckRules,
+			Map<Integer, JSONObject> isProblems,IxPoiSelector poiSelector,Map<Integer,Integer> adminCodeMap)throws Exception {
+		
+		JSONObject poiObj = new JSONObject();
+
+		boolean isLock = false;
+	   try{
+			IxPoi poi = (IxPoi) poiSelector.loadById(pid, isLock);
+			
+			if(!(firstWordItem.equals("poi_englishaddress"))){
+			log.info("查询Names");
+			poi.setNames(new AbstractSelector(IxPoiName.class, conn)
+					.loadRowsByParentId(poi.getPid(), isLock));}
+			log.info("查询Photos");
+			poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
+					.loadRowsByParentId(poi.getPid(), isLock));
+			
+//			log.info("查询Parents");
+//			poi.setParents(new AbstractSelector(IxPoiParent.class, conn)
+//					.loadRowsByParentId(poi.getPid(), isLock));
+//			log.info("查询Children");
+//			poi.setChildren(new AbstractSelector(IxPoiChildren.class, conn)
+//					.loadRowsByParentId(poi.getPid(), isLock));
+			log.info("获取各专项共用字段");
+			// 获取各专项共用字段
+			poiObj = getCommenfields(pid, poi,adminCodeMap);
+			poiObj.put("userId", userId);
+			log.info("classifyRules赋值");
+			// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
+			String classifyRule = "";
+			Object cf = classifyRules.get(Integer.toString(pid));
+			if (cf != null) {
+				classifyRule = cf.toString();
+			}
+			poiObj.put("classifyRules", classifyRule);
+			log.info("ckRules赋值，获取检查错误");
+			// ckRules赋值，获取检查错误
+			List<JSONObject> ckRule = (List<JSONObject>) ckRules
+					.get(Integer.toString(pid));
+			poiObj.put("ckRules", ckRule);
+			if (ckRule == null) {
+				List<JSONObject> value = new ArrayList<JSONObject>();
+				poiObj.put("ckRules", value);
+			}
+			log.info("isProblem赋值");
+			// isProblem赋值
+			if (isProblems != null && isProblems.containsKey(pid)) {
+				JSONObject isProblem = (JSONObject) isProblems.get(pid);
+				poiObj.put("isProblem", isProblem);
+			}
+
+			// 大陆作业无值，港澳后续补充
+			poiObj.put("namerefMsg", "");
+			log.info("获取特殊字段");
+			// 获取特殊字段
+			poiObj = getUnCommenfields(firstWordItem, secondWorkItem, pid,
+					poi, poiObj);
+			return  poiObj;
+	} catch (Exception e) {
+		throw e;
+	}
+	}
 
 	/**
 	 * 精编作业数据查询
@@ -1183,10 +1260,10 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray searchColumnPoiByPid(String firstWordItem,
-			String secondWorkItem, List<Integer> pids, long userId, int status,
-			JSONObject classifyRules, JSONObject ckRules,
-			Map<Integer, JSONObject> isProblems) throws Exception {
+	public JSONArray searchColumnPoiByPid(final String firstWordItem,
+			final String secondWorkItem, List<Integer> pids, final long userId, final int status,
+			final JSONObject classifyRules, final JSONObject ckRules,
+			final Map<Integer, JSONObject> isProblems) throws Exception {
 		log.info("start searchColumnPoiByPid");
 		JSONArray dataList = new JSONArray();
 
@@ -1219,65 +1296,29 @@ public class IxPoiSearch implements ISearch {
 
 			this.ALIASNAME = metaData.getAliasName();
 			log.info("查詢adminCode");
-			Map<Integer,Integer> adminCodeMap=searchAdminCodeMapByPid(pids);
+			final Map<Integer,Integer> adminCodeMap=searchAdminCodeMapByPid(pids);
 			log.info("循环查询精编作业字段");
-			for (int pid : pids) {
-
-				IxPoiSelector poiSelector = new IxPoiSelector(conn);
-//				IxPoi poi = (IxPoi) poiSelector.loadById(pid, isLock);
-				IxPoi poi = (IxPoi) poiSelector.loadByIdAndChildClass(pid, isLock,IxPoiName.class,IxPoiPhoto.class,IxPoiParent.class,IxPoiChildren.class);
-
-				// IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
-				// List<IRow> nameList =
-				// nameSelector.loadRowsByParentId(poi.getPid(), isLock);
-				// poi.setNames(nameList);
-//				log.info("查询Names");
-//				poi.setNames(new AbstractSelector(IxPoiName.class, conn)
-//						.loadRowsByParentId(poi.getPid(), isLock));
-//				log.info("查询Photos");
-//				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
-//						.loadRowsByParentId(poi.getPid(), isLock));
-//				log.info("查询Parents");
-//				poi.setParents(new AbstractSelector(IxPoiParent.class, conn)
-//						.loadRowsByParentId(poi.getPid(), isLock));
-//				log.info("查询Children");
-//				poi.setChildren(new AbstractSelector(IxPoiChildren.class, conn)
-//						.loadRowsByParentId(poi.getPid(), isLock));
-				log.info("获取各专项共用字段");
-				// 获取各专项共用字段
-				poiObj = getCommenfields(pid, poi,adminCodeMap);
-				poiObj.put("userId", userId);
-				log.info("classifyRules赋值");
-				// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
-				String classifyRule = "";
-				Object cf = classifyRules.get(Integer.toString(pid));
-				if (cf != null) {
-					classifyRule = cf.toString();
+			final IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			CompletionService<JSONObject> completionService =new ExecutorCompletionService<JSONObject>(exec);
+			for (final int pid : pids) {
+				Callable<JSONObject> task = new Callable<JSONObject>(){
+					@Override
+					public JSONObject call() throws Exception {
+					return searchColumnDataByPid(firstWordItem,secondWorkItem, pid,userId,status,classifyRules,ckRules,isProblems,poiSelector,adminCodeMap);
+				}}; 
+				completionService.submit(task);
+			}
+			for(int i=0;i<pids.size();i++){
+				try {
+					Future<JSONObject> future = completionService.take();
+					JSONObject temp = future.get();
+					dataList.add(temp);
+				} catch (InterruptedException e) {
+					//重新设置线程的中断状态
+					Thread.currentThread().interrupt();
+				} catch (ExecutionException e) {
+					e.printStackTrace();
 				}
-				poiObj.put("classifyRules", classifyRule);
-				log.info("ckRules赋值，获取检查错误");
-				// ckRules赋值，获取检查错误
-				List<JSONObject> ckRule = (List<JSONObject>) ckRules
-						.get(Integer.toString(pid));
-				poiObj.put("ckRules", ckRule);
-				if (ckRule == null) {
-					List<JSONObject> value = new ArrayList<JSONObject>();
-					poiObj.put("ckRules", value);
-				}
-				log.info("isProblem赋值");
-				// isProblem赋值
-				if (isProblems != null && isProblems.containsKey(pid)) {
-					JSONObject isProblem = (JSONObject) isProblems.get(pid);
-					poiObj.put("isProblem", isProblem);
-				}
-
-				// 大陆作业无值，港澳后续补充
-				poiObj.put("namerefMsg", "");
-				log.info("获取特殊字段");
-				// 获取特殊字段
-				poiObj = getUnCommenfields(firstWordItem, secondWorkItem, pid,
-						poi, poiObj);
-				dataList.add(poiObj);
 			}
 			log.info("end searchColumnPoiByPid");
 
@@ -1319,27 +1360,11 @@ public class IxPoiSearch implements ISearch {
 				dataObj.put("adminCode", 0);
 			}
 
-			int parProupId = 0, childProupId = 0;
-			// ix_poi表通过pid关联ix_poi_parent，取group_id
-			List<IRow> pRows = poi.getParents();
-			for (IRow pRow : pRows) {
-				IxPoiParent parents = (IxPoiParent) pRow;
-				parProupId = parents.getPid();
-			}
-			dataObj.put("parentGroupId", parProupId);
-			// ix_poi表通过pid关联ix_poi_children，取group_id
-			List<IRow> cRows = poi.getChildren();
-			for (IRow cRow : cRows) {
-				IxPoiChildren Children = (IxPoiChildren) cRow;
-				childProupId = Children.getGroupId();
-			}
-			dataObj.put("childrenGroupId", childProupId);
-
 			JSONObject poiObj = poi.Serialize(null);
 			// ix_poi表通过pid关联Ix_Poi_Photo，将照片记录转换为json格式的名称组
 			dataObj.put("photos", poiObj.get("photos"));
 			// ix_poi表通过pid关联ix_poi_parent，将父子关系记录转换为json格式的名称组
-			dataObj.put("parent", poiObj.get("parents"));
+//			dataObj.put("parent", poiObj.get("parents"));
 
 			// 通过ix_poi表中的chain，去元数据表ci_para_chain中匹配获取相应的名称
 			String brandName = "";
@@ -1378,18 +1403,15 @@ public class IxPoiSearch implements ISearch {
 			String secondWorkItem, int pid, IxPoi poi, JSONObject dataObj)
 			throws Exception {
 		try {
-			// parentName 当二级项作业为nameUnify时，取该poi的父名称（官方标准化中文）
-			if (secondWorkItem.equals("nameUnify")){
-			log.info("取该poi的父名称");
-			dataObj = getParentName(secondWorkItem, poi, dataObj);
+			// 当二级项作业为nameUnify时，取该poi的父名称（官方标准化中文）,当二级项作业为aliasName时，取父、子组号
+			if (secondWorkItem.equals("nameUnify")||secondWorkItem.equals("aliasName")){
+				log.info("取该poi的父、子");
+				dataObj = getParentChild(secondWorkItem, poi, dataObj);
 			}
-			// 名称作业时，取名称相关字段
-			if (firstWordItem.equals("poi_name")
-					|| firstWordItem.equals("poi_englishname")) {
+			// 名称作业/地址作业时，取名称相关字段
 			log.info("取名称相关字段");
 			dataObj = getNamesNameFlagNameList(firstWordItem, secondWorkItem,
 					poi, dataObj);
-			}
 
 			// 地址作业时，取地址相关字段
 			if (firstWordItem.equals("poi_address")
@@ -1421,18 +1443,22 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getParentName(String secondWorkItem, IxPoi poi,
+	private JSONObject getParentChild(String secondWorkItem, IxPoi poi,
 			JSONObject dataObj) throws Exception {
 		try {
-				int cPid = poi.getPid();
-				int parentPoiPid = 0;
-				IxPoiParentSelector parents = new IxPoiParentSelector(conn);
-				List<IRow> pRows = parents.loadParentRowsByChildrenId(cPid,
-						false);
-				for (IRow pRow : pRows) {
-					IxPoiParent parent = (IxPoiParent) pRow;
-					parentPoiPid = parent.getParentPoiPid();
-				}
+			log.info("查询Parents");
+			poi.setParents(new AbstractSelector(IxPoiParent.class, conn)
+					.loadRowsByParentId(poi.getPid(), false));
+			int parProupId = 0, childProupId = 0, parentPoiPid = 0;
+			// ix_poi表通过pid关联ix_poi_parent，取group_id
+			List<IRow> pRows = poi.getParents();
+			for (IRow pRow : pRows) {
+				IxPoiParent parents = (IxPoiParent) pRow;
+				parProupId = parents.getPid();
+				parentPoiPid = parents.getParentPoiPid();
+			}
+			dataObj.put("parentGroupId", parProupId);
+			if(secondWorkItem.equals("nameUnify")){
 				if (parentPoiPid != 0) {
 					IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
 					dataObj.put("parentName",
@@ -1440,6 +1466,21 @@ public class IxPoiSearch implements ISearch {
 				} else {
 					dataObj.put("parentName", "");
 				}
+			}
+			if(secondWorkItem.equals("aliasName")){
+			log.info("查询Children");
+			poi.setChildren(new AbstractSelector(IxPoiChildren.class, conn)
+					.loadRowsByParentId(poi.getPid(), false));
+				
+				// ix_poi表通过pid关联ix_poi_children，取group_id
+				List<IRow> cRows = poi.getChildren();
+				for (IRow cRow : cRows) {
+					IxPoiChildren Children = (IxPoiChildren) cRow;
+					childProupId = Children.getGroupId();
+				}
+				dataObj.put("childrenGroupId", childProupId);
+			}
+			
 			return dataObj;
 		} catch (Exception e) {
 			throw e;

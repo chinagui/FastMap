@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.delete;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.delete;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,19 +6,18 @@ import java.util.List;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
-import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresLink;
+import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresFace;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand{
-
-	private String requester;
+private String requester;
 	
 	private JSONArray geometryIds;
 	
-	private List<ScPlateresLink> scplatereslinks = new ArrayList<>();
+	private List<ScPlateresFace> scplateresfaces = new ArrayList<>();
 	
 	public Command(JSONObject json,String requester){
 		this.requester = requester;
@@ -26,12 +25,12 @@ public class Command extends AbstractCommand{
 		this.geometryIds = json.getJSONArray("objId");
 	}
 	
-	public List<ScPlateresLink> getscplateresLinks(){
-		return this.scplatereslinks;
+	public List<ScPlateresFace> getscplateresFaces(){
+		return this.scplateresfaces;
 	}
 	
-	public void setscplateresLinks(List<ScPlateresLink> values){
-		this.scplatereslinks = values;
+	public void setscplateresFaces(List<ScPlateresFace> values){
+		this.scplateresfaces = values;
 	}
 	
 	public JSONArray getGeometryIds(){
@@ -59,7 +58,7 @@ public class Command extends AbstractCommand{
 	@Override
 	public LimitObjType getObjType() {
 		// TODO Auto-generated method stub
-		return LimitObjType.SCPLATERESLINK;
+		return LimitObjType.SCPLATERESFACE;
 	}
 	
 }

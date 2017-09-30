@@ -1,9 +1,9 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.update;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.update;
 
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
-import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresLink;
+import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresFace;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
 
 import net.sf.json.JSONObject;
@@ -16,7 +16,7 @@ public class Command extends AbstractCommand{
 	
 	private JSONObject content;
 	
-	private ScPlateresLink link;
+	private ScPlateresFace face;
 	
 	public Command(JSONObject json, String requester){
 		this.requester = requester;
@@ -34,12 +34,12 @@ public class Command extends AbstractCommand{
 		return this.content;
 	}
 	
-	public ScPlateresLink getLink(){
-		return this.link;
+	public ScPlateresFace getFace(){
+		return this.face;
 	}
 	
-	public void setLink(ScPlateresLink value){
-		this.link = value;
+	public void setLink(ScPlateresFace value){
+		this.face = value;
 	}
 	
 	@Override
@@ -59,8 +59,7 @@ public class Command extends AbstractCommand{
 
 	@Override
 	public LimitObjType getObjType() {
-		return LimitObjType.SCPLATERESLINK;
+		return LimitObjType.SCPLATERESFACE;
 	}
 
-	
 }

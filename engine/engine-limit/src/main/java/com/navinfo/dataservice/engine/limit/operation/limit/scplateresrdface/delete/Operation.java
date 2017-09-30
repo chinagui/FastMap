@@ -1,9 +1,10 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.delete;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
 import com.navinfo.dataservice.engine.limit.glm.iface.Result;
-import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresLink;
+import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresFace;
+
 
 public class Operation implements IOperation{
 
@@ -16,8 +17,8 @@ public class Operation implements IOperation{
 	@Override
 	public String run(Result result) throws Exception {
 		
-		for(ScPlateresLink sclink: this.command.getscplateresLinks()){
-			result.insertObject(sclink, ObjStatus.DELETE, sclink.getGeometryId());
+		for(ScPlateresFace scface: this.command.getscplateresFaces()){
+			result.insertObject(scface, ObjStatus.DELETE, scface .getGeometryId());
 		}
 		return null;
 	}

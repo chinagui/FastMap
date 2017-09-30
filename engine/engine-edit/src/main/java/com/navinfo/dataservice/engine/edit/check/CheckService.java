@@ -46,7 +46,7 @@ public class CheckService {
 	 * @param dbId
 	 * @param subTaskId
 	 * @param userId
-	 * @param checkType 检查类型(1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他;)
+	 * @param checkType 检查类型(1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 点门牌;)
 	 * @return
 	 * @throws Exception 
 	 */
@@ -156,6 +156,19 @@ public class CheckService {
 			poiRequestJSON.put("targetDbId", dbId);
 			jobId=apiService.createJob("poiRowValidation", poiRequestJSON, userId,subtaskId, "检查");
 		}
+		
+		else if (checkType == 6) {//checkType == 6 点门牌行编
+			JSONObject pointAddressRequestJSON=new JSONObject();
+			JSONArray pids = null;
+			if (jsonReq.containsKey("pids")) {
+				pids = jsonReq.getJSONArray("pids");
+			}
+			pointAddressRequestJSON.put("pids", pids);
+			pointAddressRequestJSON.put("rules", ruleList);
+			pointAddressRequestJSON.put("targetDbId", dbId);
+			jobId = apiService.createJob("pointAddressRowValidation", pointAddressRequestJSON, userId,subtaskId, "检查");
+		}
+		
 		else if (checkType ==2){//checkType ==2poi精编
 			JSONObject poiRequestJSON=new JSONObject();
 			/*checkType ==1poi精编 

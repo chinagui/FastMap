@@ -16,6 +16,18 @@ public class PropConstant {
 	
 	public static final String tipsTableName = "hbase.tablename.tips";
 	
+	//新增mass_photos_poi_idx_pid表配置
+	public static final String massPhotosPoiIdxTableName = "hbase.tablename.mass_photos_poi_idx_pid";
+	
+	//新增mass_photos_poi表配置
+	public static final String massPhotosPoiTableName = "hbase.tablename.mass_photos_poi";
+	
+	//新增mass_photos_tips_idx_url表配置
+	public static final String massPhotosTipsIdxTableName = "hbase.tablename.mass_photos_tips_idx_url";
+	
+	//新增mass_photos_tips表配置
+	public static final String massPhotosTipsTableName = "hbase.tablename.mass_photos_tips";
+	
 	public static final String trackLinesTableName = "hbase.tablename.tracklines";
 
 	public static final String adasTrackPointsTableName = "hbase.tablename.adasTrackPoints";

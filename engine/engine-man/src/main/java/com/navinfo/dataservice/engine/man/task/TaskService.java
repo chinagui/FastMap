@@ -1369,6 +1369,7 @@ public class TaskService {
 						continue;
 					}	
 					JSONArray progressListTmp=new JSONArray();
+					StringBuffer tmpStrB=new StringBuffer();
 					boolean flag=false;
 					for(Object i:progress){
 						int tmp=(int) i;
@@ -1390,19 +1391,22 @@ public class TaskService {
 						}
 						if(tmp==5){
 							flag=true;
-							conditionSql+=" AND TASK_LIST.TISP2MARK1=4";
+							if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
+							tmpStrB.append(" TASK_LIST.TISP2MARK1=4");
 
 						}
 						if(tmp==6){
 							flag=true;
-							conditionSql+=" AND TASK_LIST.TISP2MARK2=4";
+							if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
+							tmpStrB.append(" TASK_LIST.TISP2MARK2=4");
 						}
 					}
 					if(progressListTmp.size()>0){
-						conditionSql+=" and TASK_LIST.TISP2MARK in ("+progressListTmp.join(",")+")";
+						if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
+						tmpStrB.append(" TASK_LIST.TISP2MARK in ("+progressListTmp.join(",")+")");
 					}
 					if(flag){
-						conditionSql+=" AND TASK_LIST.programType=1 AND TASK_LIST.STATUS=0 and TASK_LIST.task_id!=0 "; 
+						conditionSql+=" AND TASK_LIST.programType=1 AND TASK_LIST.STATUS=0 and TASK_LIST.task_id!=0 and ("+tmpStrB+")"; 
 					}
 				}
 			}

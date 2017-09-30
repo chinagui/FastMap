@@ -6,8 +6,10 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
-import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresInfo;
+import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresFace;
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -74,7 +76,7 @@ public class ScPlateresFaceSearch implements ISearch {
 
             while (resultSet.next()) {
 
-                ScPlateresInfo info = new ScPlateresInfo();
+                ScPlateresFace info = new ScPlateresFace();
 
                 ReflectionAttrUtils.executeResultSet(info, resultSet);
 
@@ -157,5 +159,118 @@ public class ScPlateresFaceSearch implements ISearch {
 
         return list;
     }
+    
+    public String loadMaxKeyId(String groupId) throws Exception {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append(" SELECT MAX(GEOMETRY_ID) FROM SC_PLATERES_FACE WHERE GROUP_ID = ? ");
+
+        PreparedStatement pstmt = null;
+ 
+        String geometryId = "";
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql.toString());
+            
+            pstmt.setString(1, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                geometryId = resultSet.getString(1);
+                
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return geometryId;
+    }
+    
+    public ScPlateresFace loadById(String geomId) throws Exception{
+       	
+    	ScPlateresFace info = new ScPlateresFace();
+   	 
+    	StringBuilder sql = new StringBuilder();
+
+        sql.append(" SELECT * FROM SC_PLATERES_FACE WHERE GEOMETRY_ID = ? ");
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql.toString());
+            
+            pstmt.setString(1, geomId);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+            	ReflectionAttrUtils.executeResultSet(info, resultSet);
+                
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return info;
+    }
+    
+    public List<ScPlateresFace> loadByIds(JSONArray faces) throws Exception {
+		StringBuilder where = new StringBuilder();
+
+		List<ScPlateresFace> objList = new ArrayList<>();
+
+		for (int i = 0; i < faces.size(); i++) {
+			if (i > 0) {
+				where.append(",");
+			}
+			where.append("'" + faces.get(i) + "'");
+		}
+
+		String sql = "SELECT * FROM SC_PLATERES_FACE WHERE GEOMETRY_ID IN (" + where + ")";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				ScPlateresFace info = new ScPlateresFace();
+
+				ReflectionAttrUtils.executeResultSet(info, resultSet);
+
+				objList.add(info);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return objList;
+	}
 
 }

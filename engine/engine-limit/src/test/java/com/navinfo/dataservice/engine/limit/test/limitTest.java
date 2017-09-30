@@ -37,7 +37,8 @@ public class limitTest extends ClassPathXmlAppContextInit{
 	@Test
 	public void testInfosearch(){
 		//String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":\"110000\",\"infoCode\":\"\",\"startTime\":\"20170915\",\"endTime\":\"20170920\",\"complete\":\"[1,2,3]\",\"condition\":\"['S','D']\",\"pageSize\":20,\"pageNum\":1}}";
-        String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110000,\"infoCode\":\"\",\"startTime\":\"20170926\",\"endTime\":\"20170926\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
+        //String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110000,\"infoCode\":\"\",\"startTime\":\"20170926\",\"endTime\":\"20170926\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
+		String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110000,\"infoCode\":\"ABC1528015\",\"startTime\":\"20170913\",\"endTime\":\"20170928\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
 		
         Connection conn = null;
 
@@ -113,7 +114,8 @@ public class limitTest extends ClassPathXmlAppContextInit{
 	public void testMetaSearch() throws Exception {
 		//String parameter = "{\"type\":\"SCPLATERESGROUP\",\"condition\":{\"adminArea\":110000,\"groupType\":\"1,2\",\"pageSize\":20,\"pageNum\":1}}";
         //String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"condition\":{\"groupId\":\"S1100000002\"}}";
-		String parameter = "{\"type\":\"SCPLATERESGROUP\",\"condition\":{\"adminArea\":110000}}";
+		//String parameter = "{\"type\":\"SCPLATERESGROUP\",\"condition\":{\"adminArea\":110000}}";
+		String parameter = "{\"type\":\"SCPLATERESGROUP\",\"condition\":{\"adminArea\":\"110000\",\"infoCode\":\"\",\"groupId\":\"\",\"groupType\":[]}}";
 		
 		Connection conn = null;
 

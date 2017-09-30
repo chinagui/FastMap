@@ -20,6 +20,10 @@ public class WriterFactory {
 	private static final String quick_job = "quickMonitorStat";
 	//中线统计job
 	private static final String medium_job = "cityJob";
+	//日出品统计job
+	private static final String day_produce_job = "dayProduceStat";
+	//大屏统计Job
+	private static final String product_monitor_job = "productMonitorStat";
 	
 	public static DefaultWriter createWriter(String jobType){
 		if(subtask_job.equals(jobType)){
@@ -36,6 +40,10 @@ public class WriterFactory {
 			return new QuickMonitorWriter();
 		}else if(medium_job.equals(jobType)){
 			return new MediumMonitorWriter();
+		}else if(day_produce_job.equals(jobType)){
+			return new DayProduceWriter();
+		}else if(product_monitor_job.equals(jobType)){
+			return new ProductMonitorWriter();
 		}else{
 			return new DefaultWriter();		
 		}

@@ -9,20 +9,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.bson.Document;
-
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -75,16 +75,21 @@ public class TaskJob extends AbstractStatJob {
 			
 			manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			//查询所有的任务
+			log.info("查询所有的任务");
 			List<Task> taskAll = manApi.queryTaskAll();
 			//查询所有任务的项目类型
+			log.info("查询所有任务的项目类型");
 			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
 			//所有已经分配子任务的任务id集合
+			log.info("所有已经分配子任务的任务id集合");
 			Set<Integer> taskIdsHasSubtask = manApi.queryTasksHasSubtask();
 			
 			//modify by songhe 2017/9/04
 			//查询task对应的tips转aumark数量
+			log.info("查询task对应的tips转aumark数量");
 			Map<Integer, Integer> tips2MarkMap = manApi.getTips2MarkNumByTaskId();
 			//查询mongo库中已统计的数据(状态为关闭)
+			log.info("查询mongo库中已统计的数据(状态为关闭)");
 			Map<Integer, Map<String, Object>> taskStatDataClose = getTaskStatData(timestamp);
 			if(taskStatDataClose.size() > 0){
 				taskStatList.addAll(taskStatDataClose.values());
@@ -92,6 +97,7 @@ public class TaskJob extends AbstractStatJob {
 			}
 			//处理从mongo库中获取的统计项
 			//处理需要统计的task
+			log.info("查询任务对应grid,以及筛选出需要统计的任务。已有的关闭任务不需要重复统计");
 			List<Task> taskList = new ArrayList<Task>();
 			for (Task task : taskAll) {
 				int status = task.getStatus();
@@ -128,36 +134,43 @@ public class TaskJob extends AbstractStatJob {
 			}
 			//查询MAN_TIMELINE表获取相应的数据
 			String objName = "task";
+			log.info("查询MAN_TIMELINE表获取相应的数据");
 			Map<Integer, Map<String, Object>> manTimeline = manApi.queryManTimelineByObjName(objName,0);
-			//查询mongo中task_grid_tips相应的统计数据
+			log.info("查询mongo中task_grid_tips相应的统计数据");
 			Map<Integer, Map<String, Object>> taskTipsStatData = getTaskTipsStatData(timestamp);
-			//查询mongo中fcc相应的统计数据
+			log.info("查询mongo中fcc相应的统计数据");
 			Map<Integer, Map<String, Object>> taskFccStatData = getTaskFccStatData(timestamp);
-			//查询mongo中task_day_poi相应的统计数据
+			log.info("查询mongo中task_day_poi相应的统计数据");
 			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
-			//查询mongo中grid_task_tips相应的统计数据
+			log.info("查询mongo中grid_task_tips相应的统计数据");
 			Map<Integer, Map<Integer, Map<String, Integer>>> gridTaskTipsStatData = getGridTaskTipsStatData(timestamp);
-			//查询mongo中grid_notask_tips相应的统计数据
+			log.info("查询mongo中grid_notask_tips相应的统计数据");
 			Map<Integer, Map<String, Integer>> gridNotaskTipsStatData = getGridNotaskTipsStatData(timestamp);
-			//查询mongo中poi月编相应的统计数据
+			log.info("查询mongo中poi月编相应的统计数据");
 			Map<Integer, Map<String, Integer>> monthPoiStatData = getMonthPoiStatData(timestamp);
-			//查询mongo中grid_day_poi相应的统计数据
+			log.info("查询mongo中grid_day_poi相应的统计数据");
 			Map<Integer, Map<String, Integer>> gridDayPoiStatData = getGridDayPoiStatData(timestamp);
-			//查询mongo中task_day_plan相应的统计数据
+			log.info("查询mongo中task_day_plan相应的统计数据");
 			Map<Integer, Map<String, Object>> taskDayPlanStatData = getTaskDayPlanStatData(timestamp);
-			//查询mongo中subtask_tips相应的统计数据
+			log.info("查询mongo中subtask_tips相应的统计数据");
 			Map<Integer, Map<String, Object>> subTipsStatData = getSubTipsStatData(timestamp);
-			//查询mongo中subtask_day_poi相应的统计数据
+			log.info("查询mongo中subtask_day_poi相应的统计数据");
 			Map<Integer, Map<String, Object>> subDayPoiStatData = getSubDayPoiStatData(timestamp);
-			//查询mongo中子任务的统计数据
+			log.info("查询mongo中子任务的统计数据");
 			Map<Integer, Map<String, Object>> subtaskStatData = getSubtaskStatData(timestamp);
-			
+			log.info("查询日编任务对应的采集任务集合");
+			Map<Integer, Set<Integer>> referCTaskSet = OracleDao.getCollectTaskIdByDayTask();
+			log.info("查询任务对应的子任务集合");
+			Map<Integer, Set<Subtask>> referSubtaskSet = OracleDao.getSubtaskByTaskId();
+			log.info("统计信息汇总计算");
 			//统计任务数据
 			for(Task task : taskList){
 				int taskId = task.getTaskId();
-				//查询子任务id
-				List<Map<String, Object>> subtaskList = manApi.querySubtaskByTaskId(taskId);
-				Set<Integer> collectTasks = manApi.getCollectTaskIdByDayTask(taskId);
+
+				Set<Integer> collectTasks = new HashSet<>();
+				if(referCTaskSet.containsKey(taskId)){
+					collectTasks=referCTaskSet.get(taskId);
+				}
 
 				//处理对应任务的tis2aumark数量
 				if(tips2MarkMap.containsKey(taskId)){
@@ -166,11 +179,15 @@ public class TaskJob extends AbstractStatJob {
 					task.setTips2MarkNum(0);
 				}
 				//获取子任务id
-				Set<Integer> subtaskIds = new HashSet<Integer>();
-				for (Map<String, Object> map : subtaskList) {
-					int subtaskId = (int) map.get("subtaskId");
-					subtaskIds.add(subtaskId);
+				Set<Subtask> subtaskSet = new HashSet<>();
+				if(referSubtaskSet.containsKey(taskId)){
+					subtaskSet=referSubtaskSet.get(taskId);
 				}
+				Set<Integer> subtaskIds=new HashSet<>();
+				for(Subtask s:subtaskSet){
+					subtaskIds.add(s.getSubtaskId());
+				}
+
 				//判断是否包含子任务
 				if(taskIdsHasSubtask.contains(taskId)){
 					task.setIsAssign(1);
@@ -190,13 +207,14 @@ public class TaskJob extends AbstractStatJob {
 				//处理grid_day_poi相应的统计数据
 				Map<String, Integer> gridDayPoiStat = handleGridDayPoiStatData(task, gridDayPoiStatData);
 				//处理subtask_tips相应的统计数据
-				Map<String, Integer> subTipsStat = handleSubTipsStatData(task, subtaskList, subTipsStatData);
+				Map<String, Integer> subTipsStat = handleSubTipsStatData(task, subtaskSet, subTipsStatData);
 				//处理subtask_day_poi相应的统计数据
-				Map<String, Integer> subDayPoiStat = handleSubDayPoiStatData(task, subtaskList, subDayPoiStatData);
+				Map<String, Integer> subDayPoiStat = handleSubDayPoiStatData(task, subtaskSet, subDayPoiStatData);
+				
 				//处理子任务相应的统计数据获取实际开始时间
 				List<String> subActualStartTimeList = handleSubtaskStatData(task, subtaskStatData, subtaskIds);
 				//处理子任务中已关闭的区域粗编子任务个数和所有区域粗编子任务个数
-				Map<String, Integer> subtaskAreaData = handleSubtaskArea(task, subtaskList);
+				Map<String, Integer> subtaskAreaData = handleSubtaskArea(task, subtaskSet);
 				
 				//处理mongo库中的查询数据
 				Map<String,Object> dataMap = new HashMap<String,Object>();
@@ -229,7 +247,8 @@ public class TaskJob extends AbstractStatJob {
 				}
 				//处理具体数据
 				Map<String, Object> taskMap = getTaskStat(task,taskManTimeline,dataMap,subActualStartTimeList,fccData);
-				
+
+
 				taskStatList.add(taskMap);
 			}
 			//处理数据
@@ -700,13 +719,15 @@ public class TaskJob extends AbstractStatJob {
 			//处理数据
 			Set<Integer> gridIds = task.getGridIds().keySet();
 			int notaskPoiNum = 0;
+			Map<String,Integer> taskStat = new HashMap<String,Integer>();
+			taskStat.put("notaskPoiNum", notaskPoiNum);
+			if(task.getType()!=0){return taskStat;}
 			for (Integer gridId : gridIds) {
 				if(gridDayPoiStatData.containsKey(gridId)){
 					Map<String, Integer> map = gridDayPoiStatData.get(gridId);
 					notaskPoiNum += map.get("poiNum");
 				}
 			}
-			Map<String,Integer> taskStat = new HashMap<String,Integer>();
 			taskStat.put("notaskPoiNum", notaskPoiNum);
 			return taskStat;
 		} catch (Exception e) {
@@ -803,14 +824,14 @@ public class TaskJob extends AbstractStatJob {
 	 * 处理subtask_tips相应的统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<String,Integer> handleSubTipsStatData(Task task,List<Map<String, Object>> subtasks,Map<Integer,Map<String,Object>> subTipsStatData) throws Exception{
+	public Map<String,Integer> handleSubTipsStatData(Task task,Set<Subtask> subtaskSet,Map<Integer,Map<String,Object>> subTipsStatData) throws Exception{
 		try {
 			//处理数据
 			int crowdTipsTotal = 0;
 			int inforTipsTotal = 0;
-			for (Map<String, Object> subtask : subtasks) {
-				int subtaskId = (int) subtask.get("subtaskId");
-				int workKind = (int) subtask.get("workKind");
+			for (Subtask subtask : subtaskSet) {
+				int subtaskId = subtask.getSubtaskId();
+				int workKind = subtask.getWorkKind();
 				//众包
 				if(workKind == 2){
 					if(task.getSubWorkKind(2) == 1){
@@ -858,7 +879,14 @@ public class TaskJob extends AbstractStatJob {
 				Map<String,Object> subtask = new HashMap<String,Object>();
 				int subtaskId = (int) jso.get("subtaskId");
 				int poiUploadNum = (int) jso.get("poiUploadNum");
+				int poiActualAddNum = (int) jso.get("poiActualAddNum");
+				int poiActualUpdateNum = (int) jso.get("poiActualUpdateNum");
+				int poiActualDeleteNum = (int) jso.get("poiActualDeleteNum");
 				subtask.put("poiUploadNum", poiUploadNum);
+				subtask.put("poiActualAddNum", poiActualAddNum);
+				subtask.put("poiActualUpdateNum", poiActualUpdateNum);
+				subtask.put("poiActualDeleteNum", poiActualDeleteNum);
+				
 				stat.put(subtaskId, subtask);
 			}
 			return stat;
@@ -872,14 +900,17 @@ public class TaskJob extends AbstractStatJob {
 	 * 处理subtask_day_poi相应的统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<String,Integer> handleSubDayPoiStatData(Task task,List<Map<String, Object>> subtasks,Map<Integer,Map<String,Object>> subDayPoiStatData) throws Exception{
+	public Map<String,Integer> handleSubDayPoiStatData(Task task,Set<Subtask> subtaskSet,Map<Integer,Map<String,Object>> subDayPoiStatData) throws Exception{
 		try {
 			//处理数据
 			int crowdTipsTotal = 0;
 			int multisourcePoiTotal = 0;
-			for (Map<String, Object> subtask : subtasks) {
-				int subtaskId = (int) subtask.get("subtaskId");
-				int workKind = (int) subtask.get("workKind");
+			int poiActualAddNumSum = 0;
+			int poiActualUpdateNumSum = 0;
+			int poiActualDeleteNumSum = 0;
+			for (Subtask subtask : subtaskSet) {
+				int subtaskId =subtask.getSubtaskId();
+				int workKind =subtask.getWorkKind();
 				//众包
 				if(workKind == 2){
 					if(task.getSubWorkKind(2) == 1){
@@ -898,10 +929,32 @@ public class TaskJob extends AbstractStatJob {
 						}
 					}
 				}
+				if(subDayPoiStatData.containsKey("poiActualAddNum")){
+					poiActualAddNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualAddNum").toString());
+				}
+				if(subDayPoiStatData.containsKey("poiActualUpdateNum")){
+					poiActualUpdateNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualUpdateNum").toString());
+				}
+				if(subDayPoiStatData.containsKey("poiActualDeleteNum")){
+					poiActualDeleteNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualDeleteNum").toString());
+				}
+				
+//				poiActualUpdateNumSum+=(int) subtask.get("poiActualUpdateNum");
+//				poiActualDeleteNumSum+=(int) subtask.get("poiActualDeleteNum");
 			}
+			
+			//poiActualAddNum// POI实际新增个数【MT-CP-8】
+			//poiActualUpdateNum// POI实际修改个数【MT-CP-9】
+			//poiActualDeleteNum// POI实际删除个数【MT-CP-10】
+			
+			
 			Map<String,Integer> taskStat = new HashMap<String,Integer>();
 			taskStat.put("crowdTipsTotal", crowdTipsTotal);
 			taskStat.put("multisourcePoiTotal", multisourcePoiTotal);
+			
+			taskStat.put("poiActualAddNum", poiActualAddNumSum);
+			taskStat.put("poiActualUpdateNum", poiActualUpdateNumSum);
+			taskStat.put("poiActualDeleteNum", poiActualDeleteNumSum);
 			return taskStat;
 		} catch (Exception e) {
 			log.error("处理taskId("+task.getTaskId()+")subtask_day_poi统计数据报错,"+e.getMessage());
@@ -913,14 +966,14 @@ public class TaskJob extends AbstractStatJob {
 	 * 处理子任务中已关闭的区域粗编子任务个数和所有区域粗编子任务个数
 	 * @throws ServiceException 
 	 */
-	public Map<String,Integer> handleSubtaskArea(Task task,List<Map<String, Object>> subtasks) throws Exception{
+	public Map<String,Integer> handleSubtaskArea(Task task,Set<Subtask> subtaskSet) throws Exception{
 		try {
 			//处理数据
 			int areaAllNum = 0;
 			int areaCloseNum = 0;
-			for (Map<String, Object> subtask : subtasks) {
-				int type = (int) subtask.get("type");
-				int status = (int) subtask.get("status");
+			for (Subtask subtask : subtaskSet) {
+				int type = subtask.getType();
+				int status = subtask.getStatus();
 				//一体化_区域粗编_日编
 				if(type == 4){
 					if(status == 0){
@@ -947,6 +1000,7 @@ public class TaskJob extends AbstractStatJob {
 	 * @param taskManTimeline
 	 * @param dataMap
 	 * @param subActualStartTimeList 
+	 * @param subtaskIds 
 	 * @return
 	 * @throws Exception 
 	 */
@@ -1198,9 +1252,24 @@ public class TaskJob extends AbstractStatJob {
 				linkUpdateAndPlanLen = (double) dataMap.get("linkUpdateAndPlanLen");
 			}
 			
-			//POI实际新增个数(暂不统计)
-			//POI实际修改个数(暂不统计)
-			//POI实际删除个数(暂不统计)
+
+
+
+			//POI实际新增个数
+			if(dataMap.containsKey("poiActualAddNum")){
+				poiActualAddNum = (int) dataMap.get("poiActualAddNum");
+			}
+			
+			//POI实际修改个数
+			if(dataMap.containsKey("poiActualUpdateNum")){
+				poiActualUpdateNum = (int) dataMap.get("poiActualUpdateNum");
+			}
+			
+			//POI实际删除个数
+			if(dataMap.containsKey("poiActualDeleteNum")){
+				poiActualDeleteNum = (int) dataMap.get("poiActualDeleteNum");
+			}
+			
 			//POI实际鲜度验证个数
 			if(dataMap.containsKey("poiFreshNum")){
 				poiFreshNum = (int) dataMap.get("poiFreshNum");
@@ -1401,7 +1470,8 @@ public class TaskJob extends AbstractStatJob {
 			throw new Exception("处理数据出错:" + e.getMessage(), e);
 		}
 	}
-	
+
+
 	/**
 	 * 处理开始时间
 	 */

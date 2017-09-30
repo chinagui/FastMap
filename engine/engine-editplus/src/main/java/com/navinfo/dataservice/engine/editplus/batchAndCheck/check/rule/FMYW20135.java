@@ -82,11 +82,11 @@ public class FMYW20135 extends BasicCheckRule {
         Matcher m1 = p1.matcher(strContent);
 
         // 3、4、5、6、7、8
-        Pattern p2 = Pattern.compile(".*(至|——|、|＼|　　|＃)+.*");
+        Pattern p2 = Pattern.compile(".*(至|、|＼|　　|＃|－－)+.*");
         Matcher m2 = p2.matcher(strContent);
 
         //9
-        Pattern p3 = Pattern.compile(".*ｆ$");
+        Pattern p3 = Pattern.compile(".*Ｆ$");
         Matcher m3 = p3.matcher(strContent);
 
         // 10

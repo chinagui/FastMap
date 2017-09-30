@@ -1096,6 +1096,148 @@ public class NiValExceptionSelector {
 
 		}
 	}
+	
+	/**
+	 * @Description: 子任务范围内pointaddress检查结果列表查询接口
+	 * @param params
+	 * @param subtaskId
+	 * @return
+	 * @throws Exception
+	 * @author LittleDog
+	 */
+	public Page listPointAddressResultList(JSONObject params, int subtaskId)
+			throws Exception {
+		log.info(" begin time" + DateUtils.dateToString(new Date(), DateUtils.DATE_DEFAULT_FORMAT));
+		Page p = null;
+		QueryRunner run = null;
+		final int pageSize = params.getInt("pageSize");
+		final int pageNum = params.getInt("pageNum");
+		
+		String sortby = "";
+		if (params.containsKey("sortby")) {
+			sortby = params.getString("sortby");
+		}
+		long pageStartNum = (pageNum - 1) * pageSize + 1;
+		long pageEndNum = pageNum * pageSize;
+		List<Integer> pids = getCheckPidList(conn, subtaskId);
+		
+		log.info("pids :" + pids.size());
+		try {
+			if (pids != null && pids.size() > 0) {
+				String orderSql = "";
+				// 添加排序条件
+				if (sortby.length() > 0) {
+					int index = sortby.indexOf("-");
+					if (index != -1) {
+						orderSql += " ORDER BY ";
+						String sortbyName = com.navinfo.dataservice.commons.util.StringUtils.toColumnName(sortby.substring(1));
+						orderSql += "  ";
+						orderSql += sortbyName;
+						orderSql += " DESC";
+					} else {
+						orderSql += " ORDER BY ";
+						String sortbyName = com.navinfo.dataservice.commons.util.StringUtils.toColumnName(sortby.substring(1));
+						orderSql += "  ";
+						orderSql += sortbyName;
+					}
+				}
+				
+				StringBuilder sql = new StringBuilder(
+						"SELECT Q.* FROM ( SELECT T.*, ROWNUM AS ROWNO FROM ("
+								+ "SELECT B.*,COUNT(1) OVER () TOTAL FROM ( "
+								+ "SELECT A.MD5_CODE,A.RULEID,A.\"LEVEL\" LEVEL_,A.TARGETS,A.INFORMATION,A.WORKER ,A.CREATED,A.LOCATION.SDO_POINT.X X,A.LOCATION.SDO_POINT.Y Y,A.UPDATED,A.QA_WORKER,A.QA_STATUS,O.PID "
+								+ "FROM "
+								+ "NI_VAL_EXCEPTION A  , CK_RESULT_OBJECT O  "
+								+ "WHERE  (O.TABLE_NAME LIKE 'IX_POINTADDRESS\\_%' ESCAPE '\\' OR O.TABLE_NAME ='IX_POINTADDRESS')  AND O.MD5_CODE=A.MD5_CODE "
+								+ " AND O.PID IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)) "
+								+ ") "
+								+ " UNION ALL "
+								+ "SELECT C.MD5_CODE,C.RULE_ID RULEID,C.STATUS LEVEL_,C.TARGETS,C.INFORMATION,C.WORKER ,C.CREATE_DATE CREATED,(SDO_UTIL.FROM_WKTGEOMETRY(C.GEOMETRY)).SDO_POINT.X X,(SDO_UTIL.FROM_WKTGEOMETRY(C.GEOMETRY)).SDO_POINT.Y Y,C.UPDATE_DATE AS UPDATED,C.QA_WORKER,C.QA_STATUS,O.PID "
+								+ "FROM "
+								+ "CK_EXCEPTION C , CK_RESULT_OBJECT O "
+								+ "  WHERE (O.TABLE_NAME LIKE 'IX_POINTADDRESS\\_%' ESCAPE '\\' OR O.TABLE_NAME ='IX_POINTADDRESS')  AND O.MD5_CODE=C.MD5_CODE "
+								+ " AND O.PID IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)) "
+								+ " )  "
+								+ " )  B  "
+								+ orderSql
+								+ " ) T  WHERE ROWNUM <= ? ) Q  WHERE Q.ROWNO >= ? ");
+				
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pids, ","));
+				
+				log.info("listPointAddressResultList:  " + sql);
+				run = new QueryRunner();
+				
+				ResultSetHandler<Page> rsHandler3 = new ResultSetHandler<Page>() {
+					public Page handle(ResultSet rs) throws SQLException {
+						Page page = new Page();
+						int total = 0;
+						JSONArray results = new JSONArray();
+						while (rs.next()) {
+							if (total == 0) {
+								total = rs.getInt("TOTAL");
+							}
+							
+							JSONObject json = new JSONObject();
+							json.put("id", rs.getString("MD5_CODE"));
+							
+							json.put("ruleid", rs.getString("RULEID"));
+							
+							json.put("rank", rs.getInt("LEVEL_"));
+							
+							String targets = "";
+							if (rs.getString("TARGETS") != null && StringUtils.isNotEmpty(rs.getString("TARGETS"))) {
+								targets = rs.getString("TARGETS");
+							}
+							json.put("targets", targets);
+							
+							json.put("information", rs.getString("INFORMATION"));
+							
+							json.put("geometry", "(" + rs.getDouble("X") + "," + rs.getDouble("Y") + ")");
+							
+							json.put("create_date", rs.getString("CREATED"));
+							json.put("update_date", rs.getString("UPDATED"));
+							
+							json.put("worker", rs.getString(""));
+							json.put("qa_worker", rs.getString("QA_WORKER") == null ? "" : rs.getString("QA_WORKER"));
+							json.put("qa_status", rs.getString("QA_STATUS"));
+							
+							JSONArray refFeaturesArr = new JSONArray();
+							
+							if (targets != null
+									&& StringUtils.isNotEmpty(targets)) {
+								
+								String pids = targets
+										.replaceAll("[\\[\\]]", "")
+										.replaceAll("IX_POI,", "")
+										.replaceAll(";", ",");
+								System.out.println(pids + " " + rs.getInt("PID"));
+								refFeaturesArr = queryRefFeatures(pids, rs.getInt("PID"));
+							}
+							// 查询关联poi根据pid
+							json.put("refFeatures", refFeaturesArr);
+							json.put("refCount", refFeaturesArr.size());
+							results.add(json);
+							System.out.println("json: " + json);
+						}
+						page.setTotalCount(total);
+						page.setResult(results);
+						
+						return page;
+					}
+				};
+				p = run.query(conn, sql.toString(), new Object[] { clob, clob,
+						pageEndNum, pageStartNum }, rsHandler3);
+				
+			}
+			log.info(" end time" + DateUtils.dateToString(new Date(), DateUtils.DATE_DEFAULT_FORMAT));
+			return p;
+		} catch (Exception e) {
+			throw new Exception(e);
+		} finally {
+			
+		}
+	}
 
 	
 

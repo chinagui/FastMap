@@ -98,6 +98,12 @@ public class Tips2MarkPhase extends JobPhase {
                 parameter.put("au_week_db_password", auWeekDb.getDbUserPasswd());
                 parameter.put("au_week_db_sid", auWeekDb.getDbServer().getServiceName());
                 parameter.put("au_week_db_port", auWeekDb.getDbServer().getPort());
+            }else{
+                parameter.put("au_week_db_ip", "");
+                parameter.put("au_week_db_username", "");
+                parameter.put("au_week_db_password", "");
+                parameter.put("au_week_db_sid", "");
+                parameter.put("au_week_db_port", "");
             }
             
             parameter.put("types", "");

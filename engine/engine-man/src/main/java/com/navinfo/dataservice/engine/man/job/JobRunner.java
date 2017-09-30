@@ -155,13 +155,9 @@ public abstract class JobRunner {
                 continue;
             } else if (phase.jobProgress.getStatus() == JobProgressStatus.RUNNING) {
                 throw new JobRunningException();
-            } 
-//            else if (phase.jobProgress.getStatus() == JobProgressStatus.NODATA) {
-//            	job.setStatus(JobStatus.NODATA);
-//            	finish=false;
-//                //如果第一步的状态是无数据，不需要执行创建CMS任务
-//                break;
-//            }
+            }else if (phase.jobProgress.getStatus() == JobProgressStatus.NODATA) {
+            	continue;
+            }
 
             //如果按批次日落月，不需要执行关闸
             if(job.getType()==JobType.DAY2MONTH &&

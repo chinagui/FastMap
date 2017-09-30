@@ -21,6 +21,7 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.ManConstant;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -78,7 +79,15 @@ public class SubtaskJob extends AbstractStatJob {
 			//获取已关闭的统计
 			log.info("查询所有子任务统计信息");
 			List<Map<String, Object>> subtaskStatList = new ArrayList<Map<String, Object>>();
-			Map<Integer, Map<String, Object>> subtaskStatDataClose = getSubtaskStatData(timestamp);
+			
+			ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
+			String value=api.queryConfValueByConfKey(ManConstant.inheritStatic);
+			Map<Integer, Map<String, Object>> subtaskStatDataClose =new HashMap<>();
+			//没有值，或者为true
+			if(value==null||value.equals("true")){
+				subtaskStatDataClose = getSubtaskStatData(timestamp);
+			}
+			
 			log.info("查询所有日编子任务对应采集任务");
 			Map<Integer, Set<Integer>> referCTaskSet = OracleDao.getCollectTaskIdByDaySubtask();
 			

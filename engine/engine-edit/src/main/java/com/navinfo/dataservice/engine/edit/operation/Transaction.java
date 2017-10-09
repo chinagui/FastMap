@@ -1877,7 +1877,7 @@ public class Transaction {
                     Connection connection = null;
                     try {
                         connection = DBConnector.getInstance().getConnectionById(dbId);
-                        List<IRow> rdNodes = new RdNodeSelector(connection).loadByIds(new ArrayList<>(links), false,false);
+                        List<IRow> rdNodes = new RdNodeSelector(connection).loadByIds(new ArrayList<>(nodes), false,false);
                         rowsTmp.addAll(rdNodes);
                         if (rdNodes.size() == minus) {
                             break;

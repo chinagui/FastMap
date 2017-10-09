@@ -208,7 +208,7 @@ public class SearchProcess {
      * @return 查询结果
      */
     private List<SearchSnapshot> searchDataByTileWithGap(
-            LimitObjType type,  RenderParam param) throws Exception {
+            LimitObjType type, RenderParam param) throws Exception {
 
         Connection conn = null;
 
@@ -220,7 +220,8 @@ public class SearchProcess {
 
             } else if (LimitObjType.SCPLATERESGEOMETRY.equals(type)) {
 
-                conn = DBConnector.getInstance().getMetaConnection();
+//              conn = DBConnector.getInstance().getMetaConnection();
+                conn = DBConnector.getInstance().getLimitConnection();
             }
 
             SearchFactory factory = new SearchFactory(conn);

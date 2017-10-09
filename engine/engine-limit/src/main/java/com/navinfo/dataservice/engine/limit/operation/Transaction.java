@@ -208,6 +208,19 @@ public class Transaction {
                     case UPDATE:
                         return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Command(json, requester);
                 }
+            case SCPLATERESGEOMETRY:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.create.Command(json,
+                                requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.update.Command(json,
+                                requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.delete.Command(json,
+                                requester);
+                }
+                break;
         }
         throw new Exception("不支持的操作类型");
     }
@@ -265,6 +278,19 @@ public class Transaction {
                     case UPDATE:
                         return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Process(command);
                 }
+            case SCPLATERESGEOMETRY:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.update.Process(
+                                command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.delete.Process(
+                                command);
+                }
+                break;
         }
         throw new Exception("不支持的操作类型");
     }

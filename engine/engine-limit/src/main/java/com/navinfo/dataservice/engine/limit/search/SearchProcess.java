@@ -208,19 +208,23 @@ public class SearchProcess {
      * @return 查询结果
      */
     private List<SearchSnapshot> searchDataByTileWithGap(
-            LimitObjType type,  RenderParam param) throws Exception {
+            LimitObjType type, RenderParam param) throws Exception {
 
         Connection conn = null;
 
         try {
 
-            if (LimitObjType.SCPLATERESFACE.equals(type) || LimitObjType.SCPLATERESFACE.equals(type)) {
+            if (LimitObjType.SCPLATERESFACE.equals(type) || LimitObjType.SCPLATERESLINK.equals(type)) {
 
                 conn = DBConnector.getInstance().getLimitConnection();
 
             } else if (LimitObjType.SCPLATERESGEOMETRY.equals(type)) {
 
-                conn = DBConnector.getInstance().getMetaConnection();
+//              conn = DBConnector.getInstance().getMetaConnection();
+                conn = DBConnector.getInstance().getLimitConnection();
+            }
+            else {
+                throw new Exception("不支持的渲染类型："+type.toString());
             }
 
             SearchFactory factory = new SearchFactory(conn);

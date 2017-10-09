@@ -14,181 +14,214 @@ import java.sql.Connection;
  */
 public class Transaction {
 
-	private static Logger logger = Logger.getLogger(Transaction.class);
+    private static Logger logger = Logger.getLogger(Transaction.class);
 
-	/**
-	 * 请求参数
-	 */
-	private String requester;
+    /**
+     * 请求参数
+     */
+    private String requester;
 
-	/**
-	 * 操作类型
-	 */
-	private OperType operType;
+    /**
+     * 操作类型
+     */
+    private OperType operType;
 
-	/**
-	 * 对象类型
-	 */
-	private LimitObjType objType;
+    /**
+     * 对象类型
+     */
+    private LimitObjType objType;
 
-	/**
-	 * 数据库链接
-	 */
-	private Connection conn;
+    /**
+     * 数据库链接
+     */
+    private Connection conn;
 
-	/**
-	 * 用户Id
-	 */
-	private long userId;
+    /**
+     * 用户Id
+     */
+    private long userId;
 
-	/**
-	 * 子任务Id
-	 */
-	private int subTaskId;
+    /**
+     * 子任务Id
+     */
+    private int subTaskId;
 
-	/**
-	 * 数据库类型
-	 */
-	private int dbType;
+    /**
+     * 数据库类型
+     */
+    private int dbType;
 
-	/**
-	 * 主要操作
-	 */
-	private AbstractProcess process;
+    /**
+     * 主要操作
+     */
+    private AbstractProcess process;
 
-	/**
-	 * 命令对象
-	 */
-	private AbstractCommand command;
+    /**
+     * 命令对象
+     */
+    private AbstractCommand command;
 
-	/**
-	 * 删除标识 1：提示，0：删除
-	 */
-	private int infect = 0;
+    /**
+     * 删除标识
+     * 1：提示，0：删除
+     */
+    private int infect = 0;
 
-	public Transaction(String requester) {
-		this.requester = requester;
-	}
+    public Transaction(String requester) {
+        this.requester = requester;
+    }
 
-	public Transaction(String requester, Connection conn) {
-		this.requester = requester;
-		this.conn = conn;
-	}
+    public Transaction(String requester, Connection conn) {
+        this.requester = requester;
+        this.conn = conn;
+    }
 
-	public String getRequester() {
-		return requester;
-	}
 
-	public void setRequester(String requester) {
-		this.requester = requester;
-	}
+    public String getRequester() {
+        return requester;
+    }
 
-	public OperType getOperType() {
-		return operType;
-	}
 
-	public LimitObjType getObjType() {
-		return objType;
-	}
+    public void setRequester(String requester) {
+        this.requester = requester;
+    }
 
-	public void setObjType(LimitObjType objType) {
-		this.objType = objType;
-	}
 
-	public Connection getConn() {
-		return conn;
-	}
+    public OperType getOperType() {
+        return operType;
+    }
 
-	public void setConn(Connection conn) {
-		this.conn = conn;
-	}
 
-	public long getUserId() {
-		return userId;
-	}
+    public LimitObjType getObjType() {
+        return objType;
+    }
 
-	public void setUserId(long userId) {
-		this.userId = userId;
-	}
 
-	public int getSubTaskId() {
-		return subTaskId;
-	}
+    public void setObjType(LimitObjType objType) {
+        this.objType = objType;
+    }
 
-	public void setSubTaskId(int subTaskId) {
-		this.subTaskId = subTaskId;
-	}
 
-	public void setDbType(int dbType) {
-		this.dbType = dbType;
-	}
+    public Connection getConn() {
+        return conn;
+    }
 
-	public int getInfect() {
-		return infect;
-	}
 
-	public void setInfect(int infect) {
-		this.infect = infect;
-	}
+    public void setConn(Connection conn) {
+        this.conn = conn;
+    }
 
-	/**
-	 * 创建操作命令
-	 *
-	 * @return 命令
-	 */
-	public AbstractCommand createCommand(String requester) throws Exception {
-		// 修改net.sf.JSONObject的bug：string转json对象损失精度问题（解决方案目前有两种，一种替换新的jar包以及依赖的包，第二种先转fastjson后再转net.sf）
-		com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(requester);
-		JSONObject json = JsonUtils.fastJson2netJson(fastJson);
 
-		operType = Enum.valueOf(OperType.class, json.getString("command"));
-		objType = Enum.valueOf(LimitObjType.class, json.getString("type"));
-		if (json.containsKey("infect")) {
-			infect = json.getInt("infect");
-		}
+    public long getUserId() {
+        return userId;
+    }
 
-		switch (objType) {
-		case SCPLATERESGROUP:
-			switch (operType) {
-			case CREATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.create.Command(json,
-						requester);
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.update.Command(json,
-						requester);
-			case DELETE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete.Command(json,
-						requester);
-			case RELATION:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.relation.Command(json,
-						requester);
 
-			}
-			break;
-		case SCPLATERESMANOEUVRE:
-			switch (operType) {
-			case CREATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Command(json,
-						requester);
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Command(json,
-						requester);
-			case DELETE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Command(json,
-						requester);
-			}
-			break;
-		case SCPLATERESINFO:
-			switch (operType) {
-			case CREATE:
-				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.create.Command(json,
-						requester);
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.update.Command(json,
-						requester);
-			}
-			break;
-		case SCPLATERESRDLINK:
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
+
+
+    public int getSubTaskId() {
+        return subTaskId;
+    }
+
+
+    public void setSubTaskId(int subTaskId) {
+        this.subTaskId = subTaskId;
+    }
+
+
+    public void setDbType(int dbType) {
+        this.dbType = dbType;
+    }
+
+
+    public int getInfect() {
+        return infect;
+    }
+
+
+    public void setInfect(int infect) {
+        this.infect = infect;
+    }
+
+    /**
+     * 创建操作命令
+     *
+     * @return 命令
+     */
+    public AbstractCommand createCommand(String requester) throws Exception {
+        // 修改net.sf.JSONObject的bug：string转json对象损失精度问题（解决方案目前有两种，一种替换新的jar包以及依赖的包，第二种先转fastjson后再转net.sf）
+        com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(requester);
+        JSONObject json = JsonUtils.fastJson2netJson(fastJson);
+
+        operType = Enum.valueOf(OperType.class, json.getString("command"));
+        objType = Enum.valueOf(LimitObjType.class, json.getString("type"));
+        if (json.containsKey("infect")) {
+            infect = json.getInt("infect");
+        }
+
+        switch (objType) {
+            case SCPLATERESGROUP:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.create.Command(json,
+                                requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.update.Command(json,
+                                requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete.Command(json,
+                                requester);
+                    case RELATION:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.relation.Command(json,
+                                requester);
+
+                }
+                break;
+            case SCPLATERESMANOEUVRE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Command(json,
+                                requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Command(json,
+                                requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Command(json,
+                                requester);
+                }
+                break;
+            case SCPLATERESINFO:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.create.Command(json,
+                                requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.update.Command(json,
+                                requester);
+                }
+                break;
+            case SCPLATERESRDLINK:
+                switch (operType) {
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Command(json, requester);
+                }
+            case SCPLATERESGEOMETRY:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.create.Command(json,
+                                requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.update.Command(json,
+                                requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.delete.Command(json,
+                                requester);
+                }
+                break;
+            		case SCPLATERESRDLINK:
 			switch (operType) {
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Command(json, requester);
@@ -217,60 +250,77 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.delete.Command(json,
 						requester);
 			}
-		}
-		throw new Exception("不支持的操作类型");
-	}
+        }
+        throw new Exception("不支持的操作类型");
+    }
 
-	/**
-	 * 创建操作进程
-	 *
-	 * @param command
-	 *            操作命令
-	 * @return 操作进程
-	 * @throws Exception
-	 */
-	public AbstractProcess createProcess(AbstractCommand command) throws Exception {
-		switch (objType) {
-		case SCPLATERESGROUP:
-			switch (operType) {
-			case CREATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.create.Process(command);
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.update.Process(command);
-			case DELETE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete.Process(command);
-			case RELATION:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.relation.Process(
-						command);
-			}
-			break;
-		case SCPLATERESMANOEUVRE:
-			switch (operType) {
-			case CREATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Process(
-						command);
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Process(
-						command);
-			case DELETE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Process(
-						command);
-			}
-			break;
-		case SCPLATERESINFO:
-			switch (operType) {
-			case CREATE:
-				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.create.Process(command);
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.update.Process(command);
-			}
-			break;
-		case SCPLATERESRDLINK:
-			switch (operType) {
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Process(command);
-			}
-		case SCPLATERESLINK:
+    /**
+     * 创建操作进程
+     *
+     * @param command 操作命令
+     * @return 操作进程
+     * @throws Exception
+     */
+    public AbstractProcess createProcess(AbstractCommand command) throws Exception {
+        switch (objType) {
+            case SCPLATERESGROUP:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.update.Process(
+                                command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete.Process(
+                                command);
+                    case RELATION:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.relation.Process(
+                                command);
+                }
+                break;
+            case SCPLATERESMANOEUVRE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.update.Process(
+                                command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresmanoeuvre.delete.Process(
+                                command);
+                }
+                break;
+            case SCPLATERESINFO:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresinfo.update.Process(
+                                command);
+                }
+                break;
+            case SCPLATERESRDLINK:
+                switch (operType) {
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Process(command);
+                }
+            case SCPLATERESGEOMETRY:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.update.Process(
+                                command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.delete.Process(
+                                command);
+                }
+                break;
+            case SCPLATERESLINK:
 			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.create.Process(
@@ -293,49 +343,52 @@ public class Transaction {
 			case DELETE:
 				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.delete.Process(
 						command);
-			}
-		}
-		throw new Exception("不支持的操作类型");
-	}
+			}            
+        }
+        throw new Exception("不支持的操作类型");
+    }
 
-	/**
-	 * 执行操作
-	 */
-	public String run() throws Exception {
 
-		command = this.createCommand(requester);
+    /**
+     * 执行操作
+     */
+    public String run() throws Exception {
 
-		process = this.createProcess(command);
+        command = this.createCommand(requester);
 
-		return process.run();
-	}
+        process = this.createProcess(command);
 
-	/**
-	 * 执行操作
-	 */
-	public String innerRun() throws Exception {
-		return null;
-	}
+        return process.run();
+    }
 
-	/**
-	 * Getter method for property <tt>logs</tt>.
-	 *
-	 * @return property value of logs
-	 */
-	public String getLogs() {
-		return process.getResult().getLogs();
-	}
+    /**
+     * 执行操作
+     */
+    public String innerRun() throws Exception {
+        return null;
+    }
 
-	public JSONArray getCheckLog() {
-		return process.getResult().getCheckResults();
 
-	}
+    /**
+     * Getter method for property <tt>logs</tt>.
+     *
+     * @return property value of logs
+     */
+    public String getLogs() {
+        return process.getResult().getLogs();
+    }
 
-	public String getId() {
-		return process.getResult().getPrimaryId();
-	}
 
-	public int getDbType() {
-		return dbType;
-	}
+    public JSONArray getCheckLog() {
+        return process.getResult().getCheckResults();
+
+    }
+
+    public String getId() {
+        return process.getResult().getPrimaryId();
+    }
+
+    public int getDbType() {
+        return dbType;
+    }
 }

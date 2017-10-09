@@ -62,6 +62,11 @@ public class RenderParam implements IRenderParam {
 
     @Override
     public String getWkt() {
-        return wkt == null ? MercatorProjection.getWktWithGap(x, y, z, gap) : wkt;
+
+        if (wkt == null) {
+            wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+        }
+
+        return wkt;
     }
 }

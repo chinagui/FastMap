@@ -276,7 +276,7 @@ public class limitController extends BaseController {
         }
     }
 
-    @RequestMapping(value = "/limit/getByTileWithGap")
+    @RequestMapping(value = "/getByTileWithGap")
     public void getLimitByTile(HttpServletRequest request,
                              HttpServletResponse response) throws ServletException, IOException {
 

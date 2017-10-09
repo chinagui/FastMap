@@ -214,7 +214,7 @@ public class SearchProcess {
 
         try {
 
-            if (LimitObjType.SCPLATERESFACE.equals(type) || LimitObjType.SCPLATERESFACE.equals(type)) {
+            if (LimitObjType.SCPLATERESFACE.equals(type) || LimitObjType.SCPLATERESLINK.equals(type)) {
 
                 conn = DBConnector.getInstance().getLimitConnection();
 
@@ -222,6 +222,9 @@ public class SearchProcess {
 
 //              conn = DBConnector.getInstance().getMetaConnection();
                 conn = DBConnector.getInstance().getLimitConnection();
+            }
+            else {
+                throw new Exception("不支持的渲染类型："+type.toString());
             }
 
             SearchFactory factory = new SearchFactory(conn);

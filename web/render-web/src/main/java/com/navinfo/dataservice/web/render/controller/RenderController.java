@@ -442,4 +442,17 @@ public class RenderController extends BaseController {
 			}
 		}
 	}
+
+	@RequestMapping(value = "/limit/obj/getByTileWithGap")
+	public void getObjByTileForLimit(HttpServletRequest request,
+									 HttpServletResponse response) throws ServletException, IOException {
+		getObjByTile(request, response);
+	}
+
+	@RequestMapping(value = "/limit/specia/getByTileWithGap")
+	public void getSpeciaByTileForLimit(HttpServletRequest request,
+								HttpServletResponse response) throws ServletException, IOException
+	{
+		getSpeciaByTile( request, response);
+	}
 }

@@ -1,9 +1,9 @@
-package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.delete;
+package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
 import com.navinfo.dataservice.engine.limit.glm.iface.Result;
-import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresGroup;
+import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresGeometry;
 
 public class Operation implements IOperation {
 
@@ -23,9 +23,9 @@ public class Operation implements IOperation {
 
     private void delGroup(Result result) {
 
-        for (ScPlateresGroup group:command.getGroups()) {
+        for (ScPlateresGeometry geometry:command.getGeometrys()) {
 
-            result.insertObject(group, ObjStatus.DELETE, group.getGroupId());
+            result.insertObject(geometry, ObjStatus.DELETE, geometry.getGroupId());
         }
 
     }

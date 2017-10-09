@@ -20,6 +20,8 @@ public class Command extends AbstractCommand{
 	private String groupId;
 	
 	private JSONArray links;
+	
+	private int dbId;
 
 	public Command(JSONObject json, String requester) {
 
@@ -27,9 +29,15 @@ public class Command extends AbstractCommand{
 		
 		JSONObject data = json.getJSONObject("data");
 		
+		this.dbId = json.getInt("dbId");
+		
 		this.groupId = data.getString("groupId");
 		
-		JSONArray links = data.getJSONArray("links");
+		this.links = data.getJSONArray("links");
+	}
+	
+	public int getDbId(){
+		return this.dbId;
 	}
 	
 	public int getSeq(){

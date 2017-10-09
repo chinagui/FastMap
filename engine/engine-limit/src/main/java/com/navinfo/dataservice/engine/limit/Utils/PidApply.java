@@ -4,9 +4,7 @@ import java.sql.Connection;
 
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
-import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresInfo;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresFaceSearch;
-import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresInfoSearch;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresLinkSearch;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGeometrySearch;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGroupSearch;
@@ -15,15 +13,24 @@ import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresManoeuvreSearc
 public class PidApply {
 	
 	private Connection conn;
-	
-	public static PidApply getInstance(Connection conn){
+
+	private volatile static PidApply instance;
+
+	public static PidApply getInstance(Connection conn) {
+		if (instance == null) {
+			synchronized (PidApply.class) {
+				if (instance == null) {
+					instance = new PidApply(conn);
+				}
+			}
+		}
 		return new PidApply(conn);
 	}
-	
-	public PidApply(Connection conn){
+
+	private PidApply(Connection conn) {
 		this.conn = conn;
 	}
-	
+
 	public String pidForInsertGroup(String infoIntelId,int adAdmin,String condition) throws Exception{
 		
 		String newGroupId = "";
@@ -97,7 +104,11 @@ public class PidApply {
 
 		if (geometryId == null || geometryId.isEmpty()) {
 
-			newGeometryId = groupId + "000001";
+			if (seq.length == 0) {
+				newGeometryId = groupId + "000001";
+			} else {
+				newGeometryId = groupId + String.format("%06d", seq[0] + 1);
+			}
 
 		} else {
 

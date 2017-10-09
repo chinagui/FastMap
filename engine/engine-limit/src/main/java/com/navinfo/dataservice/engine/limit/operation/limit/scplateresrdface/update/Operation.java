@@ -19,7 +19,7 @@ public class Operation implements IOperation {
 
 		JSONObject content = this.command.getContent();
 
-		ScPlateresFace face = new ScPlateresFace();
+		ScPlateresFace face = this.command.getFace();
 
 		if (content.containsKey("objStatus") && content.getString("objStatus").equals(ObjStatus.UPDATE.toString())) {
 			boolean isChange = face.fillChangeFields(content);

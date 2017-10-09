@@ -19,11 +19,15 @@ public class Command extends AbstractCommand {
 
 	private JSONArray links;
 
+	private int dbId;
+	
 	public Command(JSONObject json, String requester) {
 
 		this.requester = requester;
 
 		JSONObject data = json.getJSONObject("data");
+		
+		this.dbId = json.getInt("dbId");
 
 		this.groupId = data.getString("groupId");
 
@@ -40,6 +44,10 @@ public class Command extends AbstractCommand {
 
 	public JSONArray getLinks() {
 		return this.links;
+	}
+	
+	public int getDbId(){
+		return this.dbId;
 	}
 
 	@Override

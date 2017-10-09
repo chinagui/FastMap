@@ -2,7 +2,10 @@ package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.cr
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.limit.Utils.PidApply;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
@@ -26,18 +29,32 @@ public class Operation implements IOperation {
 
 		JSONArray array = this.command.getLinks();
 
-		for (int i = 0; i < array.size(); i++) {
+		Connection regionConn = null;
 
-			ScPlateresFace face = new ScPlateresFace();
+		try {
+			regionConn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
 
-			String geomId = PidApply.getInstance(this.conn).pidForInsertGeometry(this.command.getGroupId(),
-					LimitObjType.SCPLATERESFACE, i);
+			RdLinkSelector selector = new RdLinkSelector(regionConn);
 
-			face.setGeometryId(geomId);
-			face.setGroupId(this.command.getGroupId());
-			face.setGeometry(this.command.getGeo());
+			for (int i = 0; i < array.size(); i++) {
 
-			result.insertObject(face, ObjStatus.INSERT, geomId);
+				ScPlateresFace face = new ScPlateresFace();
+
+				String geomId = PidApply.getInstance(this.conn).pidForInsertGeometry(this.command.getGroupId(),
+						LimitObjType.SCPLATERESFACE, i);
+				
+				RdLink oldLink = (RdLink)selector.loadById(array.getInt(i), true);
+
+				face.setGeometryId(geomId);
+				face.setGroupId(this.command.getGroupId());
+				face.setGeometry(oldLink.getGeometry());
+
+				result.insertObject(face, ObjStatus.INSERT, geomId);
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			regionConn.close();
 		}
 
 		return null;

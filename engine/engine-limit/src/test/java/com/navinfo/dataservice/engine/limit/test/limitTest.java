@@ -168,7 +168,8 @@ public class limitTest extends ClassPathXmlAppContextInit{
 		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"DELETE\",\"groupId\":\"S1100000002\",\"objId\":[1,2]}";
 		//String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"CREATE\",\"data\":{\"groupId\":\"D1100000003\",\"links\":[59033375,59033376,59025417,59037479]},\"dbId\":13}";
 		
-		String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"UPDATE\",\"geomId\":\"D1100000003000001\",\"data\":{\"boundaryLink\":\"2\",\"objStatus\":\"UPDATE\"}}";
+		//String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"UPDATE\",\"geomId\":\"D1100000003000001\",\"data\":{\"boundaryLink\":\"2\",\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"DELETE\",\"objId\":[\"D1100000003000003\",\"D1100000003000004\"]}";
 		Transaction t = new Transaction(parameter);
 		
 		t.run();

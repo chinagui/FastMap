@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update;
+package com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.update;
 
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.DbType;

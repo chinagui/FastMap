@@ -1,19 +1,21 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.update;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplatereslink.update;
 
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.limit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresFaceSearch;
+import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresLinkSearch;
 
-public class Process extends AbstractProcess<Command> {
+
+public class Process extends AbstractProcess<Command>{
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public boolean prepareData() throws Exception {
 
-		ScPlateresFaceSearch search = new ScPlateresFaceSearch(this.getConn());
+		ScPlateresLinkSearch search = new ScPlateresLinkSearch(this.getConn());
 
 		this.getCommand().setLink(search.loadById(this.getCommand().getGemetryId()));
 

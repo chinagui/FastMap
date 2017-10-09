@@ -31,7 +31,7 @@ public class Command extends AbstractCommand {
 
 		this.groupId = data.getString("groupId");
 
-		JSONArray links = data.getJSONArray("links");
+		this.links = data.getJSONArray("links");
 	}
 
 	public Geometry getGeo() {

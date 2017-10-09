@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgroup.dele
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
 import com.navinfo.dataservice.engine.limit.glm.iface.Result;
+import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresGroup;
 
 public class Operation implements IOperation {
 
@@ -15,12 +16,17 @@ public class Operation implements IOperation {
     @Override
     public String run(Result result) throws Exception {
 
-        DelGroup(result);
+        delGroup(result);
 
         return null;
     }
 
-    private void DelGroup(Result result) {
-        result.insertObject(command.getGroup(), ObjStatus.DELETE, command.getGroup().getGroupId());
+    private void delGroup(Result result) {
+
+        for (ScPlateresGroup group:command.getGroups()) {
+
+            result.insertObject(group, ObjStatus.DELETE, group.getGroupId());
+        }
+
     }
 }

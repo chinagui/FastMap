@@ -22,11 +22,13 @@ import java.util.List;
  * 
  */
 public class TrackLinesUpload extends TrackUpload{
+    public static final int TRACK_POINT_SRC = 1;
+
     @Override
     public String getSourceRowkey(JSONObject json) {
         String a_prjName=json.getString("prjName");
         String a_weekSeconds=json.getString("weekSeconds");
-        return a_prjName + a_weekSeconds;
+        return TRACK_POINT_SRC + a_prjName + a_weekSeconds;
     }
 
     @Override
@@ -69,6 +71,11 @@ public class TrackLinesUpload extends TrackUpload{
                 json.getString("prjName").getBytes());
         put.addColumn("attribute".getBytes(), "a_geometry".getBytes(),
                 json.getString("geometry").getBytes());
+        //20170927新增
+        put.addColumn("attribute".getBytes(), "a_src".getBytes(),
+                "1".getBytes());
+        put.addColumn("attribute".getBytes(), "a_plateNum".getBytes(),
+                json.getString("plateNum").getBytes());
         return put;
     }
 

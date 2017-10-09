@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.statics.service;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -8,26 +11,28 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.expect.ExpectStatusMain;
 import com.navinfo.dataservice.engine.statics.expect.PoiCollectExpectMain;
@@ -36,7 +41,6 @@ import com.navinfo.dataservice.engine.statics.expect.PoiMonthlyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadDailyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadMonthlyExpectMain;
-import com.navinfo.dataservice.engine.statics.overview.OverviewMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.poimonthly.PoiMonthlyMain;
@@ -44,14 +48,18 @@ import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
 import com.navinfo.dataservice.engine.statics.roadmonthly.RoadMonthlyMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
 public class StaticsService {
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	private static final String QUICK_MONITOR = "quick_monitor";
 	private static final String MEDIUM_MONITOR = "medium_monitor";
 	private static final String PROGRAM = "program";
 	private static final String CITY = "city";
 	private static final String BLOCK = "block";
+	private static final String MONGO_PRODUCT_MONITOR = "product_monitor";
+	
 
 	private StaticsService() {
 	}
@@ -626,14 +634,17 @@ public class StaticsService {
 	 */
 	public Map<String, Object> quickMonitor() throws Exception{
 		try {
+			log.info("start quickMonitor");
 			MongoDao mongoDao = new MongoDao(SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat));
 			FindIterable<Document> findIterable = mongoDao.find(QUICK_MONITOR,null).sort(new BasicDBObject("timestamp",-1));
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<String, Object> task = new HashMap<>();
+			log.info("quickMonitor operate latest mongo stat");
 			//处理数据
 			if(iterator.hasNext()){
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
+				log.info("latest mongo stat:"+jso);
 				task.putAll(jso);
 				JSONObject collectOverdueReasonNum = JSONObject.fromObject(jso.get("collectOverdueReasonNum"));
 				//只取占比最多的前4个原因，其余的显示为其他，并给出百分比，例如{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}
@@ -655,6 +666,7 @@ public class StaticsService {
 				JSONArray cityDetail2=reFormCity(cityDetail ,8);
 				task.put("cityDetail",cityDetail2);
 			}
+			log.info("end quickMonitor");
 			return task;
 		} catch (Exception e) {
 			throw e;
@@ -669,11 +681,13 @@ public class StaticsService {
 	 * @return
 	 */
 	private JSONArray reFormCity(JSONObject originJson,int top){
+		log.info("latest mongo stat :"+originJson);
 		if(originJson.size()==0){
 			return new JSONArray();
 		}
-		List<Map<String,Object>> keyList=new ArrayList<>();
+		Map<Integer,Map<String,Object>> keyList=new HashMap();
 		Iterator iter = originJson.keys();
+		int index=0;
 		while(iter.hasNext()){
 			String key = String.valueOf(iter.next());
 			JSONObject value = JSONObject.fromObject(originJson.get(key));
@@ -681,7 +695,8 @@ public class StaticsService {
 			tMap.put("name", key);
 			tMap.put("count", value.get("total"));
 			tMap.put("link", value.get("roadActualTotal"));
-			keyList.add(tMap);
+			keyList.put(index,tMap);
+			index++;
 		}
 		//冒泡排序
 		for (int i = 0; i < keyList.size() -1; i++){    //最多做n-1趟排序
@@ -699,12 +714,12 @@ public class StaticsService {
             		tMap.put("name", j1key);
             		tMap.put("count", j1Value);
         			tMap.put("link",j1Value2);
-            		keyList.add(j, tMap);
+            		keyList.put(j, tMap);
             		Map<String,Object> t1Map=new HashMap<>();
             		t1Map.put("name", jkey);
             		t1Map.put("count", jValue);
         			t1Map.put("link",jValue2);
-            		keyList.add(j+1, t1Map);
+            		keyList.put(j+1, t1Map);
                }
            }
        }
@@ -726,18 +741,21 @@ public class StaticsService {
 	 * @return
 	 */
 	private JSONArray reForm(JSONObject originJson,int top,boolean getOther){
+		log.info("latest mongo stat :"+originJson);
 		if(originJson.size()==0){
 			return new JSONArray();
 		}
-		List<Map<String,Object>> keyList=new ArrayList<>();
+		Map<Integer,Map<String,Object>> keyList=new HashMap();
 		Iterator iter = originJson.keys();
+		int index=0;
 		while(iter.hasNext()){
 			String key = String.valueOf(iter.next());
 			int value = (int)originJson.get(key);
 			Map<String,Object> tMap=new HashMap<>();
 			tMap.put("name", key);
 			tMap.put("percent", value);
-			keyList.add(tMap);
+			keyList.put(index, tMap);
+			index++;
 		}
 		//冒泡排序
 		for (int i = 0; i < keyList.size() -1; i++){    //最多做n-1趟排序
@@ -752,11 +770,11 @@ public class StaticsService {
             		Map<String,Object> tMap=new HashMap<>();
             		tMap.put("name", j1key);
         			tMap.put("percent", j1Value);
-            		keyList.add(j, tMap);
+            		keyList.put(j, tMap);
             		Map<String,Object> t1Map=new HashMap<>();
             		t1Map.put("name", jkey);
         			t1Map.put("percent", jValue);
-            		keyList.add(j+1, t1Map);
+            		keyList.put(j+1, t1Map);
                }
            }
        }
@@ -866,6 +884,155 @@ public class StaticsService {
 		}
 	}
 	
+	/**返回fm_stat_crowd中的blcokcode及经纬度坐标的列表
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray crowdInfoList() throws Exception {
+		String querySql = "select f.block_code,f.x,f.y from fm_stat_crowd f";
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>(){
+
+				@Override
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					JSONArray data = new JSONArray();
+					while(rs.next()){
+						JSONObject obj = new JSONObject();
+						try{
+							obj.put("blockCode", rs.getString("block_code"));
+							obj.put("x", rs.getDouble("x"));
+							obj.put("y", rs.getDouble("y"));
+							
+							data.add(obj);
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+					return data;
+				}
+
+			};
+			return run.query(conn, querySql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**创建外业采集子任务的（subtask表work_kind=1,status in (1,0)的city）cityId及admin_geo的经纬度坐标
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray commonInfoListCity() throws Exception {
+		String querySql = "select c.city_id,c.admin_geo.sdo_point.x x,c.admin_geo.sdo_point.y y from city c where city_id in "
+				+ "(select city_id from block where block_id in "
+				+ "(select block_id from task where task_id in "
+				+ "(select task_id from subtask where work_kind=1 and status in (0,1))))";
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>(){
+
+				@Override
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					JSONArray dataList = new JSONArray();
+					while(rs.next()){
+						JSONObject city = new JSONObject();
+						try{
+							city.put("cityId", rs.getInt("city_id"));
+							city.put("x", rs.getDouble("x"));
+							city.put("y", rs.getDouble("y"));
+							
+							dataList.add(city);
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+					return dataList;
+				}
+			};
+			return run.query(conn, querySql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**查询mongo库中fm_stat.product_monitor中的统计值
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getMongoMonitorData() throws Exception {
+		JSONObject data = new JSONObject();
+		try{
+			String dbName=SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
+			MongoDao md = new MongoDao(dbName);
+			MongoCollection<Document> collections = md.getDatabase().getCollection(MONGO_PRODUCT_MONITOR);
+			// 查询时间戳最新的统计
+			Document doc = collections.find().sort(new BasicDBObject("timestamp",-1)).first();
+			if(doc != null){
+				JSONObject statics = JSONObject.fromObject(doc);
+				if(statics.containsKey("_id")){
+					statics.remove("_id");
+				}
+				data.putAll(statics);
+			}
+			return data;
+		}catch(Exception e){
+			e.printStackTrace();
+			throw e;
+		}
+	}
+	
+	/**获取man库中man_config中的统计值
+	 * @param platForm
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getOracleMonitorData(String platForm) throws Exception{
+		String querySql = "select m.conf_key, m.conf_value from man_config m where m.platform=? ";
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>(){
+
+				@Override
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					JSONObject statics = new JSONObject();
+					while(rs.next()){
+						String confKey = rs.getString("conf_key");
+						String confValue = rs.getString("conf_value");
+						if(StringUtils.isNotEmpty(confValue) && confValue.contains("{") && confValue.contains("}")){
+							statics.put(confKey, JSONObject.fromObject(confValue));
+						}else{
+							statics.put(confKey, confValue);
+						}
+					}
+					return statics;
+				}
+			};
+			return run.query(conn, querySql, rsHandler, platForm);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+	}
+	
 	public static void main(String[] args) throws Exception {
 		
 //		String wkt = "POLYGON ((116.55736132939865 40.37309069499443, 116.88314510913636 40.37309069499443, 116.88314510913636 40.25788148053289, 116.55736132939865 40.25788148053289, 116.55736132939865 40.37309069499443))";
@@ -879,6 +1046,11 @@ public class StaticsService {
 //		StaticsService.getInstance().getLatestStatByGrids(grids, PoiDailyMain.col_name_grid, RoadDailyMain.col_name_grid);
 		
 //		StaticsService.getInstance().getChangeStatByGrids(grids, 0, 2, "20160620");
+		
+		JSONObject a = JSONObject.fromObject("{\"车辆故障\":2,\"设备故障\":1,\"现场变化大\":10,\"天气影响\":6,\"人员变动\":1,\"整体规划变更\":11,\"其他原因\":66}");
+		JSONArray b = StaticsService.getInstance().reForm(a, 4, true);
+		System.out.println(b.toString());
+		
 	}
 
 

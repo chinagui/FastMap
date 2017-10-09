@@ -7,8 +7,10 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -21,6 +23,8 @@ import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.statics.overview.FmStatOverviewProgram;
@@ -30,6 +34,7 @@ import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
+import oracle.sql.STRUCT;
 
 public class OracleDao {
 	private static Logger log = LogManager.getLogger(OracleDao.class);
@@ -251,7 +256,7 @@ public class OracleDao {
 			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务，月编（poi专项）
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
 			String sql = "SELECT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,"
-					+ " S.TASK_ID,P.TYPE PROGRAM_TYPE FROM SUBTASK S,TASK T,PROGRAM P "
+					+ " S.TASK_ID,P.TYPE PROGRAM_TYPE,s.geometry FROM SUBTASK S,TASK T,PROGRAM P "
 					+ " WHERE S.TASK_ID = T.TASK_ID AND T.PROGRAM_ID = P.PROGRAM_ID "
 					+ " AND S.STATUS IN (0, 1) ORDER BY S.SUBTASK_ID";
 			
@@ -271,6 +276,12 @@ public class OracleDao {
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setTaskId(rs.getInt("TASK_ID"));
 						subtask.setSubType(rs.getInt("PROGRAM_TYPE"));
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							log.warn("子任务geometry查询错误,"+e1.getMessage());
+						}
 						list.add(subtask);		
 					}
 					return list;
@@ -284,6 +295,149 @@ public class OracleDao {
 		}
 	}
 	
+	/**
+	 * 获取所有日编子任务对应的采集任务id集合
+	 * @param subtaskId
+	 * @throws ServiceException 
+	 */
+	public static Map<Integer,Set<Integer>> getCollectTaskIdByDaySubtask() throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT s.subtask_id,TT.TASK_ID"
+					+ "  FROM SUBTASK S, TASK T, TASK TT"
+					+ " WHERE S.TASK_ID = T.TASK_ID"
+					+ "   AND TT.BLOCK_ID = T.BLOCK_ID"
+					+ "   AND T.PROGRAM_ID = TT.PROGRAM_ID"
+					+ "   AND T.region_ID = TT.region_ID"
+					+ "   AND s.stage = 1"
+					+ "   AND TT.TYPE = 0"
+					+ "   order by s.subtask_id";
+			
+			log.info("getCollectTaskIdByDaySubtask sql :" + sql);
+			
+			
+			ResultSetHandler<Map<Integer,Set<Integer>>> rsHandler = new ResultSetHandler<Map<Integer,Set<Integer>>>() {
+				public Map<Integer,Set<Integer>> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Set<Integer>> result=new HashMap<>();					
+					while(rs.next()) {
+						int subtaskId=rs.getInt("SUBTASK_ID");
+						if(!result.containsKey(subtaskId)){
+							result.put(subtaskId, new HashSet<Integer>());
+						}
+						result.get(subtaskId).add(rs.getInt("TASK_ID"));
+					}
+					return result;
+				}
+			};
+			Map<Integer,Set<Integer>> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getCollectTaskIdByDaySubtask失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 获取所有任务对应的子任务id集合
+	 * @param subtaskId
+	 * @throws ServiceException 
+	 */
+	public static Map<Integer,Set<Subtask>> getSubtaskByTaskId() throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT s.subtask_id,s.task_id,s.type,s.status,s.work_kind"
+					+ "  FROM SUBTASK S"
+					+ "  order by s.task_id";
+			
+			log.info("getSubtaskByTaskId sql :" + sql);			
+			
+			ResultSetHandler<Map<Integer,Set<Subtask>>> rsHandler = new ResultSetHandler<Map<Integer,Set<Subtask>>>() {
+				public Map<Integer,Set<Subtask>> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Set<Subtask>> result=new HashMap<>();					
+					while(rs.next()) {
+						int taskId=rs.getInt("TASK_ID");
+						if(!result.containsKey(taskId)){
+							result.put(taskId, new HashSet<Subtask>());
+						}
+						Subtask subtask=new Subtask();
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setStatus(rs.getInt("STATUS"));
+						subtask.setWorkKind(rs.getInt("WORK_KIND"));
+						result.get(taskId).add(subtask);
+					}
+					return result;
+				}
+			};
+			Map<Integer,Set<Subtask>> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getSubtaskByTaskId失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 获取所有日编任务对应的采集任务id集合
+	 * 
+	 * @throws ServiceException 
+	 */
+	public static Map<Integer,Set<Integer>> getCollectTaskIdByDayTask() throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT T.TASK_ID,TT.TASK_ID CTASK_ID"
+					+ "  FROM TASK T, TASK TT"
+					+ " WHERE TT.BLOCK_ID = T.BLOCK_ID"
+					+ "   AND T.PROGRAM_ID = TT.PROGRAM_ID"
+					+ "   AND T.region_ID = TT.region_ID"
+					+ "   AND T.TYPE = 1"
+					+ "   AND TT.TYPE = 0"
+					+ "   order by T.TASK_ID";
+			
+			log.info("getCollectTaskIdByDayTask sql :" + sql);
+			
+			
+			ResultSetHandler<Map<Integer,Set<Integer>>> rsHandler = new ResultSetHandler<Map<Integer,Set<Integer>>>() {
+				public Map<Integer,Set<Integer>> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Set<Integer>> result=new HashMap<>();					
+					while(rs.next()) {
+						int taskId=rs.getInt("TASK_ID");
+						if(!result.containsKey(taskId)){
+							result.put(taskId, new HashSet<Integer>());
+						}
+						result.get(taskId).add(rs.getInt("CTASK_ID"));
+					}
+					return result;
+				}
+			};
+			Map<Integer,Set<Integer>> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getCollectTaskIdByDayTask失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}	
 	
 	/**
 	 * 获取所有不需要被统计的子任务列表

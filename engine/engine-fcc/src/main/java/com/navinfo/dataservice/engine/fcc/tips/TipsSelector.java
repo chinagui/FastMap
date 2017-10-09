@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -46,6 +47,7 @@ import org.hbase.async.KeyValue;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Tips查询
@@ -2253,7 +2255,19 @@ public class TipsSelector {
 	public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception {
 		List<TipsDao> tipsList = this.queryCollectTaskTips(collectTaskIds, TaskType.PROGRAM_TYPE_Q);
 		Map<String, int[]> statsMap = new HashMap<>();
+		Set<String> codes = new HashSet<>();
+		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		Map<String,Integer> codeEditMethMap  = metaApi.queryEditMethTipsCode();
+		//不需要日编作业的值
+        for(Entry<String, Integer> entry : codeEditMethMap.entrySet()){ 
+        	if(0 == entry.getValue()){
+        		codes.add(entry.getKey());
+        	}
+        }
 		for (TipsDao tip : tipsList) {
+			if(codes.contains(tip.getS_sourceType())){
+				continue;
+			}
 			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 			JSONObject snapshot = JSONObject.fromObject(tip, jsonConfig);
 			JSONObject geoJson = snapshot.getJSONObject("wkt");// 统计坐标

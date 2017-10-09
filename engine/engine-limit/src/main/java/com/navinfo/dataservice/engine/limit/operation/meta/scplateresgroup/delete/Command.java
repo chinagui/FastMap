@@ -5,24 +5,30 @@ import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresGroup;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Command extends AbstractCommand {
 
     private String requester;
-    private String groupId;
-    private ScPlateresGroup group;
 
-    public String getGroupId() {
-        return groupId;
+    private List<String>groupIds=new ArrayList<>();
+
+    private List<ScPlateresGroup> groups=new ArrayList<>();
+
+    public List<String> getGroupIds() {
+        return groupIds;
     }
 
-    public ScPlateresGroup getGroup() {
-        return group;
+    public List<ScPlateresGroup> getGroups() {
+        return groups;
     }
 
-    public void setGroup(ScPlateresGroup group) {
-        this.group = group;
+    public void setGroups(List<ScPlateresGroup> groups) {
+        this.groups = groups;
     }
 
     private boolean isCheckInfect = false;
@@ -34,13 +40,11 @@ public class Command extends AbstractCommand {
     public Command(JSONObject json, String requester) {
         this.requester = requester;
 
-        this.setDbId(json.getInt("dbId"));
-
-        this.groupId = json.getString("objId");
-
         if (json.containsKey("infect") && json.getInt("infect") == 1) {
             this.isCheckInfect = true;
         }
+
+        groupIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("objIds")));
     }
 
     @Override

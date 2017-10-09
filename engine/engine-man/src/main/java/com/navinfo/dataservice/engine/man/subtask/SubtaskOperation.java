@@ -13,7 +13,6 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.message.MessageService;
-import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
@@ -808,6 +807,17 @@ public class SubtaskOperation {
 						} else {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
 						}
+						//精细化采集
+						if(rs.getInt("work_kind") == 5){
+							try {
+								Map<String, Integer> pointAddress = queryPointAddressData(rs.getInt("SUBTASK_ID"), rs.getInt("program_type"), (int) subtask.get("dbId"));
+								subtask.put("pointCommit", pointAddress.get("pointCommit"));
+								subtask.put("pointWorked", pointAddress.get("pointWorked"));
+								subtask.put("pointWaitWork", pointAddress.get("pointWaitWork"));
+							}catch(Exception e){
+								e.printStackTrace();
+							}
+						}
 
 						//采集poi,采集一体化，日编grid粗编，质检日编grid粗编，质检日编区域粗编
 						if(0==rs.getInt("TYPE")||3==rs.getInt("TYPE")||4==rs.getInt("TYPE")||2==rs.getInt("TYPE")||(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE")))){
@@ -905,6 +915,60 @@ public class SubtaskOperation {
 	}
 	
 	/**
+	 * 根据子任务和项目类型查询点门牌各种状态的数量
+	 * @throws Exception 
+	 * 
+	 * */
+	public static Map<String, Integer> queryPointAddressData(int subtaskId, int programType, int dbId) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			QueryRunner run = new QueryRunner();
+			String subtaskType = "MEDIUM_SUBTASK_ID";
+			if(programType == 4){
+				subtaskType = "QUICK_SUBTASK_ID";
+			}
+			String sql = "select count(1), t.status from pointaddress_edit_status t where t." + subtaskType + " = " + subtaskId + " group by t.status";
+			log.info("查询点门牌信息sql:" + sql);
+			//点门牌数据结果查询
+			return run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>(){
+				@Override
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException{
+					Map<String, Integer> stat = new HashMap<String, Integer>();
+					int pointCommit = 0;
+					int pointWorked = 0;
+					int pointWaitWork = 0;
+					while(rs.next()){
+						int status = rs.getInt("status");
+						int count = rs.getInt("count(1)");
+						switch(status){
+						case 1:
+							pointCommit = count;
+							break;
+						case 2:
+							pointWorked = count;
+							break;
+						case 3:
+							pointWaitWork = count;
+							break;
+						}
+					}
+					stat.put("pointCommit", pointCommit);
+					stat.put("pointWorked", pointWorked);
+					stat.put("pointWaitWork", pointWaitWork);
+					return stat;
+				}
+			}
+			);
+		}catch(Exception e){
+			log.error("根据子任务和项目类型查询点门牌各种状态的数量异常:" + e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
 	 * @param conn
 	 * @param dataJson
 	 * @param curPageNum
@@ -937,6 +1001,7 @@ public class SubtaskOperation {
 			sb.append(" ,ST.GEOMETRY");
 			sb.append(" ,ST.EXE_USER_ID");
 			sb.append(" ,ST.EXE_GROUP_ID");
+			sb.append(" ,ST.WORK_KIND");
 			sb.append(" ,R.DAILY_DB_ID");
 			sb.append(" ,R.MONTHLY_DB_ID");
 			sb.append(" ,RR.GEOMETRY REFER_GEOMETRY");
@@ -946,8 +1011,9 @@ public class SubtaskOperation {
 			sb.append(" AND ST.REFER_ID = RR.ID(+)");
 			sb.append(" AND (ST.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql+ ")");
 			
+			//modify by songhe 2017/09/28  采集端增加返回值 子任务的work_kind并若 platForm=0则，返回work_kind in (1,5)的记录。
 			if(0 == platForm){
-				sb.append(" AND ST.WORK_KIND = 1");
+				sb.append(" AND ST.WORK_KIND in ( 1, 5) ");
 			}
 			if (dataJson.containsKey("stage")) {
 				sb.append(" AND ST.STAGE = " + dataJson.getInt("stage"));
@@ -996,6 +1062,7 @@ public class SubtaskOperation {
 						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
 						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
+						subtask.put("workKind", rs.getInt("WORK_KIND"));
 						
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));

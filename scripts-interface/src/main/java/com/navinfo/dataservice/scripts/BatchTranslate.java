@@ -15,10 +15,10 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
+import com.navinfo.navicommons.exception.ServiceException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
@@ -78,7 +78,15 @@ public class BatchTranslate {
         dbId = request.optInt("dbId", Integer.MIN_VALUE);
     }
 
-    public JSONObject execute(JSONObject request) throws InterruptedException {
+    private void check(JSONObject request) throws ServiceException{
+        if (StringUtils.isEmpty(request.optString("tableName", ""))) {
+            throw new ServiceException("请求参数(tableName)不能为空!");
+        }
+    }
+
+    public JSONObject execute(JSONObject request) throws Exception {
+        check(request);
+
         logger.info("batch translate start...");
         Long time = System.currentTimeMillis();
 
@@ -129,7 +137,7 @@ public class BatchTranslate {
         return response;
     }
 
-    private Map<Integer, List<BasicObj>> loadData(JSONObject request) {
+    private Map<Integer, List<BasicObj>> loadData(JSONObject request) throws Exception{
         Map<Integer, List<BasicObj>> map = new HashMap<>();
         Connection conn = null;
 
@@ -140,34 +148,37 @@ public class BatchTranslate {
                 conn = DBConnector.getInstance().getMkConnection();
             }
 
-            StringBuilder sb = new StringBuilder();
-            sb.append("SELECT *");
-            sb.append("  FROM IX_POI IP");
-            sb.append(" WHERE IP.PID IN");
-            sb.append("       (SELECT PID FROM day_mon_poi_915)");
-            //sb.append("       (SELECT ob_pid FROM log_detail)");
+            //StringBuilder sb = new StringBuilder();
+            //sb.append("SELECT *");
+            //sb.append("  FROM IX_POI IP");
+            //sb.append(" WHERE IP.PID IN");
+            //sb.append("       (SELECT PID FROM day_mon_poi_915)");
+            //// op_id log_detail
+            ////sb.append("       (SELECT ob_pid FROM log_detail)");
+            //
+            //String meshes = request.optString("meshes", "");
+            //
+            //if (StringUtils.isNotEmpty(meshes)) {
+            //    sb.append("   AND IP.MESH_ID IN (");
+            //    sb.append(org.apache.commons.lang.StringUtils.join(meshes.split(","), ","));
+            //    sb.append(")");
+            //}
+            //List<Long> pids = new QueryRunner().query(conn, sb.toString(), new TranslateHandler());
+            //
+            //logger.info(String.format("load data number is %d", pids.size()));
+            //
+            //Set<String> tabNames = new HashSet<>();
+            //tabNames.add("IX_POI_NAME");
+            //tabNames.add("IX_POI_NAME_FLAG");
+            //Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames,false, pids, true, true);
+            //Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(conn, pids);
+            //ObjHisLogParser.parse(objs, logs);
 
-            String meshes = request.optString("meshes", "");
-
-            if (StringUtils.isNotEmpty(meshes)) {
-                sb.append("   AND IP.MESH_ID IN (");
-                sb.append(org.apache.commons.lang.StringUtils.join(meshes.split(","), ","));
-                sb.append(")");
-            }
-            List<Long> pids = new QueryRunner().query(conn, sb.toString(), new TranslateHandler());
-
-            logger.info(String.format("load data number is %d", pids.size()));
-
-            Set<String> tabNames = new HashSet<>();
-            tabNames.add("IX_POI_NAME");
-            tabNames.add("IX_POI_NAME_FLAG");
-            Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames,false, pids, true, true);
-            Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(conn, pids);
-            ObjHisLogParser.parse(objs, logs);
+            OperationResult operationResult = parseLog(conn, request.getString("tableName"));
 
             IxPoi ixPoi;
             Integer meshId;
-            for (BasicObj basicObj : objs.values()) {
+            for (BasicObj basicObj : operationResult.getAllObjs()) {
                 ixPoi = (IxPoi) basicObj.getMainrow();
                 meshId = ixPoi.getMeshId();
                 if (map.containsKey(meshId)) {
@@ -180,12 +191,26 @@ public class BatchTranslate {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("load data error...", e.fillInStackTrace());
+            throw e;
         } finally {
             DbUtils.closeQuietly(conn);
         }
 
         return map;
+    }
+
+    private OperationResult parseLog(Connection monthConn, String tempOpTable) throws Exception {
+        Map<Long, List<LogDetail>> logStatInfo = PoiLogDetailStat.loadByOperation(monthConn, tempOpTable);
+        Set<String> tabNames = new HashSet<>();
+        tabNames.add("IX_POI_NAME");
+        tabNames.add("IX_POI_NAME_FLAG");
+        OperationResult result = new OperationResult();
+        Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(monthConn,
+                "IX_POI", tabNames, false, logStatInfo.keySet(), true, true);
+        ObjHisLogParser.parse(objs, logStatInfo);
+        result.putAll(objs.values());
+        return result;
     }
 
 

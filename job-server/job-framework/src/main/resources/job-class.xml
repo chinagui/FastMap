@@ -39,6 +39,8 @@
 		request="com.navinfo.dataservice.column.job.PoiColumnValidationJobRequest" />
 	<type name="poiRowValidation" class="com.navinfo.dataservice.row.job.PoiRowValidationJob"
 		request="com.navinfo.dataservice.row.job.PoiRowValidationJobRequest" />
+	<type name="pointAddressRowValidation" class="com.navinfo.dataservice.row.job.PointAddressRowValidationJob"
+		request="com.navinfo.dataservice.row.job.PointAddressRowValidationJobRequest" />
 	<type name="checkCore"
 		class="com.navinfo.dataservice.cop.waistcoat.job.CheckCoreJob"
 		request="com.navinfo.dataservice.cop.waistcoat.job.CheckCoreJobRequest" />
@@ -176,6 +178,14 @@
    	<type name="mediumMonitorStat"
           class="com.navinfo.dataservice.job.statics.manJob.MediumMonitorJob"
           request="com.navinfo.dataservice.job.statics.manJob.MediumMonitorJobRequest" >
+    </type>
+    <type name="productMonitorStat"
+          class="com.navinfo.dataservice.job.statics.manJob.ProductMonitorJob"
+          request="com.navinfo.dataservice.job.statics.manJob.ProductMonitorJobRequest" >
+    </type>
+    <type name="dayProduceStat"
+          class="com.navinfo.dataservice.job.statics.manJob.DayProduceJob"
+          request="com.navinfo.dataservice.job.statics.manJob.DayProduceJobRequest" >
     </type>
     
 	</mapping>

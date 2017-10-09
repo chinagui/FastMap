@@ -329,8 +329,10 @@ public class EnglishConvert {
                         if (StringUtils.isNotEmpty(curAdminArea) && param.adminCode.startsWith(curAdminArea)) {
                             param.translateWords.add(pinyinOne);
                             result.append(pinyinOne).append(" ");
+                            continue label1;
                         } else {
                             result.append(subText).append(" ");
+                            continue label1;
                         }
                     }
                     continue label1;
@@ -502,7 +504,8 @@ public class EnglishConvert {
 
                         sb = new StringBuilder();
                         sb.append(beforeResult).append(" ");
-                        engwords = connNum(convertHz2Num(engwords));
+                        //engwords = connNum(convertHz2Num(engwords));
+                        engwords = convertHz2Num(engwords);
                         sb.append(engwords).append(" ");
                         sb.append(afterResult).append(" ");
                     }
@@ -592,12 +595,12 @@ public class EnglishConvert {
                 }
 
                 if (count <= TranslateConstant.MAX_CONNECTION_CHARACTER) {
-                    for (; index < maxIndex; index += OFFSET) {
+                    for (; index < maxIndex && index < array.length; index += OFFSET) {
                         characters.add(array[index]);
                     }
                     characters.add(' ');
                 } else {
-                    for (; index < maxIndex; index++) {
+                    for (; index < maxIndex && index < array.length; index++) {
                         characters.add(array[index]);
                     }
                 }
@@ -686,9 +689,11 @@ public class EnglishConvert {
         char[] characters = sourceText.toCharArray();
         for (int index = 0; index < characters.length; index++) {
             Character current = characters[index];
-            if (index == characters.length - 2) {
+            if (index > characters.length - 2) {
                 sb.append(current);
-                sb.append(characters[index + 1]);
+                if (index + 1 < characters.length) {
+                    sb.append(characters[index + 1]);
+                }
                 break;
             }
 

@@ -59,7 +59,16 @@ public class Task implements Serializable{
 	private int tips2MarkNum;
 	//是否已经分配子任务
 	private int isAssign;
+	private String uploadMethod;
 	
+	public String getUploadMethod() {
+		return uploadMethod;
+	}
+
+	public void setUploadMethod(String uploadMethod) {
+		this.uploadMethod = uploadMethod;
+	}
+
 	public int getIsAssign() {
 		return isAssign;
 	}

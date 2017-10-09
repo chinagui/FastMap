@@ -1814,11 +1814,8 @@ public class ProgramService {
 	    	Map<String, Object> programMap = run.query(conn, sql, rsHandler);
 	    	return programMap;
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -2106,7 +2103,7 @@ public class ProgramService {
 							}
 						}
 					}
-					TaskService.getInstance().createWithBeanWithTaskId(conn, t);
+					TaskService.getInstance().createWithBean(conn, t);
 				}
 			}
 		}catch(Exception e){

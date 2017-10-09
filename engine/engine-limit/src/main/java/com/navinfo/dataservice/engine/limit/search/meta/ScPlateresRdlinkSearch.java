@@ -66,10 +66,10 @@ public class ScPlateresRdlinkSearch {
         
         int total = 0;
         
-        sqlstr.append(" FROM SC_PLATERES_RDLINK WHERE");
+        sqlstr.append(" FROM SC_PLATERES_RDLINK t WHERE");
         componentSql(condition,sqlstr);
         
-        sql.append("SELECT *, (SELECT COUNT(*) " + sqlstr + ") AS TOTAL_ROW_NUM");
+        sql.append("SELECT t.*, (SELECT COUNT(*) " + sqlstr + ") AS TOTAL_ROW_NUM");
         sql.append(sqlstr);
 
         PreparedStatement pstmt = null;

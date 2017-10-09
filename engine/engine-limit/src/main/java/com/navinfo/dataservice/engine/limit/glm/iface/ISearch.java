@@ -25,7 +25,16 @@ public interface ISearch {
     /**
      * 通过瓦片号+缝隙获取数据
      */
-    public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap)
+    public List<SearchSnapshot> searchDataByTileWithGap(IRenderParam param)
             throws Exception;
+    
+	
+	/**
+	 * 通过输入的条件id获取该表最大的主键值
+	 * @param groupId
+	 * @return
+	 * @throws Exception
+	 */
+	public String loadMaxKeyId(String groupId) throws Exception;
 
 }

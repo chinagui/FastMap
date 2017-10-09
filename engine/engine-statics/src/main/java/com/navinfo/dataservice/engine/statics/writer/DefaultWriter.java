@@ -44,9 +44,15 @@ public class DefaultWriter {
 		write2Mongo(timestamp,identifyJson,messageJSON.getJSONObject("statResult"));	
 		write2Other(timestamp,messageJSON.getJSONObject("statResult"));
 		pushEndMsg(jobType,timestamp,identify,identifyJson);
-		String staticMessage=getLatestStatic();
-		if(!StringUtils.isEmpty(staticMessage)){
-			pushWebSocket(staticMessage,jobType);
+		try{
+			log.info("start getLatestStatic");
+			String staticMessage=getLatestStatic();		
+			log.info("end getLatestStatic");
+			if(!StringUtils.isEmpty(staticMessage)){
+				pushWebSocket(staticMessage,jobType);
+			}
+		}catch (Exception e) {
+			log.error("getLatestStatic or pushsocket error", e);
 		}
 		log.info("end write:jobType="+jobType+",timestamp="+timestamp+",identify="+identify);
 	}
@@ -69,17 +75,24 @@ public class DefaultWriter {
 		log.info("start write2Mongo");
 		for(Object collectionNameTmp:messageJSON.keySet()){
 			String collectionName=String.valueOf(collectionNameTmp);
+			log.info("init "+collectionName);
 			//初始化统计collection
 			initMongoDb(collectionName,timestamp,identifyJson);
 			//统计信息入库
 			MongoDao md = new MongoDao(dbName);
 			List<Document> docs=new ArrayList<>();
 			for(Object tmp:messageJSON.getJSONArray(collectionName)){
-				Document resultDoc=new Document();				
-				resultDoc.putAll((JSONObject)tmp);
+				Document resultDoc=new Document();
+				JSONObject jsonTmp = (JSONObject) tmp;
+//				Iterator keyIter = jsonTmp.keys();
+//				while(keyIter.hasNext()){
+//					resultDoc.put(String.valueOf(keyIter.next()), jsonTmp.get(keyIter.next()));
+//				}
+				resultDoc.putAll(jsonTmp);
 				resultDoc.put("timestamp",timestamp);
 				docs.add(resultDoc);
 			}
+			log.info("insert "+collectionName+",size "+docs.size());
 			md.insertMany(collectionName, docs);
 		}
 		log.info("end write2Mongo");
@@ -160,7 +173,9 @@ public class DefaultWriter {
 	
 	public void pushWebSocket(String staticMessage,String staticType) {
 		try {
+			log.info("start pushWebSocket");
             SysMsgPublisher.publishManStaticMsg(staticMessage,staticType);
+            log.info("end pushWebSocket");
         } catch (Exception ex) {
             log.error("publishManJobMsg error:" + ExceptionUtils.getStackTrace(ex));
         }

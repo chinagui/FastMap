@@ -17,6 +17,8 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 
 import java.io.IOException;
@@ -78,7 +80,7 @@ public class PersonTipsJob extends AbstractStatJob {
     private Map<Integer, JSONObject> getSubTaskLineStat(final String timestamp) throws Exception {
         java.sql.Connection orclConn = null;
         try {
-            String sqlLineQuery = "SELECT T.S_MSUBTASKID, T.ID, T.WKTLOCATION, T.T_LIFECYCLE\n" +
+            String sqlLineQuery = "SELECT T.S_MSUBTASKID, T.ID, T.WKTLOCATION, T.T_LIFECYCLE, t.S_SOURCETYPE\n" +
                     "  FROM TIPS_INDEX T\n" +
                     " WHERE T.S_MSUBTASKID <> 0\n" +
                     "   AND T.S_SOURCETYPE = '2001'\n" +
@@ -101,6 +103,7 @@ public class PersonTipsJob extends AbstractStatJob {
                             //中线任务号
                             int s_mSubTaskId = rs.getInt("S_MSUBTASKID");
                             String rowkey = rs.getString("ID");
+
                             long tipsAllNum = 0;
                             double newLength = 0;
                             JSONObject statObj = null;
@@ -113,7 +116,7 @@ public class PersonTipsJob extends AbstractStatJob {
                                 subtaskTipsMap.put(s_mSubTaskId, statObj);
                             }
                             //判断是否当天的tips
-                            JSONObject hbaseTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track"});
+                            JSONObject hbaseTip = HbaseTipsQuery.getHbaseTipsByRowkey(htab, rowkey, new String[]{"track","deep"});
                             if(hbaseTip.containsKey("track")) {
                                 JSONObject track = hbaseTip.getJSONObject("track");
                                 if(track.containsKey("t_trackInfo")) {
@@ -128,6 +131,18 @@ public class PersonTipsJob extends AbstractStatJob {
                                             	//是否当天新增
                                                 int lifecycle = rs.getInt("T_LIFECYCLE");
                                                 if(lifecycle == 3) {//Tips状态是新增
+
+                                                    //20170927 新增里程区分测线来源统计
+                                                    //测线来源src=0（GPS测线手持端）和2（自绘测线）
+                                                    String sourceType = rs.getString("S_SOURCETYPE");
+                                                    if(sourceType.equals("2001")) {
+                                                        JSONObject deepJSON = hbaseTip.getJSONObject("deep");
+                                                        int src = deepJSON.getInt("src");
+                                                        if(src != 0 && src != 2) {
+                                                            break;
+                                                        }
+                                                    }
+
                                                 	//测线显示坐标
                                                     STRUCT wktLocation = (STRUCT) rs.getObject("WKTLOCATION");
                                                     //测线里程计算

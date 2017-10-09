@@ -11,12 +11,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -25,13 +22,11 @@ import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.scripts.model.ColumnQcProblem;
-import com.navinfo.dataservice.scripts.model.HighWayPoi;
 
 /**
  * 导出常规质检问题记录表
@@ -45,9 +40,7 @@ public class ExportColumnQcProblem {
 		Connection conn = null;
 		try {
 			
-			int dbId = searchMonthDbId();//查询月库dbId
-			if(0==dbId){throw new Exception("对应月库不存在");}
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getMkConnection();
 			
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			String excelName = "column_quality_problem_list_"+ DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
@@ -137,37 +130,6 @@ public class ExportColumnQcProblem {
 	}
 
 
-
-	/**
-	 * 查询月库dbId
-	 * @return
-	 * @throws Exception
-	 */
-	private static int searchMonthDbId() throws Exception {
-		Connection conn = null;
-		String sql  = "SELECT DISTINCT monthly_db_id FROM REGION";
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			pstmt = conn.prepareStatement(sql);
-			resultSet = pstmt.executeQuery();
-			
-			if(resultSet.next()){
-				return resultSet.getInt(1);
-			}
-			
-			return 0;
-			
-		} catch (Exception e) {
-			DbUtils.rollback(conn);
-			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-		
-	}
 
 
 	private static List<ColumnQcProblem> searchColumnQcProblemListByDate(String startDate, String endDate,

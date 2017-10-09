@@ -3,12 +3,14 @@ package com.navinfo.dataservice.web.limit.controller;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.operation.Transaction;
+import com.navinfo.dataservice.engine.limit.search.RenderParam;
 import com.navinfo.dataservice.engine.limit.search.SearchProcess;
 import com.navinfo.navicommons.database.QueryRunner;
 import net.sf.json.JSONArray;
@@ -19,6 +21,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -50,7 +53,7 @@ public class limitController extends BaseController {
 
             String objType = jsonReq.getString("type");
 
-            conn = DBConnector.getInstance().getMetaConnection();
+            conn = DBConnector.getInstance().getLimitConnection();
 
             JSONObject condition = jsonReq.getJSONObject("condition");
 
@@ -270,6 +273,56 @@ public class limitController extends BaseController {
             if (conn != null) {
                 conn.close();
             }
+        }
+    }
+
+    @RequestMapping(value = "/limit/getByTileWithGap")
+    public void getLimitByTile(HttpServletRequest request,
+                             HttpServletResponse response) throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+        response.getWriter().println(limitRender(jsonReq));
+    }
+
+    private String limitRender(JSONObject jsonReq) {
+
+        try {
+
+            JSONArray type = jsonReq.getJSONArray("types");
+
+            RenderParam param=new RenderParam();
+
+            param.setX(jsonReq.getInt("x"));
+
+            param.setY(jsonReq.getInt("y"));
+
+            param.setZ(jsonReq.getInt("z"));
+
+            if (jsonReq.containsKey("gap")) {
+                param.setGap(jsonReq.getInt("gap"));
+            }
+
+            List<LimitObjType> types = new ArrayList<>();
+
+            for (int i = 0; i < type.size(); i++) {
+                types.add(LimitObjType.valueOf(type.getString(i)));
+            }
+
+            JSONObject data = null;
+
+            if (param.getZ() >13) {
+                com.navinfo.dataservice.engine.limit.search.SearchProcess p = new com.navinfo.dataservice.engine.limit.search.SearchProcess();
+
+                data = p.searchDataByTileWithGap(types,param);
+            }
+            return ResponseUtils.assembleRegularResult(data);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ResponseUtils.assembleFailResult(e.getMessage());
+        } finally {
+
         }
     }
 }

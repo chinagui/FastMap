@@ -26,13 +26,20 @@ public class Operation implements IOperation {
 		ScPlateresGroup group = new ScPlateresGroup();
 
 		group.setAdAdmin(this.command.getAdAdmin());
-		group.setGroupId(
-				PidApply.getInstance(conn).pidForInsertGroup(this.command.getInfoIntelId(), this.command.getAdAdmin()));
+
+		String groupId = PidApply.getInstance(conn).pidForInsertGroup(
+				this.command.getInfoIntelId(), this.command.getAdAdmin(), this.command.getCondition());
+
+		group.setGroupId(groupId);
+
 		group.setGroupType(this.command.getGroupType());
+
 		group.setPrinciple(this.command.getPrinciple());
+
 		group.setInfoIntelId(this.command.getInfoIntelId());
 
 		result.insertObject(group, ObjStatus.INSERT, group.getGroupId());
+
 		return null;
 	}
 }

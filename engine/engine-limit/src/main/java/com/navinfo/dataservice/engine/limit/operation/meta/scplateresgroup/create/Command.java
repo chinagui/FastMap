@@ -41,7 +41,6 @@ public class Command extends AbstractCommand {
 
     public Command(JSONObject json, String requester) {
         this.requester = requester;
-        this.setDbId(json.getInt("dbId"));
         JSONObject data = json.getJSONObject("data");
         this.infoIntelId = data.getString("infoIntelId");
         this.condition = data.getString("condition");

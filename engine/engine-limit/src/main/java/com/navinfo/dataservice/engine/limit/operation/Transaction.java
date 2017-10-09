@@ -221,11 +221,6 @@ public class Transaction {
                                 requester);
                 }
                 break;
-            		case SCPLATERESRDLINK:
-			switch (operType) {
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Command(json, requester);
-			}
 		case SCPLATERESLINK:
 			switch (operType) {
 			case CREATE:
@@ -321,29 +316,29 @@ public class Transaction {
                 }
                 break;
             case SCPLATERESLINK:
-			switch (operType) {
-			case CREATE:
-				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.create.Process(
-						command);
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.update.Process(
-						command);
-			case DELETE:
-				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.delete.Process(
-						command);
+            	switch (operType) {
+            		case CREATE:
+            			return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.create.Process(
+            					command);
+            		case UPDATE:
+            			return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.update.Process(
+            					command);
+            		case DELETE:
+            			return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.delete.Process(
+            					command);
 			}
-		case SCPLATERESFACE:
-			switch (operType) {
-			case CREATE:
-				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.create.Process(
-						command);
-			case UPDATE:
-				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.update.Process(
-						command);
-			case DELETE:
-				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.delete.Process(
-						command);
-			}            
+            case SCPLATERESFACE:
+            	switch (operType) {
+            		case CREATE:
+            			return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.create.Process(
+            					command);
+            		case UPDATE:
+            			return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.update.Process(
+            					command);
+            		case DELETE:
+            			return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.delete.Process(
+            					command);
+			}    
         }
         throw new Exception("不支持的操作类型");
     }

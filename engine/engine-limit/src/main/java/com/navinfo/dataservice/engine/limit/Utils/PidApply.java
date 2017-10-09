@@ -104,7 +104,11 @@ public class PidApply {
 
 		if (geometryId == null || geometryId.isEmpty()) {
 
-			newGeometryId = groupId + "000001";
+			if (seq.length == 0) {
+				newGeometryId = groupId + "000001";
+			} else {
+				newGeometryId = groupId + String.format("%06d", seq[0] + 1);
+			}
 
 		} else {
 

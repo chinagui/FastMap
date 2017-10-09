@@ -25,7 +25,7 @@ public interface ISearch {
     /**
      * 通过瓦片号+缝隙获取数据
      */
-    public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap)
+    public List<SearchSnapshot> searchDataByTileWithGap(IRenderParam param)
             throws Exception;
     
 	

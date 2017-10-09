@@ -1,14 +1,17 @@
 package com.navinfo.dataservice.engine.limit.search.limit;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.engine.limit.glm.iface.IRenderParam;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
 import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresLink;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -103,10 +106,10 @@ public class ScPlateresLinkSearch implements ISearch {
     }
 
     @Override
-    public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+    public List<SearchSnapshot> searchDataByTileWithGap(IRenderParam param) throws Exception {
         List<SearchSnapshot> list = new ArrayList<>();
 
-        String sql = "SELECT GEOMETRY_ID, GROUP_ID, GEOMETRY, BOUNDARY_LINK FROM SC_PLATERES_FACE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE'";
+        String sql = "SELECT GEOMETRY_ID, GROUP_ID, GEOMETRY, BOUNDARY_LINK FROM SC_PLATERES_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE'";
 
         PreparedStatement pstmt = null;
 
@@ -115,18 +118,24 @@ public class ScPlateresLinkSearch implements ISearch {
         try {
             pstmt = conn.prepareStatement(sql);
 
-            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-            pstmt.setString(1, wkt);
+            pstmt.setString(1, param.getWkt());
 
             resultSet = pstmt.executeQuery();
 
-            double px = MercatorProjection.tileXToPixelX(x);
-
-            double py = MercatorProjection.tileYToPixelY(y);
-
             while (resultSet.next()) {
                 SearchSnapshot snapshot = new SearchSnapshot();
+
+                snapshot.setT(1001);
+
+                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+                Geometry geom = GeoTranslator.struct2Jts(struct);
+
+                JSONObject geojson = GeoTranslator.jts2Geojson(geom);
+
+                JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
+
+                snapshot.setG(jo.getJSONArray("coordinates"));
 
                 JSONObject m = new JSONObject();
 
@@ -136,17 +145,9 @@ public class ScPlateresLinkSearch implements ISearch {
 
                 m.put("c", resultSet.getString("BOUNDARY_LINK"));
 
+                m.put("e", resultSet.getString(geom.getGeometryType()));
+
                 snapshot.setM(m);
-
-                snapshot.setT(1002);
-
-                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-                JSONObject geojson = Geojson.spatial2Geojson(struct);
-
-                JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
-
-                snapshot.setG(jo.getJSONArray("coordinates"));
 
                 list.add(snapshot);
             }
@@ -161,20 +162,20 @@ public class ScPlateresLinkSearch implements ISearch {
         return list;
     }
 
-    public String loadMaxKeyId(String groupId) throws Exception{
-    	StringBuilder sql = new StringBuilder();
+    public String loadMaxKeyId(String groupId) throws Exception {
+        StringBuilder sql = new StringBuilder();
 
         sql.append(" SELECT MAX(GEOMETRY_ID) FROM SC_PLATERES_LINK WHERE GROUP_ID = ? ");
 
         PreparedStatement pstmt = null;
- 
+
         String geometryId = "";
 
         ResultSet resultSet = null;
 
         try {
             pstmt = this.conn.prepareStatement(sql.toString());
-            
+
             pstmt.setString(1, groupId);
 
             resultSet = pstmt.executeQuery();
@@ -182,7 +183,7 @@ public class ScPlateresLinkSearch implements ISearch {
             while (resultSet.next()) {
 
                 geometryId = resultSet.getString(1);
-                
+
             }
         } catch (Exception e) {
 
@@ -195,12 +196,12 @@ public class ScPlateresLinkSearch implements ISearch {
 
         return geometryId;
     }
-    
-    public ScPlateresLink loadById(String geomId) throws Exception{
-   	
-    	ScPlateresLink info = new ScPlateresLink();
-   	 
-    	StringBuilder sql = new StringBuilder();
+
+    public ScPlateresLink loadById(String geomId) throws Exception {
+
+        ScPlateresLink info = new ScPlateresLink();
+
+        StringBuilder sql = new StringBuilder();
 
         sql.append(" SELECT * FROM SC_PLATERES_LINK WHERE GEOMETRY_ID = ? ");
 
@@ -210,15 +211,15 @@ public class ScPlateresLinkSearch implements ISearch {
 
         try {
             pstmt = this.conn.prepareStatement(sql.toString());
-            
+
             pstmt.setString(1, geomId);
 
             resultSet = pstmt.executeQuery();
 
             while (resultSet.next()) {
 
-            	ReflectionAttrUtils.executeResultSet(info, resultSet);
-                
+                ReflectionAttrUtils.executeResultSet(info, resultSet);
+
             }
         } catch (Exception e) {
 
@@ -231,47 +232,47 @@ public class ScPlateresLinkSearch implements ISearch {
 
         return info;
     }
-    
-	public List<ScPlateresLink> loadByIds(JSONArray links) throws Exception {
-		StringBuilder where = new StringBuilder();
 
-		List<ScPlateresLink> objList = new ArrayList<>();
+    public List<ScPlateresLink> loadByIds(JSONArray links) throws Exception {
+        StringBuilder where = new StringBuilder();
 
-		for (int i = 0; i < links.size(); i++) {
-			if (i > 0) {
-				where.append(",");
-			}
-			where.append("'" + links.get(i) + "'");
-		}
+        List<ScPlateresLink> objList = new ArrayList<>();
 
-		String sql = "SELECT * FROM SC_PLATERES_LINK WHERE GEOMETRY_ID IN (" + where + ")";
+        for (int i = 0; i < links.size(); i++) {
+            if (i > 0) {
+                where.append(",");
+            }
+            where.append("'" + links.get(i) + "'");
+        }
 
-		PreparedStatement pstmt = null;
+        String sql = "SELECT * FROM SC_PLATERES_LINK WHERE GEOMETRY_ID IN (" + where + ")";
 
-		ResultSet resultSet = null;
+        PreparedStatement pstmt = null;
 
-		try {
-			pstmt = this.conn.prepareStatement(sql);
+        ResultSet resultSet = null;
 
-			resultSet = pstmt.executeQuery();
+        try {
+            pstmt = this.conn.prepareStatement(sql);
 
-			while (resultSet.next()) {
+            resultSet = pstmt.executeQuery();
 
-				ScPlateresLink info = new ScPlateresLink();
+            while (resultSet.next()) {
 
-				ReflectionAttrUtils.executeResultSet(info, resultSet);
+                ScPlateresLink info = new ScPlateresLink();
 
-				objList.add(info);
-			}
-		} catch (Exception e) {
+                ReflectionAttrUtils.executeResultSet(info, resultSet);
 
-			throw e;
+                objList.add(info);
+            }
+        } catch (Exception e) {
 
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-		return objList;
-	}
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+        return objList;
+    }
 }
 

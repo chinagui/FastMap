@@ -20,7 +20,7 @@ public class Operation implements IOperation{
 
 		JSONObject content = this.command.getContent();
 		
-		ScPlateresLink link = new ScPlateresLink();
+		ScPlateresLink link = this.command.getLink();
 		
 		if(content.containsKey("objStatus") && content.getString("objStatus").equals(ObjStatus.UPDATE.toString())){
 			boolean isChange = link.fillChangeFields(content);

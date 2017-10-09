@@ -1096,6 +1096,165 @@ public class NiValExceptionSelector {
 
 		}
 	}
+	
+	/**
+	 * @Description: 子任务范围内pointaddress检查结果列表查询接口
+	 * @param params
+	 * @param subtaskId
+	 * @return
+	 * @throws Exception
+	 * @author LittleDog
+	 */
+	public Page listPointAddressResultList(JSONObject params, int subtaskId)
+			throws Exception {
+		log.info(" begin time"
+				+ DateUtils.dateToString(new Date(),
+						DateUtils.DATE_DEFAULT_FORMAT));
+		Page p = null;
+		QueryRunner run = null;
+		final int pageSize = params.getInt("pageSize");
+		final int pageNum = params.getInt("pageNum");
+
+		String sortby = "";
+		if (params.containsKey("sortby")) {
+			sortby = params.getString("sortby");
+		}
+		long pageStartNum = (pageNum - 1) * pageSize + 1;
+		long pageEndNum = pageNum * pageSize;
+		List<Integer> pids = getCheckPointAddressPidList(conn, subtaskId);
+
+		log.info("pids :" + pids.size());
+		try {
+			if (pids != null && pids.size() > 0) {
+				String orderSql = "";
+				com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
+				// 添加排序条件
+				if (sortby.length() > 0) {
+					int index = sortby.indexOf("-");
+					if (index != -1) {
+						orderSql += " ORDER BY ";
+						String sortbyName = sUtils.toColumnName(sortby
+								.substring(1));
+						orderSql += "  ";
+						orderSql += sortbyName;
+						orderSql += " DESC";
+					} else {
+						orderSql += " ORDER BY ";
+						String sortbyName = sUtils.toColumnName(sortby
+								.substring(1));
+						orderSql += "  ";
+						orderSql += sortbyName;
+					}
+				}
+
+				StringBuilder sql = new StringBuilder(
+						"SELECT q.* FROM ( SELECT T.*, ROWNUM AS ROWNO FROM ("
+								+ "select b.*,count(1) over () total from ( "
+								+ "select a.md5_code,a.ruleid,a.\"LEVEL\" level_,a.targets,a.information,a.worker ,a.created,a.location.sdo_point.x x,a.location.sdo_point.y y,a.updated,a.qa_worker,a.qa_status,O.PID "
+								+ "from "
+								+ "ni_val_exception a  , CK_RESULT_OBJECT O  "
+								+ "WHERE  (O.table_name like 'IX_POINTADDRESS\\_%' ESCAPE '\\' OR O.table_name ='IX_POINTADDRESS')  AND O.MD5_CODE=a.MD5_CODE "
+								+ " and O.pid in (select column_value from table(clob_to_table(?)) "
+								+ ") "
+								+ " union all "
+								+ "select c.md5_code,c.rule_id ruleid,c.status level_,c.targets,c.information,c.worker ,c.create_date created,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.y y,c.update_date as updated,c.qa_worker,c.qa_status,O.PID "
+								+ "from "
+								+ "ck_exception c , CK_RESULT_OBJECT O "
+								+ "  WHERE (O.table_name like 'IX_POINTADDRESS\\_%' ESCAPE '\\' OR O.table_name ='IX_POINTADDRESS')  AND O.MD5_CODE=c.MD5_CODE "
+								+ " and O.pid in (select column_value from table(clob_to_table(?)) "
+								+ " )  "
+								+ " )  b  "
+								+ orderSql
+								+ " ) T  WHERE ROWNUM <= ? ) q  WHERE q.ROWNO >= ? ");
+
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pids, ","));
+
+				log.info("poiCheckResultList:  " + sql + "=======" + StringUtils.join(pids, ","));
+				run = new QueryRunner();
+
+				ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+					public Page handle(ResultSet rs) throws SQLException {
+						Page page = new Page();
+						int total = 0;
+						JSONArray results = new JSONArray();
+						while (rs.next()) {
+							if (total == 0) {
+								total = rs.getInt("total");
+							}
+
+							JSONObject json = new JSONObject();
+							json.put("id", rs.getString("md5_code"));
+
+							json.put("ruleid", rs.getString("ruleid"));
+
+							// json.put("situation", rs.getString("situation"));
+
+							json.put("rank", rs.getInt("level_"));
+
+							String targets = "";
+							if (rs.getString("targets") != null
+									&& StringUtils.isNotEmpty(rs
+											.getString("targets"))) {
+								targets = rs.getString("targets");
+							}
+							json.put("targets", targets);
+
+							json.put("information", rs.getString("information"));
+
+							json.put("geometry", "(" + rs.getDouble("x") + ","
+									+ rs.getDouble("y") + ")");
+
+							json.put("create_date", rs.getString("created"));
+							json.put("update_date", rs.getString("updated"));
+
+							json.put("worker", rs.getString("worker"));
+							json.put(
+									"qa_worker",
+									rs.getString("qa_worker") == null ? "" : rs
+											.getString("qa_worker"));
+							json.put("qa_status", rs.getString("qa_status"));
+
+							JSONArray refFeaturesArr = new JSONArray();
+
+							if (targets != null
+									&& StringUtils.isNotEmpty(targets)) {
+
+								String pids = targets
+										.replaceAll("[\\[\\]]", "")
+										.replaceAll("IX_POINTADDRESS,", "")
+										.replaceAll(";", ",");
+								System.out.println(pids + " "
+										+ rs.getInt("pid"));
+								refFeaturesArr = queryPointAddressRefFeatures(pids,
+										rs.getInt("pid"));
+							}
+							// 查询关联poi根据pid
+							json.put("refFeatures", refFeaturesArr);
+							json.put("refCount", refFeaturesArr.size());
+							results.add(json);
+							System.out.println("json: " + json);
+						}
+						page.setTotalCount(total);
+						page.setResult(results);
+
+						return page;
+					}
+				};
+				p = run.query(conn, sql.toString(), new Object[] { clob, clob,
+						pageEndNum, pageStartNum }, rsHandler);
+
+			}
+			log.info(" end time"
+					+ DateUtils.dateToString(new Date(),
+							DateUtils.DATE_DEFAULT_FORMAT));
+			return p;
+		} catch (Exception e) {
+			throw new Exception(e);
+		} finally {
+
+		}
+	}
 
 	
 
@@ -1153,6 +1312,50 @@ public class NiValExceptionSelector {
 			throw new Exception(e);
 		}
 
+		return pids;
+	}
+	
+	/**
+	 * 
+	 * @param conn
+	 * @param subtaskId
+	 * @return
+	 * @throws Exception
+	 */
+	private List<Integer> getCheckPointAddressPidList(Connection conn, int subtaskId)
+			throws Exception {
+		List<Integer> pids = null;
+		try {
+			ManApi apiService = (ManApi) ApplicationContextUtil
+					.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			// 行编有针对删除数据进行的检查，此处要把删除数据也加载出来
+			String sql = "SELECT IP.PID"
+					+ "  FROM IX_POINTADDRESS IP, POINTADDRESS_EDIT_STATUS PS"
+					+ " WHERE IP.PID = PS.PID"
+					+ " AND PS.STATUS IN (1,2) "
+					+ " AND (PS.QUICK_SUBTASK_ID = " + subtask.getSubtaskId() + " OR PS.MEDIUM_SUBTASK_ID = " + subtask.getSubtaskId()+") ";
+			
+			log.info("getCheckPidList sql: " + sql);
+			QueryRunner run = new QueryRunner();
+			pids = run.query(conn, sql, new ResultSetHandler<List<Integer>>() {
+				
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> pids = new ArrayList<Integer>();
+					while (rs.next()) {
+						pids.add(rs.getInt("PID"));
+					}
+					return pids;
+				}
+			});
+			
+		} catch (Exception e) {
+			log.error("行编获取检查数据报错", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception(e);
+		}
+		
 		return pids;
 	}
 
@@ -1248,6 +1451,95 @@ public class NiValExceptionSelector {
 							return results;
 						}
 					},pidsClob);
+		} catch (SQLException e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 
+	 * @param pids
+	 * @param thisPid
+	 * @return
+	 * @throws SQLException
+	 */
+	public JSONArray queryPointAddressRefFeatures(String pids, int thisPid)
+			throws SQLException {
+		Clob pidsClob = ConnectionUtil.createClob(conn);
+		pidsClob.setString(1, pids);
+		
+		StringBuilder sql = new StringBuilder(
+				" select t.pid,t.geometry,t.u_record,t.guide_link_pid,p.idcode, p.x_guide, p.y_guide, p.row_id,p.dpr_name, p.dp_name,p.memoire,p.memo,(select n.fullname from ix_pointaddress_name n "
+						+ "where n.pid = t.pid  AND n.lang_code = 'CHI' and rownum = 1) name "
+						+ "from ix_pointaddress t  where t.pid in ("
+						+ "select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))"
+						+ ")  and t.pid != " + thisPid + " ");
+		log.info("queryRefFeatures : " + sql);
+		
+		try {
+			return new QueryRunner().query(conn, sql.toString(),
+					new ResultSetHandler<JSONArray>() {
+				
+				@Override
+				public JSONArray handle(ResultSet rs)
+						throws SQLException {
+					
+					JSONArray results = new JSONArray();
+					while (rs.next()) {
+						JSONObject json = new JSONObject();
+						
+						json.put("pid", rs.getInt("pid"));
+						json.put("name", rs.getString("name"));
+						
+						json.put("idCode", rs.getString("idcode"));
+						json.put("xGuide", rs.getDouble("x_guide"));
+						json.put("yGuide", rs.getDouble("y_guide"));
+						json.put("rowId", rs.getString("row_id"));
+						json.put("dprName", rs.getString("dpr_name"));
+						json.put("dpName", rs.getString("dp_name"));
+						json.put("memoire", rs.getString("memoire"));
+						json.put("memo", rs.getString("memo"));
+						
+						int lifecycle = 0;
+						switch (rs.getInt("u_record")) {
+						case 0:
+							lifecycle = 0;
+							break;
+						case 1:
+							lifecycle = 3;
+							break;
+						case 2:
+							lifecycle = 1;
+							break;
+						case 3:
+							lifecycle = 2;
+							break;
+						}
+						
+						json.put("state", lifecycle);
+						
+						json.put("linkPid", rs.getInt("guide_link_pid"));
+						
+						STRUCT struct = (STRUCT) rs
+								.getObject("geometry");
+						Geometry geometry = null;
+						GeoTranslator trans = null;
+						String geometryStr = null;
+						try {
+							geometry = GeoTranslator.struct2Jts(struct);
+							trans = new GeoTranslator();
+							geometryStr = trans.jts2Wkt(geometry, 1, 5);
+						} catch (Exception e) {
+							log.info("查询结果获取Geometry失败");
+							e.printStackTrace();
+						}
+						json.put("geometry", geometryStr);
+						results.add(json);
+					}
+					
+					return results;
+				}
+			},pidsClob);
 		} catch (SQLException e) {
 			throw e;
 		}

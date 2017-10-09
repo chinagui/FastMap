@@ -188,6 +188,48 @@ public class PoiLogDetailStat {
 					new LogDetailRsHandler4ChangeLog());
 		}
 	}
+	
+	/**
+	 * 对应点门牌行编提交的履历统计
+	 * 
+	 * @param conn
+	 * @param pids
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<Long, List<LogDetail>> loadPointAddressByRowEditStatus(
+			Connection conn, Collection<Long> pids) throws Exception {
+		if (pids == null || pids.size() == 0)
+			return null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT T.OB_NM, T.OB_PID, T.TB_NM, T.OLD, T.NEW, T.FD_LST, T.OP_TP, T.TB_ROW_ID FROM LOG_DETAIL T, LOG_OPERATION LP, POINTADDRESS_EDIT_STATUS P "
+				+ " WHERE T.OP_ID = LP.OP_ID AND T.OB_NM = ' " + ObjectName.IX_POINTADDRESS + " ' AND T.OB_PID = P.PID ");
+		// 若P.SUBMIT_DATE最后一次提交时间为空，则取poi的全部履历；否则取SUBMIT_DATE最后一次提交时间之后的所有履历。
+		sb.append(" AND ((LP.OP_DT >= P.SUBMIT_DATE AND P.SUBMIT_DATE IS NOT NULL) OR P.SUBMIT_DATE IS NULL) ");
+		
+		List<Object> values = new ArrayList<Object>();
+		if (pids != null && pids.size() > 0) {
+			if (pids.size() > 1000) {
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pids, ","));
+				sb.append(" AND P.PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?))) ");
+				values.add(clob);
+			} else {
+				sb.append(" AND P.PID IN (" + StringUtils.join(pids, ",") + " ) ");
+			}
+		}
+		log.debug(sb.toString());
+		if (values != null && values.size() > 0) {
+			Object[] queryValues = new Object[values.size()];
+			for (int i = 0; i < values.size(); i++) {
+				queryValues[i] = values.get(i);
+			}
+			return new QueryRunner().query(conn, sb.toString(), new LogDetailRsHandler4ChangeLog(), queryValues);
+		} else {
+			return new QueryRunner().query(conn, sb.toString(), new LogDetailRsHandler4ChangeLog());
+		}
+	}
+	
 	/**
 	 * 查询子poi的所有履历（包含父子关系的履历）
 	 * 

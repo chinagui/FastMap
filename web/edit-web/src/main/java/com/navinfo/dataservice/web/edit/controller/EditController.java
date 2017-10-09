@@ -254,7 +254,7 @@ public class EditController extends BaseController {
 					return new ModelAndView("jsonView", success());
 				}
 
-			}else if("IXPOIADDRESS".equals(objType)){
+			}else if(ObjType.IXPOINTADDRESS.toString().equals(objType)){
 				int pid = jsonReq.getInt("pid");
 				IxPointaddressSearch ixPointaddressSearch = new IxPointaddressSearch(conn);
 				return new ModelAndView("jsonView", success(ixPointaddressSearch.searchMainDataByPid(pid)));

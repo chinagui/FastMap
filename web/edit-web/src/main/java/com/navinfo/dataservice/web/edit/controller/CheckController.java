@@ -362,6 +362,50 @@ public class CheckController extends BaseController {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 点门牌检查列表接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author LittleDog
+	 */
+	@RequestMapping(value = "/check/listPointAddressResults")
+	public ModelAndView listPointAddressResults(HttpServletRequest request) throws ServletException, IOException {
+		
+		Connection conn = null;
+		try {
+			
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			logger.debug("listPointAddressResults:点门牌检查结果列表查询接口:parameter:" + parameter);
+			
+			JSONObject jsonReq = JSONObject.fromObject(URLDecode(parameter));			
+			if(jsonReq == null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			int dbId = jsonReq.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
+			Page page = selector.listPointAddressResultList(jsonReq, subtaskId);
+			
+			logger.info("end check/listPointAddressResults");
+			return new ModelAndView("jsonView", success(page));
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
 
 	@RequestMapping(value = "/check/get")
 	public ModelAndView getCheck(HttpServletRequest request)

@@ -264,7 +264,7 @@ public class TaskService {
 			TaskOperation.insertTask(conn, bean);
 			
 			// 插入TASK_GRID_MAPPING
-			if(bean.getGridIds() != null){
+			if(bean.getGridIds() != null && bean.getGridIds().size() > 0){
 				TaskOperation.insertTaskGridMapping(conn, bean);
 				TaskService.getInstance().updateTaskGeo(conn, bean.getTaskId());
 			}
@@ -1362,31 +1362,51 @@ public class TaskService {
 						conditionSql+="  AND TASK_LIST.programType=1 and TASK_LIST.task_id!=0 and TASK_LIST.other2medium_Status in ("+progressListTmp.join(",")+")";
 					}
 				}
-				//0无1未转换(-1)2进行中(1)3成功(2)4失败(3)TISP2MARK
+				//TISP2MARK 1未转换(-1)2进行中(1)3成功(2)4失败(3) 5无数据  6无CMS任务
 				if ("sMarkStatus".equals(key)) {	
 					JSONArray progress = condition.getJSONArray(key);
 					if(progress.isEmpty()){
 						continue;
 					}	
 					JSONArray progressListTmp=new JSONArray();
+					StringBuffer tmpStrB=new StringBuffer();
+					boolean flag=false;
 					for(Object i:progress){
 						int tmp=(int) i;
-						if(tmp==0){continue;}
 						if(tmp==1){
+							flag=true;
 							progressListTmp.add(-1);
 						}
 						if(tmp==2){
+							flag=true;
 							progressListTmp.add(1);
 						}
 						if(tmp==3){
+							flag=true;
 							progressListTmp.add(2);
 						}	
 						if(tmp==4){
+							flag=true;
 							progressListTmp.add(3);
+						}
+						if(tmp==5){
+							flag=true;
+							if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
+							tmpStrB.append(" TASK_LIST.TISP2MARK1=4");
+
+						}
+						if(tmp==6){
+							flag=true;
+							if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
+							tmpStrB.append(" TASK_LIST.TISP2MARK2=4");
 						}
 					}
 					if(progressListTmp.size()>0){
-						conditionSql+="  AND TASK_LIST.programType=1 AND TASK_LIST.STATUS=0 and TASK_LIST.task_id!=0 and TASK_LIST.TISP2MARK in ("+progressListTmp.join(",")+")";
+						if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
+						tmpStrB.append(" TASK_LIST.TISP2MARK in ("+progressListTmp.join(",")+")");
+					}
+					if(flag){
+						conditionSql+=" AND TASK_LIST.programType=1 AND TASK_LIST.STATUS=0 and TASK_LIST.task_id!=0 and ("+tmpStrB+")"; 
 					}
 				}
 			}
@@ -1468,6 +1488,15 @@ public class TaskService {
 			sb.append("                      NVL((SELECT J.STATUS ");
 			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 AND J.LATEST=1 "
 					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) other2medium_Status,");
+			sb.append("                      NVL((SELECT p.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J,job_progress p WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 "
+					+ "AND J.JOB_ID=p.JOB_ID AND p.phase=1 "
+					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK1,");
+			
+			sb.append("                      NVL((SELECT p.STATUS ");
+			sb.append("         FROM JOB_RELATION JR,JOB J,job_progress p WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 "
+					+ "AND J.JOB_ID=p.JOB_ID AND p.phase=2 "
+					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK2,");
 			
 			sb.append("                      NVL((SELECT J.STATUS ");
 			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 "
@@ -1509,7 +1538,7 @@ public class TaskService {
 			sb.append("	                          0             SUBTASK_NUM,");
 			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status,");
 			//sb.append("	                          -1 NOTASK2MID,");
-			sb.append("	                          -1 tips2mark_status");
+			sb.append("	                         -1 TISP2MARK1,-1 TISP2MARK2, -1 tips2mark_status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
@@ -1554,13 +1583,9 @@ public class TaskService {
 //					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
 //					+ "         where tpt.task_id = t.task_id"
 //					+ "           and rownum = 1),-1) other2medium_Status,");
-			sb.append("                      NVL((SELECT J.STATUS ");
-			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 AND J.LATEST=1 "
-					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) other2medium_Status,");
+			sb.append("                      -1 other2medium_Status,");
 			//sb.append("	                          -1 NOTASK2MID,");
-			sb.append("                      NVL((SELECT J.STATUS ");
-			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 AND J.LATEST=1 "
-					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) tips2mark_STATUS");
+			sb.append("                      -1 TISP2MARK1,-1 TISP2MARK2, -1 tips2mark_status");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");

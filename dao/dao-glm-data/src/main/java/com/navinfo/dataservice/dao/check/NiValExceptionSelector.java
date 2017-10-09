@@ -12,12 +12,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -29,7 +27,6 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -415,25 +412,25 @@ public class NiValExceptionSelector {
 		StringBuilder sql1 = new StringBuilder(
 				"select a.md5_code,ruleid,situation,\"LEVEL\" level_,0 state,"
 						+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
-						+ "worker,qa_worker,qa_status from ni_val_exception a where a.md5_code in (select b.md5_code from ni_val_exception_grid b,"
+						+ "worker,qa_worker,qa_status,a.addition_info from ni_val_exception a where a.md5_code in (select b.md5_code from ni_val_exception_grid b,"
 						+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 						+ "where b.grid_id =grid_table.COLUMN_VALUE) ");
 		StringBuilder sql4 = new StringBuilder(
 				"select a.md5_code,rule_id as ruleid,situation,rank level_,1 state,"
 						+ "targets,information,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x) x,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y )y,create_date as created,update_date as updated,"
-						+ "worker,qa_worker,qa_status from ck_exception a where a.status = 1 and a.row_id in (select b.ck_row_id from ck_exception_grid b,"
+						+ "worker,qa_worker,qa_status,a.addition_info from ck_exception a where a.status = 1 and a.row_id in (select b.ck_row_id from ck_exception_grid b,"
 						+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 						+ "where b.grid_id =grid_table.COLUMN_VALUE) ");
 		StringBuilder sql3 = new StringBuilder(
 				"select a.md5_code,rule_id as ruleid,situation,rank level_,2 state,"
 						+ "targets,information,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x )x,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y )y,create_date as created,update_date as updated,"
-						+ "worker,qa_worker,qa_status from ck_exception a where a.status = 2 and a.row_id in (select b.ck_row_id from ck_exception_grid b,"
+						+ "worker,qa_worker,qa_status,a.addition_info from ck_exception a where a.status = 2 and a.row_id in (select b.ck_row_id from ck_exception_grid b,"
 						+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 						+ "where b.grid_id =grid_table.COLUMN_VALUE) ");
 		StringBuilder sql2 = new StringBuilder(
 				"   select a.md5_code,ruleid,situation,\"LEVEL\" level_,3 state,"
 						+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
-						+ "worker ,qa_worker,qa_status from ni_val_exception_history a where a.md5_code in (select b.md5_code from ni_val_exception_history_grid b,"
+						+ "worker ,qa_worker,qa_status,a.addition_info from ni_val_exception_history a where a.md5_code in (select b.md5_code from ni_val_exception_history_grid b,"
 						+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 						+ "where b.grid_id =grid_table.COLUMN_VALUE) ");
 
@@ -593,6 +590,8 @@ public class NiValExceptionSelector {
 					rs.getString("qa_worker") == null ? "" : rs
 							.getString("qa_worker"));
 			json.put("qa_status", rs.getString("qa_status"));
+			
+			json.put("addition_info", rs.getString("addition_info") == null ? "" : rs.getString("addition_info"));
 
 			results.add(json);
 		}

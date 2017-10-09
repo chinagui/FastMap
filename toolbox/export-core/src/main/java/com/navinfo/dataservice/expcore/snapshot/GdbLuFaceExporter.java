@@ -39,7 +39,9 @@ public class GdbLuFaceExporter {
 			prep = sqliteConn.prepareStatement(insertSql);
 
 			//******zl 2017.02.17 增加查询 lu_face表中  kind = 6 的数据 
-			String sql = " select l.face_pid ,l.geometry,n.name , l.mesh_id,l.kind from lu_face l,lu_face_name n  where l.face_pid = n.face_pid(+) and n.name_groupid = 1 and (n.lang_code = 'CHI' OR n.lang_code = 'CHT') and l.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) " ;
+			String sql = " select l.face_pid ,l.geometry,n.name , l.mesh_id,l.kind from lu_face l,lu_face_name n  where "
+					+ "  l.kind in (0,1,2,3,4,5,6,7,11,24,30,31,32,33,34,35,36,37,38,39,40) and "
+					+ " l.face_pid = n.face_pid(+) and n.name_groupid = 1 and (n.lang_code = 'CHI' OR n.lang_code = 'CHT') and l.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) " ;
 			Clob clob = conn.createClob();
 			clob.setString(1, StringUtils.join(meshes, ","));
 

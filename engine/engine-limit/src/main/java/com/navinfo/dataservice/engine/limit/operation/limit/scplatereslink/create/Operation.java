@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.create;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplatereslink.create;
 
 import java.sql.Connection;
 

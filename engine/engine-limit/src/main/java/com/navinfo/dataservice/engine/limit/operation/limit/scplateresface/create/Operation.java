@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.create;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.create;
 
 import java.sql.Connection;
 

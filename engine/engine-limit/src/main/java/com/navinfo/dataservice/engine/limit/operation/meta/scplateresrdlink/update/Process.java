@@ -1,10 +1,10 @@
-package com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update;
+package com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.update;
 
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresRdLink;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.limit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Command;
-import com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Operation;
+import com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.update.Command;
+import com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.update.Operation;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresRdlinkSearch;
 
 public class Process extends AbstractProcess<Command> {

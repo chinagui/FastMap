@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.delete;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplatereslink.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;

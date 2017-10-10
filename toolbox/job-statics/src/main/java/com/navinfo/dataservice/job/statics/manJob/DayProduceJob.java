@@ -99,6 +99,7 @@ public class DayProduceJob extends AbstractStatJob {
 				dpAddRoadSum = (double) dataSumMap.get("dpAddRoadSum");
 				dpUpdatePoiSum = (int) dataSumMap.get("dpUpdatePoiSum");
 				dpAddPoiSum = (int) dataSumMap.get("dpAddPoiSum");
+				total=(int) dataSumMap.get("total");
 			}
 			updateRoad = (dpUpdateRoadSum+dpUpdateRoad)/(total+1);
 			addRoad = (dpAddRoadSum+dpAddRoad)/(total+1);

@@ -64,6 +64,10 @@ public class TipsStatConstant {
 		gLocationTipsType.add("1115");
 		gLocationTipsType.add("1116");
         gLocationTipsType.add("1117");
+        //20171010 新增
+        gLocationTipsType.add("1118");
+        gLocationTipsType.add("1119");
+        gLocationTipsType.add("1120");
 		gLocationTipsType.add("1201");
 		gLocationTipsType.add("1202");
 		gLocationTipsType.add("1203");
@@ -184,6 +188,9 @@ public class TipsStatConstant {
         fieldQCFIdType.add("1113");
         fieldQCFIdType.add("1114");
         fieldQCFIdType.add("1117");
+        fieldQCFIdType.add("1118");
+        fieldQCFIdType.add("1119");
+        fieldQCFIdType.add("1120");
         fieldQCFIdType.add("1201");
         fieldQCFIdType.add("1202");
         fieldQCFIdType.add("1203");

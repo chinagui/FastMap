@@ -36,9 +36,9 @@ public class Command extends AbstractCommand{
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 		
-		JSONObject data = json.getJSONObject("data");
-		this.linkpid = data.getInt("objId");
-		this.content = data.getJSONObject("data");
+		//JSONObject data = json.getJSONObject("data");
+		this.linkpid = json.getInt("objId");
+		this.content = json.getJSONObject("data");
 	}
 
 	@Override

@@ -6,7 +6,7 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
 public class PointAddressReleaseJobRequest extends AbstractJobRequest {
 	private int dbId;
-	private long subtaskId;
+	private int subtaskId;
 
 	@Override
 	public String getJobType() {
@@ -21,7 +21,7 @@ public class PointAddressReleaseJobRequest extends AbstractJobRequest {
 	public long getSubtaskId() {
 		return subtaskId;
 	}
-	public void setSubtaskId(long subtaskId) {
+	public void setSubtaskId(int subtaskId) {
 		this.subtaskId = subtaskId;
 	}
 	@Override

@@ -470,12 +470,12 @@ public class DeepCoreControl {
         } catch (DataNotChangeException e) {
             DbUtils.rollback(conn);
             System.out.println(e);
-            logger.error(e.getMessage(), e);
+            logger.error("深度信息提交错误", e);
             throw e;
         } catch (Exception e) {
             DbUtils.rollback(conn);
             System.out.println(e);
-            logger.error(e.getMessage(), e);
+            logger.error("深度信息提交错误", e);
             throw e;
         } finally {
             DbUtils.commitAndClose(conn);

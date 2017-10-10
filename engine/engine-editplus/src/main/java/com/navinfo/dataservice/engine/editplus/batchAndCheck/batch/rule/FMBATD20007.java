@@ -92,7 +92,7 @@ public class FMBATD20007 extends BasicBatchRule {
 			
 			IxPoiName ixPoiName = poiObj.getOfficeOriginCHIName();
 			
-//			if(poi.getHisOpType().equals(OperationType.INSERT)||ixPoiName.getHisOpType().equals(OperationType.UPDATE)){
+			if(poi.getHisOpType().equals(OperationType.INSERT)||ixPoiName.getHisOpType().equals(OperationType.UPDATE)){
 				long pid = poi.getPid();
 			
 				String name = ixPoiName.getName();
@@ -115,7 +115,7 @@ public class FMBATD20007 extends BasicBatchRule {
 						poiObj.deleteSubrow(ixPoiFlag);
 					}
 				}
-				
+			}
 		}
 	}
 	

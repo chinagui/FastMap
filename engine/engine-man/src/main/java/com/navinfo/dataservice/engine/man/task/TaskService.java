@@ -4579,24 +4579,23 @@ public class TaskService {
 			try{
 				QueryRunner run = new QueryRunner();
 			
-				String selectSql = "select count(1), t.is_plan_selected,t.is_important from DATA_PLAN t where "
-						+ "t.task_id = " + taskId + " and t.data_type = 1 group by t.is_plan_selected, t.is_important";
+				String selectSql = "select count(1), t.is_important, t.is_plan_selected from DATA_PLAN t where "
+						+ "t.task_id = " + taskId + " and t.data_type = 1 group by t.is_important, t.is_plan_selected";
 				ResultSetHandler<Map<String, Integer>> rs = new ResultSetHandler<Map<String, Integer>>(){
 					public Map<String, Integer> handle(ResultSet rs) throws SQLException {
 						Map<String, Integer> poiData = new HashMap<>();
 						while(rs.next()){
 							int count = rs.getInt("count(1)");
-//							int isPlanSelected = rs.getInt("is_plan_selected");
 							int isImportant = rs.getInt("is_important");
-//							if(isPlanSelected == 1){
-//								poiData.put("planSelected", poiData.containsKey("planSelected") ? count + poiData.get("planSelected") : count);
-//							}else{
-							poiData.put("unPlanSelected", poiData.containsKey("unPlanSelected") ? count + poiData.get("unPlanSelected")  : count);
-//							}
-							if(isImportant == 1){
-								poiData.put("important", poiData.containsKey("important") ? count + poiData.get("important")  : count);
+							int isPlanSelected = rs.getInt("is_plan_selected");
+							if(isPlanSelected == 0){
+								poiData.put("unPlanSelected", poiData.containsKey("unPlanSelected") ? count + poiData.get("unPlanSelected")  : count);
 							}else{
-								poiData.put("unImportant", poiData.containsKey("unImportant") ? count + poiData.get("unImportant")  : count);
+								if(isImportant == 1){
+									poiData.put("important", poiData.containsKey("important") ? count + poiData.get("important")  : count);
+								}else{
+									poiData.put("unImportant", poiData.containsKey("unImportant") ? count + poiData.get("unImportant")  : count);
+								}
 							}
 						}
 						return poiData;
@@ -4608,7 +4607,7 @@ public class TaskService {
 					public Double handle(ResultSet rs) throws SQLException {
 						double linkNeedWorkLenth = 0d;
 						if(rs.next()){
-							linkNeedWorkLenth = rs.getDouble("length");
+							linkNeedWorkLenth = rs.getDouble("length")/1000;
 						}
 						return linkNeedWorkLenth;
 					}
@@ -4632,10 +4631,9 @@ public class TaskService {
 				
 				result.put("workRoad", linkNeedWorkLenth);
 				result.put("unworkRoad", linkUnWorkLenth);
-//				result.put("poiPlanSelected", poiData.get("planSelected"));
-				result.put("unworkPoi", poiData.get("unPlanSelected"));
-				result.put("workAPoi", poiData.get("important"));
-				result.put("workunAPoi", poiData.get("unImportant"));
+				result.put("unworkPoi", poiData.get("unPlanSelected") == null ? 0 : poiData.get("unPlanSelected"));
+				result.put("workAPoi", poiData.get("important") == null ? 0 : poiData.get("important"));
+				result.put("workunAPoi", poiData.get("unImportant") == null ? 0 : poiData.get("unImportant"));
 				
 				return result;
 			}catch(Exception e){

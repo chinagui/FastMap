@@ -16,12 +16,12 @@ public class Operation implements IOperation {
     @Override
     public String run(Result result) throws Exception {
 
-        DelGroup(result);
+        delGroup(result);
 
         return null;
     }
 
-    private void DelGroup(Result result) {
+    private void delGroup(Result result) {
 
         for (ScPlateresGroup group:command.getGroups()) {
 

@@ -165,7 +165,15 @@ public class limitTest extends ClassPathXmlAppContextInit{
 		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"CREATE\",\"data\":{\"groupId\":\"S1100000002\",\"vehicle\":\"1|2\",\"attribution\":\"1|2\",\"restrict\":\"京G\",\"tempPlate\":2,\"tempPlateNum\":0,\"charSwitch\":2,\"charToNum\":1,\"tailNumber\":\"1|2|3\",\"plateColor\":\"1|2\",\"energyType\":\"1|2|3\",\"gasEmisstand\":\"1\",\"seatNum\":10,\"vehicleLength\":5.5,\"resWeigh\":15.0,\"resAxleLoad\":15.0,\"resAxleCount\":3,\"startDate\":\"20170915\",\"endDate\":\"20170922\",\"resDatetype\":\"1|2\",\"time\":\"20170922\",\"specFlag\":\"1|2\"}}";
 		
 		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"UPDATE\",\"groupId\":\"S1100000002\",\"objId\":1,\"data\":{\"vehicle\":\"1|2\",\"objStatus\":\"UPDATE\"}}";
-		String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"DELETE\",\"groupId\":\"S1100000002\",\"objId\":[1,2]}";
+		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"DELETE\",\"groupId\":\"S1100000002\",\"objId\":[1,2]}";
+		//String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"CREATE\",\"data\":{\"groupId\":\"D1100000004\",\"links\":[59033375,59033376,59025417,59037479]},\"dbId\":13}";
+		
+		//String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"UPDATE\",\"geomId\":\"D1100000003000001\",\"data\":{\"boundaryLink\":\"2\",\"objStatus\":\"UPDATE\"}}";
+		//String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"DELETE\",\"objId\":[\"D1100000003000003\",\"D1100000003000004\"]}";
+		//String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"UPDATE\",\"geomId\":\"D1100000004000001\",\"data\":{\"boundaryLink\":\"2\",\"objStatus\":\"UPDATE\"}}";
+		//String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"DELETE\",\"objId\":[\"D1100000004000003\",\"D1100000004000004\"]}";
+		String parameter = "{\"type\":\"SCPLATERESRDLINK\",\"command\":\"UPDATE\",\"objId\":12345,\"data\":{\"limitDir\":3,\"objStatus\":\"UPDATE\"}}";
+		
 		Transaction t = new Transaction(parameter);
 		
 		t.run();

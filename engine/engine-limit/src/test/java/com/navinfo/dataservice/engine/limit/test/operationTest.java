@@ -26,7 +26,7 @@ public class operationTest extends ClassPathXmlAppContextInit {
         String parameter = "{ \"command\": \"CREATE\", \"type\": \"SCPLATERESINFO\", infos: [{ infoIntelId: \"1\", infoCode: \"123\", adminCode: \"123\", url: \"123\", newsTime: \"123\", infoContent: \"123\", condition: \"1\", complete: 1, memo: \"123\" }] }";
 //        ScPlateresLink
 //                ScPlateresFace
-        //ScPlateresGeometry
+        //scplateresgeometry
         //ScPlateresInfo
         //ScPlateresManoeuvre
         //ScPlateresRdLink

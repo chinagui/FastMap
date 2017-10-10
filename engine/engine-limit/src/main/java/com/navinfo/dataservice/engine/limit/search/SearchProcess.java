@@ -2,10 +2,8 @@
 package com.navinfo.dataservice.engine.limit.search;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
@@ -38,16 +36,6 @@ public class SearchProcess {
     private static final Logger logger = Logger.getLogger(SearchProcess.class);
 
     Connection conn;
-    private int dbId;
-
-    public int getDbId() {
-        return dbId;
-    }
-
-    public void setDbId(int dbId) {
-        this.dbId = dbId;
-    }
-
 
     public SearchProcess(Connection conn) throws Exception {
 
@@ -186,13 +174,13 @@ public class SearchProcess {
      * @throws Exception
      */
     public JSONObject searchDataByTileWithGap(
-            List<LimitObjType> types, int x, int y, int z, int gap) throws Exception {
+            List<LimitObjType> types, RenderParam param) throws Exception {
 
         Map<String, List<SearchSnapshot>> map = new HashMap<>();
 
         for (LimitObjType type : types) {
 
-            List<SearchSnapshot> list = searchDataByTileWithGap(type, x, y, z, gap);
+            List<SearchSnapshot> list = searchDataByTileWithGap(type, param);
 
             map.put(type.toString(), list);
         }
@@ -220,19 +208,23 @@ public class SearchProcess {
      * @return 查询结果
      */
     private List<SearchSnapshot> searchDataByTileWithGap(
-            LimitObjType type, int x, int y, int z, int gap) throws Exception {
+            LimitObjType type, RenderParam param) throws Exception {
 
         Connection conn = null;
 
         try {
 
-            if (LimitObjType.SCPLATERESFACE.equals(type) || LimitObjType.SCPLATERESFACE.equals(type)) {
+            if (LimitObjType.SCPLATERESFACE.equals(type) || LimitObjType.SCPLATERESLINK.equals(type)) {
 
                 conn = DBConnector.getInstance().getLimitConnection();
 
             } else if (LimitObjType.SCPLATERESGEOMETRY.equals(type)) {
 
-                conn = DBConnector.getInstance().getMetaConnection();
+//              conn = DBConnector.getInstance().getMetaConnection();
+                conn = DBConnector.getInstance().getLimitConnection();
+            }
+            else {
+                throw new Exception("不支持的渲染类型："+type.toString());
             }
 
             SearchFactory factory = new SearchFactory(conn);
@@ -243,7 +235,7 @@ public class SearchProcess {
                 return new ArrayList<>();
             }
 
-            return search.searchDataByTileWithGap(x, y, z, gap);
+            return search.searchDataByTileWithGap(param);
 
         } catch (Exception e) {
 

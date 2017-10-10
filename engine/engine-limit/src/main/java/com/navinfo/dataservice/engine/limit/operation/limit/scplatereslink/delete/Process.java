@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.delete;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplatereslink.delete;
 
 import java.util.ArrayList;
 import java.util.List;

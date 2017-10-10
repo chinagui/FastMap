@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.update;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplatereslink.update;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
@@ -20,7 +20,7 @@ public class Operation implements IOperation{
 
 		JSONObject content = this.command.getContent();
 		
-		ScPlateresLink link = new ScPlateresLink();
+		ScPlateresLink link = this.command.getLink();
 		
 		if(content.containsKey("objStatus") && content.getString("objStatus").equals(ObjStatus.UPDATE.toString())){
 			boolean isChange = link.fillChangeFields(content);

@@ -1,10 +1,10 @@
-package com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update;
+package com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.update;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
 import com.navinfo.dataservice.engine.limit.glm.iface.Result;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresRdLink;
-import com.navinfo.dataservice.engine.limit.operation.meta.rdlink.update.Command;
+import com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.update.Command;
 
 import net.sf.json.JSONObject;
 

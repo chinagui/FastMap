@@ -1,65 +1,46 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdlink.create;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.delete;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
+import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresFace;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand{
-
-	private String requester;
+private String requester;
 	
-	private int seq = 0;
+	private JSONArray geometryIds;
 	
-	private Geometry geo;
+	private List<ScPlateresFace> scplateresfaces = new ArrayList<>();
 	
-	private String groupId;
-	
-	private JSONArray links;
-	
-	private int dbId;
-
-	public Command(JSONObject json, String requester) {
-
+	public Command(JSONObject json,String requester){
 		this.requester = requester;
 		
-		JSONObject data = json.getJSONObject("data");
-		
-		this.dbId = json.getInt("dbId");
-		
-		this.groupId = data.getString("groupId");
-		
-		this.links = data.getJSONArray("links");
+		this.geometryIds = json.getJSONArray("objId");
 	}
 	
-	public int getDbId(){
-		return this.dbId;
+	public List<ScPlateresFace> getscplateresFaces(){
+		return this.scplateresfaces;
 	}
 	
-	public int getSeq(){
-		return this.seq;
+	public void setscplateresFaces(List<ScPlateresFace> values){
+		this.scplateresfaces = values;
 	}
 	
-	public Geometry getGeo(){
-		return this.geo;
-	} 
-	
-	public String getGroupId(){
-		return this.groupId;
+	public JSONArray getGeometryIds(){
+		return this.geometryIds;
 	}
 	
-	public JSONArray getLinks(){
-		return this.links;
-	}
-
 	@Override
 	public OperType getOperType() {
 		// TODO Auto-generated method stub
-		return OperType.CREATE;
+		return OperType.DELETE;
 	}
 
 	@Override
@@ -77,6 +58,7 @@ public class Command extends AbstractCommand{
 	@Override
 	public LimitObjType getObjType() {
 		// TODO Auto-generated method stub
-		return LimitObjType.SCPLATERESLINK;
+		return LimitObjType.SCPLATERESFACE;
 	}
+	
 }

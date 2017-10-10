@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.update;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.update;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
@@ -19,7 +19,7 @@ public class Operation implements IOperation {
 
 		JSONObject content = this.command.getContent();
 
-		ScPlateresFace face = new ScPlateresFace();
+		ScPlateresFace face = this.command.getFace();
 
 		if (content.containsKey("objStatus") && content.getString("objStatus").equals(ObjStatus.UPDATE.toString())) {
 			boolean isChange = face.fillChangeFields(content);

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.limit.operation.limit.scplateresrdface.delete;
+package com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.delete;
 
 import java.util.List;
 

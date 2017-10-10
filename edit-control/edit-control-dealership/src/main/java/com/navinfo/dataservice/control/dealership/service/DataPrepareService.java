@@ -2071,34 +2071,29 @@ public class DataPrepareService {
 		Connection metaConn = null;
 		Connection gdbConn = null;
 		Connection dealershipConn = null;
-		Map<Integer, Connection> allRegionConn = null;
 		
 		List<AdditionResultEntity> entityList = new ArrayList<>(); 
 		try{
 			metaConn = DBConnector.getInstance().getMetaConnection();
-			int dbId = searchMonthDbId();
-			gdbConn = DBConnector.getInstance().getConnectionById(dbId);
+			gdbConn = DBConnector.getInstance().getMkConnection();
 			dealershipConn = DBConnector.getInstance().getDealershipConnection();
-			allRegionConn = queryAllRegionConn();
 			
 			QueryRunner run = new QueryRunner();
 			
 			StringBuilder sql = new StringBuilder();
-			sql.append("SELECT R.REGION_ID, S.SOURCE_ID, S.CFM_POI_NUM, S.CHAIN, S.KIND_CODE, S.PROVINCE, S.CITY, S.NAME, S.POI_NAME, ");
+			sql.append("SELECT DISTINCT S.SOURCE_ID, S.CFM_POI_NUM, S.CHAIN, S.KIND_CODE, S.PROVINCE, S.CITY, S.NAME, S.POI_NAME, ");
 			sql.append("S.NAME_ENG, S.ADDRESS, S.POI_ADDRESS, S.ADDRESS_ENG, S.TEL_SALE, S.TEL_SERVICE, S.TEL_OTHER, S.POI_TEL, S.POST_CODE, S.POI_CHAIN, ");
 			sql.append("S.POI_POST_CODE, S.NAME_SHORT, S.POI_NAME_SHORT, S.IS_DELETED, S.PROJECT, S.FB_CONTENT, S.FB_AUDIT_REMARK, S.FB_DATE, S.DEAL_CFM_DATE, ");
 			sql.append("S.CFM_MEMO FROM IX_DEALERSHIP_RESULT R, IX_DEALERSHIP_SOURCE S WHERE S.SOURCE_ID = R.SOURCE_ID AND R.CHAIN IN ( ").append(chainCode).append(" )");
        
-			ResultSetHandler<Map<Integer, List<AdditionResultEntity>>> rs = new ResultSetHandler<Map<Integer, List<AdditionResultEntity>>>() {
+			ResultSetHandler<List<AdditionResultEntity>> rs = new ResultSetHandler<List<AdditionResultEntity>>() {
 				@Override
-				public Map<Integer, List<AdditionResultEntity>> handle(ResultSet rs) throws SQLException {
-					Map<Integer, List<AdditionResultEntity>> resultMap = new HashMap<>();
+				public List<AdditionResultEntity> handle(ResultSet rs) throws SQLException {
+					List<AdditionResultEntity> resultList = new ArrayList<>();
 					int id = 0;
 					while(rs.next()){
 						id++;
 						AdditionResultEntity entity = new AdditionResultEntity();
-						
-						Integer regionId = rs.getInt("REGION_ID");
 						
 						entity.setId(id);
 						entity.setSourceId(rs.getInt("SOURCE_ID"));
@@ -2152,74 +2147,79 @@ public class DataPrepareService {
 						entity.setDealCfmDate(rs.getString("DEAL_CFM_DATE"));
 						entity.setCfmMemo(rs.getString("CFM_MEMO"));
 						
-						if(resultMap.containsKey(regionId)){
-							resultMap.get(regionId).add(entity);
-						} else {
-							List<AdditionResultEntity> list = new ArrayList<>();
-							list.add(entity);
-							resultMap.put(regionId, list);
-						}
+						resultList.add(entity);
 					}
-					return resultMap;
+					return resultList;
 				}
 			};
-			Map<Integer, List<AdditionResultEntity>> resultMap = run.query(dealershipConn, sql.toString(), rs);
+			List<AdditionResultEntity> resultList = run.query(dealershipConn, sql.toString(), rs);
 
-			Connection regionConn = null;
-			for (Entry<Integer, List<AdditionResultEntity>> regionIdEntity : resultMap.entrySet()) {
 				
-				regionConn = allRegionConn.get(regionIdEntity.getKey());
-				for (AdditionResultEntity entity : regionIdEntity.getValue()) {
+			for (AdditionResultEntity entity : resultList) {
+				
+				String poiNum = entity.getCfmPoiNum();
+				if (poiNum != null) {
+					entity.setChainName(getChainNameByChain(metaConn, entity.getChain()));
+					entity.setNamePhonetic(queryNamePhonetic(gdbConn, poiNum));
+					entity.setNavEnglishName(queryNavEnglishName(gdbConn, poiNum));
+					entity.setNavEnglishShortName(queryNavEnglishShortName(gdbConn, poiNum));
+					entity.setNavFullName(queryNavFullName(gdbConn, poiNum));
 					
-					String poiNum = entity.getCfmPoiNum();
-					if (poiNum != null) {
-						entity.setChainName(getChainNameByChain(metaConn, entity.getChain()));
-						entity.setNamePhonetic(queryNamePhonetic(gdbConn, poiNum));
-						entity.setNavEnglishName(queryNavEnglishName(gdbConn, poiNum));
-						entity.setNavEnglishShortName(queryNavEnglishShortName(gdbConn, poiNum));
-						entity.setNavFullName(queryNavFullName(gdbConn, poiNum));
-						
-						//电话优先级和电话类型
-						String poiTel = entity.getNavPoiTel();
-						if (poiTel != null && StringUtils.isNotBlank(poiTel)) {
-							String param = StringUtils.join(poiTel.split("\\|"), ",");
-							Map<String, List<String>> priorityAndTypeMap = queryPriorityAndType(regionConn, param, poiNum);
-							List<String> priorityList = priorityAndTypeMap.get("priority");
-							List<String> contactTypeList = priorityAndTypeMap.get("contactType");
-							if (priorityList != null && priorityList.size() > 0) {
-								String telephonePriority = StringUtils.join(priorityList, "|");
-								entity.setTelephonePriority(telephonePriority);
-								
+					//电话优先级和电话类型
+					long pid = queryPidByPoiNum(gdbConn, poiNum);
+					List<Integer> priorityList = new ArrayList<>();
+					List<Integer> contactTypeList = new ArrayList<>();
+					String poiTel = entity.getNavPoiTel();
+					if (poiTel != null && StringUtils.isNotBlank(poiTel)) {
+						List<String> poiTelList = Arrays.asList(poiTel.split("\\|"));
+						if(pid != -1L){
+							Map<String, Integer> priorityMap = queryPriority(gdbConn, pid);
+							Map<String, Integer> typeMap = queryType(gdbConn, pid);
+							
+							for (String tel : poiTelList) {
+								if(priorityMap.containsKey(tel)){
+									priorityList.add(priorityMap.get(tel));
+								}
+								if(typeMap.containsKey(tel)){
+									contactTypeList.add(typeMap.get(tel));
+								}
 							}
-							if (contactTypeList != null && contactTypeList.size() > 0) {
-								String elephoneType = StringUtils.join(contactTypeList, "|");
-								entity.setTelephoneType(elephoneType);
-							}
-						}
-						
-						String navOriginalName = queryNavOriginalName(gdbConn, poiNum);
-						if(navOriginalName != null && StringUtils.isNotBlank(navOriginalName)){
-							entity.setNavOriginalName(navOriginalName.substring(0, navOriginalName.length() - 1));
-						}
-						
-						String navStandardName = queryNavStandardName(gdbConn, poiNum);
-						if(navStandardName != null && StringUtils.isNotBlank(navStandardName)){
-							entity.setNavStandardName(navStandardName.substring(0, navStandardName.length() - 1));
-						}
-						
-						String navAnotherName = queryNavAnotherName(gdbConn, poiNum);
-						if(navAnotherName != null && StringUtils.isNotBlank(navAnotherName)){
-							entity.setNavOriginalName(navAnotherName.substring(0, navAnotherName.length() - 1));
-						}
-						
-						Boolean flag = queryAddressInfo(regionConn, poiNum, entity);
-						if(!flag){
-							log.info("查询不到该poi的地址及发音,poiNum : " + poiNum);
 						}
 					}
+					if (priorityList != null && priorityList.size() > 0) {
+						String telephonePriority = StringUtils.join(priorityList, "|");
+						entity.setTelephonePriority(telephonePriority);
+					}
+					if (contactTypeList != null && contactTypeList.size() > 0) {
+						String elephoneType = StringUtils.join(contactTypeList, "|");
+						entity.setTelephoneType(elephoneType);
+					}
 					
-					entityList.add(entity);
+					StringBuilder navOriginalNameBuilder = queryNavOriginalName(gdbConn, poiNum);
+					if(navOriginalNameBuilder != null && navOriginalNameBuilder.length() > 0){
+						String navOriginalName = navOriginalNameBuilder.toString();
+						entity.setNavOriginalName(navOriginalName.substring(0, navOriginalName.length() - 1));
+					}
+
+					StringBuilder navStandardNameBuilder = queryNavStandardName(gdbConn, poiNum);
+					if(navStandardNameBuilder != null && navStandardNameBuilder.length() > 0){
+						String navStandardName = navStandardNameBuilder.toString();
+						entity.setNavStandardName(navStandardName.substring(0, navStandardName.length() - 1));
+					}
+					
+					StringBuilder navAnotherNameBuilder = queryNavAnotherName(gdbConn, poiNum);
+					if(navAnotherNameBuilder != null && navAnotherNameBuilder.length() > 0 ){
+						String navAnotherName = navAnotherNameBuilder.toString();
+						entity.setNavAnotherName(navAnotherName.substring(0, navAnotherName.length() - 1));
+					}
+					
+					Boolean flag = queryAddressInfo(gdbConn, poiNum, entity);
+					if(!flag){
+						log.info("查询不到该poi的地址及发音,poiNum : " + poiNum);
+					}
 				}
+				
+				entityList.add(entity);
 			}
 			
 			return entityList;
@@ -2227,43 +2227,10 @@ public class DataPrepareService {
 			log.error(e);
 			throw e;
 		} finally {
-			for (Connection conn : allRegionConn.values()) {
-				DbUtils.closeQuietly(conn);
-			}
 			DbUtils.closeQuietly(dealershipConn);
 			DbUtils.closeQuietly(gdbConn);
 			DbUtils.closeQuietly(metaConn);
 		}
-	}
-	
-	/**
-	 * 查询月库dbId
-	 * @return
-	 * @throws Exception
-	 */
-	private int searchMonthDbId() throws Exception {
-		Connection conn = null;
-		String sql  = "SELECT DISTINCT MONTHLY_DB_ID FROM REGION ORDER BY MONTHLY_DB_ID";
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			pstmt = conn.prepareStatement(sql);
-			resultSet = pstmt.executeQuery();
-			
-			if(resultSet.next()){
-				return resultSet.getInt(1);
-			}
-			return 0;
-			
-		} catch (Exception e) {
-			DbUtils.rollback(conn);
-			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-		
 	}
 	
 	/**
@@ -2283,7 +2250,7 @@ public class DataPrepareService {
 					if (rs.next()) {
 						return rs.getString(1);
 					}
-					return null;
+					return "";
 				}
 			};
 			return run.query(metaConn, sql, rs, chain);
@@ -2309,7 +2276,7 @@ public class DataPrepareService {
 					if (rs.next()) {
 						return rs.getString(1);
 					}
-					return null;
+					return "";
 				}
 			};
 			return run.query(gdbConn, sql, rs, poiNum);
@@ -2336,7 +2303,7 @@ public class DataPrepareService {
 					if (rs.next()) {
 						return rs.getString(1);
 					}
-					return null;
+					return "";
 				}
 			};
 			return run.query(gdbConn, sql, rs, poiNum);
@@ -2363,7 +2330,7 @@ public class DataPrepareService {
 					if (rs.next()) {
 						return rs.getString(1);
 					}
-					return null;
+					return "";
 				}
 			};
 			return run.query(gdbConn, sql, rs, poiNum);
@@ -2390,7 +2357,7 @@ public class DataPrepareService {
 					if (rs.next()) {
 						return rs.getString(1);
 					}
-					return null;
+					return "";
 				}
 			};
 			return run.query(gdbConn, sql, rs, poiNum);
@@ -2400,42 +2367,74 @@ public class DataPrepareService {
 	}
 	
 	/**
-	 * 查询电话优先级和电话类型
-	 * @param regionConn
+	 * 
+	 * @param gdbConn
+	 * @param poiNum
+	 * @return
+	 * @throws Exception
+	 */
+	public long queryPidByPoiNum(Connection gdbConn, String poiNum) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT P.PID FROM IX_POI P WHERE P.POI_NUM = ?";
+			return run.queryForLong(gdbConn, sql, poiNum);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询电话优先级
+	 * @param gdbConn
 	 * @param param
 	 * @return
 	 * @throws Exception
 	 */
-	public Map<String, List<String>> queryPriorityAndType(Connection regionConn, String param, String poiNum) throws Exception {
+	public Map<String, Integer> queryPriority(Connection gdbConn, long pid) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 			
-			String sql = "SELECT T.PRIORITY, T.CONTACT_TYPE FROM IX_POI P, IX_POI_CONTACT T WHERE P.PID = T.POI_PID AND T.CONTACT IN (?) AND P.POI_NUM = ?";
-			ResultSetHandler<Map<String, List<String>>> rs = new ResultSetHandler<Map<String, List<String>>>() {
-				Map<String, List<String>> result = new HashMap<>();
+			String sql = "SELECT DISTINCT T.CONTACT, T.PRIORITY  FROM IX_POI_CONTACT T WHERE T.POI_PID = ? AND T.CONTACT_TYPE != 11";
+			ResultSetHandler<Map<String, Integer>> rs = new ResultSetHandler<Map<String, Integer>>() {
+				Map<String, Integer> result = new HashMap<>();
 				@Override
-				public Map<String, List<String>> handle(ResultSet rs) throws SQLException {
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
 					while (rs.next()) {
-						if(result.containsKey("priority")){
-							result.get("priority").add(rs.getString(1));
-						} else {
-							List<String> priorityList = new ArrayList<>();
-							priorityList.add(rs.getString(1));
-							result.put("priority", priorityList);
-						}
-						
-						if(result.containsKey("contactType")){
-							result.get("contactType").add(rs.getString(1));
-						} else {
-							List<String> contactTypeList = new ArrayList<>();
-							contactTypeList.add(rs.getString(1));
-							result.put("contactType", contactTypeList);
-						}
+						result.put(rs.getString(1), rs.getInt(2));
 					}
 					return result;
 				}
 			};
-			return run.query(regionConn, sql, rs, param, poiNum);
+			return run.query(gdbConn, sql, rs, pid);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询电话类型
+	 * @param gdbConn
+	 * @param param
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, Integer> queryType(Connection gdbConn, long pid) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "SELECT DISTINCT T.CONTACT,T.CONTACT_TYPE FROM IX_POI_CONTACT T WHERE T.POI_PID = ? AND T.CONTACT_TYPE != 11";
+			ResultSetHandler<Map<String, Integer>> rs = new ResultSetHandler<Map<String, Integer>>() {
+				Map<String, Integer> result = new HashMap<>();
+				@Override
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+					while (rs.next()) {
+						result.put(rs.getString(1), rs.getInt(2));
+					}
+					return result;
+				}
+			};
+			return run.query(gdbConn, sql, rs, pid);
 		}catch(Exception e){
 			throw e;
 		}
@@ -2449,19 +2448,21 @@ public class DataPrepareService {
 	 * @return
 	 * @throws Exception
 	 */
-	public String queryNavOriginalName(Connection gdbConn, String poiNum) throws Exception {
+	public StringBuilder queryNavOriginalName(Connection gdbConn, String poiNum) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 			
 			String sql = "SELECT T.NAME FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND T.NAME_CLASS = 3 AND T.LANG_CODE = 'ENG' AND P.POI_NUM = ?";
-			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+			ResultSetHandler<StringBuilder> rs = new ResultSetHandler<StringBuilder>() {
 				@Override
-				public String handle(ResultSet rs) throws SQLException {
+				public StringBuilder handle(ResultSet rs) throws SQLException {
 					StringBuilder sb = new StringBuilder();
 					while (rs.next()) {
-						 sb.append(rs.getString(1)).append("|");
+						if(rs.getString(1) != null && StringUtils.isNotEmpty(rs.getString(1))){
+							sb.append(rs.getString(1)).append("|");
+						}
 					}
-					return sb.toString();
+					return sb;
 				}
 			};
 			return run.query(gdbConn, sql, rs, poiNum);
@@ -2478,19 +2479,21 @@ public class DataPrepareService {
 	 * @return
 	 * @throws Exception
 	 */
-	public String queryNavStandardName(Connection gdbConn, String poiNum) throws Exception {
+	public StringBuilder queryNavStandardName(Connection gdbConn, String poiNum) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 			
 			String sql = "SELECT T.NAME FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND T.NAME_CLASS = 3 AND T.NAME_TYPE = 1 AND T.LANG_CODE = 'ENG' AND P.POI_NUM = ?";
-			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+			ResultSetHandler<StringBuilder> rs = new ResultSetHandler<StringBuilder>() {
 				@Override
-				public String handle(ResultSet rs) throws SQLException {
+				public StringBuilder handle(ResultSet rs) throws SQLException {
 					StringBuilder sb = new StringBuilder();
 					while (rs.next()) {
-						sb.append(rs.getString(1)).append("|");
+						if(rs.getString(1) != null && StringUtils.isNotEmpty(rs.getString(1))){
+							sb.append(rs.getString(1)).append("|");
+						}
 					}
-					return sb.toString();
+					return sb;
 				}
 			};
 			return run.query(gdbConn, sql, rs, poiNum);
@@ -2507,19 +2510,21 @@ public class DataPrepareService {
 	 * @return
 	 * @throws Exception
 	 */
-	public String queryNavAnotherName(Connection gdbConn, String poiNum) throws Exception {
+	public StringBuilder queryNavAnotherName(Connection gdbConn, String poiNum) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 			
 			String sql = "SELECT T.NAME_PHONETIC FROM IX_POI P, IX_POI_NAME T WHERE P.PID = T.POI_PID AND T.NAME_CLASS = 3 AND P.POI_NUM = ?";
-			ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+			ResultSetHandler<StringBuilder> rs = new ResultSetHandler<StringBuilder>() {
 				@Override
-				public String handle(ResultSet rs) throws SQLException {
+				public StringBuilder handle(ResultSet rs) throws SQLException {
 					StringBuilder sb = new StringBuilder();
 					while (rs.next()) {
-						sb.append(rs.getString(1)).append("|");
+						if(rs.getString(1) != null && StringUtils.isNotEmpty(rs.getString(1))){
+							sb.append(rs.getString(1)).append("|");
+						}
 					}
-					return sb.toString();
+					return sb;
 				}
 			};
 			return run.query(gdbConn, sql, rs, poiNum);
@@ -2531,13 +2536,13 @@ public class DataPrepareService {
 	
 	/**
 	 * 查询地址及发音信息
-	 * @param regionConn
+	 * @param gdbConn
 	 * @param poiNum
 	 * @param entity
 	 * @return
 	 * @throws Exception
 	 */
-	public Boolean queryAddressInfo(Connection regionConn, String poiNum, final AdditionResultEntity entity) throws Exception {
+	public Boolean queryAddressInfo(Connection gdbConn, String poiNum, final AdditionResultEntity entity) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 			
@@ -2597,7 +2602,7 @@ public class DataPrepareService {
 					return flag;
 				}
 			};
-			return run.query(regionConn, sql.toString(), rs, poiNum);
+			return run.query(gdbConn, sql.toString(), rs, poiNum);
 		}catch(Exception e){
 			throw e;
 		}

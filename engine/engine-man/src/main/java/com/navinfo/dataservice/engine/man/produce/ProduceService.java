@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.produce;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -452,7 +453,32 @@ public class ProduceService {
 		
 	}
 
-	public static void main(String[] args) {
-		
+	public Map<String, Object> queryDetail(int produceId) throws Exception {
+		Connection conn=DBConnector.getInstance().getManConnection();
+		try{
+			//对已关闭，但是未创建出品任务的情报项目，创建情报出品记录
+			String sql="SELECT P.PRODUCE_ID, P.PARAMETER FROM PRODUCE P WHERE PRODUCE_ID = "+produceId;
+			QueryRunner run=new QueryRunner();
+			ResultSetHandler<Map<String, Object>> rsHandler=new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException{
+					if(rs.next()){
+						Map<String,Object> map=new HashMap<String, Object>();
+						map.put("produceId", rs.getInt("PRODUCE_ID"));
+						Clob par = rs.getClob("PARAMETER");
+						map.put("intersecProgramId", null);
+						return map;
+					}
+					return null;
+				}
+			};	
+			Map<String, Object> map = run.query(conn, sql, rsHandler);
+			return map;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

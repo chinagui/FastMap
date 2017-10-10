@@ -81,6 +81,20 @@ public class ProduceController extends BaseController {
 		}
 	}
 	
+	@RequestMapping(value = "/produce/detail")
+	public ModelAndView queryDetail(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+
+			int produceId = dataJson.getInt("produceId");	
+			Map<String, Object> resultMap=ProduceService.getInstance().queryDetail(produceId);
+			return new ModelAndView("jsonView", success(resultMap));
+		}catch(Exception e){
+			log.error("日出品失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 	/**
 	 * @Title: list
 	 * @Description: (修改)日出品管理--列表(第七迭代)

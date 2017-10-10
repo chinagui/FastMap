@@ -176,6 +176,8 @@ public class StaticsController extends BaseController {
 							if((Integer)entry.getValue() != 0){
 								data.put(entry.getKey(), entry.getValue());
 							}
+						}else{
+							data.put(entry.getKey(), entry.getValue());
 						}
 					}else{
 						data.put(entry.getKey(), entry.getValue());

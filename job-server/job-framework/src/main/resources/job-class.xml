@@ -179,7 +179,7 @@
           class="com.navinfo.dataservice.job.statics.manJob.MediumMonitorJob"
           request="com.navinfo.dataservice.job.statics.manJob.MediumMonitorJobRequest" >
     </type>
-    <type name="productMonitorStat"
+  	<type name="productMonitorStat"
           class="com.navinfo.dataservice.job.statics.manJob.ProductMonitorJob"
           request="com.navinfo.dataservice.job.statics.manJob.ProductMonitorJobRequest" >
     </type>
@@ -187,5 +187,8 @@
           class="com.navinfo.dataservice.job.statics.manJob.DayProduceJob"
           request="com.navinfo.dataservice.job.statics.manJob.DayProduceJobRequest" >
     </type>
-    
+    <type name="pointAddressRelease"
+          class="com.navinfo.dataservice.row.job.PointAddressReleaseJob"
+          request="com.navinfo.dataservice.row.job.PointAddressReleaseJobRequest" >
+    </type>
 	</mapping>

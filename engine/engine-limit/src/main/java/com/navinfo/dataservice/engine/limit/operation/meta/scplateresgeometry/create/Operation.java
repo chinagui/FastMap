@@ -41,8 +41,8 @@ public class Operation implements IOperation {
 
             geometry.setGeometry(geom);
 
-            if (obj.containsKey("boundarylink")) {
-                geometry.setBoundarylink(obj.getString("boundarylink"));
+            if (obj.containsKey("boundaryLink")) {
+                geometry.setBoundaryLink(obj.getString("boundaryLink"));
             }
 
             result.insertObject(geometry, ObjStatus.INSERT, geometry.getGeometryId());

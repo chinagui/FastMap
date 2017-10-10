@@ -4307,16 +4307,8 @@ public class SubtaskService {
 			linksb.append("t.u_record <> 2 and sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE' ");
 			linksb.append("and p.pid = t.link_pid and p.data_type = 2 and p.task_id = "+taskId);
 			String linkSql = linksb.toString();
-			
 			log.info("linkSql" + linkSql);
 			
-			StringBuffer poisb = new StringBuffer();
-			poisb.append("select t.is_plan_selected, t.is_important, p.pid from IX_POI p, DATA_PLAN t where ");
-			poisb.append("p.u_record <> 2 and sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE' ");
-			poisb.append("and p.pid = t.pid and t.data_type = 1 and p.task_id = "+taskId);
-			String poiSql = poisb.toString();
-			log.info("poiSql" + poiSql);
-        	
 			JSONObject linkJson = run.query(dailyConn, linkSql, clob, new ResultSetHandler<JSONObject>(){
                 @Override
                 public JSONObject handle(ResultSet rs) throws SQLException {
@@ -4336,6 +4328,14 @@ public class SubtaskService {
                     return linkData;
                 }
             });
+			
+			StringBuffer poisb = new StringBuffer();
+			poisb.append("select t.is_plan_selected, t.is_important, p.pid from IX_POI p, DATA_PLAN t where ");
+			poisb.append("p.u_record <> 2 and sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE' ");
+			poisb.append("and p.pid = t.pid and t.data_type = 1 and t.task_id = "+taskId);
+			String poiSql = poisb.toString();
+			log.info("poiSql" + poiSql);
+			
 			JSONObject poiJson = run.query(dailyConn, poiSql, clob, new ResultSetHandler<JSONObject>(){
                 @Override
                 public JSONObject handle(ResultSet rs) throws SQLException {

@@ -72,8 +72,12 @@ public class ScPlateresInfoSearch  {
         StringBuilder sqlstr = new StringBuilder();
 
         sqlstr.append("SELECT * FROM SC_PLATERES_INFO WHERE ADMIN_CODE in ");
-        
+               
         Map<String,String> adminCodeAndName = getBeyondDirstrict(adminCode);
+        
+        if(adminCodeAndName.size() == 0){
+        	throw new Exception("输入的行政区划，无法获取下级区县信息，确认后请重新输入！");
+        }
         
         sqlstr.append(componentInSql(adminCodeAndName));
 
@@ -124,13 +128,18 @@ public class ScPlateresInfoSearch  {
 			result += "'" + entry.getKey() + "',";
 		}
 
-		result = result.substring(0, result.lastIndexOf(","));
+		if(adminCodeAndName.size() != 0){
+		result = result.substring(0, result.lastIndexOf(","));}
 		result += ")";
 
 		return result;
 	}
     
-	private Map<String, String> getBeyondDirstrict(String adminCode) throws Exception {
+	private Map<String, String> getBeyondDirstrict(String adminCodeMK) throws Exception {
+		
+		//母库与情报库admincode不一致，转换成情报库admincode进行情报查询
+		String adminCode = SearchHelp.updateInfoAdminCode(adminCodeMK);
+		
 		Connection mkconn = null;
 
 		PreparedStatement pstmt = null;
@@ -187,6 +196,8 @@ public class ScPlateresInfoSearch  {
 		return result;
 	}
 
+	
+	
     private void componentSql(JSONObject obj,StringBuilder sql){
 
         if (obj.containsKey("infoCode")) {

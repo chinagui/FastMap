@@ -228,11 +228,9 @@ public class limitController extends BaseController {
 
             conn = DBConnector.getInstance().getManConnection();
 
-            QueryRunner run = new QueryRunner();
-
-            String sql = "SELECT A.DAILY_DB_ID FROM REGION A,CP_REGION_PROVINCE B WHERE A.REGION_ID = B.REGION_ID AND B.ADMINCODE = '" + adminCode + "'";
-
-            int dbId = run.queryForInt(conn, sql);
+            SearchProcess p = new SearchProcess(conn);
+            
+            int dbId = p.searchDbId(adminCode);
 
             return new ModelAndView("jsonView", success(dbId));
 
@@ -253,12 +251,6 @@ public class limitController extends BaseController {
 
 		Connection conn = null;
 
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		Geometry geometry = null;
-
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -270,19 +262,11 @@ public class limitController extends BaseController {
 
 			conn = DBConnector.getInstance().getMkConnection();
 
-			String sql = "SELECT geometry FROM AD_ADMIN WHERE ADMIN_ID = " + adminCode;
+			SearchProcess p = new SearchProcess(conn);
+			
+			JSONObject admin = p.searchAdminPosition(adminCode);
 
-			pstmt = conn.prepareStatement(sql);
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				geometry = GeoTranslator.struct2Jts(struct);
-			}
-
-			return new ModelAndView("jsonView", success(geometry));
+			return new ModelAndView("jsonView", success(admin));
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

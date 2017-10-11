@@ -27,9 +27,11 @@ import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.analysis.function.Abs;
 import org.apache.log4j.Logger;
+import org.apache.zookeeper.Op;
 import org.json.JSONException;
 
 import java.sql.Connection;
@@ -1988,6 +1990,34 @@ public class Transaction {
                         Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(geometry);
                         if (dbIds.size() > 1) {
                             throw new Exception("该操作会导致跨大区Node删除，请优先执行跨大区Node删除操作!");
+                        }
+                    }
+                }
+            }
+        }
+        if ((OperType.UPDOWNDEPART.equals(operType) || OperType.CREATESIDEROAD.equals(operType)) && ObjType.RDLINK.equals(objType)) {
+            if (json.containsKey("data") && json.getJSONObject("data").containsKey("linkPids")) {
+                Iterator iterator = json.getJSONObject("data").getJSONArray("linkPids").iterator();
+                List<Integer> pids = new ArrayList<>();
+                while (iterator.hasNext()) {
+                    pids.add(Integer.valueOf(iterator.next().toString()));
+                }
+                if (CollectionUtils.isNotEmpty(pids)) {
+                    List<RdLink> links = new RdLinkSelector(process.getConn()).loadByPids(pids, false);
+                    Set<Integer> nodePids = new HashSet<>();
+                    for (RdLink link : links) {
+                        nodePids.add(link.getsNodePid());
+                        nodePids.add(link.geteNodePid());
+                    }
+                    List<IRow> iRows = new RdNodeSelector(process.getConn()).loadByIds(new ArrayList<>(nodePids), false, false);
+                    for (IRow iRow : iRows) {
+                        RdNode node = (RdNode) iRow;
+                        Set<Integer> dbIds = DbMeshInfoUtil.calcDbIds(node.getGeometry());
+                        if (dbIds.size() > 1) {
+                            if (OperType.UPDOWNDEPART.equals(operType)) {
+                                throw new Exception("无法对大区接边LINK进行上下线分离操作!");
+                            }
+                            throw new Exception("无法对大区接边LINK进行新增辅路操作!");
                         }
                     }
                 }

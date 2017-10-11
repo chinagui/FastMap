@@ -32,7 +32,7 @@ public class FMDPA001 extends BasicCheckRule {
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		// TODO Auto-generated method stub
-		if (obj.objName().equals(ObjectName.IX_POINTADDRESS) && !obj.opType().equals(OperationType.DELETE)) {
+		if (obj.objName().equals(ObjectName.IX_POINTADDRESS) && !obj.opType().equals(OperationType.PRE_DELETED)) {
 			IxPointAddressObj ixPointaddressObj = (IxPointAddressObj) obj;
 			IxPointaddress ixPonitaddress = (IxPointaddress) ixPointaddressObj.getMainrow();
 			String dpName = ixPonitaddress.getDpName() == null ? "" : ixPonitaddress.getDpName();

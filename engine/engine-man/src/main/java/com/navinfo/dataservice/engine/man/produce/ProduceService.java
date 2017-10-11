@@ -454,8 +454,9 @@ public class ProduceService {
 	}
 
 	public Map<String, Object> queryDetail(int produceId) throws Exception {
-		Connection conn=DBConnector.getInstance().getManConnection();
+		Connection conn=null;
 		try{
+			conn=DBConnector.getInstance().getManConnection();
 			//对已关闭，但是未创建出品任务的情报项目，创建情报出品记录
 			String sql="SELECT P.PRODUCE_ID, P.PARAMETER FROM PRODUCE P WHERE PRODUCE_ID = "+produceId;
 			QueryRunner run=new QueryRunner();
@@ -465,7 +466,13 @@ public class ProduceService {
 						Map<String,Object> map=new HashMap<String, Object>();
 						map.put("produceId", rs.getInt("PRODUCE_ID"));
 						Clob par = rs.getClob("PARAMETER");
-						map.put("intersecProgramId", null);
+						String parStr=String.valueOf(par);
+						try{
+							JSONObject parJson = JSONObject.fromObject(parStr);
+							map.put("intersecProgramId", parJson.get("intersecProgramId"));
+						}catch (Exception e) {
+							map.put("intersecProgramId", null);
+						}						
 						return map;
 					}
 					return null;

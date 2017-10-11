@@ -387,7 +387,15 @@ public class ExtractHighWayPoi {
 	public static void convertPidListToHighWayList(Set<Long> pidList,int type,Connection conn) throws Exception{
 		if(!CollectionUtils.isEmpty(pidList)){
 			String sql = "SELECT P.PID,P.MESH_ID,Substr(ad.admin_id,0,2),p.GEOMETRY FROM IX_POI p,AD_ADMIN AD WHERE p.region_id = ad.region_id AND"
-					+ " p.PID IN (" + StringUtils.join(pidList.toArray(),",")+ ")";
+					+ " p.PID IN ";
+			String pidsString = StringUtils.join(pidList, ",");
+			boolean clobFlag = false;
+			if (pidList.size() > 1000) {
+				sql += " (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+				clobFlag = true;
+			} else {
+				sql += " (" + pidsString + ")";
+			}
 			String state = null;
 			if(type==1){
 				state = "新增";
@@ -400,7 +408,11 @@ public class ExtractHighWayPoi {
 			ResultSet rs = null;
 			try {
 				pstmt = conn.prepareStatement(sql);
-				
+				if (clobFlag) {
+					Clob clob = ConnectionUtil.createClob(conn);
+					clob.setString(1, pidsString);
+					pstmt.setClob(1, clob);
+				}
 				rs = pstmt.executeQuery();
 				
 				while (rs.next()) {
@@ -482,12 +494,24 @@ public class ExtractHighWayPoi {
 		
 		
 		if(parentChildrenMap.keySet().size()>0){
-			String sql = "SELECT PID,KIND_CODE FROM IX_POI WHERE PID IN (" + StringUtils.join(parentChildrenMap.keySet().toArray(),",")+ ")";
+			String sql = "SELECT PID,KIND_CODE FROM IX_POI WHERE PID IN ";
+			String pidsString = StringUtils.join(parentChildrenMap.keySet().toArray(), ",");
+			boolean clobFlag = false;
+			if (parentChildrenMap.keySet().toArray().length > 1000) {
+				sql += " (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+				clobFlag = true;
+			} else {
+				sql += " (" + pidsString + ")";
+			}
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try {
 				pstmt = conn.prepareStatement(sql);
-				
+				if (clobFlag) {
+					Clob clob = ConnectionUtil.createClob(conn);
+					clob.setString(1, pidsString);
+					pstmt.setClob(1, clob);
+				}
 				rs = pstmt.executeQuery();
 				
 				while (rs.next()) {

@@ -244,10 +244,6 @@ public class IxPointaddress extends AbstractIx {
 		// TODO Auto-generated method stub
 		return "IX_POINTADDRESS";
 	}
-	
-	public static final String GEOMETRY = "GEOMETRY";
-
-	
 	public static final String DPR_NAME = "DPR_NAME";
 	public static final String DP_NAME = "DP_NAME";
 	public static final String LINK_PID = "LINK_PID";

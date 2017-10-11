@@ -11,9 +11,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -23,7 +25,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.app.upload.stat.UploadCrossRegionInfoDao;
 import com.navinfo.dataservice.control.app.upload.stat.UploadRegionInfoOperator;
-import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
+import com.navinfo.dataservice.dao.plus.editman.PointaddressEditStatus;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPaImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPaImportorCommand;
@@ -138,12 +140,11 @@ public class PaUploadManager {
 			
 			//维护编辑状态
 			log.info("start writing poi edit status in dbId:"+dbId);
-//			PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType);
 			//从所有的poi map中排除鲜度验证的poi
 			for(Long fpi : freshVerPas){
 				allPas.remove(fpi);
 			}
-			//PoiEditStatus.forCollector(conn,allPas,freshVerPas,stkId,tkId,tkType,null);
+			PointaddressEditStatus.forCollector(conn,allPas,freshVerPas,stkId,tkId,tkType);
 			long t2 = System.currentTimeMillis();
 			log.info("pas imported,total time:"+(t2-t1)+"ms.");
 		}catch(Exception e){

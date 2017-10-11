@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -43,13 +41,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 import oracle.sql.STRUCT;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class IxPoiSearch implements ISearch {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
@@ -72,11 +63,6 @@ public class IxPoiSearch implements ISearch {
 	private Map<String, String> CHISHORT;
 
 	private Map<String, String> ALIASNAME;
-	
-	/**
-	 * 初始线程池
-	 */
-	private ExecutorService exec = Executors.newFixedThreadPool(5);
 
 	public IxPoiSearch(Connection conn) {
 		super();
@@ -1164,90 +1150,6 @@ public class IxPoiSearch implements ISearch {
 			throw e;
 		}
 	}
-	
-	
-	public Map<Integer,Integer> searchAdminCodeMapByPid(List<Integer> pids) throws Exception {
-	Map<Integer,Integer> adAdminMap=new HashMap<Integer,Integer>();
-	PreparedStatement pstmt = null;
-	ResultSet resultSet = null;
-	try {
-		String sql = "SELECT i.pid,a.admin_id FROM ad_admin a,ix_poi i WHERE i.pid in (" + org.apache.commons.lang.StringUtils.join(pids, ",") + ") and a.region_id=i.region_id";
-		pstmt = conn.prepareStatement(sql);
-		resultSet = pstmt.executeQuery();
-		while(resultSet.next()){
-			adAdminMap.put(resultSet.getInt("pid"), resultSet.getInt("admin_id"));
-			}
-		return adAdminMap;
-		
-	} catch (Exception e) {
-		throw e;
-	}
-	}
-	
-	public JSONObject searchColumnDataByPid(String firstWordItem,
-			String secondWorkItem, int pid, long userId, int status,
-			JSONObject classifyRules, JSONObject ckRules,
-			Map<Integer, JSONObject> isProblems,IxPoiSelector poiSelector,Map<Integer,Integer> adminCodeMap)throws Exception {
-		
-		JSONObject poiObj = new JSONObject();
-
-		boolean isLock = false;
-	   try{
-			IxPoi poi = (IxPoi) poiSelector.loadById(pid, isLock);
-			
-			if(!(firstWordItem.equals("poi_englishaddress"))){
-			log.info("查询Names");
-			poi.setNames(new AbstractSelector(IxPoiName.class, conn)
-					.loadRowsByParentId(poi.getPid(), isLock));}
-			log.info("查询Photos");
-			poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
-					.loadRowsByParentId(poi.getPid(), isLock));
-			
-//			log.info("查询Parents");
-//			poi.setParents(new AbstractSelector(IxPoiParent.class, conn)
-//					.loadRowsByParentId(poi.getPid(), isLock));
-//			log.info("查询Children");
-//			poi.setChildren(new AbstractSelector(IxPoiChildren.class, conn)
-//					.loadRowsByParentId(poi.getPid(), isLock));
-			log.info("获取各专项共用字段");
-			// 获取各专项共用字段
-			poiObj = getCommenfields(pid, poi,adminCodeMap);
-			poiObj.put("userId", userId);
-			log.info("classifyRules赋值");
-			// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
-			String classifyRule = "";
-			Object cf = classifyRules.get(Integer.toString(pid));
-			if (cf != null) {
-				classifyRule = cf.toString();
-			}
-			poiObj.put("classifyRules", classifyRule);
-			log.info("ckRules赋值，获取检查错误");
-			// ckRules赋值，获取检查错误
-			List<JSONObject> ckRule = (List<JSONObject>) ckRules
-					.get(Integer.toString(pid));
-			poiObj.put("ckRules", ckRule);
-			if (ckRule == null) {
-				List<JSONObject> value = new ArrayList<JSONObject>();
-				poiObj.put("ckRules", value);
-			}
-			log.info("isProblem赋值");
-			// isProblem赋值
-			if (isProblems != null && isProblems.containsKey(pid)) {
-				JSONObject isProblem = (JSONObject) isProblems.get(pid);
-				poiObj.put("isProblem", isProblem);
-			}
-
-			// 大陆作业无值，港澳后续补充
-			poiObj.put("namerefMsg", "");
-			log.info("获取特殊字段");
-			// 获取特殊字段
-			poiObj = getUnCommenfields(firstWordItem, secondWorkItem, pid,
-					poi, poiObj);
-			return  poiObj;
-	} catch (Exception e) {
-		throw e;
-	}
-	}
 
 	/**
 	 * 精编作业数据查询
@@ -1260,10 +1162,10 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray searchColumnPoiByPid(final String firstWordItem,
-			final String secondWorkItem, List<Integer> pids, final long userId, final int status,
-			final JSONObject classifyRules, final JSONObject ckRules,
-			final Map<Integer, JSONObject> isProblems) throws Exception {
+	public JSONArray searchColumnPoiByPid(String firstWordItem,
+			String secondWorkItem, List<Integer> pids, long userId, int status,
+			JSONObject classifyRules, JSONObject ckRules,
+			Map<Integer, JSONObject> isProblems) throws Exception {
 		log.info("start searchColumnPoiByPid");
 		JSONArray dataList = new JSONArray();
 
@@ -1295,30 +1197,63 @@ public class IxPoiSearch implements ISearch {
 			this.CHISHORT = metaData.getChishort();
 
 			this.ALIASNAME = metaData.getAliasName();
-			log.info("查詢adminCode");
-			final Map<Integer,Integer> adminCodeMap=searchAdminCodeMapByPid(pids);
 			log.info("循环查询精编作业字段");
-			final IxPoiSelector poiSelector = new IxPoiSelector(conn);
-			CompletionService<JSONObject> completionService =new ExecutorCompletionService<JSONObject>(exec);
-			for (final int pid : pids) {
-				Callable<JSONObject> task = new Callable<JSONObject>(){
-					@Override
-					public JSONObject call() throws Exception {
-					return searchColumnDataByPid(firstWordItem,secondWorkItem, pid,userId,status,classifyRules,ckRules,isProblems,poiSelector,adminCodeMap);
-				}}; 
-				completionService.submit(task);
-			}
-			for(int i=0;i<pids.size();i++){
-				try {
-					Future<JSONObject> future = completionService.take();
-					JSONObject temp = future.get();
-					dataList.add(temp);
-				} catch (InterruptedException e) {
-					//重新设置线程的中断状态
-					Thread.currentThread().interrupt();
-				} catch (ExecutionException e) {
-					e.printStackTrace();
+			for (int pid : pids) {
+
+				IxPoiSelector poiSelector = new IxPoiSelector(conn);
+				IxPoi poi = (IxPoi) poiSelector.loadById(pid, isLock);
+
+				// IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
+				// List<IRow> nameList =
+				// nameSelector.loadRowsByParentId(poi.getPid(), isLock);
+				// poi.setNames(nameList);
+				log.info("查询Names");
+				poi.setNames(new AbstractSelector(IxPoiName.class, conn)
+						.loadRowsByParentId(poi.getPid(), isLock));
+				log.info("查询Photos");
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
+						.loadRowsByParentId(poi.getPid(), isLock));
+				log.info("查询Parents");
+				poi.setParents(new AbstractSelector(IxPoiParent.class, conn)
+						.loadRowsByParentId(poi.getPid(), isLock));
+				log.info("查询Children");
+				poi.setChildren(new AbstractSelector(IxPoiChildren.class, conn)
+						.loadRowsByParentId(poi.getPid(), isLock));
+				log.info("获取各专项共用字段");
+				// 获取各专项共用字段
+				poiObj = getCommenfields(pid, poi);
+				poiObj.put("userId", userId);
+				log.info("classifyRules赋值");
+				// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
+				String classifyRule = "";
+				Object cf = classifyRules.get(Integer.toString(pid));
+				if (cf != null) {
+					classifyRule = cf.toString();
 				}
+				poiObj.put("classifyRules", classifyRule);
+				log.info("ckRules赋值，获取检查错误");
+				// ckRules赋值，获取检查错误
+				List<JSONObject> ckRule = (List<JSONObject>) ckRules
+						.get(Integer.toString(pid));
+				poiObj.put("ckRules", ckRule);
+				if (ckRule == null) {
+					List<JSONObject> value = new ArrayList<JSONObject>();
+					poiObj.put("ckRules", value);
+				}
+				log.info("isProblem赋值");
+				// isProblem赋值
+				if (isProblems != null && isProblems.containsKey(pid)) {
+					JSONObject isProblem = (JSONObject) isProblems.get(pid);
+					poiObj.put("isProblem", isProblem);
+				}
+
+				// 大陆作业无值，港澳后续补充
+				poiObj.put("namerefMsg", "");
+				log.info("获取特殊字段");
+				// 获取特殊字段
+				poiObj = getUnCommenfields(firstWordItem, secondWorkItem, pid,
+						poi, poiObj);
+				dataList.add(poiObj);
 			}
 			log.info("end searchColumnPoiByPid");
 
@@ -1338,7 +1273,7 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getCommenfields(int pid, IxPoi poi,Map<Integer,Integer> adminCodeMap) throws Exception {
+	private JSONObject getCommenfields(int pid, IxPoi poi) throws Exception {
 		try {
 			JSONObject dataObj = new JSONObject();
 			dataObj.put("pid", pid);
@@ -1347,24 +1282,43 @@ public class IxPoiSearch implements ISearch {
 			dataObj.put("kindCode", poi.getKindCode());
 			dataObj.put("meshId", poi.getMeshId());
 
-//			MetadataApi apiService = (MetadataApi) ApplicationContextUtil
-//					.getBean("metadataApi");
-//			String KindName = apiService.searchKindName(poi.getKindCode());
-			dataObj.put("kindName", KINDCODEMAP.get(poi.getKindCode()));
+			MetadataApi apiService = (MetadataApi) ApplicationContextUtil
+					.getBean("metadataApi");
+			String KindName = apiService.searchKindName(poi.getKindCode());
+			dataObj.put("kindName", KindName);
 
 			// ix_poi表通过region_id关联ad_admin，获取adminCode
 			int regionId = poi.getRegionId();
-			if (adminCodeMap.containsKey(pid)) {
-				dataObj.put("adminCode", adminCodeMap.get(pid));
-			} else{
+			if (regionId == 0) {
 				dataObj.put("adminCode", 0);
+			} else {
+				AdAdminSearch adAdminSearch = new AdAdminSearch(conn);
+				AdAdmin adAdmin = (AdAdmin) adAdminSearch
+						.searchDataByPid(regionId);
+				dataObj.put("adminCode", adAdmin.getAdminId());
 			}
+
+			int parProupId = 0, childProupId = 0;
+			// ix_poi表通过pid关联ix_poi_parent，取group_id
+			List<IRow> pRows = poi.getParents();
+			for (IRow pRow : pRows) {
+				IxPoiParent parents = (IxPoiParent) pRow;
+				parProupId = parents.getPid();
+			}
+			dataObj.put("parentGroupId", parProupId);
+			// ix_poi表通过pid关联ix_poi_children，取group_id
+			List<IRow> cRows = poi.getChildren();
+			for (IRow cRow : cRows) {
+				IxPoiChildren Children = (IxPoiChildren) cRow;
+				childProupId = Children.getGroupId();
+			}
+			dataObj.put("childrenGroupId", childProupId);
 
 			JSONObject poiObj = poi.Serialize(null);
 			// ix_poi表通过pid关联Ix_Poi_Photo，将照片记录转换为json格式的名称组
 			dataObj.put("photos", poiObj.get("photos"));
 			// ix_poi表通过pid关联ix_poi_parent，将父子关系记录转换为json格式的名称组
-//			dataObj.put("parent", poiObj.get("parents"));
+			dataObj.put("parent", poiObj.get("parents"));
 
 			// 通过ix_poi表中的chain，去元数据表ci_para_chain中匹配获取相应的名称
 			String brandName = "";
@@ -1403,30 +1357,21 @@ public class IxPoiSearch implements ISearch {
 			String secondWorkItem, int pid, IxPoi poi, JSONObject dataObj)
 			throws Exception {
 		try {
-			// 当二级项作业为nameUnify时，取该poi的父名称（官方标准化中文）,当二级项作业为aliasName时，取父、子组号
-			if (secondWorkItem.equals("nameUnify")||secondWorkItem.equals("aliasName")){
-				log.info("取该poi的父、子");
-				dataObj = getParentChild(secondWorkItem, poi, dataObj);
-			}
-			// 名称作业/地址作业时，取名称相关字段
+			log.info("取该poi的父名称");
+			// parentName 当二级项作业为nameUnify时，取该poi的父名称（官方标准化中文）
+			dataObj = getParentName(secondWorkItem, poi, dataObj);
 			log.info("取名称相关字段");
+			// 名称相关字段
 			dataObj = getNamesNameFlagNameList(firstWordItem, secondWorkItem,
 					poi, dataObj);
-
-			// 地址作业时，取地址相关字段
-			if (firstWordItem.equals("poi_address")
-					|| firstWordItem.equals("poi_englishaddress")) {
 			log.info("取地址相关字段");
+			// 地址相关字段
 			dataObj = getAddressesAddressList(firstWordItem, secondWorkItem,
-					poi, dataObj);}
-			
-			// 英文名称作业时，取批处理前后值
-			if("poi_englishname".equals(firstWordItem)){
-				log.info("取英文名称批处理前后值");
-				// oldOriginalEngName,newOriginalEngName,oldStandardEngName,newStandardEngName
-				dataObj = getEngNameBeforBatch(firstWordItem, secondWorkItem, poi,
-						dataObj);
-			}
+					poi, dataObj);
+			log.info("取英文名称批处理前后值");
+			// oldOriginalEngName,newOriginalEngName,oldStandardEngName,newStandardEngName
+			dataObj = getEngNameBeforBatch(firstWordItem, secondWorkItem, poi,
+					dataObj);
 
 			return dataObj;
 		} catch (Exception e) {
@@ -1443,22 +1388,19 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getParentChild(String secondWorkItem, IxPoi poi,
+	private JSONObject getParentName(String secondWorkItem, IxPoi poi,
 			JSONObject dataObj) throws Exception {
 		try {
-			log.info("查询Parents");
-			poi.setParents(new AbstractSelector(IxPoiParent.class, conn)
-					.loadRowsByParentId(poi.getPid(), false));
-			int parProupId = 0, childProupId = 0, parentPoiPid = 0;
-			// ix_poi表通过pid关联ix_poi_parent，取group_id
-			List<IRow> pRows = poi.getParents();
-			for (IRow pRow : pRows) {
-				IxPoiParent parents = (IxPoiParent) pRow;
-				parProupId = parents.getPid();
-				parentPoiPid = parents.getParentPoiPid();
-			}
-			dataObj.put("parentGroupId", parProupId);
-			if(secondWorkItem.equals("nameUnify")){
+			if (secondWorkItem.equals("nameUnify")) {
+				int cPid = poi.getPid();
+				int parentPoiPid = 0;
+				IxPoiParentSelector parents = new IxPoiParentSelector(conn);
+				List<IRow> pRows = parents.loadParentRowsByChildrenId(cPid,
+						false);
+				for (IRow pRow : pRows) {
+					IxPoiParent parent = (IxPoiParent) pRow;
+					parentPoiPid = parent.getParentPoiPid();
+				}
 				if (parentPoiPid != 0) {
 					IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
 					dataObj.put("parentName",
@@ -1467,20 +1409,6 @@ public class IxPoiSearch implements ISearch {
 					dataObj.put("parentName", "");
 				}
 			}
-			if(secondWorkItem.equals("aliasName")){
-			log.info("查询Children");
-			poi.setChildren(new AbstractSelector(IxPoiChildren.class, conn)
-					.loadRowsByParentId(poi.getPid(), false));
-				
-				// ix_poi表通过pid关联ix_poi_children，取group_id
-				List<IRow> cRows = poi.getChildren();
-				for (IRow cRow : cRows) {
-					IxPoiChildren Children = (IxPoiChildren) cRow;
-					childProupId = Children.getGroupId();
-				}
-				dataObj.put("childrenGroupId", childProupId);
-			}
-			
 			return dataObj;
 		} catch (Exception e) {
 			throw e;
@@ -1679,6 +1607,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray addrArray = new JSONArray();
 		List<IRow> aRows = poi.getAddresses();
 		try {
+			if (firstWordItem.equals("poi_address")
+					|| firstWordItem.equals("poi_englishaddress")) {
 				for (IRow aRow : aRows) {
 					// 地址组:当一级作业项=poi_address或poi_englishaddress时，pid关联ix_poi_address，将多组名称记录转换为json格式的名称组；
 					IxPoiAddress address = (IxPoiAddress) aRow;
@@ -1818,6 +1748,7 @@ public class IxPoiSearch implements ISearch {
 					dataObj.put("addressList", new ArrayList<String>());
 				}
 				dataObj.put("addresses", addrArray);
+			}
 			return dataObj;
 		} catch (Exception e) {
 			throw e;
@@ -1837,6 +1768,13 @@ public class IxPoiSearch implements ISearch {
 			String secondWorkItem, IxPoi poi, JSONObject dataObj)
 			throws Exception {
 		String oldOriginalEngName = "", newOriginalEngName = "", oldStandardEngName = "", newStandardEngName = "";
+		if(!("poi_englishname".equals(firstWordItem))){
+			dataObj.put("oldOriginalEngName", oldOriginalEngName);
+			dataObj.put("newOriginalEngName", newOriginalEngName);
+			dataObj.put("oldStandardEngName", oldStandardEngName);
+			dataObj.put("newStandardEngName", newStandardEngName);
+			return dataObj;
+		}
 		LogReader logReader = new LogReader(conn);
 		JSONObject result = new JSONObject();
 		List<IRow> nRows = poi.getNames();

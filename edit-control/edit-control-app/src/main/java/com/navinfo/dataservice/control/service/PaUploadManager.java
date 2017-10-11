@@ -107,7 +107,7 @@ public class PaUploadManager {
 				writeCrossRegionStat(subtaskId,p);
 			}
 		}
-		log.info("Imported all pois and photos.");
+		log.info("Imported all pas .");
 		return result;
 		
 	}
@@ -139,8 +139,8 @@ public class PaUploadManager {
 			uPas.filterErrorFid(imp.getErrLogs());
 			
 			//维护编辑状态
-			log.info("start writing poi edit status in dbId:"+dbId);
-			//从所有的poi map中排除鲜度验证的poi
+			log.info("start writing pa edit status in dbId:"+dbId);
+			//从所有的pa map中排除鲜度验证的pa
 			for(Long fpi : freshVerPas){
 				allPas.remove(fpi);
 			}
@@ -161,7 +161,7 @@ public class PaUploadManager {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-		log.info("end importing pois in dbId:"+dbId);
+		log.info("end importing pas in dbId:"+dbId);
 		
 	}
 	private void writeCrossRegionStat(int fromSubtaskId,CollectorUploadPas uPas){

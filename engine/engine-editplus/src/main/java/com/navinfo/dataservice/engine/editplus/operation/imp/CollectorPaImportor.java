@@ -154,7 +154,7 @@ public class CollectorPaImportor extends AbstractOperation {
 				}
 			}
 		}else{
-			log.info("无修改的poi数据需要导入");
+			log.info("无修改的pa数据需要导入");
 		}
 		//处理删除的数据
 		Map<String,JSONObject> deletePas = uploadPas.getDeletePas();
@@ -176,7 +176,7 @@ public class CollectorPaImportor extends AbstractOperation {
 					if(!keys.contains(fid)){
 						log.info("删除的pa在库中未找到。fid:"+fid);
 						//
-						errLogs.add(new ErrorLog(fid,0,"删除的poi在库中未找到"));
+						errLogs.add(new ErrorLog(fid,0,"删除的pa在库中未找到"));
 					}
 				}
 			}else{
@@ -220,7 +220,7 @@ public class CollectorPaImportor extends AbstractOperation {
 			ixPa.setGuideLinkPid(newLinkPid);
 		}
 		// meshid非0时原值转出；为0时根据几何计算；
-		int meshId = jo.getInt("meshid");
+		int meshId = 0;//jo.getInt("meshid");
 		if (meshId == 0) {
 			String[] meshIds = MeshUtils.point2Meshes(geometry.getCoordinate().x, geometry.getCoordinate().y);
 			meshId = Integer.parseInt(meshIds[0]);

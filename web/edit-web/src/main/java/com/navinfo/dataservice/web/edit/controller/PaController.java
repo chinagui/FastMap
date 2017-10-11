@@ -64,10 +64,10 @@ public class PaController extends BaseController{
 				JSONObject gridDate = gridDateList.getJSONObject(i);
 				gridDateMap.put(gridDate.getString("grid"), gridDate.getString("date"));
 			}
-			logger.info("开始准备待下载的poi zip文件，grid:"+gridDateList);
+			logger.info("开始准备待下载的pa zip文件，grid:"+gridDateList);
 			PaDownloadOperation operation = new PaDownloadOperation();
 			String url = operation.generateZip(gridDateMap,subtaskId,userId);
-			logger.info("生成poizip包:url"+url);
+			logger.info("生成pazip包:url"+url);
 			//*********zl 2016.11.29 ***********
 			String poisDownloadDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());//增加抽取时间 poisDownloadDate
 			Map<String,String> dateMap = new HashMap<String,String>();

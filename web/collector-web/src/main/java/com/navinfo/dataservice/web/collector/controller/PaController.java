@@ -93,8 +93,8 @@ public class PaController extends BaseController {
 				jsonArrFail = JSONArray.fromObject(result.getFail());
 			}
 			SysLogStats log = new SysLogStats();
-			log.setLogType(SysLogConstant.POI_UPLOAD_TYPE);
-			log.setLogDesc(SysLogConstant.POI_UPLOAD_DESC+",jobId :"+jobId+",subtaskId:"+subtaskId);
+			log.setLogType(SysLogConstant.PA_UPLOAD_TYPE);
+			log.setLogDesc(SysLogConstant.PA_UPLOAD_DESC+",jobId :"+jobId+",subtaskId:"+subtaskId);
 			log.setFailureTotal(total-successTotal);
 			log.setSuccessTotal(successTotal);  
 			log.setTotal(total);

@@ -93,7 +93,7 @@ public class PaDownloadOperation {
 					PropConstant.serverUrl);
 			
 			String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.downloadUrlPathPoi);
+					PropConstant.downloadUrlPathPa);
 
 			String url = serverUrl + downloadUrlPath +File.separator+ day + File.separator+userId+File.separator
 					+ zipFileName;

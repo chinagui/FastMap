@@ -45,7 +45,7 @@ public class UploadTest {
 		}
 
 	}
-	@Test
+//	@Test
 	public void testUpload() {
 		try {
 			long t1 = System.currentTimeMillis();
@@ -89,7 +89,7 @@ public class UploadTest {
 			UploadResult result = upMan.upload();
 			//读取poi文件，导入...
 			long t2 = System.currentTimeMillis();
-			System.out.println("poi import total time:"+(t2-t1)+"ms.");
+			System.out.println("pa import total time:"+(t2-t1)+"ms.");
 			
 //			UploadManager upMan = new UploadManager(4127L,"F:\\data\\collector\\poi20_1.txt");
 			/*UploadManager upMan = new UploadManager(4127L,"F:\\poi003.txt");

@@ -14,6 +14,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.operation.Transaction;
@@ -38,8 +39,8 @@ public class limitTest extends ClassPathXmlAppContextInit{
 	@Test
 	public void testInfosearch(){
 		//String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":\"110000\",\"infoCode\":\"\",\"startTime\":\"20170915\",\"endTime\":\"20170920\",\"complete\":\"[1,2,3]\",\"condition\":\"['S','D']\",\"pageSize\":20,\"pageNum\":1}}";
-        //String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110000,\"infoCode\":\"\",\"startTime\":\"20170926\",\"endTime\":\"20170926\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
-		String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110100,\"infoCode\":\"ABC1528015\",\"startTime\":\"20170913\",\"endTime\":\"20170928\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
+        String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110000,\"infoCode\":\"\",\"startTime\":\"20170829\",\"endTime\":\"20171011\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
+		//String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110000,\"infoCode\":\"ABC1528015\",\"startTime\":\"20170913\",\"endTime\":\"20170928\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
 		
         Connection conn = null;
 
@@ -173,11 +174,18 @@ public class limitTest extends ClassPathXmlAppContextInit{
 		//String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"DELETE\",\"objId\":[\"D1100000003000003\",\"D1100000003000004\"]}";
 		//String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"UPDATE\",\"geomId\":\"D1100000004000001\",\"data\":{\"boundaryLink\":\"2\",\"objStatus\":\"UPDATE\"}}";
 		//String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"DELETE\",\"objId\":[\"D1100000004000003\",\"D1100000004000004\"]}";
-		String parameter = "{\"type\":\"SCPLATERESRDLINK\",\"command\":\"UPDATE\",\"objId\":12345,\"data\":{\"limitDir\":3,\"objStatus\":\"UPDATE\"}}";
+		/*String parameter = "{\"type\":\"SCPLATERESRDLINK\",\"command\":\"UPDATE\",\"objId\":12345,\"data\":{\"limitDir\":3,\"objStatus\":\"UPDATE\"}}";
 		
 		Transaction t = new Transaction(parameter);
 		
-		t.run();
+		t.run();*/
+		
+		String adminCode = "110100";
+		Connection conn = DBConnector.getInstance().getMkConnection();
+		SearchProcess p = new SearchProcess(conn);
+		
+		JSONObject dbId = p.searchAdminPosition(adminCode);
+		conn.close();
 	}
 	
 	@Test
@@ -204,5 +212,51 @@ public class limitTest extends ClassPathXmlAppContextInit{
           
           System.out.println(data);
           
+	}
+	
+	@Test
+	public void testgetbypids() throws Exception{
+		String parameter = "{\"dbId\":13,\"type\":\"RDLINK\",\"pids\":[9019391,88049179,88049178]}";
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			JSONArray pidArray = jsonReq.getJSONArray("pids");
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<RdLink> objList = p.searchDataByPids(pidArray);
+
+			JSONArray array = new JSONArray();
+
+			if (objList != null) {
+
+				for (RdLink obj : objList) {
+					JSONObject json = obj.Serialize(ObjLevel.FULL);
+					array.add(json);
+				}
+			}
+			System.out.println(array);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

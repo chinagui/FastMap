@@ -4255,9 +4255,8 @@ public class SubtaskService {
 		try {
 			QueryRunner run = new QueryRunner();
 			
-			String sql = "SELECT T.TASK_ID, R.ID, R.GEOMETRY, R.BLOCK_ID"
-					+ "  FROM SUBTASK_REFER R, SUBTASK S, TASK T"
-					+ " WHERE T.TASK_ID = S.TASK_ID AND R.ID = S.REFER_ID AND R.ID = " + referId;
+			String sql = "select s.id, s.geometry,s.block_id,t.task_id from subtask_refer s,block b, task t "
+					+ "where s.block_id = b.block_id and t.block_id = b.block_id and t.type = 0 and t.latest = 1 and s.id = " + referId;
 			log.info("queryReferByTaskId SQL：" + sql);
 			ResultSetHandler<SubtaskRefer> rsHandler = new ResultSetHandler<SubtaskRefer>() {
 				public SubtaskRefer handle(ResultSet rs) throws SQLException {

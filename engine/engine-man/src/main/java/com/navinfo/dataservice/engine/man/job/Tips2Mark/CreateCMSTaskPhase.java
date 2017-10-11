@@ -275,8 +275,8 @@ public class CreateCMSTaskPhase extends JobPhase {
         			result.put("poiPlanLoad", null);
         			continue;
         		}
-        		String poiSql = "select count(1), t.mesh_id from IX_POI t where t.mesh_id "
-        				+ "in " + meshs.toString().replace("[", "(").replace("]", ")") + " group by t.mesh_id";
+        		String poiSql = "select count(1), t.mesh_id from IX_POI t, POI_EDIT_STATUS ts where ts." + taskType+" = " + task.getTaskId() + " and ts.pid = t.pid and "
+        				+ "t.mesh_id in " + meshs.toString().replace("[", "(").replace("]", ")") + " group by t.mesh_id";
             	
             	log.info("querypoiSql :" + poiSql);
             	

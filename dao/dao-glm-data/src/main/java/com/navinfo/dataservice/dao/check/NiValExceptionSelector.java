@@ -1468,7 +1468,7 @@ public class NiValExceptionSelector {
 		pidsClob.setString(1, pids);
 		
 		StringBuilder sql = new StringBuilder(
-				" select t.pid,t.geometry,t.u_record,t.guide_link_pid,p.idcode, p.x_guide, p.y_guide, p.row_id,p.dpr_name, p.dp_name,p.memoire,p.memo,(select n.fullname from ix_pointaddress_name n "
+				" select t.pid,t.geometry,t.u_record,t.guide_link_pid,t.idcode, t.x_guide, t.y_guide, t.row_id,t.dpr_name, t.dp_name,t.memoire,t.memo,(select n.fullname from ix_pointaddress_name n "
 						+ "where n.pid = t.pid  AND n.lang_code = 'CHI' and rownum = 1) name "
 						+ "from ix_pointaddress t  where t.pid in ("
 						+ "select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))"

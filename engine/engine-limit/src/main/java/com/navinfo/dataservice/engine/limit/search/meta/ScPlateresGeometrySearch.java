@@ -78,21 +78,21 @@ public class ScPlateresGeometrySearch implements ISearch {
 
         return total;
     }
-    
+
     public String loadMaxKeyId(String groupId) throws Exception {
         StringBuilder sql = new StringBuilder();
 
         sql.append(" SELECT MAX(GEOMETRY_ID) FROM SC_PLATERES_GEOMETRY WHERE GROUP_ID = ? ");
 
         PreparedStatement pstmt = null;
- 
+
         String geometryId = "";
 
         ResultSet resultSet = null;
 
         try {
             pstmt = this.conn.prepareStatement(sql.toString());
-            
+
             pstmt.setString(1, groupId);
 
             resultSet = pstmt.executeQuery();
@@ -100,7 +100,7 @@ public class ScPlateresGeometrySearch implements ISearch {
             while (resultSet.next()) {
 
                 geometryId = resultSet.getString(1);
-                
+
             }
         } catch (Exception e) {
 
@@ -181,13 +181,13 @@ public class ScPlateresGeometrySearch implements ISearch {
 
                 JSONObject m = new JSONObject();
 
-                m.put("a", resultSet.getInt("GEOMETRY_ID"));
+                m.put("a", resultSet.getString("GEOMETRY_ID"));
 
                 m.put("b", resultSet.getString("GROUP_ID"));
 
                 m.put("c", resultSet.getString("BOUNDARY_LINK"));
 
-                m.put("e", resultSet.getString(geom.getGeometryType()));
+                m.put("e", geom.getGeometryType());
 
                 snapshot.setM(m);
 
@@ -203,5 +203,43 @@ public class ScPlateresGeometrySearch implements ISearch {
 
         return list;
     }
+
+
+    public List<ScPlateresGeometry> loadByGroupId(String id) throws Exception {
+
+        List<ScPlateresGeometry> geometrys = new ArrayList<>();
+
+        String sqlstr = "SELECT * FROM SC_PLATERES_GEOMETRY WHERE GEOMETRY_ID=? ";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sqlstr);
+
+            pstmt.setString(1, id);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                ScPlateresGeometry geometry = new ScPlateresGeometry();
+
+                ReflectionAttrUtils.executeResultSet(geometry, resultSet);
+                geometrys.add(geometry);
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return geometrys;
+    }
+
 
 }

@@ -91,7 +91,6 @@ public class PointAddressSave {
             	return result;
             }
            
-            
 			if(poiData.containsKey("longitude") && poiData.containsKey("latitude")){
 				calcGeometryAndMesh(poiData, conn);
 			}
@@ -167,7 +166,7 @@ public class PointAddressSave {
 	public boolean isFreshVerified(long pid,Connection conn) throws Exception {
 		String fd_lst=null;
 
-		String sql = "SELECT de.fd_lst FROM LOG_DETAIL de WHERE de.OB_PID= :1 AND de.TB_NM='IX_POINTADDRESS'  AND de.FD_LST IS NOT NULL ";
+		String sql = "SELECT de.fd_lst FROM LOG_DETAIL de WHERE de.OB_PID= :1 AND de.OB_NM='IX_POINTADDRESS'  AND de.FD_LST IS NOT NULL ";
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

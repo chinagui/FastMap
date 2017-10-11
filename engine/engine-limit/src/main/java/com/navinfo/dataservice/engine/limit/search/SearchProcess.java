@@ -2,8 +2,10 @@
 package com.navinfo.dataservice.engine.limit.search;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
@@ -113,11 +115,11 @@ public class SearchProcess {
 
         try {
             switch (type) {
-                case 1:
-                case 2:
+                case 1: //名称模糊查询
+                case 2: //名称精准查询
                     result = search.searchDataByCondition(type, condition);
                     break;
-                case 3:
+                case 3: //linkPid查询名称
                     result = search.searchDataByPid(condition);
                 default:
                     return result;
@@ -130,42 +132,28 @@ public class SearchProcess {
 
         }
     }
+    
+    public List<RdLink> searchDataByPids(JSONArray pids)
+			throws Exception {
 
-    /**
-     * 控制输出JSON的格式
-     *
-     * @return JsonConfig
-     */
-    private JsonConfig getJsonConfig() {
-        JsonConfig jsonConfig = new JsonConfig();
+    	RdLinkSearch search = new RdLinkSearch(this.conn);
+    	
+		try {
+			@SuppressWarnings("unchecked")
+			List<Integer> pidList = JSONArray.toList(pids, Integer.class,
+					JsonUtils.getJsonConfig());
 
-        jsonConfig.registerJsonValueProcessor(String.class,
-                new JsonValueProcessor() {
+			List<RdLink> objList = search.searchDataByPids(pidList);
 
-                    @Override
-                    public Object processObjectValue(String key, Object value,
-                                                     JsonConfig arg2) {
-                        if (value == null) {
-                            return null;
-                        }
+			return objList;
+		} catch (Exception e) {
 
-                        if (JSONUtils.mayBeJSON(value.toString())) {
-                            return "\"" + value + "\"";
-                        }
+			throw e;
 
-                        return value;
+		} finally {
 
-                    }
-
-                    @Override
-                    public Object processArrayValue(Object value,
-                                                    JsonConfig arg1) {
-                        return value;
-                    }
-                });
-
-        return jsonConfig;
-    }
+		}
+	}
 
     /**
      * 根据瓦片空间查询
@@ -208,24 +196,25 @@ public class SearchProcess {
      * @return 查询结果
      */
     private List<SearchSnapshot> searchDataByTileWithGap(
-            LimitObjType type,  RenderParam param) throws Exception {
+            LimitObjType type, RenderParam param) throws Exception {
 
         Connection conn = null;
 
         try {
 
-            if (LimitObjType.SCPLATERESFACE.equals(type) || LimitObjType.SCPLATERESFACE.equals(type)) {
+            if (LimitObjType.SCPLATERESFACE.equals(type) || LimitObjType.SCPLATERESLINK.equals(type)) {
 
                 conn = DBConnector.getInstance().getLimitConnection();
 
-            } else if (LimitObjType.SCPLATERESGEOMETRY.equals(type)) {
+            } else if (LimitObjType.SCPLATERESGEOMETRY.equals(type) || LimitObjType.SCPLATERESRDLINK.equals(type)) {
 
-                conn = DBConnector.getInstance().getMetaConnection();
+//              conn = DBConnector.getInstance().getMetaConnection();
+                conn = DBConnector.getInstance().getLimitConnection();
+            } else {
+                throw new Exception("不支持的渲染类型：" + type.toString());
             }
 
-            SearchFactory factory = new SearchFactory(conn);
-
-            ISearch search = factory.createSearch(type);
+            ISearch search = createSearch(type, conn);
 
             if (search == null) {
                 return new ArrayList<>();
@@ -246,7 +235,63 @@ public class SearchProcess {
                 }
             }
         }
+    }
 
+
+    public ISearch createSearch(LimitObjType ot, Connection conn) {
+
+        switch (ot) {
+            case SCPLATERESFACE:
+                return new ScPlateresFaceSearch(conn);
+
+            case SCPLATERESLINK:
+                return new ScPlateresLinkSearch(conn);
+
+            case SCPLATERESGEOMETRY:
+                return new ScPlateresGeometrySearch(conn);
+
+            case SCPLATERESRDLINK:
+                return new ScPlateresRdlinkSearch(conn);
+
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * 控制输出JSON的格式
+     *
+     * @return JsonConfig
+     */
+    private JsonConfig getJsonConfig() {
+        JsonConfig jsonConfig = new JsonConfig();
+
+        jsonConfig.registerJsonValueProcessor(String.class,
+                new JsonValueProcessor() {
+
+                    @Override
+                    public Object processObjectValue(String key, Object value,
+                                                     JsonConfig arg2) {
+                        if (value == null) {
+                            return null;
+                        }
+
+                        if (JSONUtils.mayBeJSON(value.toString())) {
+                            return "\"" + value + "\"";
+                        }
+
+                        return value;
+
+                    }
+
+                    @Override
+                    public Object processArrayValue(Object value,
+                                                    JsonConfig arg1) {
+                        return value;
+                    }
+                });
+
+        return jsonConfig;
     }
 
     public static void main(String[] args) throws Exception {

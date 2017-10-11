@@ -97,4 +97,30 @@ public class Parser_Tool {
 		httpclient2.getConnectionManager().shutdown();
 		return body;
 	}
+	
+	static int i = 0;
+	
+	public static String do_get3(String url) throws ClientProtocolException, IOException {
+		
+		i += 1;
+		if(i % 350 == 0 && i != 0){
+			try {
+				Thread.sleep(3000);
+				i = 0;
+			} catch (InterruptedException e) {
+				System.out.println("当前线程被中断......");
+				e.printStackTrace();
+			}
+		}
+		System.out.println("===================== 第" + i + "次请求==============");
+
+		String body = "{}";
+		HttpGet httpget = new HttpGet(url);
+		HttpResponse response = httpclient.execute(httpget);
+
+		HttpEntity entity = response.getEntity();
+
+		body = EntityUtils.toString(entity);
+		return body;
+	}
 }

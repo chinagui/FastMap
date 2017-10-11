@@ -19,7 +19,7 @@ import java.util.Map;
 public class ScPlateresRdLink implements IObj {
 
     private int linkPid;   //LINK_PID
-    private int linkDir;//            LIMIT_DIR
+    private int limitDir;//            LIMIT_DIR
     private String geometryId = "";//    GEOMETRY_ID
     private Geometry geometryRdLink;//    GEOMETRY_RDLINK
 
@@ -32,11 +32,11 @@ public class ScPlateresRdLink implements IObj {
     }
 
     public int getLinkDir() {
-        return linkDir;
+        return limitDir;
     }
 
     public void setLinkDir(int linkDir) {
-        this.linkDir = linkDir;
+        this.limitDir = linkDir;
     }
 
     public String getGeometryId() {

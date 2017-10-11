@@ -166,10 +166,14 @@ public class limitTest extends ClassPathXmlAppContextInit{
 		
 		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"UPDATE\",\"groupId\":\"S1100000002\",\"objId\":1,\"data\":{\"vehicle\":\"1|2\",\"objStatus\":\"UPDATE\"}}";
 		//String parameter = "{\"type\":\"SCPLATERESMANOEUVRE\",\"command\":\"DELETE\",\"groupId\":\"S1100000002\",\"objId\":[1,2]}";
-		//String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"CREATE\",\"data\":{\"groupId\":\"D1100000003\",\"links\":[59033375,59033376,59025417,59037479]},\"dbId\":13}";
+		//String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"CREATE\",\"data\":{\"groupId\":\"D1100000004\",\"links\":[59033375,59033376,59025417,59037479]},\"dbId\":13}";
 		
 		//String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"UPDATE\",\"geomId\":\"D1100000003000001\",\"data\":{\"boundaryLink\":\"2\",\"objStatus\":\"UPDATE\"}}";
-		String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"DELETE\",\"objId\":[\"D1100000003000003\",\"D1100000003000004\"]}";
+		//String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"DELETE\",\"objId\":[\"D1100000003000003\",\"D1100000003000004\"]}";
+		//String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"UPDATE\",\"geomId\":\"D1100000004000001\",\"data\":{\"boundaryLink\":\"2\",\"objStatus\":\"UPDATE\"}}";
+		//String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"DELETE\",\"objId\":[\"D1100000004000003\",\"D1100000004000004\"]}";
+		String parameter = "{\"type\":\"SCPLATERESRDLINK\",\"command\":\"UPDATE\",\"objId\":12345,\"data\":{\"limitDir\":3,\"objStatus\":\"UPDATE\"}}";
+		
 		Transaction t = new Transaction(parameter);
 		
 		t.run();

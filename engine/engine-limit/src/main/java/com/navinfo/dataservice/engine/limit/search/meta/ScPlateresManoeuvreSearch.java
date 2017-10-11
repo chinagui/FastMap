@@ -10,6 +10,7 @@ import net.sf.json.JSONObject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -132,5 +133,42 @@ public class ScPlateresManoeuvreSearch {
         }
 
         return total;
+    }
+
+    public List<ScPlateresManoeuvre> loadByGroupId(String groupId) throws Exception {
+
+        List<ScPlateresManoeuvre> manoeuvres = new ArrayList<>();
+
+        String sqlstr = "SELECT * FROM SC_PLATERES_MANOEUVRE WHERE  GROUP_ID = ?";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sqlstr);
+
+            pstmt.setString(1, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                ScPlateresManoeuvre manoeuvre = new ScPlateresManoeuvre();
+
+                ReflectionAttrUtils.executeResultSet(manoeuvre, resultSet);
+
+                manoeuvres.add(manoeuvre);
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return manoeuvres;
     }
 }

@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -190,4 +192,15 @@ public class RdLinkSearch {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
+	
+	public List<RdLink> searchDataByPids(List<Integer> pidList)
+			throws Exception {
+
+		RdLinkSelector linkSelector = new RdLinkSelector(conn);
+
+		List<RdLink> linkList = linkSelector.loadByPids(pidList, false);
+
+		return linkList;
+	}
+
 }

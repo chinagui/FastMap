@@ -77,14 +77,16 @@ public class Operation implements IOperation {
             QueryRunner runner = new QueryRunner();
 
             //删除Group对应的临时link几何
-            String strSql = "DELETE SC_PLATERES_LINK WHERE GROUP_ID=' " + groupId + "'";
+            String strSql = "DELETE SC_PLATERES_LINK WHERE GROUP_ID='" + groupId + "'";
 
             runner.execute(conn, strSql);
 
             //删除Group对应的临时link几何
-            strSql = "DELETE SC_PLATERES_FACE WHERE GROUP_ID=' " + groupId + "'";
+            strSql = "DELETE SC_PLATERES_FACE WHERE GROUP_ID='" + groupId + "'";
 
             runner.execute(conn, strSql);
+
+            conn.commit();
 
             return null;
 

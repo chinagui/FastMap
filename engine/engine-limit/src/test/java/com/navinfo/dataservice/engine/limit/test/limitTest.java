@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.operation.Transaction;
+import com.navinfo.dataservice.engine.limit.search.RenderParam;
 import com.navinfo.dataservice.engine.limit.search.SearchProcess;
 import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -38,7 +39,7 @@ public class limitTest extends ClassPathXmlAppContextInit{
 	public void testInfosearch(){
 		//String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":\"110000\",\"infoCode\":\"\",\"startTime\":\"20170915\",\"endTime\":\"20170920\",\"complete\":\"[1,2,3]\",\"condition\":\"['S','D']\",\"pageSize\":20,\"pageNum\":1}}";
         //String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110000,\"infoCode\":\"\",\"startTime\":\"20170926\",\"endTime\":\"20170926\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
-		String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110000,\"infoCode\":\"ABC1528015\",\"startTime\":\"20170913\",\"endTime\":\"20170928\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
+		String parameter = "{\"type\":\"SCPLATERESINFO\",\"condition\":{\"adminArea\":110100,\"infoCode\":\"ABC1528015\",\"startTime\":\"20170913\",\"endTime\":\"20170928\",\"complete\":[],\"condition\":[],\"pageSize\":20,\"pageNum\":1}}";
 		
         Connection conn = null;
 
@@ -177,5 +178,31 @@ public class limitTest extends ClassPathXmlAppContextInit{
 		Transaction t = new Transaction(parameter);
 		
 		t.run();
+	}
+	
+	@Test
+	public void testRender() throws Exception{
+		  RenderParam param=new RenderParam();
+
+          param.setX(1725427);
+
+          param.setY(794151);
+
+          param.setZ(21);
+
+          param.setGap(13);
+          
+          //JSONArray types = new JSONArray();
+          
+          List<LimitObjType> types = new ArrayList<>();
+          
+          types.add(LimitObjType.SCPLATERESGEOMETRY);
+          
+          com.navinfo.dataservice.engine.limit.search.SearchProcess p = new com.navinfo.dataservice.engine.limit.search.SearchProcess();
+
+          JSONObject data = p.searchDataByTileWithGap(types,param);
+          
+          System.out.println(data);
+          
 	}
 }

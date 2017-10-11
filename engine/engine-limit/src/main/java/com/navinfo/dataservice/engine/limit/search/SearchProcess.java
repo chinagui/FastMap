@@ -156,42 +156,6 @@ public class SearchProcess {
 	}
 
     /**
-     * 控制输出JSON的格式
-     *
-     * @return JsonConfig
-     */
-    private JsonConfig getJsonConfig() {
-        JsonConfig jsonConfig = new JsonConfig();
-
-        jsonConfig.registerJsonValueProcessor(String.class,
-                new JsonValueProcessor() {
-
-                    @Override
-                    public Object processObjectValue(String key, Object value,
-                                                     JsonConfig arg2) {
-                        if (value == null) {
-                            return null;
-                        }
-
-                        if (JSONUtils.mayBeJSON(value.toString())) {
-                            return "\"" + value + "\"";
-                        }
-
-                        return value;
-
-                    }
-
-                    @Override
-                    public Object processArrayValue(Object value,
-                                                    JsonConfig arg1) {
-                        return value;
-                    }
-                });
-
-        return jsonConfig;
-    }
-
-    /**
      * 根据瓦片空间查询
      *
      * @return 查询结果
@@ -242,18 +206,15 @@ public class SearchProcess {
 
                 conn = DBConnector.getInstance().getLimitConnection();
 
-            } else if (LimitObjType.SCPLATERESGEOMETRY.equals(type)) {
+            } else if (LimitObjType.SCPLATERESGEOMETRY.equals(type) || LimitObjType.SCPLATERESRDLINK.equals(type)) {
 
 //              conn = DBConnector.getInstance().getMetaConnection();
                 conn = DBConnector.getInstance().getLimitConnection();
-            }
-            else {
-                throw new Exception("不支持的渲染类型："+type.toString());
+            } else {
+                throw new Exception("不支持的渲染类型：" + type.toString());
             }
 
-            SearchFactory factory = new SearchFactory(conn);
-
-            ISearch search = factory.createSearch(type);
+            ISearch search = createSearch(type, conn);
 
             if (search == null) {
                 return new ArrayList<>();
@@ -274,7 +235,63 @@ public class SearchProcess {
                 }
             }
         }
+    }
 
+
+    public ISearch createSearch(LimitObjType ot, Connection conn) {
+
+        switch (ot) {
+            case SCPLATERESFACE:
+                return new ScPlateresFaceSearch(conn);
+
+            case SCPLATERESLINK:
+                return new ScPlateresLinkSearch(conn);
+
+            case SCPLATERESGEOMETRY:
+                return new ScPlateresGeometrySearch(conn);
+
+            case SCPLATERESRDLINK:
+                return new ScPlateresRdlinkSearch(conn);
+
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * 控制输出JSON的格式
+     *
+     * @return JsonConfig
+     */
+    private JsonConfig getJsonConfig() {
+        JsonConfig jsonConfig = new JsonConfig();
+
+        jsonConfig.registerJsonValueProcessor(String.class,
+                new JsonValueProcessor() {
+
+                    @Override
+                    public Object processObjectValue(String key, Object value,
+                                                     JsonConfig arg2) {
+                        if (value == null) {
+                            return null;
+                        }
+
+                        if (JSONUtils.mayBeJSON(value.toString())) {
+                            return "\"" + value + "\"";
+                        }
+
+                        return value;
+
+                    }
+
+                    @Override
+                    public Object processArrayValue(Object value,
+                                                    JsonConfig arg1) {
+                        return value;
+                    }
+                });
+
+        return jsonConfig;
     }
 
     public static void main(String[] args) throws Exception {

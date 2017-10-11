@@ -139,13 +139,13 @@ public class ScPlateresFaceSearch implements ISearch {
 
                 JSONObject m = new JSONObject();
 
-                m.put("a", resultSet.getInt("GEOMETRY_ID"));
+                m.put("a", resultSet.getString("GEOMETRY_ID"));
 
                 m.put("b", resultSet.getString("GROUP_ID"));
 
                 m.put("c", resultSet.getString("BOUNDARY_LINK"));
 
-                m.put("e", resultSet.getString(geom.getGeometryType()));
+                m.put("e", geom.getGeometryType());
 
                 snapshot.setM(m);
 

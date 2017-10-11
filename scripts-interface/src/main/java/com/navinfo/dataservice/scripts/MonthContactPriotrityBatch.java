@@ -129,7 +129,7 @@ public class MonthContactPriotrityBatch {
 		sql.append(" where p.kind_code= sp.poi_kind  and p.state <>1  and sp.type = 7 and sp.category =3 and nvl(p.chain,'0') = nvl(sp.chain,'0') ");
 		sql.append(" union select p.pid  ");
 		sql.append(" from ix_poi p,sc_point_spec_kindcode_new@DBLINK_RMS sp ");
-		sql.append(" where p.kind_code= sp.poi_kind  and p.state <>1 and sp.type = 7 and sp.category =7  and nvl(p.chain,'0') = nvl(sp.chain,'0') and sp.hm_flag in ('HKMC','HM','D') ) ");
+		sql.append(" where p.kind_code= sp.poi_kind  and p.state <>1 and sp.type = 7 and sp.category =7  and nvl(p.chain,'0') = nvl(sp.chain,'0') and sp.hm_flag in ('HM','DHM','D') ) ");
 		sql.append(" select ix.poi_pid");
 		sql.append(" from temp,ix_poi_contact ix ");
 		sql.append(" where ix.u_record != 2 and  ix.poi_pid = temp.pid group by ix.poi_pid ,ix.priority having count(1) <> 1 ");

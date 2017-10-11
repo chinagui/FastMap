@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.limit.search.limit;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
 import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresInfo;
@@ -70,8 +71,11 @@ public class ScPlateresInfoSearch  {
 
         StringBuilder sqlstr = new StringBuilder();
 
-        sqlstr.append("SELECT * FROM SC_PLATERES_INFO WHERE ADMIN_CODE = ");
-        sqlstr.append("'" + adminCode +"'");
+        sqlstr.append("SELECT * FROM SC_PLATERES_INFO WHERE ADMIN_CODE in ");
+        
+        Map<String,String> adminCodeAndName = getBeyondDirstrict(adminCode);
+        
+        sqlstr.append(componentInSql(adminCodeAndName));
 
         componentSql(condition,sqlstr);
         
@@ -79,7 +83,6 @@ public class ScPlateresInfoSearch  {
         sql.append("WITH query AS (" + sqlstr + ") SELECT query.*,(SELECT count(1) FROM query) AS TOTAL_ROW_NUM FROM query");
         sql.append(" WHERE rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " for update nowait");
 
-        //List<IRow> rows = new ArrayList<>();
         PreparedStatement pstmt = null;
 
         ResultSet resultSet = null;
@@ -96,6 +99,8 @@ public class ScPlateresInfoSearch  {
 
                 ReflectionAttrUtils.executeResultSet(info, resultSet);
                 
+                info.setAdminCode(adminCodeAndName.get(info.getAdminCode()));
+                
                 total = resultSet.getInt("TOTAL_ROW_NUM");
 
                 objList.add(info);
@@ -111,6 +116,76 @@ public class ScPlateresInfoSearch  {
 
         return total;
     }
+    
+	private String componentInSql(Map<String, String> adminCodeAndName) {
+		String result = "(";
+
+		for (Map.Entry<String, String> entry : adminCodeAndName.entrySet()) {
+			result += "'" + entry.getKey() + "',";
+		}
+
+		result = result.substring(0, result.lastIndexOf(","));
+		result += ")";
+
+		return result;
+	}
+    
+	private Map<String, String> getBeyondDirstrict(String adminCode) throws Exception {
+		Connection mkconn = null;
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Map<String, String> result = new HashMap<>();
+
+		StringBuilder sql = new StringBuilder();
+
+		try {
+			mkconn = DBConnector.getInstance().getMkConnection();
+
+			if (adminCode.length() == 4 || (adminCode.length() == 6 && adminCode.substring(4).equals("00"))) {
+
+				String cityCode = adminCode.substring(0, 4);
+
+				sql.append(
+						"select a.ADMIN_ID,b.NAME FROM AD_ADMIN a,AD_ADMIN_NAME b where a.REGION_ID = b.REGION_ID and b.LANG_CODE='CHI' AND b.NAME_CLASS = 1 and a.ADMIN_TYPE = 4 and a.ADMIN_ID between :1 and :2");
+
+				pstmt = mkconn.prepareStatement(sql.toString());
+
+				pstmt.setInt(1, Integer.valueOf(cityCode) * 100);
+
+				pstmt.setInt(2, Integer.valueOf(cityCode) * 100 + 99);
+
+				resultSet = pstmt.executeQuery();
+
+				while (resultSet.next()) {
+					result.put(String.valueOf(resultSet.getInt(1)), resultSet.getString(2));
+				}
+			} else {
+
+				sql.append(
+						"select a.ADMIN_ID,b.NAME FROM AD_ADMIN a,AD_ADMIN_NAME b where a.REGION_ID = b.REGION_ID and b.LANG_CODE='CHI' AND b.NAME_CLASS = 1 and a.ADMIN_TYPE = 4 and a.ADMIN_ID = :1");
+
+				pstmt = mkconn.prepareStatement(sql.toString());
+
+				pstmt.setInt(1, Integer.valueOf(adminCode));
+
+				resultSet = pstmt.executeQuery();
+
+				while (resultSet.next()) {
+					result.put(String.valueOf(resultSet.getInt(1)), resultSet.getString(2));
+				}
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeConnection(mkconn);
+		}
+		return result;
+	}
 
     private void componentSql(JSONObject obj,StringBuilder sql){
 

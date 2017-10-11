@@ -47,7 +47,7 @@ public class PointAddressRelease {
 		long jobId = 0;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			long subtaskId = jsonReq.getLong("subtaskId");
+			long subtaskId = (long)(jsonReq.getInt("subtaskId"));
 
 			JobApi apiService = (JobApi) ApplicationContextUtil
 					.getBean("jobApi");
@@ -59,7 +59,7 @@ public class PointAddressRelease {
 					"点门牌提交");
 			return jobId;
 		}catch (Exception e) {
-			logger.error(e.getMessage(), e);
+			logger.error("点门牌提交错误", e);
 			DbUtils.rollback(conn);
 			throw e;
 		} finally {

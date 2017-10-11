@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.control.app.download.PaDownloadOperation;
 import com.navinfo.dataservice.control.app.download.PoiDownloadOperation;
 
 import net.sf.json.JSONArray;
@@ -68,7 +69,7 @@ public class androidtest {
 //		System.out.println(test);
 	}
 	
-	@Test
+//	@Test
 	public void testbysubtask() {
 		
 		try {
@@ -86,5 +87,37 @@ public class androidtest {
 //		System.out.println(test);
 	}
 	
+	
+	@Test
+	public void testpaDownload() {
+		Date startTime = new Date();
+		JSONArray gridDateList = new JSONArray();
+		JSONObject grid = new JSONObject();
+		grid.put("grid", "59567213");//60562422//60562203//60560233
+		grid.put("date", "");
+		gridDateList.add(grid);
+		
+		try {
+			Map<String,String> gridDateMap = new HashMap<String,String>();
+			
+			for (int i=0;i<gridDateList.size();i++) {
+				JSONObject gridDate = gridDateList.getJSONObject(i);
+				gridDateMap.put(gridDate.getString("grid"), gridDate.getString("date"));
+			}
+			Map<String, Object> logMap=new HashMap<String, Object>();
+			PaDownloadOperation operation = new PaDownloadOperation();
+			operation.export2Txt(gridDateMap, "f://poidownload", "pa.txt",logMap);
+			Date endTime = new Date();
+			System.out.println("total time:"+ (endTime.getTime() - startTime.getTime()));
+//			download.export(gridList, "f://poidownload", "poi.txt");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+//		JSONObject test = new JSONObject();
+//		test.put("test", JSONNull.getInstance());
+//		test.put("test1", "");
+//		test.put("123", new ArrayList<JSONObject>());
+//		System.out.println(test);
+	}
 
 }

@@ -2,8 +2,10 @@
 package com.navinfo.dataservice.engine.limit.search;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
@@ -113,11 +115,11 @@ public class SearchProcess {
 
         try {
             switch (type) {
-                case 1:
-                case 2:
+                case 1: //名称模糊查询
+                case 2: //名称精准查询
                     result = search.searchDataByCondition(type, condition);
                     break;
-                case 3:
+                case 3: //linkPid查询名称
                     result = search.searchDataByPid(condition);
                 default:
                     return result;
@@ -130,6 +132,28 @@ public class SearchProcess {
 
         }
     }
+    
+    public List<RdLink> searchDataByPids(JSONArray pids)
+			throws Exception {
+
+    	RdLinkSearch search = new RdLinkSearch(this.conn);
+    	
+		try {
+			@SuppressWarnings("unchecked")
+			List<Integer> pidList = JSONArray.toList(pids, Integer.class,
+					JsonUtils.getJsonConfig());
+
+			List<RdLink> objList = search.searchDataByPids(pidList);
+
+			return objList;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+		}
+	}
 
     /**
      * 控制输出JSON的格式

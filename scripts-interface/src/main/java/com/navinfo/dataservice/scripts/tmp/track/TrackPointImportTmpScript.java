@@ -160,7 +160,7 @@ public class TrackPointImportTmpScript {
                         if(newRowkeyMap.containsKey(rowkey)) {//重新赋值的rowkey也冲突了。。。。悲剧啊
                             List<String> idList = newRowkeyMap.get(rowkey);
                             idList.add(json.getString("id"));
-                            newWS = TrackUtils.zoneUTCTime2GPSTime(recordTime) + 0.1 * newRowkeyMap.size();
+                            newWS = TrackUtils.zoneUTCTime2GPSTime(recordTime) + 0.1 * (idList.size() - 1);
                             json.put("weekSeconds", newWS);
                             rowkey = getSourceRowkey(json);
                             //throw new Exception("********new rowkey repeat, this upload stop :" + rowkey + "id: " + json.getString("id"));

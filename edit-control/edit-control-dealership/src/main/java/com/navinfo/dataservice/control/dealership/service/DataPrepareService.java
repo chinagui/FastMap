@@ -2127,7 +2127,7 @@ public class DataPrepareService {
 						
 						String telephone = "";
 						if(tel != null && tel.length() != 0){
-							telephone = tel.toString().substring(0, tel.toString().length() - 1);
+							telephone = tel.toString().substring(0, tel.toString().length() - 1).replaceAll(";", "|");
 						}
 						entity.setTelephone(telephone);
 						

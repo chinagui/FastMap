@@ -330,11 +330,12 @@ public class PersonJob extends AbstractStatJob {
 				Date begin = df.parse(startCollectTime.replaceAll(reg, "$1-$2-$3 $4:$5:$6"));
 				Date end = df.parse(endCollectTime.replaceAll(reg, "$1-$2-$3 $4:$5:$6"));
 				long between = (end.getTime() - begin.getTime())/1000;//除以1000是为了转换成秒   
-				int day = (int) (between/(24*3600));   
-				int hour = (int) (between%(24*3600)/3600);   
-				int minute = (int) (between%3600/60);   
-				int second = (int) (between%60);
-				workTime = day+"天"+hour+"小时"+minute+"分"+second+"秒";
+				//int day = (int) (between/(24*3600));   
+				//int hour = (int) (between%(24*3600)/3600);   
+				//int minute = (int) (between%3600/60);   
+				//int second = (int) (between%60);
+				double hour = (double) (between/3600);
+				workTime = String.valueOf(hour);
 			}catch(ParseException e){
 				e.printStackTrace();
 			}

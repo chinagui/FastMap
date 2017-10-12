@@ -166,22 +166,25 @@ public class StaticsController extends BaseController {
 			JSONObject data = new JSONObject();
 			String platForm = "productMonitor";
 			data.putAll(StaticsService.getInstance().getOracleMonitorData(platForm));
-			JSONObject mongoData = StaticsService.getInstance().getMongoMonitorData();
-			@SuppressWarnings("unchecked")
-			Map<String, Object> map = mongoData;
-			if(map != null && !map.isEmpty()){
-				for(Map.Entry<String, Object> entry: map.entrySet()){
-					if(data.containsKey(entry.getKey())){
-						if(entry.getValue() instanceof Integer){
-							if((Integer)entry.getValue() != 0){
-								data.put(entry.getKey(), entry.getValue());
-							}
-						}
-					}else{
-						data.put(entry.getKey(), entry.getValue());
-					}
-				}
-			}
+			data.putAll(StaticsService.getInstance().getMongoMonitorData());
+//			JSONObject mongoData = StaticsService.getInstance().getMongoMonitorData();
+//			@SuppressWarnings("unchecked")
+//			Map<String, Object> map = mongoData;
+//			if(map != null && !map.isEmpty()){
+//				for(Map.Entry<String, Object> entry: map.entrySet()){
+//					if(data.containsKey(entry.getKey())){
+//						if(entry.getValue() instanceof Integer){
+//							if((Integer)entry.getValue() != 0){
+//								data.put(entry.getKey(), entry.getValue());
+//							}
+//						}else{
+//							data.put(entry.getKey(), entry.getValue());
+//						}
+//					}else{
+//						data.put(entry.getKey(), entry.getValue());
+//					}
+//				}
+//			}
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

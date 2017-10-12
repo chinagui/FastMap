@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -498,22 +499,30 @@ public class PoiEditStatus {
 			sb.append("UPDATE POI_EDIT_STATUS T SET ");
 			if(type==1){
 //				sb.append("QUICK_SUBTASK_ID=? WHERE PID = ? AND (QUICK_SUBTASK_ID<>0 OR MEDIUM_SUBTASK_ID <> 0 OR EXISTS (SELECT 1 FROM IX_POI I WHERE I.U_RECORD = 1 AND I.PID = T.PID))");
-				sb.append("QUICK_SUBTASK_ID=? WHERE PID = ?");
+				sb.append("QUICK_SUBTASK_ID=?,QUICK_TASK_ID=? WHERE PID = ?");
 			}else if(type==2){
 //				sb.append("MEDIUM_SUBTASK_ID=? WHERE PID = ? AND (QUICK_SUBTASK_ID<>0 OR MEDIUM_SUBTASK_ID <> 0 OR EXISTS (SELECT 1 FROM IX_POI I WHERE I.U_RECORD = 1 AND I.PID = T.PID))");
-				sb.append("MEDIUM_SUBTASK_ID=? WHERE PID = ? ");
+				sb.append("MEDIUM_SUBTASK_ID=?,MEDIUM_TASK_ID=? WHERE PID = ? ");
 			}
 			
 			Object[][] inParam = new Object[map.size()][];
 			int i = 0;
+			//子任务对应任务号的map ,key 为子任务号,value 为任务号
+			Map<Integer,Integer> subtIdTaskIdMap = getTaskIdsMap(map.values());
+			
 			for(Map.Entry<Long, Integer> entry:map.entrySet()){
-				Object[] temp = new Object[2];
+				Object[] temp = new Object[3];
 				temp[0] = entry.getValue();
-				temp[1] = entry.getKey();
+				int taskId = 0;
+				if(subtIdTaskIdMap != null && subtIdTaskIdMap.size() > 0){
+					taskId = subtIdTaskIdMap.get(entry.getValue());
+				}
+				temp[1] = taskId;
+				temp[2] = entry.getKey();
 				inParam[i] = temp;
 				i++;
 			}
-
+			logger.info("updatePoiEditStatusMultiSrc 多源POI打标签sql:"+sb.toString());
 			new QueryRunner().batch(conn, sb.toString(),inParam);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -523,6 +532,40 @@ public class PoiEditStatus {
 	}
 	
 
+	private static Map<Integer, Integer> getTaskIdsMap(Collection<Integer> subtaskIds) throws Exception {
+		
+		Connection connMan = null;
+		try{
+			connMan = DBConnector.getInstance().getManConnection();
+			Clob subtsClob = ConnectionUtil.createClob(connMan);
+			subtsClob.setString(1, StringUtils.join(subtaskIds, ","));
+			
+			String selectSql = 
+					" select distinct s.subtask_id, s.task_id  from subtask s  where s.subtask_id in (select column_value from table(clob_to_table(?)))" ;
+			ResultSetHandler<Map<Integer, Integer>> rs = new ResultSetHandler<Map<Integer, Integer>>() {
+				
+				@Override
+				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Integer> result = new HashMap<Integer, Integer>();
+					while(rs.next()){
+						result.put(rs.getInt("subtask_id"), rs.getInt("task_id"));
+					}
+					return result;
+				}
+			};
+			QueryRunner run = new QueryRunner();
+			Map<Integer, Integer> result = run.query(connMan,selectSql,subtsClob, rs);
+			return result;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(connMan);
+			System.out.println(e.getMessage());
+			throw new Exception("获取任务Id的失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(connMan);
+		}
+	}
+	
+	
 	/**
 	 * @param conn
 	 * @param dbId

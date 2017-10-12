@@ -66,11 +66,10 @@ public class TipsExportTest extends InitApplication{
         long userId = 1234;
         String beginDate = DateUtils.getSysDateFormat();
         String uuid = UuidUtils.genUuid();
-        String parameter = "{\"condition\":[{\"grid\":45545331,\"date\":\"\"}],\"workType\":1}";
+        String parameter = "{\"condition\":[{\"grid\":45545331,\"date\":\"\"},{\"grid\":45545332,\"date\":\"\"}],\"workType\":1}";
 
        
         try {
-
 
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -149,6 +148,7 @@ public class TipsExportTest extends InitApplication{
             String errMsg = "下载tips出错,parameter:" + parameter + "错误信息:" + e.getMessage();
             insertExportLog(beginDate, userId, 0, uuid, errMsg);
         }
+        System.exit(1);
     }
     private void insertExportLog(String beginDate, long userId, int expCount, String uuid, String errMsg) {
         try{

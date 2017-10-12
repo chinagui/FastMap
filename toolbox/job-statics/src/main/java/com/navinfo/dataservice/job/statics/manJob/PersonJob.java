@@ -76,6 +76,7 @@ public class PersonJob extends AbstractStatJob {
 				int poiFinishNum = 0;
 				int deleteCount = 0;
 	    		int increaseAndAlterCount = 0;
+	    		String effectiveTime="";
 	    		
 				String startDate = "";
 				String endDate = "";
@@ -94,6 +95,7 @@ public class PersonJob extends AbstractStatJob {
 							startDate = fccMap.get("startDate").toString();
 							endDate = fccMap.get("endDate").toString();
 							workTime = fccMap.get("workTime").toString();
+							effectiveTime = fccMap.get("effectiveTime").toString();
 							fccUpdateLen = Double.valueOf(fccMap.get("fccUpdateLen").toString());
 						}
 					}
@@ -137,6 +139,8 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("startDate", startDate);
 				dataMap.put("endDate", endDate);
 				dataMap.put("workTime", workTime);
+				dataMap.put("effectiveTime", effectiveTime);
+				
 				dataMap.put("fccUpdateLen", fccUpdateLen);
 				dataMap.put("workDay", workDay);
 				dataMap.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
@@ -321,7 +325,7 @@ public class PersonJob extends AbstractStatJob {
 			int userId = Integer.parseInt(fccJson.get("userId").toString());
 			int taskId = Integer.parseInt(fccJson.get("taskId").toString());
 			double fccUpdateLen = Double.valueOf(fccJson.get("linkLen").toString());
-			
+			double effectiveTime=Double.valueOf(fccJson.get("effectiveTime").toString());
 			String startCollectTime = (StringUtils.isBlank(fccJson.get("startCollectTime").toString()) ? df.format(new Date()) : fccJson.get("startCollectTime").toString());
 			String endCollectTime = (StringUtils.isBlank(fccJson.get("endCollectTime").toString()) ? df.format(new Date()) : fccJson.get("endCollectTime").toString());
 			String workTime = "";
@@ -339,7 +343,7 @@ public class PersonJob extends AbstractStatJob {
 			}catch(ParseException e){
 				e.printStackTrace();
 			}
-			
+			map.put("effectiveTime", effectiveTime);
 			map.put("startDate", startCollectTime);
 			map.put("endDate", endCollectTime);
 			map.put("workTime", workTime);

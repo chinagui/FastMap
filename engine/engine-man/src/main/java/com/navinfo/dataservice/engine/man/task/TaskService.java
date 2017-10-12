@@ -1456,7 +1456,7 @@ public class TaskService {
 			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
 			sb.append("                       T.NAME,");
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
-			sb.append("                       T.TYPE,");
+			sb.append("                       T.TYPE,t.latest,");
 			sb.append("                       T.GROUP_ID,");
 			sb.append("                       T.work_kind,");
 			sb.append("                       T.lot,");
@@ -1517,7 +1517,7 @@ public class TaskService {
 			sb.append("	                          0             TASK_ID,");
 			sb.append("	                          NULL          NAME,");
 			sb.append("	                          4             STATUS,");
-			sb.append("	                          NULL          TYPE,");
+			sb.append("	                          NULL          TYPE,1,");
 			sb.append("	                          NULL          GROUP_ID,");
 			sb.append("                       '0|0|0|0' work_kind,");
 			sb.append("                       0 lot,");
@@ -1554,7 +1554,7 @@ public class TaskService {
 			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
 			sb.append("                       T.NAME,");
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
-			sb.append("                       T.TYPE,");
+			sb.append("                       T.TYPE,t.latest,");
 			sb.append("                       T.GROUP_ID,");
 			sb.append("                       T.work_kind,");
 			sb.append("                       T.lot,");
@@ -1629,6 +1629,7 @@ public class TaskService {
 						}
 						task.put("status", rs.getInt("STATUS"));
 						task.put("type", rs.getInt("TYPE"));
+						task.put("latest", rs.getInt("LATEST"));
 						
 						task.put("percent", rs.getInt("PERCENT"));
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
@@ -1785,6 +1786,7 @@ public class TaskService {
 
 						task.put("status", 0);
 						task.put("type", 1);
+						task.put("latest", 1);
 						
 						task.put("percent", 0);
 						task.put("diffDate",0);
@@ -2443,7 +2445,7 @@ public class TaskService {
 					+ "       T.NAME,"
 					+ "       T.STATUS,"
 					+ "       T.DESCP,"
-					+ "       T.TYPE,"
+					+ "       T.TYPE,t.latest,"
 					+ "       T.PLAN_START_DATE,"
 					+ "       T.PLAN_END_DATE,"
 					+ "       T.PRODUCE_PLAN_START_DATE,"
@@ -2490,6 +2492,7 @@ public class TaskService {
 						task.setStatus(rs.getInt("STATUS"));
 						task.setDescp(rs.getString("DESCP"));
 						task.setType(rs.getInt("TYPE"));
+						task.setLatest(rs.getInt("LATEST"));
 						task.setWorkKind(rs.getString("WORK_KIND"));
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
@@ -2570,6 +2573,7 @@ public class TaskService {
 			}else{map.put("producePlanEndDate", "");}
 
 			map.put("lot", task.getLot());
+			map.put("latest", task.getLatest());
 			//modify by songhe
 			//删除road_plan_total,poi_plan_total,添加road/poi_plan_in/out  2017/07/25
 			map.put("roadPlanIn", task.getRoadPlanIn());
@@ -4629,8 +4633,8 @@ public class TaskService {
 						+ "t.task_id = " + taskId + " and t.is_plan_selected = 0 and r.link_pid = t.pid)";
 				double linkUnWorkLenth = run.query(dailyConn, selectSql, handler);
 				
-				result.put("workRoad", linkNeedWorkLenth);
-				result.put("unworkRoad", linkUnWorkLenth);
+				result.put("workRoad", linkNeedWorkLenth == 0 ? 0 : new java.text.DecimalFormat("#.00").format(linkNeedWorkLenth));
+				result.put("unworkRoad", linkUnWorkLenth == 0 ? 0 : new java.text.DecimalFormat("#.00").format(linkUnWorkLenth));
 				result.put("unworkPoi", poiData.get("unPlanSelected") == null ? 0 : poiData.get("unPlanSelected"));
 				result.put("workAPoi", poiData.get("important") == null ? 0 : poiData.get("important"));
 				result.put("workunAPoi", poiData.get("unImportant") == null ? 0 : poiData.get("unImportant"));

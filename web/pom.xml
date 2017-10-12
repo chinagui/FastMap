@@ -25,6 +25,7 @@
 		<module>sys-web</module>
 		<module>edit-dealership-web</module>
         <module>es-web</module>
+		<module>limit-web</module>
     </modules>
     <packaging>pom</packaging>
     <name>web</name>

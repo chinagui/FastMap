@@ -129,11 +129,23 @@ public class Command extends AbstractCommand {
 		this.groupId = data.getString("groupId");
 		this.vehicle = data.getString("vehicle");
 		this.attribution = data.getString("attribution");
-		this.restrict = data.getString("restrict");
+		
+		if (data.containsKey("restrict")) {
+			this.restrict = data.getString("restrict");
+		}
+		
 		this.tempPlate = data.getInt("tempPlate");
-		this.tempPlateNum = data.getString("tempPlateNum");
+		
+		if (data.containsKey("tempPlateNum")) {
+			this.tempPlateNum = data.getString("tempPlateNum");
+		}
+
 		this.charSwitch = data.getInt("charSwitch");
-		this.charToNum = data.getString("charToNum");
+		
+		if (data.containsKey("charToNum")) {
+			this.charToNum = data.getString("charToNum");
+		}
+		
 		this.tailNumber = data.getString("tailNumber");
 		this.platecolor = data.getString("plateColor");
 		this.energyType = data.getString("energyType");
@@ -143,11 +155,24 @@ public class Command extends AbstractCommand {
 		this.resWeigh = data.getDouble("resWeigh");
 		this.resAxleCount = data.getInt("resAxleCount");
 		this.resAxleLoad = data.getDouble("resAxleLoad");
-		this.startDate = data.getString("startDate");
-		this.endDate = data.getString("endDate");
+		
+		if (data.containsKey("startDate")) {
+			this.startDate = data.getString("startDate");
+		}
+
+		if (data.containsKey("endDate")) {
+			this.endDate = data.getString("endDate");
+		}
+		
 		this.resDatetype = data.getString("resDatetype");
-		this.time = data.getString("time");
-		this.specFlag = data.getString("specFlag");
+		
+		if (data.containsKey("time")) {
+			this.time = data.getString("time");
+		}
+
+		if (data.containsKey("specFlag")) {
+			this.specFlag = data.getString("specFlag");
+		}
 	}
 
 	@Override

@@ -101,6 +101,12 @@ public class FccApiImpl implements FccApi{
         String aupw =null;
         String auport =null;
         String ausid=null;
+        //周出品外业库信息
+        String weekauip =null;
+        String weekauuser =null;
+        String weekaupw =null;
+        String weekauport =null;
+        String weekausid=null;
         //gdb参考库
         String gdbId =null;
         String managerId =null;
@@ -157,6 +163,20 @@ public class FccApiImpl implements FccApi{
             if (auport==null||auport.isEmpty()) {
                 throw new IllegalArgumentException("参数错误:au_db_port不能为空");
             }
+            
+            //周出品外业库信息
+            weekauip = parameter.getString("au_week_db_ip");
+
+            weekauuser = parameter.getString("au_week_db_username");
+
+            weekaupw = parameter.getString("au_week_db_password");
+
+            weekausid = parameter.getString("au_week_db_sid");
+
+            weekauport = parameter.getString("au_week_db_port");
+
+            
+            
 
             //gdb参考库
             gdbId = parameter.getString("gdbid");
@@ -261,7 +281,8 @@ public class FccApiImpl implements FccApi{
                 int count=0;
 
                 Tips2AuMarkApi api=new Tips2AuMarkApi();
-                count=api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo,taskType);
+                count=api.tips2Aumark(auip,ausid,auport,auuser,aupw,weekauip,weekausid,weekauport,weekauuser,weekaupw,
+                		gdbId,collectTaskIds,types,taskInfo,taskType);
 
                 if(count!=0){
                 	

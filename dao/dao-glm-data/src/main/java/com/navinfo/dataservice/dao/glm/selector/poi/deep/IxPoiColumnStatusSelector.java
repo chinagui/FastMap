@@ -673,7 +673,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 				
 				if(secondWorkItem.equals("namePinyin")){
 					String isProblem=resultSet.getString("IS_PROBLEM");
-					if(isProblem==null||"".equals(isProblem)||isProblem.contains("\\|")){
+					if(isProblem==null||"".equals(isProblem)){
 						value.put("py",isProblem);
 					}else{
 						value.put("py",string2json(isProblem));	

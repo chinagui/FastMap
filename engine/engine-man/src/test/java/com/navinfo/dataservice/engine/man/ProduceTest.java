@@ -15,6 +15,12 @@ public class ProduceTest extends InitApplication{
 		List<Map<String, Object>> result = ProduceService.getInstance().getProduceProgram();
 		System.out.println("end");
 	}
+	
+	@Test
+	public void  testDetail() throws Exception {
+		Map<String, Object> result = ProduceService.getInstance().queryDetail(41);
+		System.out.println(result);
+	}
 
 	@Override
 	@Before

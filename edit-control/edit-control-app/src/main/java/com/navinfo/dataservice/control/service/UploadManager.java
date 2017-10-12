@@ -6,15 +6,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -48,7 +49,6 @@ import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorUploadPois
 import com.navinfo.dataservice.engine.editplus.operation.imp.ErrorLog;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;

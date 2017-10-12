@@ -2447,17 +2447,20 @@ public class TipsSelector {
 				if (!result.isEmpty()) {
 					JSONObject oldTip = JSONObject
 							.fromObject(new String(result.getValue("data".getBytes(), "old".getBytes())));
-					JSONObject oldGeoJson = JSONObject.fromObject(oldTip.getString("o_location"));
-					Geometry oldGeo = GeoTranslator.geojson2Jts(oldGeoJson);
-					Set<Integer> olcMeshSet = this.calculateGeometeryMesh(oldGeo);
-					if (olcMeshSet != null && olcMeshSet.size() > 0) {
-						meshSet.addAll(olcMeshSet);
-					}
-
+                    JSONArray oldArray = oldTip.getJSONArray("old_array");
+                    if(oldArray != null && oldArray.size() > 0) {
+                        JSONObject lastOld = oldArray.getJSONObject(oldArray.size() - 1);
+                        JSONObject oldGeoJson = JSONObject.fromObject(lastOld.getString("o_location"));
+                        Geometry oldGeo = GeoTranslator.geojson2Jts(oldGeoJson);
+                        Set<Integer> olcMeshSet = this.calculateGeometeryMesh(oldGeo);
+                        if (olcMeshSet != null && olcMeshSet.size() > 0) {
+                            meshSet.addAll(olcMeshSet);
+                        }
+                    }
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new Exception("获取Tips图幅失败: " + e.getMessage());
 		}
 		return meshSet;
 	}

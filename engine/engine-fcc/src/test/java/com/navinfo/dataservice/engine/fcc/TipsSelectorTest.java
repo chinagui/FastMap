@@ -11,15 +11,12 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.engine.fcc.track.TrackLinesUpload;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.*;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JsonConfig;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,8 +31,6 @@ import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
-import com.navinfo.navicommons.geo.computation.GridUtils;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -82,6 +77,64 @@ public class TipsSelectorTest extends InitApplication {
         TrackLinesUpload trackUploader = new TrackLinesUpload();
         trackUploader.run("F:\\FCC\\track_collection.json", HBaseConstant.trackLineTab, 1);
         System.exit(0);
+    }
+
+	@Test
+    public void testOldArray() {
+        Table htab = null;
+        try {
+
+            Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+            htab = hbaseConn.getTable(TableName.valueOf("tips_bvt"));
+
+            Get get = new Get("0220019cc676b2d84045ed9f82ccbc9cdf3170".getBytes());
+            get.addColumn("data".getBytes(), "old".getBytes());
+            Result result = htab.get(get);
+            Set<Integer> meshSet = new HashSet<>();
+            if (!result.isEmpty()) {
+                JSONObject oldTip = JSONObject
+                        .fromObject(new String(result.getValue("data".getBytes(), "old".getBytes())));
+                JSONArray oldArray = oldTip.getJSONArray("old_array");
+                if(oldArray != null && oldArray.size() > 0) {
+                    JSONObject lastOld = oldArray.getJSONObject(oldArray.size() - 1);
+                    JSONObject oldGeoJson = JSONObject.fromObject(lastOld.getString("o_location"));
+                    Geometry oldGeo = GeoTranslator.geojson2Jts(oldGeoJson);
+                    Set<Integer> olcMeshSet = this.calculateGeometeryMesh(oldGeo);
+                    if (olcMeshSet != null && olcMeshSet.size() > 0) {
+                        meshSet.addAll(olcMeshSet);
+                    }
+                    System.out.println("*****************zjf");
+                    System.out.println("*****************zjf" + oldGeoJson.toString());
+                }
+            }
+
+            for(Integer mesh : meshSet) {
+                System.out.println("*****************zjf" + mesh);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Set<Integer> calculateGeometeryMesh(Geometry geometry) {
+        Set<Integer> meshSet = new HashSet<>();
+        if (geometry.getGeometryType() == GeometryTypeName.MULTILINESTRING
+                || geometry.getGeometryType() == GeometryTypeName.MULTIPOLYGON
+                || geometry.getGeometryType() == GeometryTypeName.MULTIPOINT) {
+            for (int i = 0; i < geometry.getNumGeometries(); i++) {
+                Geometry subGeo = geometry.getGeometryN(i);
+                String[] meshes = CompGeometryUtil.geo2MeshesWithoutBreak(subGeo);
+                for (String mesh : meshes) {
+                    meshSet.add(Integer.valueOf(mesh));
+                }
+            }
+        } else {
+            String[] meshes = CompGeometryUtil.geo2MeshesWithoutBreak(geometry);
+            for (String mesh : meshes) {
+                meshSet.add(Integer.valueOf(mesh));
+            }
+        }
+        return meshSet;
     }
 
 	@Test

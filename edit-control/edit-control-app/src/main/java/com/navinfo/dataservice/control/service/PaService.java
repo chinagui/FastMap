@@ -9,22 +9,22 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 
-public class PoiServiceNew {
+public class PaService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
-	private PoiServiceNew() {
+	private PaService() {
 	}
 
 	private static class SingletonHolder {
-		private static final PoiServiceNew INSTANCE = new PoiServiceNew();
+		private static final PaService INSTANCE = new PaService();
 	}
 
-	public static PoiServiceNew getInstance() {
+	public static PaService getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
 	
 	public void logTest(){
-		log.info("PoiServiceNew...");
+		log.info("PaServiceNew...");
 	}
 	
 	public UploadResult upload(int uploadId,int subtaskId,long userId)throws Exception{
@@ -35,9 +35,9 @@ public class PoiServiceNew {
 		if(StringUtils.isEmpty(dir)) throw new Exception("上传目录为空");
 		long t2 = System.currentTimeMillis();
 		log.info("unzip file finished,total time:"+(t2-t1)+"ms.");
-		//2. 读取poi.txt文件
+		//2. 读取pa.txt文件
 		
-		UploadManager upMan = new UploadManager(userId,dir);
+		PaUploadManager upMan = new PaUploadManager(userId,dir);
 		upMan.setSubtaskId(subtaskId);
 		UploadResult result = upMan.upload();
 		return result;

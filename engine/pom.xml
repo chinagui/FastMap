@@ -23,6 +23,7 @@
 		<module>engine-sys</module>
 		<module>engine-editplus</module>
         <module>engine-es</module>
+		<module>engine-limit</module>
     </modules>
     <packaging>pom</packaging>
     <name>engine</name>

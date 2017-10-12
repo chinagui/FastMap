@@ -53,6 +53,8 @@ public class TipsLineRelateConstant {
 		noneRelate.add("1709");//（点位移）
 		noneRelate.add("2202");// 人行过道
 		noneRelate.add("1806");// 草图
+		noneRelate.add("2301");// 功能面  规格变更：2017/9/6
+		noneRelate.add("2302");// 建筑物  规格变更：2017/9/6
 		
 
 		//2. f.id
@@ -92,6 +94,11 @@ public class TipsLineRelateConstant {
 		simpleF.add("2204"); // 复合虚拟连接
 		simpleF.add("1212"); // 高速路行人非机动车禁行 
 		simpleF.add("1213"); // 普通新行人非机动车禁行 
+		simpleF.add("1118"); // 卡车条件限速  规格变更： 2017/9/14
+		simpleF.add("1119"); // 通用禁停  规格变更： 2017/9/14
+		simpleF.add("1120"); // 卡车禁停  规格变更： 2017/9/14
+		
+		
 		
 		
 		//3.in.id

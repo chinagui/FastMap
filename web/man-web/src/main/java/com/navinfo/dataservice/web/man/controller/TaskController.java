@@ -768,9 +768,9 @@ public class TaskController extends BaseController {
 			}
 			
 			int taskId = dataJson.getInt("taskId");
-			TaskService.getInstance().uploadPlan(taskId);
+			Map<String, Object> result = TaskService.getInstance().uploadPlan(taskId);
 			
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

@@ -151,7 +151,9 @@ public class JobProgressOperator {
                     if (status == JobProgressStatus.FAILURE.value()) {
                         jobMessage.setJobStatus(JobStatus.FAILURE.value());
                     } else if (status == JobProgressStatus.NODATA.value()) {
-                        jobMessage.setJobStatus(JobStatus.SUCCESS.value());
+                    	if (total == phase) {
+                            jobMessage.setJobStatus(JobStatus.SUCCESS.value());
+                        }
                     } else if (status == JobProgressStatus.SUCCESS.value()) {
                         if (total == phase) {
                             jobMessage.setJobStatus(JobStatus.SUCCESS.value());

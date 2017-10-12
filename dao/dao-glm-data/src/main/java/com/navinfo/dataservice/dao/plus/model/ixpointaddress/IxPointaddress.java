@@ -245,6 +245,8 @@ public class IxPointaddress extends AbstractIx {
 		return "IX_POINTADDRESS";
 	}
 	
+	public static final String GEOMETRY = "GEOMETRY";
+
 	
 	
 }

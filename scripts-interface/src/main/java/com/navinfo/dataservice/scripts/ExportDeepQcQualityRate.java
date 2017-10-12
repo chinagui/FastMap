@@ -85,9 +85,9 @@ public class ExportDeepQcQualityRate {
 					"深度信息-停车场", "深度信息-停车场质检量", "深度信息-停车场错误量", "深度信息-汽车租赁", "深度信息-汽车租赁质检量", "深度信息-汽车租赁错误量"};
 
 			try {
-//				String path = SystemConfigFactory.getSystemConfig().getValue(
-//						PropConstant.downloadFilePathPoi)+"/poiQuality/deepQcQualityRate";
-				String path = "D:/"; 
+				String path = SystemConfigFactory.getSystemConfig().getValue(
+						PropConstant.downloadFilePathPoi)+"/poiQuality/deepQcQualityRate";
+//				String path = "D:/"; 
 				File file = new File(path+"/" + excelName + ".xls");
 				if(!file.getParentFile().isDirectory()){
 					file.getParentFile().mkdirs();

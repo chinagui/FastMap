@@ -2,24 +2,37 @@ package com.navinfo.dataservice.web.limit.controller;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.operation.Transaction;
+import com.navinfo.dataservice.engine.limit.search.RenderParam;
 import com.navinfo.dataservice.engine.limit.search.SearchProcess;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.vividsolutions.jts.geom.Geometry;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -215,11 +228,9 @@ public class limitController extends BaseController {
 
             conn = DBConnector.getInstance().getManConnection();
 
-            QueryRunner run = new QueryRunner();
-
-            String sql = "SELECT A.DAILY_DB_ID FROM REGION A,CP_REGION_PROVINCE B WHERE A.REGION_ID = B.REGION_ID AND B.ADMINCODE = '" + adminCode + "'";
-
-            int dbId = run.queryForInt(conn, sql);
+            SearchProcess p = new SearchProcess(conn);
+            
+            int dbId = p.searchDbId(adminCode);
 
             return new ModelAndView("jsonView", success(dbId));
 
@@ -234,6 +245,40 @@ public class limitController extends BaseController {
         }
     }
 
+    @RequestMapping(value = "/getAdminPosition")
+	public ModelAndView getAdminPosition(HttpServletRequest request) throws Exception {
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			if (jsonReq == null || !jsonReq.containsKey("adminCode")) {
+				throw new Exception("行政区划编码为空，无法进行定位！");
+			}
+
+			String adminCode = jsonReq.getString("adminCode");
+
+			conn = DBConnector.getInstance().getMkConnection();
+
+			SearchProcess p = new SearchProcess(conn);
+			
+			JSONObject admin = p.searchAdminPosition(adminCode);
+
+			return new ModelAndView("jsonView", success(admin));
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+    
     @RequestMapping(value = "/searchRdLinkByName")
     public ModelAndView getRdLinkByName(HttpServletRequest request) throws Exception {
         String parameter = request.getParameter("parameter");
@@ -271,4 +316,108 @@ public class limitController extends BaseController {
             }
         }
     }
+
+    @RequestMapping(value = "/getByTileWithGap")
+    public void getLimitByTile(HttpServletRequest request,
+                             HttpServletResponse response) throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+        response.getWriter().println(limitRender(jsonReq));
+    }
+
+    private String limitRender(JSONObject jsonReq) {
+
+        try {
+
+            JSONArray type = jsonReq.getJSONArray("types");
+
+            RenderParam param=new RenderParam();
+
+            param.setX(jsonReq.getInt("x"));
+
+            param.setY(jsonReq.getInt("y"));
+
+            param.setZ(jsonReq.getInt("z"));
+
+            if (jsonReq.containsKey("gap")) {
+                param.setGap(jsonReq.getInt("gap"));
+            }
+
+            List<LimitObjType> types = new ArrayList<>();
+
+            for (int i = 0; i < type.size(); i++) {
+                types.add(LimitObjType.valueOf(type.getString(i)));
+            }
+
+            JSONObject data = null;
+
+            if (param.getZ() >13) {
+                com.navinfo.dataservice.engine.limit.search.SearchProcess p = new com.navinfo.dataservice.engine.limit.search.SearchProcess();
+
+                data = p.searchDataByTileWithGap(types,param);
+            }
+            return ResponseUtils.assembleRegularResult(data);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ResponseUtils.assembleFailResult(e.getMessage());
+        } finally {
+
+        }
+    }
+    
+	@RequestMapping(value = "/getByPids")
+	public ModelAndView getByPids(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			
+				JSONArray pidArray = jsonReq.getJSONArray("pids");
+
+				SearchProcess p = new SearchProcess(conn);
+
+				List<RdLink> objList = p.searchDataByPids(pidArray);
+
+				JSONArray array = new JSONArray();
+
+				if (objList != null) {
+
+					for (RdLink obj : objList) {
+						JSONObject json = obj.Serialize(ObjLevel.FULL);
+						array.add(json);
+					}
+					return new ModelAndView("jsonView", success(array));
+				} else {
+					return new ModelAndView("jsonView", success());
+				}
+			
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
 }

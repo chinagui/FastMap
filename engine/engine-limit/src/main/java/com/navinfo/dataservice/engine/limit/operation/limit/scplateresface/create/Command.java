@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.create;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
@@ -26,12 +27,18 @@ public class Command extends AbstractCommand {
 		this.requester = requester;
 
 		JSONObject data = json.getJSONObject("data");
-		
+
 		this.dbId = json.getInt("dbId");
 
 		this.groupId = data.getString("groupId");
 
-		this.links = data.getJSONArray("links");
+		if (data.containsKey("links")) {
+			this.links = data.getJSONArray("links");
+		}
+
+		if (data.containsKey("geometry")) {
+			this.geo = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
+		}
 	}
 
 	public Geometry getGeo() {

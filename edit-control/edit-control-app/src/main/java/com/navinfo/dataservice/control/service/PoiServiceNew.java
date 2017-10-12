@@ -1,44 +1,13 @@
 package com.navinfo.dataservice.control.service;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.dropbox.iface.DropboxApi;
 import com.navinfo.dataservice.api.dropbox.model.UploadInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ZipUtils;
-import com.navinfo.dataservice.control.app.upload.UploadOperation;
-import com.navinfo.dataservice.control.model.UploadIxPoi;
-import com.navinfo.dataservice.control.model.UploadIxPoiAttachments;
-import com.navinfo.dataservice.control.model.UploadIxPoiChargingPole;
-import com.navinfo.dataservice.control.model.UploadIxPoiChargingStation;
-import com.navinfo.dataservice.control.model.UploadIxPoiContacts;
-import com.navinfo.dataservice.control.model.UploadIxPoiFoodtypes;
-import com.navinfo.dataservice.control.model.UploadIxPoiGuide;
-import com.navinfo.dataservice.control.model.UploadIxPoiHotel;
-import com.navinfo.dataservice.control.model.UploadIxPoiIndoor;
-import com.navinfo.dataservice.control.model.UploadIxPoiParkings;
-import com.navinfo.dataservice.control.model.UploadIxPoiRelateChildren;
-import com.navinfo.dataservice.engine.editplus.operation.imp.ErrorLog;
-import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
-import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 public class PoiServiceNew {
 	private Logger log = LoggerRepos.getLogger(this.getClass());

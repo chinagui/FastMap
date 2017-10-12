@@ -853,4 +853,33 @@ public class SubtaskController extends BaseController {
 		}
 
 	}
+	
+	/**
+	 * 统计不规则圈规划量
+	 * @param request
+	 * @return
+	 * 
+	 */
+	@RequestMapping(value = "/subtask/viewPlan")
+	public ModelAndView viewPlan(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			if(!dataJson.containsKey("referId")){
+				throw new Exception("缺少referId");
+			}
+			int referId = dataJson.getInt("referId");
+
+			JSONObject result = SubtaskService.getInstance().viewPlan(referId);
+
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			log.error("统计不规则圈规划量接口异常，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+
+	}
 }

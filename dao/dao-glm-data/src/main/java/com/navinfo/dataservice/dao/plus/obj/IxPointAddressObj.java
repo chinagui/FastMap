@@ -2,8 +2,10 @@ package com.navinfo.dataservice.dao.plus.obj;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Map;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddress;
 import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressFlag;
 import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressName;
 import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressNameTone;
@@ -54,6 +56,42 @@ public class IxPointAddressObj extends AbstractIxObj {
 	public List<IxPointaddressName> getIxPointaddressNames() {
 		return (List) subrows.get(IX_POINTADDRESS_NAME);
 	}
+	
+	
+	/**
+	 * @Title: isFreshFlag
+	 * @Description: 判断点门牌是否是鲜度验证
+	 * @return  boolean
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年10月9日 下午4:55:21 
+	 */
+	public boolean isFreshFlag() {
+		IxPointaddress ixPa = (IxPointaddress) this.mainrow;
+		if (!(ixPa.getOpType().equals(OperationType.UPDATE)))
+			return false;
+		Map<String, Object> ixPaOldValues = ixPa.getOldValues();
+		if (ixPaOldValues != null) {
+			for (String key : ixPaOldValues.keySet()) {
+				if (key.equals(IxPointaddress.DPR_NAME) 
+						|| key.equals(IxPointaddress.DP_NAME)
+						|| key.equals(IxPointaddress.LINK_PID) 
+						|| key.equals(IxPointaddress.X_GUIDE) 
+						|| key.equals(IxPointaddress.Y_GUIDE) 
+						|| key.equals(IxPointaddress.MEMOIRE) 
+						|| key.equals(IxPointaddress.GEOMETRY) 
+						|| key.equals(IxPointaddress.MEMO) 
+					) {
+					return false;
+				} else {
+					continue;
+				}
+			}
+		}
+		
+		return true;
+	}
+
 
 	/**
 	 * @return

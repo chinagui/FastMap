@@ -151,7 +151,17 @@ public class PointAddressSave {
         }else if(operType == OperType.UPDATE){
         	boolean isFreshVerified = isFreshVerified(pid, conn);
         	updateDayEditStatus(pid, isFreshVerified, conn);
-			
+        	JSONArray logArray = new JSONArray();
+        	JSONObject logObject = new JSONObject();
+        	logObject.put("type", "IXPOINTADDRESS");
+        	logObject.put("pid", pid);
+        	logObject.put("childPid", "");
+        	logObject.put("op", "修改");
+        	logArray.add(logObject);
+        	
+        	result.put("log", logArray);
+        	result.put("check", new JSONArray());
+        	result.put("pid", pid);
         }
 			
 	}

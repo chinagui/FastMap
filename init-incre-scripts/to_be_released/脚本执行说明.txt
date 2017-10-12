@@ -1,5 +1,5 @@
-﻿1. fm_man/task_geo.sql
-	功能：任务增加geometry
+﻿1. fm_man/***.sql
+	功能：***
 	目标库：fm_man
-	author：张晓毅
+	author：XX
 

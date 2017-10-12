@@ -56,7 +56,6 @@ public class TipsExporter {
 		java.sql.Connection conn = null;
 		List<Get> gets = new ArrayList<Get>();
 		try {
-
 			String wkt = GridUtils.grid2Wkt(gridId);
 			TipsRequestParamSQL paramSQL = new TipsRequestParamSQL();
 			String param = paramSQL.getTipsMobileWhere(date,workType,
@@ -91,6 +90,7 @@ public class TipsExporter {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error(e.getMessage(), e);
+            throw new Exception("Tips下载失败: " + e.getMessage());
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -757,32 +757,37 @@ public class TipsExporter {
 		List<Get> getsAll = new ArrayList<>();
 
 		List<String> rowkeySet = new ArrayList<>();
-		for (Object obj : condition) {
+		try {
+            for (Object obj : condition) {
 
-			JSONObject conJson = JSONObject.fromObject(obj);
+                JSONObject conJson = JSONObject.fromObject(obj);
 
-			String grid = conJson.getString("grid");
+                String grid = conJson.getString("grid");
 
-			String date = conJson.getString("date");
+                String date = conJson.getString("date");
 
-			if ("null".equalsIgnoreCase(date)) {
-				date = null;
-			}
+                if ("null".equalsIgnoreCase(date)) {
+                    date = null;
+                }
 
-			List<Get> gets = generateGets(grid, date,workType, rowkeySet);
+                List<Get> gets = generateGets(grid, date, workType, rowkeySet);
 
-			getsAll.addAll(gets);
-		}
+                getsAll.addAll(gets);
+            }
 
-		JSONArray ja = exportByGets(getsAll, patternImages);
+            JSONArray ja = exportByGets(getsAll, patternImages);
 
-		for (int j = 0; j < ja.size(); j++) {
-			pw.println(ja.getJSONObject(j).toString());
+            for (int j = 0; j < ja.size(); j++) {
+                pw.println(ja.getJSONObject(j).toString());
 
-			count += 1;
-		}
+                count += 1;
+            }
 
-		pw.close();
+            pw.close();
+        }catch (Exception e) {
+            throw e;
+        }
+
 
 		return count;
 	}

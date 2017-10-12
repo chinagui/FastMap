@@ -48,11 +48,11 @@ public class PersonJob extends AbstractStatJob {
 			List<Map<String, Object>> personList = manApi.staticsPersionJob(workDay);
 			//从mango库中查询数据
 			Map<Integer, Map<String, Object>> tasks = queryTaskData(timestamp, md);
-			Map<Integer, Object> personFcc = queryPersonFcc(timestamp, md);
+			Map<Integer, Object> personFcc = queryPersonFcc(timestamp,workDay, md);
 //			Map<Integer, Object> subTasks = queryDataFromMongo(md, timestamp);
 			//从mongo库差personTips和personDay和task的数据
-			Map<Integer, Object> personTips = queryPersonTips(timestamp, md);
-			Map<Integer, Object> personDay = queryPersonDay(timestamp, md);
+			Map<Integer, Object> personTips = queryPersonTips(timestamp,workDay, md);
+			Map<Integer, Object> personDay = queryPersonDay(timestamp,workDay, md);
 			
 			Map<String, Object> result = new HashMap<>();
 			List<Map<String, Object>> keyMaps = new ArrayList<>();
@@ -209,11 +209,12 @@ public class PersonJob extends AbstractStatJob {
 	 * @return  Map<Integer, Object>
 	 * 
 	 * */
-	public Map<Integer, Object> queryPersonTips(String timestamp, MongoDao md){
+	public Map<Integer, Object> queryPersonTips(String timestamp,String workDay, MongoDao md){
 		Map<Integer, Object> result = new HashMap<>();
 		String personTipsName = "person_tips";
 		BasicDBObject query = new BasicDBObject();
 		query.put("timestamp", timestamp);		
+		query.put("workDay", workDay);
 		MongoCursor<Document> personTips = md.find(personTipsName, query).iterator();
 		//统计一个任务下所有子任务的personTips
 		while(personTips.hasNext()){
@@ -239,10 +240,11 @@ public class PersonJob extends AbstractStatJob {
 	 * @return  Map<Integer, Object>
 	 * 
 	 */
-	public Map<Integer, Object> queryPersonDay(String timestamp, MongoDao md){
+	public Map<Integer, Object> queryPersonDay(String timestamp,String workDay, MongoDao md){
 		String personTableName = "person_day";
 		BasicDBObject query = new BasicDBObject();
 		query.put("timestamp", timestamp);		
+		query.put("workDay", workDay);
 		MongoCursor<Document> person = md.find(personTableName, query).iterator();
 		
 		Map<Integer, Object> subtaskData = new HashMap<>();
@@ -305,11 +307,12 @@ public class PersonJob extends AbstractStatJob {
 	 * @return  Map<Integer, Object>
 	 * 
 	 * */
-	public Map<Integer, Object> queryPersonFcc(String timestamp, MongoDao md){
+	public Map<Integer, Object> queryPersonFcc(String timestamp,String workDay, MongoDao md){
 		Map<Integer, Object> result = new HashMap<>();
 		String personFccName = "person_fcc";
 		BasicDBObject query = new BasicDBObject();
-		query.put("timestamp", timestamp);		
+		query.put("timestamp", timestamp);	
+		query.put("workDay", workDay);
 		MongoCursor<Document> personFcc = md.find(personFccName, query).iterator();
 		while(personFcc.hasNext()){
 			JSONObject fccJson = JSONObject.fromObject(personFcc.next());

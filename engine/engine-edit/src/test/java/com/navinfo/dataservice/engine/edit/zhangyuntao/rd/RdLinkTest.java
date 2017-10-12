@@ -135,8 +135,8 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testCreateSideRoad() throws Exception {
-        String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"distance\":4,\"sideType\":1,\"sNodePid\":502000610," +
-                "\"data\":{\"linkPids\":[402000709,502000789]},\"dbId\":13,\"subtaskId\":61}";
+        String parameter = "{\"command\":\"MOVE\",\"type\":\"RWNODE\",\"objId\":406000024,\"data\":{\"longitude\":119.49937865138052," +
+                "\"latitude\":38.53433910815049},\"dbId\":13,\"subtaskId\":61}";
         TestUtil.run(parameter);
     }
 

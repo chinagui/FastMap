@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.edit.controller;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -11,7 +12,12 @@ import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.dao.glm.selector.SearchAllObject;
+import com.navinfo.dataservice.dao.tranlsate.selector.TranslateSelector;
+import com.navinfo.dataservice.engine.translate.list.Operation;
+import com.navinfo.navicommons.database.Page;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -760,5 +766,36 @@ public class EditController extends BaseController {
 			}
 		}
 	}
-	
+
+	@RequestMapping("/translate/list")
+	public ModelAndView tranlateList(HttpServletRequest request) throws Exception{
+        AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+        long userId = tokenObj.getUserId();
+
+        JSONObject parameters = JSONObject.fromObject(request.getParameter("parameters"));
+        parameters.put("userId", userId);
+
+        Operation operation = new Operation();
+        try {
+            Page page = operation.loadPage(parameters);
+            return new ModelAndView("jsonView", success(page));
+        } catch(Exception e) {
+            logger.error(String.format("查询失败，原因：%s", e.getMessage()), e);
+            return new ModelAndView("jsonView", exception(e));
+        }
+    }
+
+    //@RequestMapping("/translate/upload")
+    //public ModelAndView translateUpload(HttpServletRequest request) {
+    //    AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+    //    long userId = tokenObj.getUserId();
+    //
+    //}
+    //
+    //@RequestMapping("/translate/download")
+    //public ModelAndView translateDownload(HttpServletRequest request) {
+    //    AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+    //    long userId = tokenObj.getUserId();
+    //
+    //}
 }

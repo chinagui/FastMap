@@ -1786,6 +1786,7 @@ public class TaskService {
 
 						task.put("status", 0);
 						task.put("type", 1);
+						task.put("latest", 1);
 						
 						task.put("percent", 0);
 						task.put("diffDate",0);

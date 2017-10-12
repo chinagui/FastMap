@@ -13,7 +13,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi;
 import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -33,14 +35,13 @@ import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportorCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcUploadPois;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImportorCommand;
-import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcUploadPois;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.download.DownloadUtils;
 import com.navinfo.navicommons.exception.ServiceRtException;
-import com.navinfo.navicommons.exception.ThreadExecuteException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 

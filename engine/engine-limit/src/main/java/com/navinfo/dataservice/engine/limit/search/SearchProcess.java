@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
+import com.navinfo.dataservice.engine.limit.search.gdb.AdAdminSearch;
 import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresFaceSearch;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresInfoSearch;
@@ -17,6 +18,8 @@ import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGeometrySearch
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGroupSearch;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresManoeuvreSearch;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresRdlinkSearch;
+import com.navinfo.navicommons.database.QueryRunner;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -294,8 +297,20 @@ public class SearchProcess {
         return jsonConfig;
     }
 
+    
+	public int searchDbId(String adminCode) throws Exception {
+
+		AdAdminSearch search = new AdAdminSearch(conn);
+
+		return search.searchDbId(adminCode);
+	}
+
+	public JSONObject searchAdminPosition(String adminCode) throws Exception {
+		AdAdminSearch search = new AdAdminSearch(conn);
+
+		return search.searchAdAdminPosition(adminCode);
+	}
+    
     public static void main(String[] args) throws Exception {
-
-
     }
 }

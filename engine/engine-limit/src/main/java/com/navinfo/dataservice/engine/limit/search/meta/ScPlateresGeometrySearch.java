@@ -209,7 +209,7 @@ public class ScPlateresGeometrySearch implements ISearch {
 
         List<ScPlateresGeometry> geometrys = new ArrayList<>();
 
-        String sqlstr = "SELECT * FROM SC_PLATERES_GEOMETRY WHERE GEOMETRY_ID=? ";
+        String sqlstr = "SELECT * FROM SC_PLATERES_GEOMETRY WHERE GROUP_ID=? ";
 
         PreparedStatement pstmt = null;
 

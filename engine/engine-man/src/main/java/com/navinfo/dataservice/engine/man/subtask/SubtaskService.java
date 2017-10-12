@@ -3251,10 +3251,11 @@ public class SubtaskService {
 				throw new ServiceException("block已有不规则圈，请刷新后重画");
 			}
 
-//			JSONObject conditionQuery=new JSONObject();
-//			conditionQuery.put("taskId", taskId);
-//			conditionQuery.put("stage", 0);				
-//			List<Subtask> subtasks = querySubtask(conn,conditionQuery,true);
+			JSONObject conditionQuery=new JSONObject();
+			conditionQuery.put("taskId", taskId);
+			conditionQuery.put("stage", 0);		
+			conditionQuery.put("status", 0);	
+			List<Subtask> subtasks = querySubtask(conn,conditionQuery,true);
 			
 			if(!StringUtils.isEmpty(lineWkt)){
 				/*
@@ -3305,7 +3306,7 @@ public class SubtaskService {
 					//交点
 					Geometry interGeo=null;
 					List<Geometry> addGeo=null;
-					//List<Subtask> subtaskRelates=new ArrayList<>();
+					List<Subtask> subtaskRelates=new ArrayList<>();
 					
 					log.info("start 切割选定面");
 					SubtaskRefer refer=refers.get(0);
@@ -3340,15 +3341,15 @@ public class SubtaskService {
 					
 					//line所切割的面对应的子任务是否开启
 					//4.需要切割的不规则圈对应的子任务的状态为草稿，清空不规则圈。
-//					for(Subtask s: subtasks){
-//						if(s.getReferId()==refer.getId()){
-//							if(s.getStatus()==1){
-//								throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
-//							}
-//							s.setReferId(0);
-//							subtaskRelates.add(s);
-//						}
-//					}
+					for(Subtask s: subtasks){
+						if(s.getReferId()==refer.getId()){
+							if(s.getStatus()==1){
+								throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
+							}
+							s.setReferId(0);
+							subtaskRelates.add(s);
+						}
+					}
 					addGeo=GeoTranslator.splitPolygonByLine(lineGeo,referGeo,6);
 					log.info("end 切割选定面");
 					
@@ -3407,10 +3408,11 @@ public class SubtaskService {
 					Set<Integer> idSet=new HashSet<Integer>();
 					idSet.add(id1);
 					SubtaskReferOperation.delete(conn, idSet);
+					SubtaskReferOperation.deleteDetail(conn, idSet);
 					
-//					for(Subtask s:subtaskRelates){
-//						SubtaskOperation.updateSubtask(conn, s);
-//					}
+					for(Subtask s:subtaskRelates){
+						SubtaskOperation.updateSubtask(conn, s);
+					}
 				}				
 			}else{
 				/*
@@ -3419,16 +3421,16 @@ public class SubtaskService {
 				 */
 				//1.nowait方式锁id1,id2对应的不规则圈，子任务
 				//2.是否开启，开启返回
-//				List<Subtask> subtaskRelates=new ArrayList<>();
-//				for(Subtask s: subtasks){
-//					if(s.getReferId()==id1||s.getReferId()==id2){
-//						if(s.getStatus()==1){
-//							throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
-//						}
-//						s.setReferId(0);
-//						subtaskRelates.add(s);
-//					}
-//				}
+				List<Subtask> subtaskRelates=new ArrayList<>();
+				for(Subtask s: subtasks){
+					if(s.getReferId()==id1||s.getReferId()==id2){
+						if(s.getStatus()==1){
+							throw new ServiceException("不规则圈对应的子任务"+s.getSubtaskId()+"为开启状态，不能做后续操作");
+						}
+						s.setReferId(0);
+						subtaskRelates.add(s);
+					}
+				}
 				//3.合并范围，去除关系
 				if(refers==null||refers.size()!=2){throw new ServiceException("未找到对应的不规则圈"); }
 				Geometry geo1 = refers.get(0).getGeometry();
@@ -3455,10 +3457,11 @@ public class SubtaskService {
 				idSet.add(id1);
 				idSet.add(id2);
 				SubtaskReferOperation.delete(conn, idSet);
+				SubtaskReferOperation.deleteDetail(conn, idSet);
 				
-//				for(Subtask s:subtaskRelates){
-//					SubtaskOperation.updateSubtask(conn, s);
-//				}
+				for(Subtask s:subtaskRelates){
+					SubtaskOperation.updateSubtask(conn, s);
+				}
 				
 				//若合并后，该block下只有一个不规则圈，则直接将block的不规则圈赋值给该不规则圈
 				JSONObject conditionQuery3=new JSONObject();
@@ -3515,6 +3518,9 @@ public class SubtaskService {
 					}
 					if(key.equals("stage")){
 						sql=sql+" AND S.STAGE="+condition.getInt(key);
+					}
+					if(key.equals("status")){
+						sql=sql+" AND S.status="+condition.getInt(key);
 					}
 				}
 			}

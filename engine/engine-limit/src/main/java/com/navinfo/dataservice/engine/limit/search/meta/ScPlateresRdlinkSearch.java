@@ -68,7 +68,7 @@ public class ScPlateresRdlinkSearch implements ISearch {
 
         List<ScPlateresRdLink> links = new ArrayList<>();
 
-        String sqlstr = "SELECT * FROM SC_PLATERES_RDLINK WHERE LINK_PID=? ";
+        String sqlstr = "SELECT * FROM SC_PLATERES_RDLINK WHERE GEOMETRY_ID=? ";
 
         PreparedStatement pstmt = null;
 
@@ -178,7 +178,7 @@ public class ScPlateresRdlinkSearch implements ISearch {
     public List<SearchSnapshot> searchDataByTileWithGap(IRenderParam param) throws Exception {
         List<SearchSnapshot> list = new ArrayList<>();
 
-        String sql = "SELECT LINK_PID, LIMIT_DIR, GEOMETRY_ID, GEOMETRY_RDLINK FROM SC_PLATERES_RDLINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE'";
+        String sql = "SELECT LINK_PID, LIMIT_DIR, GEOMETRY_ID, GEOMETRY_RDLINK FROM SC_PLATERES_RDLINK WHERE SDO_RELATE(GEOMETRY_RDLINK, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE'";
 
         PreparedStatement pstmt = null;
 

@@ -2445,7 +2445,7 @@ public class TaskService {
 					+ "       T.NAME,"
 					+ "       T.STATUS,"
 					+ "       T.DESCP,"
-					+ "       T.TYPE,"
+					+ "       T.TYPE,t.latest,"
 					+ "       T.PLAN_START_DATE,"
 					+ "       T.PLAN_END_DATE,"
 					+ "       T.PRODUCE_PLAN_START_DATE,"
@@ -2492,6 +2492,7 @@ public class TaskService {
 						task.setStatus(rs.getInt("STATUS"));
 						task.setDescp(rs.getString("DESCP"));
 						task.setType(rs.getInt("TYPE"));
+						task.setLatest(rs.getInt("LATEST"));
 						task.setWorkKind(rs.getString("WORK_KIND"));
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
@@ -2572,6 +2573,7 @@ public class TaskService {
 			}else{map.put("producePlanEndDate", "");}
 
 			map.put("lot", task.getLot());
+			map.put("latest", task.getLatest());
 			//modify by songhe
 			//删除road_plan_total,poi_plan_total,添加road/poi_plan_in/out  2017/07/25
 			map.put("roadPlanIn", task.getRoadPlanIn());

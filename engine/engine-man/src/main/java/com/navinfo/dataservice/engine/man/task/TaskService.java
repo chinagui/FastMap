@@ -4631,8 +4631,8 @@ public class TaskService {
 						+ "t.task_id = " + taskId + " and t.is_plan_selected = 0 and r.link_pid = t.pid)";
 				double linkUnWorkLenth = run.query(dailyConn, selectSql, handler);
 				
-				result.put("workRoad", new java.text.DecimalFormat("#.00").format(linkNeedWorkLenth));
-				result.put("unworkRoad", new java.text.DecimalFormat("#.00").format(linkUnWorkLenth));
+				result.put("workRoad", linkNeedWorkLenth == 0 ? 0 : new java.text.DecimalFormat("#.00").format(linkNeedWorkLenth));
+				result.put("unworkRoad", linkUnWorkLenth == 0 ? 0 : new java.text.DecimalFormat("#.00").format(linkUnWorkLenth));
 				result.put("unworkPoi", poiData.get("unPlanSelected") == null ? 0 : poiData.get("unPlanSelected"));
 				result.put("workAPoi", poiData.get("important") == null ? 0 : poiData.get("important"));
 				result.put("workunAPoi", poiData.get("unImportant") == null ? 0 : poiData.get("unImportant"));

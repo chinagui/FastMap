@@ -164,7 +164,7 @@ public class Command extends AbstractCommand {
 			this.endDate = data.getString("endDate");
 		}
 		
-		this.resDatetype = data.getString("resDatetype");
+		this.resDatetype = data.getString("resDateType");
 		
 		if (data.containsKey("time")) {
 			this.time = data.getString("time");

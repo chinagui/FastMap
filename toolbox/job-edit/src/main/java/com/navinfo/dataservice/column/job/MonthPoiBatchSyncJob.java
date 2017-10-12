@@ -92,123 +92,125 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			if (updatePids != null && updatePids.size() > 0) {
 				pids.addAll(updatePids);
 			}
-			// 获取poi对象信息
-			Set<String> tabNames = new HashSet<String>();
-			tabNames.add("IX_POI_NAME");
-			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,
-					ObjectName.IX_POI, tabNames, false, pids, true, true);
-			Map<Long, List<LogDetail>> logs = PoiLogDetailStat
-					.loadByColEditStatus(conn, pids);
-			log.info(" 加载poi信息以及对应子表信息");
+			if (pids.size() > 0) {
+				// 获取poi对象信息
+				Set<String> tabNames = new HashSet<String>();
+				tabNames.add("IX_POI_NAME");
+				Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,
+						ObjectName.IX_POI, tabNames, false, pids, true, true);
+				Map<Long, List<LogDetail>> logs = PoiLogDetailStat
+						.loadByColEditStatus(conn, pids);
+				log.info(" 加载poi信息以及对应子表信息");
 
-			// 将poi对象与履历合并起来
-			if (!objs.isEmpty()) {
-				ObjHisLogParser.parse(objs, logs);
-			}
-
-			Collection<Long> chiNamePids = new ArrayList<Long>();
-
-			Collection<Long> chtNamePids = new ArrayList<Long>();
-
-			Collection<Long> originEngNamePids = new ArrayList<Long>();
-
-			Collection<Long> OfficeStandardEngNamePids = new ArrayList<Long>();
-
-			Collection<Long> originPotNamePids = new ArrayList<Long>();
-
-			Collection<Long> standardPotNamePids = new ArrayList<Long>();
-			for (long pid : objs.keySet()) {
-				BasicObj obj = objs.get(pid);
-				IxPoiObj poiObj = (IxPoiObj) obj;
-				if (poiObj.getOfficeStandardCHIName() != null) {
-					IxPoiName poiName = poiObj.getOfficeStandardCHIName();
-					if (poiName.getHisOpType() == OperationType.UPDATE
-							|| poiName.getHisOpType() == OperationType.INSERT) {
-						chiNamePids.add(pid);
-					}
-
-				} else {
-					if (obj.isDelOfficeStandardCHIName()) {
-						chiNamePids.add(pid);
-					}
+				// 将poi对象与履历合并起来
+				if (!objs.isEmpty()) {
+					ObjHisLogParser.parse(objs, logs);
 				}
 
-				if (poiObj.getOfficeStandardCHTName() != null) {
-					IxPoiName poiName = poiObj.getOfficeStandardCHTName();
-					if (poiName.getHisOpType() == OperationType.UPDATE
-							|| poiName.getHisOpType() == OperationType.INSERT) {
-						chtNamePids.add(pid);
+				Collection<Long> chiNamePids = new ArrayList<Long>();
+
+				Collection<Long> chtNamePids = new ArrayList<Long>();
+
+				Collection<Long> originEngNamePids = new ArrayList<Long>();
+
+				Collection<Long> OfficeStandardEngNamePids = new ArrayList<Long>();
+
+				Collection<Long> originPotNamePids = new ArrayList<Long>();
+
+				Collection<Long> standardPotNamePids = new ArrayList<Long>();
+				for (long pid : objs.keySet()) {
+					BasicObj obj = objs.get(pid);
+					IxPoiObj poiObj = (IxPoiObj) obj;
+					if (poiObj.getOfficeStandardCHIName() != null) {
+						IxPoiName poiName = poiObj.getOfficeStandardCHIName();
+						if (poiName.getHisOpType() == OperationType.UPDATE
+								|| poiName.getHisOpType() == OperationType.INSERT) {
+							chiNamePids.add(pid);
+						}
+
+					} else {
+						if (obj.isDelOfficeStandardCHIName()) {
+							chiNamePids.add(pid);
+						}
 					}
 
-				} else {
-					if (obj.isDelOfficeStandardCHTName()) {
-						chtNamePids.add(pid);
-					}
-				}
-				if (poiObj.getOfficeOriginEngName() != null) {
-					IxPoiName poiName = poiObj.getOfficeOriginEngName();
-					if (poiName.getHisOpType() == OperationType.UPDATE
-							|| poiName.getHisOpType() == OperationType.INSERT) {
-						originEngNamePids.add(pid);
-					}
+					if (poiObj.getOfficeStandardCHTName() != null) {
+						IxPoiName poiName = poiObj.getOfficeStandardCHTName();
+						if (poiName.getHisOpType() == OperationType.UPDATE
+								|| poiName.getHisOpType() == OperationType.INSERT) {
+							chtNamePids.add(pid);
+						}
 
-				} else {
-					if (obj.isDelOfficeOriginEngName()) {
-						originEngNamePids.add(pid);
+					} else {
+						if (obj.isDelOfficeStandardCHTName()) {
+							chtNamePids.add(pid);
+						}
 					}
-				}
-				if (poiObj.getOfficeStandardEngName() != null) {
-					IxPoiName poiName = poiObj.getOfficeStandardEngName();
-					if (poiName.getHisOpType() == OperationType.UPDATE
-							|| poiName.getHisOpType() == OperationType.INSERT) {
-						OfficeStandardEngNamePids.add(pid);
-					}
+					if (poiObj.getOfficeOriginEngName() != null) {
+						IxPoiName poiName = poiObj.getOfficeOriginEngName();
+						if (poiName.getHisOpType() == OperationType.UPDATE
+								|| poiName.getHisOpType() == OperationType.INSERT) {
+							originEngNamePids.add(pid);
+						}
 
-				} else {
-					if (obj.isDelOfficeStandardEngName()) {
-						OfficeStandardEngNamePids.add(pid);
+					} else {
+						if (obj.isDelOfficeOriginEngName()) {
+							originEngNamePids.add(pid);
+						}
 					}
-				
-				}
-				if (poiObj.getOfficeOriginPOTName() != null) {
-					IxPoiName poiName = poiObj.getOfficeOriginPOTName();
-					if (poiName.getHisOpType() == OperationType.UPDATE
-							|| poiName.getHisOpType() == OperationType.INSERT) {
-						originPotNamePids.add(pid);
-					}
+					if (poiObj.getOfficeStandardEngName() != null) {
+						IxPoiName poiName = poiObj.getOfficeStandardEngName();
+						if (poiName.getHisOpType() == OperationType.UPDATE
+								|| poiName.getHisOpType() == OperationType.INSERT) {
+							OfficeStandardEngNamePids.add(pid);
+						}
 
-				}else{
-					if(obj.isDelOfficeOriginPotName()){
-						originPotNamePids.add(pid);
+					} else {
+						if (obj.isDelOfficeStandardEngName()) {
+							OfficeStandardEngNamePids.add(pid);
+						}
+
 					}
-				}
-				if (poiObj.getOfficeStandardPOTName() != null) {
-					IxPoiName poiName = poiObj.getOfficeStandardPOTName();
-					if (poiName.getHisOpType() == OperationType.UPDATE
-							|| poiName.getHisOpType() == OperationType.INSERT) {
+					if (poiObj.getOfficeOriginPOTName() != null) {
+						IxPoiName poiName = poiObj.getOfficeOriginPOTName();
+						if (poiName.getHisOpType() == OperationType.UPDATE
+								|| poiName.getHisOpType() == OperationType.INSERT) {
+							originPotNamePids.add(pid);
+						}
+
+					} else {
+						if (obj.isDelOfficeOriginPotName()) {
+							originPotNamePids.add(pid);
+						}
+					}
+					if (poiObj.getOfficeStandardPOTName() != null) {
+						IxPoiName poiName = poiObj.getOfficeStandardPOTName();
+						if (poiName.getHisOpType() == OperationType.UPDATE
+								|| poiName.getHisOpType() == OperationType.INSERT) {
+							standardPotNamePids.add(pid);
+						}
+
+					}
+					if (obj.isDelOfficeStandardPotName()) {
 						standardPotNamePids.add(pid);
 					}
 
-				}if(obj.isDelOfficeStandardPotName()){
-					standardPotNamePids.add(pid);
 				}
 
+				log.info("批 FieldState");
+				this.updateBatchPoi(chiNamePids,
+						this.getUpadeFieldStateForSql("改标准化简体中文"), conn);
+				this.updateBatchPoi(chtNamePids,
+						this.getUpadeFieldStateForSql("改标准化繁体中文"), conn);
+				this.updateBatchPoi(originEngNamePids,
+						this.getUpadeFieldStateForSql("改官方名原始英文"), conn);
+				this.updateBatchPoi(OfficeStandardEngNamePids,
+						this.getUpadeFieldStateForSql("改官方名标准化英文"), conn);
+				this.updateBatchPoi(originPotNamePids,
+						this.getUpadeFieldStateForSql("改官方名原始葡萄文"), conn);
+				this.updateBatchPoi(standardPotNamePids,
+						this.getUpadeFieldStateForSql("改官方名标准化葡萄文"), conn);
 			}
-
-			log.info("批 FieldState");
-			this.updateBatchPoi(chiNamePids,
-					this.getUpadeFieldStateForSql("改标准化简体中文"), conn);
-			this.updateBatchPoi(chtNamePids,
-					this.getUpadeFieldStateForSql("改标准化繁体中文"), conn);
-			this.updateBatchPoi(originEngNamePids,
-					this.getUpadeFieldStateForSql("改官方名原始英文"), conn);
-			this.updateBatchPoi(OfficeStandardEngNamePids,
-					this.getUpadeFieldStateForSql("改官方名标准化英文"), conn);
-			this.updateBatchPoi(originPotNamePids,
-					this.getUpadeFieldStateForSql("改官方名原始葡萄文"), conn);
-			this.updateBatchPoi(standardPotNamePids,
-					this.getUpadeFieldStateForSql("改官方名标准化葡萄文"), conn);
-
 			log.info("关闭任务");
 			apiService.closeSubtask(taskId, userId);
 		} catch (Exception e) {

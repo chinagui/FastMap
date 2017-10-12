@@ -8,10 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCursor;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -22,7 +20,6 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
-
 import net.sf.json.JSONObject;
 
 public class PersonJob extends AbstractStatJob {
@@ -47,11 +44,11 @@ public class PersonJob extends AbstractStatJob {
 			List<Map<String, Object>> personList = manApi.staticsPersionJob(workDay);
 			//从mango库中查询数据
 			Map<Integer, Map<String, Object>> tasks = queryTaskData(timestamp, md);
-			Map<Integer, Object> personFcc = queryPersonFcc(timestamp, md);
+			Map<Integer, Object> personFcc = queryPersonFcc(timestamp,workDay, md);
 //			Map<Integer, Object> subTasks = queryDataFromMongo(md, timestamp);
 			//从mongo库差personTips和personDay和task的数据
-			Map<Integer, Object> personTips = queryPersonTips(timestamp, md);
-			Map<Integer, Object> personDay = queryPersonDay(timestamp, md);
+			Map<Integer, Object> personTips = queryPersonTips(timestamp,workDay, md);
+			Map<Integer, Object> personDay = queryPersonDay(timestamp,workDay, md);
 			
 			Map<String, Object> result = new HashMap<>();
 			List<Map<String, Object>> keyMaps = new ArrayList<>();
@@ -69,13 +66,13 @@ public class PersonJob extends AbstractStatJob {
 				double tipsAddLen = 0d;
 				long tipsAllNum = 0;
 				double fccUpdateLen = 0d;
-				double effectiveTime = 0d;
 				int poiAllNum = 0;
 				int poiUploadNum = 0;
 				int poiFreshNum = 0;
 				int poiFinishNum = 0;
 				int deleteCount = 0;
 	    		int increaseAndAlterCount = 0;
+	    		String effectiveTime="";
 	    		
 				String startDate = "";
 				String endDate = "";
@@ -94,8 +91,8 @@ public class PersonJob extends AbstractStatJob {
 							startDate = fccMap.get("startDate").toString();
 							endDate = fccMap.get("endDate").toString();
 							workTime = fccMap.get("workTime").toString();
+							effectiveTime = fccMap.get("effectiveTime").toString();
 							fccUpdateLen = Double.valueOf(fccMap.get("fccUpdateLen").toString());
-							effectiveTime = Double.valueOf(fccMap.get("effectiveTime").toString());
 						}
 					}
 				}
@@ -138,8 +135,9 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("startDate", startDate);
 				dataMap.put("endDate", endDate);
 				dataMap.put("workTime", workTime);
-				dataMap.put("fccUpdateLen", fccUpdateLen);
 				dataMap.put("effectiveTime", effectiveTime);
+				
+				dataMap.put("fccUpdateLen", fccUpdateLen);
 				dataMap.put("workDay", workDay);
 				dataMap.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 				keyMaps.add(dataMap);
@@ -211,11 +209,12 @@ public class PersonJob extends AbstractStatJob {
 	 * @return  Map<Integer, Object>
 	 * 
 	 * */
-	public Map<Integer, Object> queryPersonTips(String timestamp, MongoDao md){
+	public Map<Integer, Object> queryPersonTips(String timestamp,String workDay, MongoDao md){
 		Map<Integer, Object> result = new HashMap<>();
 		String personTipsName = "person_tips";
 		BasicDBObject query = new BasicDBObject();
 		query.put("timestamp", timestamp);		
+		query.put("workDay", workDay);
 		MongoCursor<Document> personTips = md.find(personTipsName, query).iterator();
 		//统计一个任务下所有子任务的personTips
 		while(personTips.hasNext()){
@@ -241,10 +240,11 @@ public class PersonJob extends AbstractStatJob {
 	 * @return  Map<Integer, Object>
 	 * 
 	 */
-	public Map<Integer, Object> queryPersonDay(String timestamp, MongoDao md){
+	public Map<Integer, Object> queryPersonDay(String timestamp,String workDay, MongoDao md){
 		String personTableName = "person_day";
 		BasicDBObject query = new BasicDBObject();
 		query.put("timestamp", timestamp);		
+		query.put("workDay", workDay);
 		MongoCursor<Document> person = md.find(personTableName, query).iterator();
 		
 		Map<Integer, Object> subtaskData = new HashMap<>();
@@ -307,11 +307,12 @@ public class PersonJob extends AbstractStatJob {
 	 * @return  Map<Integer, Object>
 	 * 
 	 * */
-	public Map<Integer, Object> queryPersonFcc(String timestamp, MongoDao md){
+	public Map<Integer, Object> queryPersonFcc(String timestamp,String workDay, MongoDao md){
 		Map<Integer, Object> result = new HashMap<>();
 		String personFccName = "person_fcc";
 		BasicDBObject query = new BasicDBObject();
-		query.put("timestamp", timestamp);		
+		query.put("timestamp", timestamp);	
+		query.put("workDay", workDay);
 		MongoCursor<Document> personFcc = md.find(personFccName, query).iterator();
 		while(personFcc.hasNext()){
 			JSONObject fccJson = JSONObject.fromObject(personFcc.next());
@@ -320,8 +321,7 @@ public class PersonJob extends AbstractStatJob {
 			int userId = Integer.parseInt(fccJson.get("userId").toString());
 			int taskId = Integer.parseInt(fccJson.get("taskId").toString());
 			double fccUpdateLen = Double.valueOf(fccJson.get("linkLen").toString());
-			double effectiveTime = Double.valueOf(fccJson.get("effectiveTime").toString());
-			
+			double effectiveTime=Double.valueOf(fccJson.get("effectiveTime").toString());
 			String startCollectTime = (StringUtils.isBlank(fccJson.get("startCollectTime").toString()) ? df.format(new Date()) : fccJson.get("startCollectTime").toString());
 			String endCollectTime = (StringUtils.isBlank(fccJson.get("endCollectTime").toString()) ? df.format(new Date()) : fccJson.get("endCollectTime").toString());
 			String workTime = "";
@@ -330,21 +330,21 @@ public class PersonJob extends AbstractStatJob {
 				Date begin = df.parse(startCollectTime.replaceAll(reg, "$1-$2-$3 $4:$5:$6"));
 				Date end = df.parse(endCollectTime.replaceAll(reg, "$1-$2-$3 $4:$5:$6"));
 				long between = (end.getTime() - begin.getTime())/1000;//除以1000是为了转换成秒   
-				int day = (int) (between/(24*3600));   
-				int hour = (int) (between%(24*3600)/3600);   
-				int minute = (int) (between%3600/60);   
-				int second = (int) (between%60);
-				workTime = day+"天"+hour+"小时"+minute+"分"+second+"秒";
+				//int day = (int) (between/(24*3600));   
+				//int hour = (int) (between%(24*3600)/3600);   
+				//int minute = (int) (between%3600/60);   
+				//int second = (int) (between%60);
+				double hour = (double) (between/3600);
+				workTime = String.valueOf(hour);
 			}catch(ParseException e){
 				e.printStackTrace();
 			}
-			
+			map.put("effectiveTime", effectiveTime);
 			map.put("startDate", startCollectTime);
 			map.put("endDate", endCollectTime);
 			map.put("workTime", workTime);
 			map.put("fccUpdateLen", fccUpdateLen);
 			map.put("userId", userId);
-			map.put("effectiveTime", effectiveTime);
 			if(result.containsKey(taskId)){
 				tasks = (List<Map<String, Object>>) result.get(taskId);
 			}

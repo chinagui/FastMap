@@ -16,9 +16,6 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -42,22 +39,19 @@ public class ExportColumnQcProblem {
 			
 			conn = DBConnector.getInstance().getMkConnection();
 			
-			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			String excelName = "column_quality_problem_list_"+ DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 			
 			List<ColumnQcProblem> columnQcProblemList = searchColumnQcProblemListByDate(startDate,endDate,conn);
 			for (ColumnQcProblem columnQcProblem : columnQcProblemList) {
 				int subtaskId = columnQcProblem.getSubtaskId();
-				Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-				columnQcProblem.setSubtaskName(subtask.getName());
+				setNameAndSubtaskGroup(subtaskId, columnQcProblem);
 				int workerId = Integer.parseInt(columnQcProblem.getWorker());
 				int qcWorkerId = Integer.parseInt(columnQcProblem.getQcWorker());
-				UserInfo worker  = apiService.getUserInfoByUserId(workerId);
-				columnQcProblem.setWorker(workerId+"-"+worker.getUserRealName());
-				UserInfo qcWorker  = apiService.getUserInfoByUserId(qcWorkerId);
-				columnQcProblem.setQcWorker(qcWorkerId+"-"+qcWorker.getUserRealName());
-				columnQcProblem.setSubtaskGroup(searchByGroupId(subtask.getExeGroupId()));
+				columnQcProblem.setWorker(workerId+"-"+getUserRealName(workerId));
+				columnQcProblem.setQcWorker(qcWorkerId+"-"+getUserRealName(qcWorkerId));
 			}
+			
+			
 			
 			
 			ExportExcel<ColumnQcProblem> ex = new ExportExcel<ColumnQcProblem>();
@@ -97,16 +91,41 @@ public class ExportColumnQcProblem {
 
 	}
 
+	private static void setNameAndSubtaskGroup(int subtaskId,ColumnQcProblem columnQcProblem) throws SQLException{
+		Connection conn = null;
+		String sql  = "SELECT S.NAME,G.GROUP_NAME FROM SUBTASK S,USER_GROUP G WHERE S.EXE_GROUP_ID = G.GROUP_ID AND S.SUBTASK_ID = "+subtaskId;
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			
+			if(resultSet.next()){
+				columnQcProblem.setSubtaskName(resultSet.getString(1));
+				columnQcProblem.setSubtaskGroup(resultSet.getString(2));
+			}
+			
+			
+		} catch (Exception e) {
+			DbUtils.rollback(conn);
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 
 	/**
-	 * 根据exeGroupId查询项目组名称
-	 * @param exeGroupId
+	 * 根据userId查询getUserRealName
+	 * @param userId
 	 * @return
 	 * @throws SQLException 
 	 */
-	private static String searchByGroupId(Integer exeGroupId) throws SQLException {
+	private static String getUserRealName(Integer userId) throws SQLException {
 		Connection conn = null;
-		String sql  = "SELECT group_name FROM User_Group WHERE group_id = "+exeGroupId;
+		String sql  = "SELECT USER_REAL_NAME FROM USER_INFO WHERE USER_ID = "+userId;
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

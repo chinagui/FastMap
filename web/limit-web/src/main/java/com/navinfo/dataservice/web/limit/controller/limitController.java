@@ -368,8 +368,7 @@ public class limitController extends BaseController {
     }
     
 	@RequestMapping(value = "/getByPids")
-	public ModelAndView getByPids(HttpServletRequest request)
-			throws ServletException, IOException {
+	public ModelAndView getByPids(HttpServletRequest request) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -384,26 +383,25 @@ public class limitController extends BaseController {
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
-			
-				JSONArray pidArray = jsonReq.getJSONArray("pids");
+			JSONArray pidArray = jsonReq.getJSONArray("pids");
 
-				SearchProcess p = new SearchProcess(conn);
+			SearchProcess p = new SearchProcess(conn);
 
-				List<RdLink> objList = p.searchDataByPids(pidArray);
+			List<RdLink> objList = p.searchDataByPids(pidArray);
 
-				JSONArray array = new JSONArray();
+			JSONArray array = new JSONArray();
 
-				if (objList != null) {
+			if (objList != null) {
 
-					for (RdLink obj : objList) {
-						JSONObject json = obj.Serialize(ObjLevel.FULL);
-						array.add(json);
-					}
-					return new ModelAndView("jsonView", success(array));
-				} else {
-					return new ModelAndView("jsonView", success());
+				for (RdLink obj : objList) {
+					JSONObject json = obj.Serialize(ObjLevel.FULL);
+					array.add(json);
 				}
-			
+				return new ModelAndView("jsonView", success(array));
+			} else {
+				return new ModelAndView("jsonView", success());
+			}
+
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);

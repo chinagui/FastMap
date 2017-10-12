@@ -54,7 +54,6 @@ import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
@@ -696,6 +695,9 @@ public class TaskService {
 			
 			TaskOperation.updateTask(conn, bean);
 			
+			//modify by songhe
+			//修正修改任务时由于缺少项目id无法发布多源子任务的bug
+			bean.setProgramId(oldTask.getProgramId());
 			//状态status为开启时，参数workKind与库中workKind是否有变更，若情报矢量或多源由0变为1了，
 			//则需自动创建情报矢量或多源子任务，即subtask里的work_Kind赋对应值
 			if(oldTask.getStatus()==1&&oldTask.getType()==0){
@@ -4460,9 +4462,10 @@ public class TaskService {
 		 * @throws Exception
 		 * 
 		 * */
-		public void uploadPlan(int taskId) throws Exception{
+		public Map<String, Object> uploadPlan(int taskId) throws Exception{
 			Connection con = null;
 			Connection dailyConn = null;
+			Map<String, Object> result = new HashMap<>();
 			try{
 				QueryRunner run = new QueryRunner();
 				con = DBConnector.getInstance().getManConnection();	
@@ -4488,6 +4491,9 @@ public class TaskService {
 						+ " where t.task_id = " + taskId;
 				log.info("根据dataPlan更新需要作业的数据sql:"+updateCount);
 				run.execute(con, updateCount);
+				//modify by songhe 2017/10/09  添加规划项的返回值
+				result =  queryPlanData(dailyConn, taskId);
+				return result;
 			}catch(Exception e){
 				log.error("规划上传接口异常，原因为："+e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(con);
@@ -4558,6 +4564,82 @@ public class TaskService {
 				log.error("计算taskId对应的data_plan中的需要作业的link长度总和异常："+e.getMessage(), e);
 			}
 			return 0f;
+		}
+		
+		/**
+		 * 规划数据上传完成后获取数据量返回
+		 * @param Connection
+		 * @param int taskId
+		 * @return Map
+		 * @throws Exception 
+		 * 
+		 * */
+		public Map<String, Object> queryPlanData(Connection dailyConn, int taskId) throws Exception{
+			Map<String, Object> result = new HashMap<>();
+			try{
+				QueryRunner run = new QueryRunner();
+			
+				String selectSql = "select count(1), t.is_important, t.is_plan_selected from DATA_PLAN t where "
+						+ "t.task_id = " + taskId + " and t.data_type = 1 group by t.is_important, t.is_plan_selected";
+				ResultSetHandler<Map<String, Integer>> rs = new ResultSetHandler<Map<String, Integer>>(){
+					public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+						Map<String, Integer> poiData = new HashMap<>();
+						while(rs.next()){
+							int count = rs.getInt("count(1)");
+							int isImportant = rs.getInt("is_important");
+							int isPlanSelected = rs.getInt("is_plan_selected");
+							if(isPlanSelected == 0){
+								poiData.put("unPlanSelected", poiData.containsKey("unPlanSelected") ? count + poiData.get("unPlanSelected")  : count);
+							}else{
+								if(isImportant == 1){
+									poiData.put("important", poiData.containsKey("important") ? count + poiData.get("important")  : count);
+								}else{
+									poiData.put("unImportant", poiData.containsKey("unImportant") ? count + poiData.get("unImportant")  : count);
+								}
+							}
+						}
+						return poiData;
+					}
+				};
+				Map<String, Integer> poiData = run.query(dailyConn, selectSql, rs);
+				
+				ResultSetHandler<Double> rsHandler = new ResultSetHandler<Double>(){
+					public Double handle(ResultSet rs) throws SQLException {
+						double linkNeedWorkLenth = 0d;
+						if(rs.next()){
+							linkNeedWorkLenth = rs.getDouble("length")/1000;
+						}
+						return linkNeedWorkLenth;
+					}
+				};
+				selectSql = "select sum(r.length) length from RD_LINK r where exists(select t.pid from DATA_PLAN t where t.data_type = 2 and "
+						+ "t.task_id = " + taskId + " and t.is_plan_selected = 1 and r.link_pid = t.pid)";
+				double linkNeedWorkLenth = run.query(dailyConn, selectSql, rsHandler);
+				
+				ResultSetHandler<Double> handler = new ResultSetHandler<Double>(){
+					public Double handle(ResultSet rs) throws SQLException {
+						double linkLenth = 0d;
+						if(rs.next()){
+							linkLenth = rs.getDouble("length")/1000;
+						}
+						return linkLenth;
+					}
+				};
+				selectSql = "select sum(r.length) length from RD_LINK r where exists(select t.pid from DATA_PLAN t where t.data_type = 2 and "
+						+ "t.task_id = " + taskId + " and t.is_plan_selected = 0 and r.link_pid = t.pid)";
+				double linkUnWorkLenth = run.query(dailyConn, selectSql, handler);
+				
+				result.put("workRoad", linkNeedWorkLenth);
+				result.put("unworkRoad", linkUnWorkLenth);
+				result.put("unworkPoi", poiData.get("unPlanSelected") == null ? 0 : poiData.get("unPlanSelected"));
+				result.put("workAPoi", poiData.get("important") == null ? 0 : poiData.get("important"));
+				result.put("workunAPoi", poiData.get("unImportant") == null ? 0 : poiData.get("unImportant"));
+				
+				return result;
+			}catch(Exception e){
+				log.error("从日库中查询规划数据信息异常：" + e.getMessage(), e);
+				throw e;
+			}
 		}
 		
 		/**

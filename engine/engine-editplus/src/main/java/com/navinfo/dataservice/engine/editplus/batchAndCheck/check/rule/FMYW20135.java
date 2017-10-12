@@ -90,7 +90,7 @@ public class FMYW20135 extends BasicCheckRule {
         Matcher m3 = p3.matcher(strContent);
 
         // 10
-        Pattern p4 = Pattern.compile(".*(Ｎｏ|Ｎ０|ｎｏ|ｎＯ)+．+.*");
+        Pattern p4 = Pattern.compile(".*(Ｎｏ|ＮＯ|ｎｏ|ｎＯ)+．+.*");
         Matcher m4 = p4.matcher(strContent);
 
         //11、12

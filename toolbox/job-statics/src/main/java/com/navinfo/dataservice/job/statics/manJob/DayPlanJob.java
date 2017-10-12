@@ -100,9 +100,9 @@ public class DayPlanJob extends AbstractStatJob {
 				clob.setString(1, originWkt);
 				QueryRunner run = new QueryRunner();
 				//此处不排除删除的link，poi，随规划时的状态处理
-				String rdLinkSql = "select NVL(SUM(t.length),0) from RD_LINK t where t.u_record != 2 and "
+				String rdLinkSql = "select NVL(SUM(t.length),0) from RD_LINK t where "
 				+"sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'";
-				String poiSql = "select COUNT(1) from IX_POI p where  p.u_record != 2 and "
+				String poiSql = "select COUNT(1) from IX_POI p where "
 				+"sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'";
 				
 					

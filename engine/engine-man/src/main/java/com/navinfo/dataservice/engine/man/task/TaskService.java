@@ -1456,7 +1456,7 @@ public class TaskService {
 			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
 			sb.append("                       T.NAME,");
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
-			sb.append("                       T.TYPE,");
+			sb.append("                       T.TYPE,t.latest,");
 			sb.append("                       T.GROUP_ID,");
 			sb.append("                       T.work_kind,");
 			sb.append("                       T.lot,");
@@ -1517,7 +1517,7 @@ public class TaskService {
 			sb.append("	                          0             TASK_ID,");
 			sb.append("	                          NULL          NAME,");
 			sb.append("	                          4             STATUS,");
-			sb.append("	                          NULL          TYPE,");
+			sb.append("	                          NULL          TYPE,1,");
 			sb.append("	                          NULL          GROUP_ID,");
 			sb.append("                       '0|0|0|0' work_kind,");
 			sb.append("                       0 lot,");
@@ -1554,7 +1554,7 @@ public class TaskService {
 			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
 			sb.append("                       T.NAME,");
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
-			sb.append("                       T.TYPE,");
+			sb.append("                       T.TYPE,t.latest,");
 			sb.append("                       T.GROUP_ID,");
 			sb.append("                       T.work_kind,");
 			sb.append("                       T.lot,");
@@ -1629,6 +1629,7 @@ public class TaskService {
 						}
 						task.put("status", rs.getInt("STATUS"));
 						task.put("type", rs.getInt("TYPE"));
+						task.put("latest", rs.getInt("LATEST"));
 						
 						task.put("percent", rs.getInt("PERCENT"));
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
@@ -1785,6 +1786,7 @@ public class TaskService {
 
 						task.put("status", 0);
 						task.put("type", 1);
+						task.put("latest", 1);
 						
 						task.put("percent", 0);
 						task.put("diffDate",0);

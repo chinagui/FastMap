@@ -1,10 +1,13 @@
 package com.navinfo.dataservice.scripts;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,9 +19,6 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -40,16 +40,13 @@ public class ExportColumnQcQualityRate {
 			
 			conn = DBConnector.getInstance().getMkConnection();
 			
-			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			String excelName = "column_quality_rate_list_"+startDate+"_"+endDate;
 			
 			List<ColumnQcQualityRate> columnQcQualityRateList = searchColumnQcQualityRateListByDate(startDate,endDate,conn);
 			for (ColumnQcQualityRate columnQcQualityRate : columnQcQualityRateList) {
 				String subtaskId = columnQcQualityRate.getSubtaskGroup();
-				Subtask subtask = apiService.queryBySubtaskId(Integer.parseInt(subtaskId));
-				columnQcQualityRate.setSubtaskGroup(searchByGroupId(subtask.getExeGroupId()));
-				UserInfo worker  = apiService.getUserInfoByUserId(columnQcQualityRate.getWorkerId());
-				columnQcQualityRate.setWorkerName(worker.getUserRealName());
+				setSubtaskGroup(Integer.parseInt(subtaskId), columnQcQualityRate);
+				columnQcQualityRate.setWorkerName(getUserRealName(columnQcQualityRate.getWorkerId()));
 			}
 			
 			
@@ -91,16 +88,15 @@ public class ExportColumnQcQualityRate {
 
 	}
 
-
 	/**
-	 * 根据exeGroupId查询项目组名称
-	 * @param exeGroupId
+	 * 根据userId查询getUserRealName
+	 * @param userId
 	 * @return
 	 * @throws SQLException 
 	 */
-	private static String searchByGroupId(Integer exeGroupId) throws SQLException {
+	private static String getUserRealName(Integer userId) throws SQLException {
 		Connection conn = null;
-		String sql  = "SELECT group_name FROM User_Group WHERE group_id = "+exeGroupId;
+		String sql  = "SELECT USER_REAL_NAME FROM USER_INFO WHERE USER_ID = "+userId;
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -122,7 +118,30 @@ public class ExportColumnQcQualityRate {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+	
+	private static void setSubtaskGroup(int subtaskId,ColumnQcQualityRate columnQcQualityRate) throws SQLException{
+		Connection conn = null;
+		String sql  = "SELECT G.GROUP_NAME FROM SUBTASK S,USER_GROUP G WHERE S.EXE_GROUP_ID = G.GROUP_ID AND S.SUBTASK_ID = "+subtaskId;
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			
+			if(resultSet.next()){
+				columnQcQualityRate.setSubtaskGroup(resultSet.getString(1));
+			}
+			
+			
+		} catch (Exception e) {
+			DbUtils.rollback(conn);
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 
 
@@ -130,7 +149,7 @@ public class ExportColumnQcQualityRate {
 			Connection conn) throws Exception {
 		
 		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT WORKER, SUBTASK_ID,FIRST_WORK_ITEM, COUNT(1) NUM, LISTAGG(is_problem, '|') WITHIN GROUP(ORDER BY  WORKER) is_PROBLEM ");
+		sb.append("SELECT WORKER, SUBTASK_ID,FIRST_WORK_ITEM, COUNT(1) NUM, REPLACE(WM_CONCAT(is_problem),',','|') is_PROBLEM ");
 		sb.append(" FROM COLUMN_QC_PROBLEM C WHERE C.FIRST_WORK_ITEM IN ('poi_name','poi_address','poi_englishname','poi_englishaddress') ");
 		sb.append(" AND C.QC_TIME BETWEEN  TO_DATE('"+startDate+" 00:00:00', 'yyyyMMdd hh24:mi:ss') AND TO_DATE('"+endDate+" 23:59:59','yyyyMMdd hh24:mi:ss')");
 		sb.append(" GROUP BY WORKER, SUBTASK_ID,FIRST_WORK_ITEM");
@@ -157,7 +176,7 @@ public class ExportColumnQcQualityRate {
 				 
 				String firstWorkItem = rs.getString(3);
 				int qcNum = rs.getInt(4);
-				String qcProblemNumString = rs.getString(5);
+				String qcProblemNumString = clobToString(rs.getClob(5));
 				String[] qcProblemNumArray = qcProblemNumString.split("\\|");
 				
 				if(firstWorkItem.equals("poi_name")){
@@ -218,7 +237,21 @@ public class ExportColumnQcQualityRate {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
+	
+	public static String clobToString(Clob clob) throws SQLException, IOException {
 
+		String reString = "";
+		Reader is = clob.getCharacterStream();// 得到流
+		BufferedReader br = new BufferedReader(is);
+		String s = br.readLine();
+		StringBuffer sb = new StringBuffer();
+		while (s != null) {// 执行循环将字符串全部取出付值给StringBuffer由StringBuffer转成STRING
+		sb.append(s);
+		s = br.readLine();
+		}
+		reString = sb.toString();
+		return reString;
+	}
 
 	public static void main(String[] args) throws Exception {
 		initContext();

@@ -672,7 +672,13 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 				JSONObject value=new JSONObject();
 				
 				if(secondWorkItem.equals("namePinyin")){
-					value.put("py",string2json(resultSet.getString("IS_PROBLEM")));	
+					String isProblem=resultSet.getString("IS_PROBLEM");
+					if(isProblem==null||"".equals(isProblem)){
+						value.put("py",isProblem);
+					}else{
+						value.put("py",string2json(isProblem));	
+					}
+					
 				}else{
 					value.put("other",resultSet.getString("IS_PROBLEM"));	
 				}

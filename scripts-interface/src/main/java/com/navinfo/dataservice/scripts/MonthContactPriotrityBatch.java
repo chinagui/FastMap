@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.scripts.tmp;
+package com.navinfo.dataservice.scripts;
 
 import java.sql.Clob;
 import java.sql.Connection;
@@ -58,7 +58,7 @@ public class MonthContactPriotrityBatch {
 		JSONObject response = new JSONObject();
 		logger.info("batch contact start...");
 
-		int dbType = request.getInt("db_type");
+		int dbType = request.getInt("dbType");
 		if (dbType == 0) {
 			logger.info("开始处理母库电话信息信息");
 			batchMonthContact();
@@ -86,19 +86,19 @@ public class MonthContactPriotrityBatch {
 		String ids = org.apache.commons.lang.StringUtils.join(pids, ",");
 		Clob pidClod = ConnectionUtil.createClob(conn);
 		pidClod.setString(1, ids);
-
+		logger.info("begin批电话信息");
 		StringBuilder addSql = new StringBuilder();
 		addSql.append(" MERGE INTO ix_poi_contact a ");
 		addSql.append(" USING (SELECT ic.*, ");
 		addSql.append("  ROW_NUMBER () OVER (PARTITION BY poi_pid ORDER BY ic.contact_type,ic.contact)  id ");
-		addSql.append(" FROM ix_poi_contact ic) b ");
-		addSql.append(" ON (    a.poi_pid = b.poi_pid ");
-		addSql.append(" AND a.poi_pid IN (select to_number(column_value) from table(clob_to_table(?))) ");
-		addSql.append(" AND a.contact_type = b.contact_type ");
+		addSql.append(" FROM ix_poi_contact ic where ic.u_record !=2 and  ic.poi_pid IN (select to_number(column_value) from table(clob_to_table(?)))) b ");
+		addSql.append(" ON (    a.row_id = b.row_id ");
+		addSql.append(" AND a.u_record !=2 and  a.poi_pid IN (select to_number(column_value) from table(clob_to_table(?)))) ");
 		addSql.append(" WHEN matched  then update set a.priority = b.id ");
 		QueryRunner run = new QueryRunner();
+		logger.info("end批电话信息");
 		try {
-			run.update(conn, addSql.toString(), pidClod);
+			run.update(conn, addSql.toString(), pidClod, pidClod);
 		} catch (SQLException e) {
 			logger.error(e.getMessage(), e);
 			throw e;
@@ -129,17 +129,18 @@ public class MonthContactPriotrityBatch {
 		sql.append(" where p.kind_code= sp.poi_kind  and p.state <>1  and sp.type = 7 and sp.category =3 and nvl(p.chain,'0') = nvl(sp.chain,'0') ");
 		sql.append(" union select p.pid  ");
 		sql.append(" from ix_poi p,sc_point_spec_kindcode_new@DBLINK_RMS sp ");
-		sql.append(" where p.kind_code= sp.poi_kind  and p.state <>1 and sp.type = 7 and sp.category =7  and nvl(p.chain,'0') = nvl(sp.chain,'0') and sp.hm_flag in ('HKMC','HM','D') ) ");
+		sql.append(" where p.kind_code= sp.poi_kind  and p.state <>1 and sp.type = 7 and sp.category =7  and nvl(p.chain,'0') = nvl(sp.chain,'0') and sp.hm_flag in ('HM','DHM','D') ) ");
 		sql.append(" select ix.poi_pid");
 		sql.append(" from temp,ix_poi_contact ix ");
-		sql.append(" where  ix.poi_pid = temp.pid group by ix.poi_pid ,ix.priority having count(1) <> 1 ");
+		sql.append(" where ix.u_record != 2 and  ix.poi_pid = temp.pid group by ix.poi_pid ,ix.priority having count(1) <> 1 ");
+		logger.info(sql.toString());
 		try {
 
 			pstmt = conn.prepareStatement(sql.toString());
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				pids.add(resultSet.getLong("pid"));
+				pids.add(resultSet.getLong("poi_pid"));
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -173,7 +174,7 @@ public class MonthContactPriotrityBatch {
 				return;
 			}
 			logger.info(String.format("match pids  [%s]",
-					Arrays.toString(pids.toArray(new Integer[] {}))));
+					Arrays.toString(pids.toArray(new Long[] {}))));
 			batchContactPriority(conn, pids);
 		} catch (Exception e) {
 			logger.error(e.getMessage() + "批处理母库电话信息失败", e);
@@ -215,13 +216,14 @@ public class MonthContactPriotrityBatch {
 					continue;
 				}
 				logger.info(String.format("match pids  [%s]",
-						Arrays.toString(pids.toArray(new Integer[] {}))));
+						Arrays.toString(pids.toArray(new Long[] {}))));
 				batchContactPriority(conn, pids);
 			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
 				DbUtils.rollbackAndCloseQuietly(conn);
 				throw e;
 			} finally {
-				DbUtils.closeQuietly(conn);
+				DbUtils.commitAndCloseQuietly(conn);
 			}
 		}
 

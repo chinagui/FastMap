@@ -147,10 +147,10 @@ public class Command extends AbstractCommand {
 		}
 		
 		this.tailNumber = data.getString("tailNumber");
-		this.platecolor = data.getString("plateColor");
+		this.platecolor = data.getString("platecolor");
 		this.energyType = data.getString("energyType");
 		this.gasEmisstand = data.getString("gasEmisstand");
-		this.seatnum = data.getInt("seatNum");
+		this.seatnum = data.getInt("seatnum");
 		this.vehicleLength = data.getDouble("vehicleLength");
 		this.resWeigh = data.getDouble("resWeigh");
 		this.resAxleCount = data.getInt("resAxleCount");
@@ -164,7 +164,7 @@ public class Command extends AbstractCommand {
 			this.endDate = data.getString("endDate");
 		}
 		
-		this.resDatetype = data.getString("resDateType");
+		this.resDatetype = data.getString("resDatetype");
 		
 		if (data.containsKey("time")) {
 			this.time = data.getString("time");

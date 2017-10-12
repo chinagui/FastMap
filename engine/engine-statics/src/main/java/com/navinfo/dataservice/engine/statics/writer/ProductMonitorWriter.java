@@ -15,9 +15,9 @@ import net.sf.json.JSONObject;
 public class ProductMonitorWriter extends DefaultWriter {
 	public String getLatestStatic() throws Exception {
 		JSONObject data = new JSONObject();
-		String platForm = "productMonitor";
-		data.putAll(StaticsService.getInstance().getMongoMonitorData());
+		String platForm = "productMonitor";		
 		data.putAll(StaticsService.getInstance().getOracleMonitorData(platForm));
+		data.putAll(StaticsService.getInstance().getMongoMonitorData());
 		return data.toString();
 	}
 }

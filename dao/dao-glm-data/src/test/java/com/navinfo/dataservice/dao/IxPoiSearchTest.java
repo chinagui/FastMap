@@ -2,6 +2,7 @@ package com.navinfo.dataservice.dao;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -78,14 +79,17 @@ public class IxPoiSearchTest {
 		log.info("start");
 		Connection conn =null;
 		try{
-			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
-
-			String str =DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION");
-			String sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION ";
-			System.out.println("str: "+str);
-			System.out.println("newStr: "+str.replace("\"RESERVED\"", "1 \"RESERVED\""));
-			System.out.println("sql: "+sql);
+//			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+//					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
+//
+//			String str =DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION");
+//			String sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION ";
+//			System.out.println("str: "+str);
+//			System.out.println("newStr: "+str.replace("\"RESERVED\"", "1 \"RESERVED\""));
+//			System.out.println("sql: "+sql);
+			Map<String,String> result = new HashMap<String,String>();
+			result.put("1", "a");
+			System.out.println(result.get("2"));
 		}catch(Exception e){
 			e.printStackTrace();
 		}finally{

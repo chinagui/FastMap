@@ -158,6 +158,9 @@ public class ColumnCoreOperation {
 			log.error(e.getMessage(), e);
 			throw new SQLException("往poi_column_status表插入作业标记信息出错，原因：" + e.getMessage(), e);
 		}
+		finally {
+			DBUtils.closeStatement(pstmt);
+		}
 
 	}
 	/**
@@ -288,7 +291,7 @@ public class ColumnCoreOperation {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-
+			DBUtils.closeStatement(pstmt);
 		}
 	}
 	
@@ -331,7 +334,9 @@ public class ColumnCoreOperation {
 			log.error(e.getMessage(), e);
 			throw new SQLException("更新COLUMN_QC_PROBLEM表信息出错，原因：" + e.getMessage(), e);
 		}
-
+		finally {
+			DBUtils.closeStatement(pstmt);
+		}
 	}
 	
 	/**
@@ -364,7 +369,9 @@ public class ColumnCoreOperation {
 			log.error(e.getMessage(), e);
 			throw new SQLException("从poi_column_status表删除作业标记信息出错，原因：" + e.getMessage(), e);
 		}
-
+		finally {
+			DBUtils.closeStatement(pstmt);
+		}
 	}
 	/**
 	 * 从没有地址的数据从poi_column_status表删除作业标记信息
@@ -389,7 +396,9 @@ public class ColumnCoreOperation {
 			log.error(e.getMessage(), e);
 			throw new SQLException("从poi_column_status表删除作业标记信息出错，原因：" + e.getMessage(), e);
 		}
-
+		finally {
+			DBUtils.closeStatement(pstmt);
+		}
 	}
 	/**
 	 * 从poi_column_status表获取重分类前该POI的qc_flag值

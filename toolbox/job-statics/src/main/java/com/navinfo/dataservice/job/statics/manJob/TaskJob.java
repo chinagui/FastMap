@@ -19,6 +19,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.ManConstant;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
@@ -90,7 +91,13 @@ public class TaskJob extends AbstractStatJob {
 			Map<Integer, Integer> tips2MarkMap = manApi.getTips2MarkNumByTaskId();
 			//查询mongo库中已统计的数据(状态为关闭)
 			log.info("查询mongo库中已统计的数据(状态为关闭)");
-			Map<Integer, Map<String, Object>> taskStatDataClose = getTaskStatData(timestamp);
+			ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
+			String value=api.queryConfValueByConfKey(ManConstant.inheritStatic);
+			Map<Integer, Map<String, Object>> taskStatDataClose =new HashMap<>();
+			//没有值，或者为true
+			if(value==null||value.equals("true")){
+				taskStatDataClose = getTaskStatData(timestamp);
+			}
 			if(taskStatDataClose.size() > 0){
 				taskStatList.addAll(taskStatDataClose.values());
 				taskIdClose.addAll(taskStatDataClose.keySet());
@@ -929,16 +936,12 @@ public class TaskJob extends AbstractStatJob {
 						}
 					}
 				}
-				if(subDayPoiStatData.containsKey("poiActualAddNum")){
-					poiActualAddNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualAddNum").toString());
+				if(subDayPoiStatData.containsKey(subtaskId)){
+					Map<String, Object> map = subDayPoiStatData.get(subtaskId);
+					poiActualAddNumSum+=Integer.parseInt(map.get("poiActualAddNum").toString());
+					poiActualUpdateNumSum+=Integer.parseInt(map.get("poiActualUpdateNum").toString());
+					poiActualDeleteNumSum+=Integer.parseInt(map.get("poiActualDeleteNum").toString());
 				}
-				if(subDayPoiStatData.containsKey("poiActualUpdateNum")){
-					poiActualUpdateNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualUpdateNum").toString());
-				}
-				if(subDayPoiStatData.containsKey("poiActualDeleteNum")){
-					poiActualDeleteNumSum+=Integer.parseInt(subDayPoiStatData.get("poiActualDeleteNum").toString());
-				}
-				
 //				poiActualUpdateNumSum+=(int) subtask.get("poiActualUpdateNum");
 //				poiActualDeleteNumSum+=(int) subtask.get("poiActualDeleteNum");
 			}

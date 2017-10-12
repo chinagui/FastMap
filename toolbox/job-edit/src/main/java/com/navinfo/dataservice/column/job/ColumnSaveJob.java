@@ -397,7 +397,7 @@ public class ColumnSaveJob extends AbstractJob {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-
+			DBUtils.closeStatement(pstmt);
 		}
 	}
 	/**

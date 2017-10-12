@@ -34,7 +34,7 @@ public class BaiduGeocoding {
 		String geocoderUrl = url + str + url2;
 		System.out.println("geocoderUrl" + geocoderUrl);
 //		String return_value = Parser_Tool.do_get(geocoderUrl);
-		String return_value = Parser_Tool.do_get2(geocoderUrl);
+		String return_value = Parser_Tool.do_get3(geocoderUrl);
 		System.out.println("return_value:" + return_value);
 		if (return_value == null || return_value.equals("")) {
 			return null;

@@ -14,12 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.UserInfo;
@@ -29,7 +27,6 @@ import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -43,16 +40,18 @@ public class ColumnCoreControl {
 	private static final Logger logger = Logger.getLogger(ColumnCoreControl.class);
 
 	public int applyData(JSONObject jsonReq, long userId) throws Exception {
+		logger.info("start applyData");
 		// TODO
 		Connection conn = null;
 		try {
-
+			
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			int taskId = jsonReq.getInt("taskId");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			int qcFlag=0;
 			int comSubTaskId=0;
 			int isQuality =subtask.getIsQuality();
+			logger.info("获取对应的常规任务信息");
 			//获取对应的常规任务信息
 			if(isQuality==1){
 				qcFlag=1;
@@ -61,6 +60,7 @@ public class ColumnCoreControl {
 			}else{
 				comSubTaskId=taskId;
 			}
+			logger.info("获取查询条件信息");
 			//获取查询条件信息
 			JSONObject conditions=new JSONObject();
 			if(jsonReq.containsKey("conditions")){
@@ -89,14 +89,15 @@ public class ColumnCoreControl {
 					"poi_englishaddress", "poi_postwork");
 			List<String> columnSecondWorkItems = Arrays.asList("postViewLevel", "postAirportCode", "postImportance",
 					"postAdminReal", "");
-
+			
 			if (columnFirstWorkItems.contains(firstWorkItem)) {
 
 				if (columnSecondWorkItems.contains(secondWorkItem)) {
-
+					
 					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, comSubTaskId,qcFlag);
 					// 可申请数据条数
 					int canApply = 100 - hasApply;
+					logger.info("该用户可申请数据条数:"+canApply);
 					if (canApply == 0) {
 						throw new Exception("该作业员名下已存在100条数据，不可继续申请");
 					}
@@ -107,7 +108,7 @@ public class ColumnCoreControl {
 						// 库中未查到可以申请的数据，返回0
 						return 0;
 					}
-
+					logger.info("库中可申请数据条数:"+pids.size());
 					// 实际申请到的数据pids
 					List<Integer> applyDataPids = new ArrayList<Integer>();
 					if (pids.size() >= canApply) {
@@ -116,13 +117,13 @@ public class ColumnCoreControl {
 						// 库里面查询出的数据量小于当前用户可申请的量，即锁定库中查询出的数据
 						applyDataPids = pids;
 					}
-					
+					logger.info("数据加锁， 赋值handler，task_id,apply_date");
 					// 数据加锁， 赋值handler，task_id,apply_date
 					Timestamp timeStamp = new Timestamp(new Date().getTime());
 					List<String> workItemIds = columnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
 					columnSelector.dataSetLock(applyDataPids, workItemIds, userId, comSubTaskId, timeStamp,qcFlag);
 					totalCount += applyDataPids.size();
-					
+					logger.info("常规申请需要打质检标记");
 					//常规申请需要打质检标记
 					if(isQuality==0){
 						double sampleLevel =((double )apiService.queryQualityLevel((int) userId, firstWorkItem))/100.0;
@@ -150,7 +151,7 @@ public class ColumnCoreControl {
 					}
 				}
 			}
-
+			logger.info("行政区划关联要素作业, 点位调整作业");
 			// 行政区划关联要素作业, 点位调整作业
 			List<String> locSecondWorkItems = Arrays.asList("locationIcon", "locationLandMark");
 			if (("poi_postwork".equals(firstWorkItem) && "postAdminArea".equals(secondWorkItem))
@@ -158,7 +159,8 @@ public class ColumnCoreControl {
 				// 申请数据
 				// TODO
 			}
-
+			logger.info("applyData count:"+totalCount);
+			logger.info("applyData over");
 			return totalCount;
 
 		} catch (Exception e) {

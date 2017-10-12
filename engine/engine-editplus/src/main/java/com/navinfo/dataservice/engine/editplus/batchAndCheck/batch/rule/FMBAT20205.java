@@ -13,7 +13,7 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 
 
 /**
- * 查询条件：本次日编存在IX_POI_ADDRESS新增或者修改履历，且kindCode不在重要分类表中
+ * 查询条件：本次日编存在IX_POI_ADDRESS新增或者修改或者删除履历，且kindCode不在重要分类表中
  * 批处理:IX_POI_ADDRESS存在LANG_CODE=“ENG”记录，则标识删除，生成批处理履历,IX_POI_ADDRESS.U_RECORD赋值2；否则不处理；
  * 
  * @author wangdongbin
@@ -38,6 +38,7 @@ public class FMBAT20205 extends BasicBatchRule {
 				break;
 			}
 		}
+		if(obj.isDelCHAddress()){isChanged = true;}
 		if (isChanged) {
 			String kindCode = poi.getKindCode();
 			String chain = poi.getChain();

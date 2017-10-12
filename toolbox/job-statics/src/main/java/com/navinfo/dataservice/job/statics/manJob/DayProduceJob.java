@@ -14,6 +14,8 @@ import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -51,11 +53,14 @@ public class DayProduceJob extends AbstractStatJob {
 			Map<String, Object> dayProduceStatMap = getDayProduceStat(dayProduceStatByUrlMap,dataSumMap);
 			
 			dayProduceStatByUrlMap.put("dpAverage", dayProduceStatMap);	
+			JSONArray produceList=new JSONArray();
+			produceList.add(dayProduceStatByUrlMap);
 			//处理数据
 			JSONObject result = new JSONObject();
-			result.put("day_produce",dayProduceStatByUrlMap);
+			result.put("day_produce",produceList);
 
 			log.info("end stat "+statReq.getJobType());
+			log.info(result.toString());
 			log.debug("所有日出品数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
 			
 			return result.toString();
@@ -94,6 +99,7 @@ public class DayProduceJob extends AbstractStatJob {
 				dpAddRoadSum = (double) dataSumMap.get("dpAddRoadSum");
 				dpUpdatePoiSum = (int) dataSumMap.get("dpUpdatePoiSum");
 				dpAddPoiSum = (int) dataSumMap.get("dpAddPoiSum");
+				total=(int) dataSumMap.get("total");
 			}
 			updateRoad = (dpUpdateRoadSum+dpUpdateRoad)/(total+1);
 			addRoad = (dpAddRoadSum+dpAddRoad)/(total+1);

@@ -331,6 +331,7 @@ public class DeepCoreControl {
 			editJson.addJsonPoi(json);
 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
 			importor.operate(command);
+			importor.setPhysiDelete(true);
 			importor.setSubtaskId(subtaskId);
 			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 

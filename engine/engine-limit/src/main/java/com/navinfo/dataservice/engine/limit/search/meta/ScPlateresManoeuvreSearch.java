@@ -122,6 +122,8 @@ public class ScPlateresManoeuvreSearch {
                 ReflectionAttrUtils.executeResultSet(manoeuvre, resultSet);
 
                 rows.add(manoeuvre);
+                
+                total = resultSet.getInt("TOTAL_NUM_ROW");
             }
         } catch (Exception e) {
 

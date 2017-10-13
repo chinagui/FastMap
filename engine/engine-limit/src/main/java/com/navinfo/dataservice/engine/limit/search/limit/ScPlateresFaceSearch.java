@@ -242,7 +242,7 @@ public class ScPlateresFaceSearch implements ISearch {
 			if (i > 0) {
 				where.append(",");
 			}
-			where.append("'" + faces.get(i) + "'");
+			where.append("'" + faces.getString(i) + "'");	
 		}
 
 		String sql = "SELECT * FROM SC_PLATERES_FACE WHERE GEOMETRY_ID IN (" + where + ")";

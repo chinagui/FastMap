@@ -111,6 +111,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			BasicDBObject queryProgram = new BasicDBObject();
 			queryProgram.put("timestamp", timestamp);
 			queryProgram.put("status", 0);
+			queryProgram.put("isProduce", 0);
 			queryProgram.put("type", 4);			
 			quickMonitorMap.put("unproduceCloseNum",queryCountInMongo(md, "program", queryProgram));
 			
@@ -710,8 +711,6 @@ public class QuickMonitorJob extends AbstractStatJob {
 	public int queryCountInMongo(MongoDao md,String collName,BasicDBObject query){
 		int count = 0;
 		String personFccName = collName;
-		query.put("isProduce", 0);
-		query.put("status", 0);
 		long countL = md.count(personFccName, query);
 		count = new Long(countL).intValue();  
 		return count;

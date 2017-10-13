@@ -21,7 +21,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.ExportExcel;
+import com.navinfo.dataservice.commons.util.ExportXSSFExcel;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.scripts.model.ColumnQcProblem;
 
@@ -52,18 +52,16 @@ public class ExportColumnQcProblem {
 			}
 			
 			
-			
-			
-			ExportExcel<ColumnQcProblem> ex = new ExportExcel<ColumnQcProblem>();
+			ExportXSSFExcel<ColumnQcProblem> ex = new ExportXSSFExcel<ColumnQcProblem>();
 
 			String[] headers = { "序号", "当前项目编号", "项目名称", "作业对象", "fid", "作业项目（大分类）",
 					"项目类型（中分类）", "详细检查项（子分类）", "错误内容", "错误类型", "问题等级", "问题描述", "正确内容",
 					"作业员","项目组","作业时间","质检员","质检时间","原始信息"};
-
+			
 			try {
 				String path = SystemConfigFactory.getSystemConfig().getValue(
 						PropConstant.downloadFilePathPoi)+"/poiQuality/columnQcProblem";
-				File file = new File(path+"/" + excelName + ".xls");
+				File file = new File(path+"/" + excelName + ".xlsx");
 				if(!file.getParentFile().isDirectory()){
 					file.getParentFile().mkdirs();
 				}

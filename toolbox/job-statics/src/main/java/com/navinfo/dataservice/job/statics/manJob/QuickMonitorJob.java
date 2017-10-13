@@ -667,7 +667,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 		int unplanNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and  i.plan_status = 0 ";
+			String sql  = "select count(1) num from infor i where i.plan_status = 0 ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();

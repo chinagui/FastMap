@@ -42,6 +42,10 @@ public class AdAdminSearch {
 		
 		JSONObject result = admin.Serialize(ObjLevel.FULL);
 		
+		int dbId = searchDbId(adminCode);
+		
+		result.put("dbId", dbId);
+		
 		return result;
 	}
 }

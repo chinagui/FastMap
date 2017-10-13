@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -481,7 +480,7 @@ public class ExtractHighWayPoi {
 		tempChildPidList.addAll(childPidList);
 		Map<Long, Long> parentMap = new HashMap<>();
 		parentMap = getAllParentPidsByChildrenPids(conn, tempChildPidList, type);//通过子poi查询一级父， 过滤删除
-		Map<Long, Long> parentChildrenMap = new HashMap<>();
+/*		Map<Long, Long> parentChildrenMap = new HashMap<>();
 		Iterator<Long> iter = childPidList.iterator();
 		while (iter.hasNext()) {
 			Long childPid = iter.next();
@@ -495,50 +494,59 @@ public class ExtractHighWayPoi {
 			}
 			parentChildrenMap.put(parentPid, childPid);
 		}
+*/		
+		Set<Long> PidList = new HashSet<>();
+		Set<Long> resultChildList = new HashSet<>();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		
-		if(parentChildrenMap.keySet().size()>0){
-			String sql = "SELECT PID,KIND_CODE FROM IX_POI WHERE PID IN ";
-			String pidsString = StringUtils.join(parentChildrenMap.keySet().toArray(), ",");
-			boolean clobFlag = false;
-			if (parentChildrenMap.keySet().toArray().length > 1000) {
-				sql += " (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
-				clobFlag = true;
-			} else {
-				sql += " (" + pidsString + ")";
-			}
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try {
-				pstmt = conn.prepareStatement(sql);
-				if (clobFlag) {
-					Clob clob = ConnectionUtil.createClob(conn);
-					clob.setString(1, pidsString);
-					pstmt.setClob(1, clob);
+		try {
+			if(parentMap.values().size()>0){
+				String sql = "SELECT PID,KIND_CODE FROM IX_POI WHERE PID IN ";
+				String pidsString = StringUtils.join(parentMap.values().toArray(), ",");
+				boolean clobFlag = false;
+				if (parentMap.values().toArray().length > 1000) {
+					sql += " (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+					clobFlag = true;
+				} else {
+					sql += " (" + pidsString + ")";
 				}
-				rs = pstmt.executeQuery();
-				
-				while (rs.next()) {
-					long pid = rs.getLong(1);
-					String kindCode = rs.getString(2);
-					log.info("prepare childPid---"+parentChildrenMap.get(pid)+"---parentPid---"+pid+"----kindCode"+kindCode);
-					if(!kindCode.equals("230206")&&!kindCode.equals("230207")){
-						childPidList.remove(parentChildrenMap.get(pid));
-						log.info("remove childPid---"+parentChildrenMap.get(pid)+"---parentPid---"+pid+"----kindCode"+kindCode);
+			
+					pstmt = conn.prepareStatement(sql);
+					if (clobFlag) {
+						Clob clob = ConnectionUtil.createClob(conn);
+						clob.setString(1, pidsString);
+						pstmt.setClob(1, clob);
 					}
+					rs = pstmt.executeQuery();
+					
+					while (rs.next()) {
+						long pid = rs.getLong(1);
+						String kindCode = rs.getString(2);
+						if(kindCode.equals("230206")||kindCode.equals("230207")){
+							PidList.add(pid);
+						}
+					}
+					
+					log.info("---allow parent PidList---"+PidList);
+			}	
+				
+		
+			for (Entry<Long, Long> entry : parentMap.entrySet()) {
+				Long parentPid  = entry.getValue();
+				if(parentPid != null && PidList.contains(parentPid)){
+					resultChildList.add(entry.getKey());
 				}
-				
-				log.info("after remove childPidList---"+childPidList);
-				return childPidList;
-				
-			} catch (Exception e) {
-				log.error(e.getMessage());
-				throw e;
-			} finally {
-				DbUtils.closeQuietly(rs);
-				DbUtils.closeQuietly(pstmt);
 			}
+			
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
-		return null;
+		return resultChildList;
 	}
 	
 	
@@ -753,12 +761,10 @@ public class ExtractHighWayPoi {
 		poiPids.addAll(pidList);
 		
 		//循环查询直到没有新父被查出来为止
-		int count = 1;
-		while(poiPids.size()!=pidList.size() && count<=10){
+		while(poiPids.size()!=pidList.size()){
 			pidList.addAll(poiPids);
 			childPidParentPid=getParentPidsByChildrenPids(conn, pidList,type);
 			poiPids.addAll(childPidParentPid.values());
-			count++;
 		}
 		return childPidParentPid;
 	}

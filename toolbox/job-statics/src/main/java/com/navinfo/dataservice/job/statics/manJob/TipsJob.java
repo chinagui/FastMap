@@ -10,12 +10,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
-
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -31,7 +29,6 @@ import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -227,7 +224,7 @@ public class TipsJob extends AbstractStatJob {
             htab = HBaseConnector.getInstance().getConnection()
                     .getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-			String baseAddLenSql = " WKTLOCATION,ID,S_SOURCETYPE from tips_index where s_sourceType in (2001,2002) AND t_lifecycle=3 " ;
+			String baseAddLenSql = " WKTLOCATION,ID,S_SOURCETYPE from tips_index where s_sourceType = '2001' AND t_lifecycle=3 " ;
 			String sql = "SELECT s_mtaskid,"+baseAddLenSql+" AND s_mtaskid <> 0 ORDER BY s_mtaskid";//中线新增测线
 
 			pstmt = conn.prepareStatement(sql);
@@ -311,17 +308,17 @@ public class TipsJob extends AbstractStatJob {
 	
 	public void compomentTipsAddLenMap(ResultSet rs,List<Map<String, Object>> taskGridTipsList, Table htab) throws SQLException, IOException {
 		int taskId = 0;
-		double tipsAddLen = 0.0;
 		Map<String, Object> taskGridTipsMap = null;
-
+		DecimalFormat df=new DecimalFormat("0.00");
 		while(rs.next()){
 			if(taskId!=rs.getInt(1)) {
 				taskGridTipsMap = new HashMap<>(); 
 				taskId = rs.getInt(1);
 				taskGridTipsMap.put("taskId",taskId);
+				taskGridTipsMap.put("tipsAddLen",df.format(0.0).toString());
 				taskGridTipsList.add(taskGridTipsMap);
 			}
-
+			double tipsAddLen = Double.valueOf((String) taskGridTipsMap.get("tipsAddLen"));
             //20170927 新增里程区分测线来源统计
             //测线来源src=0（GPS测线手持端）和2（自绘测线）
             String sourceType = rs.getString("S_SOURCETYPE");
@@ -354,7 +351,6 @@ public class TipsJob extends AbstractStatJob {
 				continue;
 			}
 			tipsAddLen+=GeometryUtils.getLinkLength(geometry);//根据geometry求里程
-			DecimalFormat df=new DecimalFormat("0.00");
 			taskGridTipsMap.put("tipsAddLen",df.format(tipsAddLen).toString());
 		}
 	}

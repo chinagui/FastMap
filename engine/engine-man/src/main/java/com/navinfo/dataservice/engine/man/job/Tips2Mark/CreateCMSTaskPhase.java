@@ -226,8 +226,8 @@ public class CreateCMSTaskPhase extends JobPhase {
     	//子任务不传poiMeshes和poiPlanLoad
     	Map<String, Object> poisData = queryMeshesByTasks(conn, tasks);
     	if(poisData != null){
-        	taskPar.put("poiMeshes", (Set<Integer>) poisData.get("poiMeshes"));
-        	taskPar.put("poiPlanLoad", (int) poisData.get("poiPlanLoad"));
+        	taskPar.put("poiMeshes", poisData.get("poiMeshes"));
+        	taskPar.put("poiPlanLoad", poisData.get("poiPlanLoad").toString());
     	}
     	taskPar.put("taskBatch", taskBatch);
     	taskPar.put("uploadMethod", uploadMethod);
@@ -257,22 +257,6 @@ public class CreateCMSTaskPhase extends JobPhase {
     	    	if(jobRelation.getItemType() == ItemType.PROJECT || 4 == task.getProgramType()){
     	    		taskType = "quick_task_id";
     	    	}
-        		
-        		String poiSql = "select count(1) from POI_EDIT_STATUS ts where ts."+taskType+" = "+task.getTaskId();
-            	
-            	log.info("querypoiSql :" + poiSql);
-            	
-            	ResultSetHandler<Integer> handler = new ResultSetHandler<Integer>() {
-            		public Integer handle(ResultSet rs) throws SQLException {
-            			int count = 0;
-            			while(rs.next()) {
-            				count = rs.getInt("count(1)");
-            			}
-            			return count;
-            		}
-            	};
-            	int poiCount = run.query(dailyConn, poiSql, handler);
-            	result.put("poiPlanLoad", poiCount);
             	
             	String sql = "select distinct t.mesh_id from IX_POI t, POI_EDIT_STATUS ts where ts." + taskType+" = " + task.getTaskId() + " and ts.pid = t.pid";
                 ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
@@ -285,9 +269,29 @@ public class CreateCMSTaskPhase extends JobPhase {
                 	}
                 };
                 meshs.addAll(run.query(dailyConn, sql, rsHandler));
+                
+        		result.put("poiMeshes", meshs);
+        		if(meshs.size() == 0){
+        			result.put("poiPlanLoad", null);
+        			continue;
+        		}
+        		String poiSql = "select count(1), t.mesh_id from IX_POI t, POI_EDIT_STATUS ts where ts." + taskType+" = " + task.getTaskId() + " and ts.pid = t.pid and "
+        				+ "t.mesh_id in " + meshs.toString().replace("[", "(").replace("]", ")") + " group by t.mesh_id";
+            	
+            	log.info("querypoiSql :" + poiSql);
+            	
+            	ResultSetHandler<Map<Integer, Integer>> handler = new ResultSetHandler<Map<Integer, Integer>>() {
+            		public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+            			Map<Integer, Integer> meshesCount = new HashMap<>();
+            			while(rs.next()) {
+            				meshesCount.put(rs.getInt("mesh_id"), rs.getInt("count(1)"));
+            			}
+            			return meshesCount;
+            		}
+            	};
+            	result.put("poiPlanLoad", run.query(dailyConn, poiSql, handler));
         	}
             	
-    		result.put("poiMeshes", meshs);
     	}catch(Exception e){
     		log.error("queryMeshesByTasks error" + e.getMessage(), e);
     		throw e;

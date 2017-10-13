@@ -79,6 +79,10 @@ public class FMYW20133 extends BasicCheckRule {
                 continue;
             }
 
+            if (!br.getLangCode().equals("CHI") && !br.getLangCode().equals("CHT")) {
+                continue;
+            }
+
             if (br.getName() != null && br.getName().length() > limitCount) {
 
                 String strLog = "PID=" + poi.getPid() + "官方标准名称超长";

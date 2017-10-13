@@ -111,6 +111,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			BasicDBObject queryProgram = new BasicDBObject();
 			queryProgram.put("timestamp", timestamp);
 			queryProgram.put("status", 0);
+			queryProgram.put("isProduce", 0);
 			queryProgram.put("type", 4);			
 			quickMonitorMap.put("unproduceCloseNum",queryCountInMongo(md, "program", queryProgram));
 			
@@ -198,7 +199,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			queryProgram11.put("type", 4);
 			Map<String,Integer> statMap = getStatDataInMongo(md, "program", queryProgram11);
 			quickMonitorMap.put("roadPlanTotal",statMap.get("roadPlanTotal"));
-			quickMonitorMap.put("roadActualTotal",statMap.get("roadActualTotal"));
+			quickMonitorMap.put("roadActualTotal",Math.floor(statMap.get("roadActualTotal")/1000));
 			quickMonitorMap.put("poiPlanTotal",statMap.get("poiPlanTotal"));
 			quickMonitorMap.put("poiActualTotal",statMap.get("poiActualTotal"));
 			
@@ -737,16 +738,16 @@ public class QuickMonitorJob extends AbstractStatJob {
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				
 				if(jso.containsKey("roadPlanTotal")){
-					poiPlanTotal += jso.getInt("roadPlanTotal");
+					roadPlanTotal += jso.getInt("roadPlanTotal");
 				}
 				if(jso.containsKey("roadActualTotal")){
-					poiPlanTotal += jso.getInt("roadActualTotal");
+					roadActualTotal += jso.getInt("roadActualTotal");
 				}
 				if(jso.containsKey("poiPlanTotal")){
 					poiPlanTotal += jso.getInt("poiPlanTotal");
 				}
 				if(jso.containsKey("poiActualTotal")){
-					poiPlanTotal += jso.getInt("poiActualTotal");
+					poiActualTotal += jso.getInt("poiActualTotal");
 				}
 				if(jso.containsKey("collectTipsUploadNum")){
 					collectTipsUploadNum += jso.getInt("collectTipsUploadNum");

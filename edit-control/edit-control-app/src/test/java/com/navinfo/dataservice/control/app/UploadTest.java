@@ -9,6 +9,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.app.upload.UploadOperation;
+import com.navinfo.dataservice.control.service.PaUploadManager;
 import com.navinfo.dataservice.control.service.UploadManager;
 import com.navinfo.dataservice.control.service.UploadResult;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
@@ -44,7 +45,7 @@ public class UploadTest {
 		}
 
 	}
-	@Test
+//	@Test
 	public void testUpload() {
 		try {
 			long t1 = System.currentTimeMillis();
@@ -65,6 +66,30 @@ public class UploadTest {
 			CollectorImport.importPhoto(photoMap,filePath);
 			long t3 = System.currentTimeMillis();
 			System.out.println("photo import total time:"+(t3)+"ms.");
+			
+//			UploadManager upMan = new UploadManager(4127L,"F:\\data\\collector\\poi20_1.txt");
+			/*UploadManager upMan = new UploadManager(4127L,"F:\\poi003.txt");
+			upMan.setSubtaskId(26);
+			UploadResult result = upMan.upload(null);*/
+			System.out.println(JSONObject.fromObject(result).toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	@Test
+	public void testPaUpload() {
+		try {
+			long t1 = System.currentTimeMillis();
+			//1.2 解压文件
+			String filePath ="F:/upload";
+			PaUploadManager upMan = new PaUploadManager(0,filePath);
+			upMan.setSubtaskId(123);
+			UploadResult result = upMan.upload();
+			//读取poi文件，导入...
+			long t2 = System.currentTimeMillis();
+			System.out.println("pa import total time:"+(t2-t1)+"ms.");
 			
 //			UploadManager upMan = new UploadManager(4127L,"F:\\data\\collector\\poi20_1.txt");
 			/*UploadManager upMan = new UploadManager(4127L,"F:\\poi003.txt");

@@ -21,6 +21,7 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.ManConstant;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -78,7 +79,15 @@ public class SubtaskJob extends AbstractStatJob {
 			//获取已关闭的统计
 			log.info("查询所有子任务统计信息");
 			List<Map<String, Object>> subtaskStatList = new ArrayList<Map<String, Object>>();
-			Map<Integer, Map<String, Object>> subtaskStatDataClose = getSubtaskStatData(timestamp);
+			
+			ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
+			String value=api.queryConfValueByConfKey(ManConstant.inheritStatic);
+			Map<Integer, Map<String, Object>> subtaskStatDataClose =new HashMap<>();
+			//没有值，或者为true
+			if(value==null||value.equals("true")){
+				subtaskStatDataClose = getSubtaskStatData(timestamp);
+			}
+			
 			log.info("查询所有日编子任务对应采集任务");
 			Map<Integer, Set<Integer>> referCTaskSet = OracleDao.getCollectTaskIdByDaySubtask();
 			
@@ -214,6 +223,9 @@ public class SubtaskJob extends AbstractStatJob {
 				int poiUploadNum = (int) jso.get("poiUploadNum");
 				int poiFinishNum = (int) jso.get("poiFinishNum");
 				int waitWorkPoi = (int) jso.get("waitWorkPoi");
+				int poiActualAddNum = (int) jso.get("poiActualAddNum");
+				int poiActualUpdateNum = (int) jso.get("poiActualUpdateNum");
+				int poiActualDeleteNum = (int) jso.get("poiActualDeleteNum");
 				String firstEditDate = (String) jso.get("firstEditDate");
 				String firstCollectDate = (String) jso.get("firstCollectDate");
 				subtask.put("poiCollectUploadNum", poiUploadNum);
@@ -221,6 +233,9 @@ public class SubtaskJob extends AbstractStatJob {
 				subtask.put("firstEditDate", firstEditDate);
 				subtask.put("firstCollectDate", firstCollectDate);
 				subtask.put("waitWorkPoi", waitWorkPoi);
+				subtask.put("poiActualAddNum", poiActualAddNum);
+				subtask.put("poiActualUpdateNum", poiActualUpdateNum);
+				subtask.put("poiActualDeleteNum", poiActualDeleteNum);
 				stat.put(subtaskId, subtask);
 			}
 			return stat;
@@ -448,6 +463,9 @@ public class SubtaskJob extends AbstractStatJob {
 		int percent = 0;
 		int programType=0;
 		int waitWorkPoi = 0;
+		int poiActualAddNum= 0;
+		int poiActualUpdateNum= 0;
+		int poiActualDeleteNum= 0;
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			//当前时间
@@ -477,6 +495,9 @@ public class SubtaskJob extends AbstractStatJob {
 				poiFinishNum = (int) subDayPoiStat.get("poiFinishNum");
 				//待作业的POI个数
 				waitWorkPoi = (int) subDayPoiStat.get("waitWorkPoi");
+				poiActualAddNum=(int)subDayPoiStat.get("poiActualAddNum");
+				poiActualUpdateNum=(int)subDayPoiStat.get("poiActualUpdateNum");
+				poiActualDeleteNum=(int)subDayPoiStat.get("poiActualDeleteNum");
 			}
 			//计划天数
 			if(subtask.getPlanStartDate() != null && subtask.getPlanEndDate() != null){
@@ -673,7 +694,9 @@ public class SubtaskJob extends AbstractStatJob {
 			subtaskMap.put("percent",percent );
 			subtaskMap.put("programType",programType );
 			subtaskMap.put("waitWorkPoi", waitWorkPoi );
-			
+			subtaskMap.put("poiActualAddNum", poiActualAddNum );
+			subtaskMap.put("poiActualUpdateNum", poiActualUpdateNum );
+			subtaskMap.put("poiActualDeleteNum", poiActualDeleteNum );
 			return subtaskMap;
 		} catch (Exception e) {
 			log.error("处理数据出错:" + e.getMessage(), e);

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.constant;import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+package com.navinfo.dataservice.commons.constant;
 
 public class PropConstant {
 
@@ -15,6 +15,18 @@ public class PropConstant {
 	public static final String hbaseAddress = "hbase.address";
 	
 	public static final String tipsTableName = "hbase.tablename.tips";
+	
+	//新增mass_photos_poi_idx_pid表配置
+	public static final String massPhotosPoiIdxTableName = "hbase.tablename.mass_photos_poi_idx_pid";
+	
+	//新增mass_photos_poi表配置
+	public static final String massPhotosPoiTableName = "hbase.tablename.mass_photos_poi";
+	
+	//新增mass_photos_tips_idx_url表配置
+	public static final String massPhotosTipsIdxTableName = "hbase.tablename.mass_photos_tips_idx_url";
+	
+	//新增mass_photos_tips表配置
+	public static final String massPhotosTipsTableName = "hbase.tablename.mass_photos_tips";
 	
 	public static final String trackLinesTableName = "hbase.tablename.tracklines";
 
@@ -140,4 +152,9 @@ public class PropConstant {
     
     //日出品统计接口
     public static final String dayProduceStatUrl = "day.produce.stat.url";
+    
+    //点门牌下载
+    public static final String downloadFilePathPa = "editsupport.pa.download.filepath.pa";
+	
+	public static final String downloadUrlPathPa = "editsupport.pa.download.urlpath.pa";
 }

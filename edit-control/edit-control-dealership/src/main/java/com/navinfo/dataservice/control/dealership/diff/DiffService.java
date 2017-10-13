@@ -16,6 +16,8 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.editplus.diff.BaiduGeocoding;
 import com.navinfo.dataservice.engine.editplus.diff.StringUtil;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 
 
@@ -308,7 +310,9 @@ public class DiffService {
 							if(poiGeo!=null){
 								resultDpAttrDiff.setGeometry(poiGeo);
 							}else{
-								throw new Exception("无法获取geometry");
+//								throw new Exception("无法获取geometry");
+								log.info("无法获取geometry, 赋值默认的坐标（中国坐标）, lng:104.11413, lat:37.55034");
+								geoExceptionHandle(resultDpAttrDiff);
 							}
 						}
 						continue;
@@ -337,7 +341,9 @@ public class DiffService {
 					if(poiGeo!=null){
 						resultDpAttrDiff.setGeometry(poiGeo);
 					}else{
-						throw new Exception("无法获取geometry");
+//						throw new Exception("无法获取geometry");
+						log.info("无法获取geometry, 赋值默认的坐标（中国坐标）, lng:104.11413, lat:37.55034");
+						geoExceptionHandle(resultDpAttrDiff);
 					}
 				}
 				/**************** 其他逻辑 *******************/
@@ -404,7 +410,9 @@ public class DiffService {
 					if(poiGeo!=null){
 						resultDpAttrDiff.setGeometry(poiGeo);
 					}else{
-						throw new Exception("无法获取geometry");
+//						throw new Exception("无法获取geometry");
+						log.info("无法获取geometry, 赋值默认的坐标（中国坐标）, lng:104.11413, lat:37.55034");
+						geoExceptionHandle(resultDpAttrDiff);
 					}
 				}
 			}
@@ -524,6 +532,21 @@ public class DiffService {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	//当出现异常时，赋值默认的坐标（中国坐标）
+	private static void geoExceptionHandle(IxDealershipResult resultDpAttrDiff) throws ParseException {
+//		return_value:{"status":0,"result":{"location":{"lng":116.10993755200578,"lat":39.725847094059179},"precise":1,"confidence":80,"level":"汽车服务"}}
+//		JSONObject json = JSONObject.fromObject(return_value);
+//		JSONObject resultStr = json.getJSONObject("result").getJSONObject("location");
+//		String wkt = "POINT(" + resultStr.getString("lng") + " " + resultStr.getString("lat") + ")";
+	
+	
+		//104.11413      37.55034
+//		String wkt = "POINT(" + "104.11413" + " " + "37.55034" + ")";
+		String wkt = "POINT(104.11413 37.55034)";
+		Geometry geo = new WKTReader().read(wkt);
+		resultDpAttrDiff.setGeometry(geo);
 	}
 
 }

@@ -25,7 +25,7 @@ public class ScPlateresGeometry  implements IObj {
 
     private  Geometry geometry;
 
-    private   String  boundary_link="1";//BOUNDARY_LINK
+    private   String  boundaryLink="1";//BOUNDARY_LINK
 
     public String getGeometryId() {
         return geometryId;
@@ -43,12 +43,12 @@ public class ScPlateresGeometry  implements IObj {
         this.groupId = groupId;
     }
 
-    public String getBoundary_link() {
-        return boundary_link;
+    public String getBoundaryLink() {
+        return boundaryLink;
     }
 
-    public void setBoundary_link(String boundary_link) {
-        this.boundary_link = boundary_link;
+    public void setBoundaryLink(String boundarylink) {
+        this.boundaryLink = boundarylink;
     }
 
     public Geometry getGeometry() {

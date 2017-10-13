@@ -54,6 +54,7 @@ public class ExpMeta2SqliteScriptsInterface {
 			scProblemType(conn, sqliteConn);
 			scRootCauseAnalysis(conn, sqliteConn);
 			scTipsCode(conn, sqliteConn);
+			tyCharacterFjtHz(conn, sqliteConn);
 			
 			System.out.println("Metadata export end");
 		} catch (Exception e) {
@@ -156,7 +157,9 @@ public class ExpMeta2SqliteScriptsInterface {
 		sqliteList.add("CREATE TABLE SC_ROOT_CAUSE_ANALYSIS (PROJECT integer ,INITIAL_CAUSE text,ROOT_CAUSE text )");
 		//19.tips类型表:
 		sqliteList.add("CREATE TABLE SC_TIPS_CODE (TOPNAME text,TOPCODE text,NAME text,CODE text,SECOND_JOB_REQ integer ,COLLECTION integer )");
-							
+		//20.TY_CHARACTER_FJT_HZ类型表:
+		sqliteList.add("CREATE TABLE TY_CHARACTER_FJT_HZ (ft text,jt text,convert integer ,ftorder integer )");
+										
 		
 		return sqliteList;
 	}
@@ -1182,6 +1185,56 @@ public class ExpMeta2SqliteScriptsInterface {
 		}
 		
 	}
+	
+	/**20
+	 * @Title: TY_CHARACTER_FJT_HZ
+	 * @Description: 表：TY_CHARACTER_FJT_HZ
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年10月09日  
+	 */
+	private static void  tyCharacterFjtHz(Connection conn, Connection sqliteConn) throws Exception{
+		System.out.println("Start to export TY_CHARACTER_FJT_HZ...");
+		String insertSql = "insert into TY_CHARACTER_FJT_HZ(FT ,JT ,CONVERT, FTORDER ) values(?,?,?,?)";
+		String selectSql = "select FT ,JT ,CONVERT, FTORDER  from TY_CHARACTER_FJT_HZ ";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
+
+			while (resultSet.next()) {
+				prep.setString(1, resultSet.getString("FT"));
+				prep.setString(2, resultSet.getString("JT"));
+				prep.setInt(3, resultSet.getInt("CONVERT"));
+				prep.setInt(4, resultSet.getInt("FTORDER"));
+				
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+			}
+			sqliteConn.commit();
+			System.out.println("TY_CHARACTER_FJT_HZ end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
+		}
+		
+	}
+	
 	public static void export2SqliteByNames(String dir) throws Exception{
 
 		File mkdirFile = new File(dir);

@@ -25,4 +25,11 @@ public class SubtaskRefer extends BaseObj {
 	}
 	private int blockId;
 	private Geometry geometry;
+	public int getTaskId() {
+		return taskId;
+	}
+	public void setTaskId(int taskId) {
+		this.taskId = taskId;
+	}
+	private int taskId;
 }

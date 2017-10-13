@@ -2,13 +2,14 @@
 package com.navinfo.dataservice.engine.limit.search;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
+import com.navinfo.dataservice.engine.limit.search.gdb.AdAdminSearch;
 import com.navinfo.dataservice.engine.limit.search.gdb.RdLinkSearch;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresFaceSearch;
 import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresInfoSearch;
@@ -17,6 +18,8 @@ import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGeometrySearch
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGroupSearch;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresManoeuvreSearch;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresRdlinkSearch;
+import com.navinfo.navicommons.database.QueryRunner;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -38,16 +41,6 @@ public class SearchProcess {
     private static final Logger logger = Logger.getLogger(SearchProcess.class);
 
     Connection conn;
-    private int dbId;
-
-    public int getDbId() {
-        return dbId;
-    }
-
-    public void setDbId(int dbId) {
-        this.dbId = dbId;
-    }
-
 
     public SearchProcess(Connection conn) throws Exception {
 
@@ -125,11 +118,11 @@ public class SearchProcess {
 
         try {
             switch (type) {
-                case 1:
-                case 2:
+                case 1: //名称模糊查询
+                case 2: //名称精准查询
                     result = search.searchDataByCondition(type, condition);
                     break;
-                case 3:
+                case 3: //linkPid查询名称
                     result = search.searchDataByPid(condition);
                 default:
                     return result;
@@ -140,6 +133,131 @@ public class SearchProcess {
 
             throw e;
 
+        }
+    }
+    
+    public List<RdLink> searchDataByPids(JSONArray pids)
+			throws Exception {
+
+    	RdLinkSearch search = new RdLinkSearch(this.conn);
+    	
+		try {
+			@SuppressWarnings("unchecked")
+			List<Integer> pidList = JSONArray.toList(pids, Integer.class,
+					JsonUtils.getJsonConfig());
+
+			List<RdLink> objList = search.searchDataByPids(pidList);
+
+			return objList;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+		}
+	}
+
+    /**
+     * 根据瓦片空间查询
+     *
+     * @return 查询结果
+     * @throws Exception
+     */
+    public JSONObject searchDataByTileWithGap(
+            List<LimitObjType> types, RenderParam param) throws Exception {
+
+        Map<String, List<SearchSnapshot>> map = new HashMap<>();
+
+        for (LimitObjType type : types) {
+
+            List<SearchSnapshot> list = searchDataByTileWithGap(type, param);
+
+            map.put(type.toString(), list);
+        }
+
+        JSONObject json = new JSONObject();
+
+        for (Map.Entry<String, List<SearchSnapshot>> entry : map.entrySet()) {
+
+            JSONArray array = new JSONArray();
+
+            for (SearchSnapshot snap : entry.getValue()) {
+
+                array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
+            }
+
+            json.accumulate(entry.getKey(), array, getJsonConfig());
+        }
+
+        return json;
+    }
+
+    /**
+     * 根据瓦片空间查询
+     *
+     * @return 查询结果
+     */
+    private List<SearchSnapshot> searchDataByTileWithGap(
+            LimitObjType type, RenderParam param) throws Exception {
+
+        Connection conn = null;
+
+        try {
+
+            if (LimitObjType.SCPLATERESFACE.equals(type) || LimitObjType.SCPLATERESLINK.equals(type)) {
+
+                conn = DBConnector.getInstance().getLimitConnection();
+
+            } else if (LimitObjType.SCPLATERESGEOMETRY.equals(type) || LimitObjType.SCPLATERESRDLINK.equals(type)) {
+
+//              conn = DBConnector.getInstance().getMetaConnection();
+                conn = DBConnector.getInstance().getLimitConnection();
+            } else {
+                throw new Exception("不支持的渲染类型：" + type.toString());
+            }
+
+            ISearch search = createSearch(type, conn);
+
+            if (search == null) {
+                return new ArrayList<>();
+            }
+
+            return search.searchDataByTileWithGap(param);
+
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+    public ISearch createSearch(LimitObjType ot, Connection conn) {
+
+        switch (ot) {
+            case SCPLATERESFACE:
+                return new ScPlateresFaceSearch(conn);
+
+            case SCPLATERESLINK:
+                return new ScPlateresLinkSearch(conn);
+
+            case SCPLATERESGEOMETRY:
+                return new ScPlateresGeometrySearch(conn);
+
+            case SCPLATERESRDLINK:
+                return new ScPlateresRdlinkSearch(conn);
+
+            default:
+                return null;
         }
     }
 
@@ -179,90 +297,20 @@ public class SearchProcess {
         return jsonConfig;
     }
 
-    /**
-     * 根据瓦片空间查询
-     *
-     * @return 查询结果
-     * @throws Exception
-     */
-    public JSONObject searchDataByTileWithGap(
-            List<LimitObjType> types, int x, int y, int z, int gap) throws Exception {
+    
+	public int searchDbId(String adminCode) throws Exception {
 
-        Map<String, List<SearchSnapshot>> map = new HashMap<>();
+		AdAdminSearch search = new AdAdminSearch(conn);
 
-        for (LimitObjType type : types) {
+		return search.searchDbId(adminCode);
+	}
 
-            List<SearchSnapshot> list = searchDataByTileWithGap(type, x, y, z, gap);
+	public JSONObject searchAdminPosition(String adminCode) throws Exception {
+		AdAdminSearch search = new AdAdminSearch(conn);
 
-            map.put(type.toString(), list);
-        }
-
-        JSONObject json = new JSONObject();
-
-        for (Map.Entry<String, List<SearchSnapshot>> entry : map.entrySet()) {
-
-            JSONArray array = new JSONArray();
-
-            for (SearchSnapshot snap : entry.getValue()) {
-
-                array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
-            }
-
-            json.accumulate(entry.getKey(), array, getJsonConfig());
-        }
-
-        return json;
-    }
-
-    /**
-     * 根据瓦片空间查询
-     *
-     * @return 查询结果
-     */
-    private List<SearchSnapshot> searchDataByTileWithGap(
-            LimitObjType type, int x, int y, int z, int gap) throws Exception {
-
-        Connection conn = null;
-
-        try {
-
-            if (LimitObjType.SCPLATERESFACE.equals(type) || LimitObjType.SCPLATERESFACE.equals(type)) {
-
-                conn = DBConnector.getInstance().getLimitConnection();
-
-            } else if (LimitObjType.SCPLATERESGEOMETRY.equals(type)) {
-
-                conn = DBConnector.getInstance().getMetaConnection();
-            }
-
-            SearchFactory factory = new SearchFactory(conn);
-
-            ISearch search = factory.createSearch(type);
-
-            if (search == null) {
-                return new ArrayList<>();
-            }
-
-            return search.searchDataByTileWithGap(x, y, z, gap);
-
-        } catch (Exception e) {
-
-            throw e;
-
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-    }
-
+		return search.searchAdAdminPosition(adminCode);
+	}
+    
     public static void main(String[] args) throws Exception {
-
-
     }
 }

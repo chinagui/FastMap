@@ -105,4 +105,22 @@ public class SubtaskReferOperation {
 			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	/**
+	 * @param conn
+	 * @param bean
+	 * @throws Exception  void
+	 */
+	public static void deleteDetail(Connection conn,Set<Integer> ids) throws Exception{
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();			
+			String updateSql = "delete from subtask_refer_detail where refer_id in "+ids.toString().replace("[", "(").replace("]", ")");
+			run.update(conn, updateSql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
 }

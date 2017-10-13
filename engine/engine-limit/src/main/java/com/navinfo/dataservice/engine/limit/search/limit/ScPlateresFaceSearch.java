@@ -1,13 +1,19 @@
 package com.navinfo.dataservice.engine.limit.search.limit;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.engine.limit.glm.iface.IRenderParam;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
-import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresInfo;
+import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresFace;
+import com.navinfo.dataservice.engine.limit.search.RenderParam;
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -74,7 +80,7 @@ public class ScPlateresFaceSearch implements ISearch {
 
             while (resultSet.next()) {
 
-                ScPlateresInfo info = new ScPlateresInfo();
+                ScPlateresFace info = new ScPlateresFace();
 
                 ReflectionAttrUtils.executeResultSet(info, resultSet);
 
@@ -100,10 +106,10 @@ public class ScPlateresFaceSearch implements ISearch {
     }
 
     @Override
-    public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+    public List<SearchSnapshot> searchDataByTileWithGap(IRenderParam param) throws Exception {
         List<SearchSnapshot> list = new ArrayList<>();
 
-        String sql = "SELECT GEOMETRY_ID, GROUP_ID, GEOMETRY, BOUNDARY_LINK FROM SC_PLATERES_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE'";
+        String sql = "SELECT GEOMETRY_ID, GROUP_ID, GEOMETRY, BOUNDARY_LINK FROM SC_PLATERES_FACE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE'";
 
         PreparedStatement pstmt = null;
 
@@ -112,38 +118,36 @@ public class ScPlateresFaceSearch implements ISearch {
         try {
             pstmt = conn.prepareStatement(sql);
 
-            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-            pstmt.setString(1, wkt);
+            pstmt.setString(1, param.getWkt());
 
             resultSet = pstmt.executeQuery();
-
-            double px = MercatorProjection.tileXToPixelX(x);
-
-            double py = MercatorProjection.tileYToPixelY(y);
 
             while (resultSet.next()) {
                 SearchSnapshot snapshot = new SearchSnapshot();
 
+                snapshot.setT(1002);
+
+                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+                Geometry geom = GeoTranslator.struct2Jts(struct);
+
+                JSONObject geojson = GeoTranslator.jts2Geojson(geom);
+
+                JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
+
+                snapshot.setG(jo.getJSONArray("coordinates"));
+
                 JSONObject m = new JSONObject();
 
-                m.put("a", resultSet.getInt("GEOMETRY_ID"));
+                m.put("a", resultSet.getString("GEOMETRY_ID"));
 
                 m.put("b", resultSet.getString("GROUP_ID"));
 
                 m.put("c", resultSet.getString("BOUNDARY_LINK"));
 
+                m.put("e", geom.getGeometryType());
+
                 snapshot.setM(m);
-
-                snapshot.setT(1001);
-
-                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-                JSONObject geojson = Geojson.spatial2Geojson(struct);
-
-                JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
-
-                snapshot.setG(jo.getJSONArray("coordinates"));
 
                 list.add(snapshot);
             }
@@ -157,5 +161,184 @@ public class ScPlateresFaceSearch implements ISearch {
 
         return list;
     }
+    
+    public String loadMaxKeyId(String groupId) throws Exception {
+        StringBuilder sql = new StringBuilder();
 
+        sql.append(" SELECT MAX(GEOMETRY_ID) FROM SC_PLATERES_FACE WHERE GROUP_ID = ? ");
+
+        PreparedStatement pstmt = null;
+ 
+        String geometryId = "";
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql.toString());
+            
+            pstmt.setString(1, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                geometryId = resultSet.getString(1);
+                
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return geometryId;
+    }
+    
+    public ScPlateresFace loadById(String geomId) throws Exception{
+       	
+    	ScPlateresFace info = new ScPlateresFace();
+   	 
+    	StringBuilder sql = new StringBuilder();
+
+        sql.append(" SELECT * FROM SC_PLATERES_FACE WHERE GEOMETRY_ID = ? ");
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql.toString());
+            
+            pstmt.setString(1, geomId);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+            	ReflectionAttrUtils.executeResultSet(info, resultSet);
+                
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return info;
+    }
+    
+    public List<ScPlateresFace> loadByIds(JSONArray faces) throws Exception {
+		StringBuilder where = new StringBuilder();
+
+		List<ScPlateresFace> objList = new ArrayList<>();
+
+		for (int i = 0; i < faces.size(); i++) {
+			if (i > 0) {
+				where.append(",");
+			}
+			where.append("'" + faces.getString(i) + "'");	
+		}
+
+		String sql = "SELECT * FROM SC_PLATERES_FACE WHERE GEOMETRY_ID IN (" + where + ")";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				ScPlateresFace info = new ScPlateresFace();
+
+				ReflectionAttrUtils.executeResultSet(info, resultSet);
+
+				objList.add(info);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return objList;
+	}
+    public List<ScPlateresFace> loadByGeometryIds(List<String> geoIds) throws Exception {
+
+        List<ScPlateresFace> allObj = new ArrayList<>();
+
+        List<String> tmpId = new ArrayList<>();
+
+        for (String id : geoIds) {
+
+            tmpId.add(id);
+            if (tmpId.size() == 900) {
+                loadByGeometryIds(tmpId, allObj);
+                tmpId = new ArrayList<>();
+            }
+        }
+        loadByGeometryIds(tmpId, allObj);
+
+        return allObj;
+    }
+
+
+    private void loadByGeometryIds(List<String> geoIds, List<ScPlateresFace> allObj) throws Exception {
+
+        if (geoIds.size() < 1) {
+            return;
+        }
+
+        StringBuilder ids = new StringBuilder();
+
+        ids.append("'");
+        ids.append(geoIds.get(0));
+        ids.append("'");
+
+        for (int i = 1; i < geoIds.size(); i++) {
+
+            ids.append(",'");
+            ids.append(geoIds.get(i));
+            ids.append("'");
+        }
+
+        String sql = "SELECT * FROM SC_PLATERES_FACE WHERE GEOMETRY_ID IN (" + ids + ")";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                ScPlateresFace info = new ScPlateresFace();
+
+                ReflectionAttrUtils.executeResultSet(info, resultSet);
+
+                allObj.add(info);
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+    }
 }

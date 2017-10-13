@@ -41,8 +41,19 @@ public class Operation {
         List<RdTrafficsignal> trafficsignals = null;
         if (!nodePids.isEmpty()) {
             trafficsignals = selector.loadByNodePids(nodePids, true);
+            List<String> isDeleted = new ArrayList<>();
+
             for (RdTrafficsignal trafficsignal : trafficsignals) {
-                result.insertObject(trafficsignal, ObjStatus.DELETE, trafficsignal.pid());
+                // 处理复合路口被删除时红绿灯未删除问题（红绿灯必须依托路口存在）
+                List<RdTrafficsignal> rdTrafficsignals = selector.loadByTrafficPid(false, trafficsignal.pid());
+                for (RdTrafficsignal iRow : rdTrafficsignals) {
+                    if (isDeleted.contains(iRow.rowId())) {
+                        continue;
+                    } else {
+                        isDeleted.add(iRow.rowId());
+                        result.insertObject(iRow, ObjStatus.DELETE, iRow.pid());
+                    }
+                }
             }
         }
         RdLink link = null;

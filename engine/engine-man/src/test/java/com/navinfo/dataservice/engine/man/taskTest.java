@@ -130,7 +130,7 @@ public class taskTest extends InitApplication{
 	@Test
 	public void testList() throws Exception
 	{
-		String parameter="{\"condition\":{\"programId\":106,\"name\":\"云南省昭通市鲁甸县郊\"},\"pageNum\":1,\"pageSize\":15,\"snapshot\":0}";
+		String parameter="{\"condition\":{\"sMarkStatus\":[5],\"programId\":294},\"pageNum\":1,\"pageSize\":15,\"snapshot\":0}";
 		JSONObject dataJson = JSONObject.fromObject(parameter);			
 		JSONObject condition = new JSONObject();	
 		if(dataJson.containsKey("condition")){

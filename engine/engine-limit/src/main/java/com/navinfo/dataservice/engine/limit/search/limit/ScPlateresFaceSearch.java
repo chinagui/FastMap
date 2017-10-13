@@ -274,5 +274,71 @@ public class ScPlateresFaceSearch implements ISearch {
 		}
 		return objList;
 	}
+    public List<ScPlateresFace> loadByGeometryIds(List<String> geoIds) throws Exception {
 
+        List<ScPlateresFace> allObj = new ArrayList<>();
+
+        List<String> tmpId = new ArrayList<>();
+
+        for (String id : geoIds) {
+
+            tmpId.add(id);
+            if (tmpId.size() == 900) {
+                loadByGeometryIds(tmpId, allObj);
+                tmpId = new ArrayList<>();
+            }
+        }
+        loadByGeometryIds(tmpId, allObj);
+
+        return allObj;
+    }
+
+
+    private void loadByGeometryIds(List<String> geoIds, List<ScPlateresFace> allObj) throws Exception {
+
+        if (geoIds.size() < 1) {
+            return;
+        }
+
+        StringBuilder ids = new StringBuilder();
+
+        ids.append("'");
+        ids.append(geoIds.get(0));
+        ids.append("'");
+
+        for (int i = 1; i < geoIds.size(); i++) {
+
+            ids.append(",'");
+            ids.append(geoIds.get(i));
+            ids.append("'");
+        }
+
+        String sql = "SELECT * FROM SC_PLATERES_FACE WHERE GEOMETRY_ID IN (" + ids + ")";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                ScPlateresFace info = new ScPlateresFace();
+
+                ReflectionAttrUtils.executeResultSet(info, resultSet);
+
+                allObj.add(info);
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+    }
 }

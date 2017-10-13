@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.create;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -13,6 +14,7 @@ import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.glm.iface.Result;
 import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresFace;
+import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresFaceSearch;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -29,6 +31,11 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
+
+		if (this.command.getGeometryIds()!=null)
+		{
+			line2Face( result,this.command.getGeometryIds());
+		}
 
 		JSONArray array = this.command.getLinks();
 
@@ -104,5 +111,29 @@ public class Operation implements IOperation {
 		} finally {
 			regionConn.close();
 		}
+	}
+
+	private void line2Face(Result result, List<String> geometryIds) throws Exception {
+
+		ScPlateresFaceSearch search = new ScPlateresFaceSearch(this.conn);
+
+		List<ScPlateresFace> allFaces = search.loadByGeometryIds(geometryIds);
+
+		List<ScPlateresFace> faces = new ArrayList<>();
+
+		for (ScPlateresFace face : allFaces) {
+
+			if (face.getGeometry().getGeometryType().equals("LineString")) {
+
+				faces.add(face);
+
+			} else {
+				throw new Exception(face.getGeometryId() + ":不是LineString类型");
+			}
+		}
+
+		Line2Face line2Face = new Line2Face();
+
+		line2Face.createFace(faces, result);
 	}
 }

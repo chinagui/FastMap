@@ -40,6 +40,8 @@ public class CloseMeshPhase extends JobPhase {
         Connection conn = null;
         Connection meta = null;
         JobProgressOperator jobProgressOperator = null;
+        //modiby by songhe
+        JSONObject viewJson = new JSONObject();
         try {
             conn = DBConnector.getInstance().getManConnection();
             //更新状态为进行中
@@ -70,6 +72,8 @@ public class CloseMeshPhase extends JobPhase {
                 Set<Integer> collectTaskSet = Day2MonthUtils.getTaskIdSet(conn, jobRelation.getItemId());
                 Set<Integer> tipsMeshset = fccApi.getTipsMeshIdSet(collectTaskSet,4);
                 log.info("phaseId:"+jobProgress.getPhaseId()+",tips mesh:"+tipsMeshset.toString());
+                viewJson.put("tipsMeshs", tipsMeshset);
+                viewJson.put("collectTaskMeshs", collectTaskSet);
                 if(meshs!=null&&meshs.size()!=0){tipsMeshset.addAll(meshs);}                
                 
                 QueryRunner run = new QueryRunner();
@@ -80,6 +84,8 @@ public class CloseMeshPhase extends JobPhase {
 	                	JSONObject dataJson=new JSONObject();
 	                	dataJson.put("openFlag", 0);
 	                	dataJson.put("quickAction", lot);
+	                	viewJson.put("openFlag", 0);
+	                	viewJson.put("lot", lot);
 	                	
 	                	dataJson.put("meshList", tipsMeshset.toString().replace("[", "").replace("]", ""));
 	                	log.info("快线批次赋值+图幅关闭");
@@ -100,6 +106,7 @@ public class CloseMeshPhase extends JobPhase {
             }
             //更新状态为成功
             jobProgress.setStatus(JobProgressStatus.SUCCESS);
+            jobProgress.setInParameter(viewJson.toString());
             jobProgressOperator.updateStatus(jobProgress);
             //return jobProgress.getStatus();
         } catch (Exception ex) {
@@ -109,6 +116,7 @@ public class CloseMeshPhase extends JobPhase {
             DbUtils.rollback(meta);
             jobProgress.setStatus(JobProgressStatus.FAILURE);
             if (jobProgressOperator != null && jobProgress != null) {
+            	jobProgress.setInParameter(viewJson.toString());
                 jobProgress.setOutParameter(ex.getMessage());
                 jobProgressOperator.updateStatus(jobProgress);
             }

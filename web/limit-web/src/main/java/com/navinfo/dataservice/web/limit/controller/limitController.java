@@ -228,11 +228,9 @@ public class limitController extends BaseController {
 
             conn = DBConnector.getInstance().getManConnection();
 
-            QueryRunner run = new QueryRunner();
-
-            String sql = "SELECT A.DAILY_DB_ID FROM REGION A,CP_REGION_PROVINCE B WHERE A.REGION_ID = B.REGION_ID AND B.ADMINCODE = '" + adminCode + "'";
-
-            int dbId = run.queryForInt(conn, sql);
+            SearchProcess p = new SearchProcess(conn);
+            
+            int dbId = p.searchDbId(adminCode);
 
             return new ModelAndView("jsonView", success(dbId));
 
@@ -253,12 +251,6 @@ public class limitController extends BaseController {
 
 		Connection conn = null;
 
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		Geometry geometry = null;
-
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -270,19 +262,11 @@ public class limitController extends BaseController {
 
 			conn = DBConnector.getInstance().getMkConnection();
 
-			String sql = "SELECT geometry FROM AD_ADMIN WHERE ADMIN_ID = " + adminCode;
+			SearchProcess p = new SearchProcess(conn);
+			
+			JSONObject admin = p.searchAdminPosition(adminCode);
 
-			pstmt = conn.prepareStatement(sql);
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				geometry = GeoTranslator.struct2Jts(struct);
-			}
-
-			return new ModelAndView("jsonView", success(geometry));
+			return new ModelAndView("jsonView", success(admin));
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -384,8 +368,7 @@ public class limitController extends BaseController {
     }
     
 	@RequestMapping(value = "/getByPids")
-	public ModelAndView getByPids(HttpServletRequest request)
-			throws ServletException, IOException {
+	public ModelAndView getByPids(HttpServletRequest request) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -400,26 +383,25 @@ public class limitController extends BaseController {
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
-			
-				JSONArray pidArray = jsonReq.getJSONArray("pids");
+			JSONArray pidArray = jsonReq.getJSONArray("pids");
 
-				SearchProcess p = new SearchProcess(conn);
+			SearchProcess p = new SearchProcess(conn);
 
-				List<RdLink> objList = p.searchDataByPids(pidArray);
+			List<RdLink> objList = p.searchDataByPids(pidArray);
 
-				JSONArray array = new JSONArray();
+			JSONArray array = new JSONArray();
 
-				if (objList != null) {
+			if (objList != null) {
 
-					for (RdLink obj : objList) {
-						JSONObject json = obj.Serialize(ObjLevel.FULL);
-						array.add(json);
-					}
-					return new ModelAndView("jsonView", success(array));
-				} else {
-					return new ModelAndView("jsonView", success());
+				for (RdLink obj : objList) {
+					JSONObject json = obj.Serialize(ObjLevel.FULL);
+					array.add(json);
 				}
-			
+				return new ModelAndView("jsonView", success(array));
+			} else {
+				return new ModelAndView("jsonView", success());
+			}
+
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);

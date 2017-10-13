@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.constant;import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+package com.navinfo.dataservice.commons.constant;
 
 public class PropConstant {
 
@@ -152,4 +152,9 @@ public class PropConstant {
     
     //日出品统计接口
     public static final String dayProduceStatUrl = "day.produce.stat.url";
+    
+    //点门牌下载
+    public static final String downloadFilePathPa = "editsupport.pa.download.filepath.pa";
+	
+	public static final String downloadUrlPathPa = "editsupport.pa.download.urlpath.pa";
 }

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.produce;
 
+import java.io.IOException;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -27,6 +28,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ClobUtils;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.inforMan.InforManService;
@@ -466,7 +468,13 @@ public class ProduceService {
 						Map<String,Object> map=new HashMap<String, Object>();
 						map.put("produceId", rs.getInt("PRODUCE_ID"));
 						Clob par = rs.getClob("PARAMETER");
-						String parStr=String.valueOf(par);
+						String parStr="";
+						try {
+							parStr = ClobUtils.clobToString(par);
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}						
 						try{
 							JSONObject parJson = JSONObject.fromObject(parStr);
 							map.put("intersecProgramId", parJson.get("intersecProgramId"));

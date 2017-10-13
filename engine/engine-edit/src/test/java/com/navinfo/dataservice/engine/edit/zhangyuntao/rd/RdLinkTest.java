@@ -5,6 +5,8 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
@@ -16,6 +18,7 @@ import net.sf.json.JSONObject;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,17 +53,14 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void repair() {
-        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":17908374,\"data\":{\"type\":\"RDLINK\"," +
-                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[115.49924612045288,36.08966735778462],[115.49817,36.09029]]}," +
-                "\"catchInfos\":[{\"nodePid\":14026462,\"longitude\":115.49924612045288,\"latitude\":36.08966735778462}]},\"dbId\":13," +
-                "\"subtaskId\":61}";
+        String parameter = "{\"command\":\"DELETE\",\"type\":\"RDINTER\",\"objId\":505000013,\"infect\":0,\"dbId\":65,\"subtaskId\":1018}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void create() {
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDOBJECT\",\"data\":{\"links\":[2571609,17621452,30314412,2574669]," +
-                "\"inters\":[],\"roads\":[],\"longitude\":115.50035119056702,\"latitude\":36.061326740549056},\"dbId\":13,\"subtaskId\":61}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDINTER\",\"data\":{\"links\":[],\"nodes\":[807000128,808000143]}," +
+                "\"dbId\":65,\"subtaskId\":1018}";
         TestUtil.run(parameter);
     }
 
@@ -86,7 +86,7 @@ public class RdLinkTest extends InitApplication {
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\"," +
                 "\"data\":{\"linkPids\":[209000217]}}";
         parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":13,\"distance\":9.9," +
-                "\"data\":{\"linkPids\":[406000241]}}";
+                "\"data\":{\"linkPids\":[402000709,502000789]}}";
         TestUtil.run(parameter);
     }
 
@@ -135,31 +135,21 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testCreateSideRoad() throws Exception {
-        ZoneFace face1 = (ZoneFace) new AbstractSelector(ZoneFace.class, DBConnector.getInstance().getConnectionById(13)).loadById(401000016, false);
-        Geometry geometry1 = GeoTranslator.transform(face1.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
-
-        ZoneFace face2 = (ZoneFace) new AbstractSelector(ZoneFace.class, DBConnector.getInstance().getConnectionById(13)).loadById(510000026, false);
-        Geometry geometry2 = GeoTranslator.transform(face2.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
-
-        RdLink link = (RdLink) new AbstractSelector(RdLink.class, DBConnector.getInstance().getConnectionById(13)).loadById(505000501, false);
-        Geometry geometry = GeoTranslator.transform(link.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
-
-        System.out.println(GeoRelationUtils.IsLinkOnLeftOfRing(geometry, geometry1));
-        System.out.println(GeoRelationUtils.IsLinkOnLeftOfRing(geometry, geometry2));
+        String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"distance\":4,\"sideType\":1,\"sNodePid\":502000610," +
+                "\"data\":{\"linkPids\":[402000709,502000789]},\"dbId\":13,\"subtaskId\":61}";
+        TestUtil.run(parameter);
     }
 
     @Test
     public void delete() throws Exception {
-        String requester = "{\"command\":\"DELETE\",\"type\":\"RDLINK\",\"objId\":400000683,\"infect\":0,\"dbId\":13,\"subtaskId\":817}";
-        TestUtil.run(requester);
+        Connection conn = DBConnector.getInstance().getConnectionById(13);
+        ZoneFaceSelector selector = new ZoneFaceSelector(conn);
+        selector.load(GeoTranslator.transform(((RdLink)new RdLinkSelector(conn).loadById(506000466, false)).getGeometry(), 0.00001,5));
     }
 
     public static void main(String[] args) throws Exception {
-        String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSPEEDLIMIT\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"pid\":500000001," +
-                "\"direct\":3,\"linkPid\":49913063,\"longitude\":116.53538352127916,\"latitude\":39.7420088702255," +
-                "\"objStatus\":\"UPDATE\"}}";
-        com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process(new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Command(JSONObject.fromObject(parameter), parameter));
-        Method[] methods = process.getClass().getMethods();
-        methods.getClass().getDeclaredMethods();
+        Connection conn = DBConnector.getInstance().getConnectionById(13);
+        ZoneFaceSelector selector = new ZoneFaceSelector(conn);
+        selector.load(GeoTranslator.transform(((RdLink)new RdLinkSelector(conn).loadById(506000466, false)).getGeometry(), 0.00001,5));
     }
 }

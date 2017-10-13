@@ -54,7 +54,6 @@ import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
@@ -696,6 +695,9 @@ public class TaskService {
 			
 			TaskOperation.updateTask(conn, bean);
 			
+			//modify by songhe
+			//修正修改任务时由于缺少项目id无法发布多源子任务的bug
+			bean.setProgramId(oldTask.getProgramId());
 			//状态status为开启时，参数workKind与库中workKind是否有变更，若情报矢量或多源由0变为1了，
 			//则需自动创建情报矢量或多源子任务，即subtask里的work_Kind赋对应值
 			if(oldTask.getStatus()==1&&oldTask.getType()==0){
@@ -1454,7 +1456,7 @@ public class TaskService {
 			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
 			sb.append("                       T.NAME,");
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
-			sb.append("                       T.TYPE,");
+			sb.append("                       T.TYPE,t.latest,");
 			sb.append("                       T.GROUP_ID,");
 			sb.append("                       T.work_kind,");
 			sb.append("                       T.lot,");
@@ -1515,7 +1517,7 @@ public class TaskService {
 			sb.append("	                          0             TASK_ID,");
 			sb.append("	                          NULL          NAME,");
 			sb.append("	                          4             STATUS,");
-			sb.append("	                          NULL          TYPE,");
+			sb.append("	                          NULL          TYPE,1,");
 			sb.append("	                          NULL          GROUP_ID,");
 			sb.append("                       '0|0|0|0' work_kind,");
 			sb.append("                       0 lot,");
@@ -1552,7 +1554,7 @@ public class TaskService {
 			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
 			sb.append("                       T.NAME,");
 			sb.append("                       NVL(T.STATUS, 4) STATUS,");
-			sb.append("                       T.TYPE,");
+			sb.append("                       T.TYPE,t.latest,");
 			sb.append("                       T.GROUP_ID,");
 			sb.append("                       T.work_kind,");
 			sb.append("                       T.lot,");
@@ -1627,6 +1629,7 @@ public class TaskService {
 						}
 						task.put("status", rs.getInt("STATUS"));
 						task.put("type", rs.getInt("TYPE"));
+						task.put("latest", rs.getInt("LATEST"));
 						
 						task.put("percent", rs.getInt("PERCENT"));
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
@@ -1783,6 +1786,7 @@ public class TaskService {
 
 						task.put("status", 0);
 						task.put("type", 1);
+						task.put("latest", 1);
 						
 						task.put("percent", 0);
 						task.put("diffDate",0);
@@ -2441,7 +2445,7 @@ public class TaskService {
 					+ "       T.NAME,"
 					+ "       T.STATUS,"
 					+ "       T.DESCP,"
-					+ "       T.TYPE,"
+					+ "       T.TYPE,t.latest,"
 					+ "       T.PLAN_START_DATE,"
 					+ "       T.PLAN_END_DATE,"
 					+ "       T.PRODUCE_PLAN_START_DATE,"
@@ -2488,6 +2492,7 @@ public class TaskService {
 						task.setStatus(rs.getInt("STATUS"));
 						task.setDescp(rs.getString("DESCP"));
 						task.setType(rs.getInt("TYPE"));
+						task.setLatest(rs.getInt("LATEST"));
 						task.setWorkKind(rs.getString("WORK_KIND"));
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
@@ -2568,6 +2573,7 @@ public class TaskService {
 			}else{map.put("producePlanEndDate", "");}
 
 			map.put("lot", task.getLot());
+			map.put("latest", task.getLatest());
 			//modify by songhe
 			//删除road_plan_total,poi_plan_total,添加road/poi_plan_in/out  2017/07/25
 			map.put("roadPlanIn", task.getRoadPlanIn());
@@ -4460,9 +4466,10 @@ public class TaskService {
 		 * @throws Exception
 		 * 
 		 * */
-		public void uploadPlan(int taskId) throws Exception{
+		public Map<String, Object> uploadPlan(int taskId) throws Exception{
 			Connection con = null;
 			Connection dailyConn = null;
+			Map<String, Object> result = new HashMap<>();
 			try{
 				QueryRunner run = new QueryRunner();
 				con = DBConnector.getInstance().getManConnection();	
@@ -4488,6 +4495,9 @@ public class TaskService {
 						+ " where t.task_id = " + taskId;
 				log.info("根据dataPlan更新需要作业的数据sql:"+updateCount);
 				run.execute(con, updateCount);
+				//modify by songhe 2017/10/09  添加规划项的返回值
+				result =  queryPlanData(dailyConn, taskId);
+				return result;
 			}catch(Exception e){
 				log.error("规划上传接口异常，原因为："+e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(con);
@@ -4558,6 +4568,82 @@ public class TaskService {
 				log.error("计算taskId对应的data_plan中的需要作业的link长度总和异常："+e.getMessage(), e);
 			}
 			return 0f;
+		}
+		
+		/**
+		 * 规划数据上传完成后获取数据量返回
+		 * @param Connection
+		 * @param int taskId
+		 * @return Map
+		 * @throws Exception 
+		 * 
+		 * */
+		public Map<String, Object> queryPlanData(Connection dailyConn, int taskId) throws Exception{
+			Map<String, Object> result = new HashMap<>();
+			try{
+				QueryRunner run = new QueryRunner();
+			
+				String selectSql = "select count(1), t.is_important, t.is_plan_selected from DATA_PLAN t where "
+						+ "t.task_id = " + taskId + " and t.data_type = 1 group by t.is_important, t.is_plan_selected";
+				ResultSetHandler<Map<String, Integer>> rs = new ResultSetHandler<Map<String, Integer>>(){
+					public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+						Map<String, Integer> poiData = new HashMap<>();
+						while(rs.next()){
+							int count = rs.getInt("count(1)");
+							int isImportant = rs.getInt("is_important");
+							int isPlanSelected = rs.getInt("is_plan_selected");
+							if(isPlanSelected == 0){
+								poiData.put("unPlanSelected", poiData.containsKey("unPlanSelected") ? count + poiData.get("unPlanSelected")  : count);
+							}else{
+								if(isImportant == 1){
+									poiData.put("important", poiData.containsKey("important") ? count + poiData.get("important")  : count);
+								}else{
+									poiData.put("unImportant", poiData.containsKey("unImportant") ? count + poiData.get("unImportant")  : count);
+								}
+							}
+						}
+						return poiData;
+					}
+				};
+				Map<String, Integer> poiData = run.query(dailyConn, selectSql, rs);
+				
+				ResultSetHandler<Double> rsHandler = new ResultSetHandler<Double>(){
+					public Double handle(ResultSet rs) throws SQLException {
+						double linkNeedWorkLenth = 0d;
+						if(rs.next()){
+							linkNeedWorkLenth = rs.getDouble("length")/1000;
+						}
+						return linkNeedWorkLenth;
+					}
+				};
+				selectSql = "select sum(r.length) length from RD_LINK r where exists(select t.pid from DATA_PLAN t where t.data_type = 2 and "
+						+ "t.task_id = " + taskId + " and t.is_plan_selected = 1 and r.link_pid = t.pid)";
+				double linkNeedWorkLenth = run.query(dailyConn, selectSql, rsHandler);
+				
+				ResultSetHandler<Double> handler = new ResultSetHandler<Double>(){
+					public Double handle(ResultSet rs) throws SQLException {
+						double linkLenth = 0d;
+						if(rs.next()){
+							linkLenth = rs.getDouble("length")/1000;
+						}
+						return linkLenth;
+					}
+				};
+				selectSql = "select sum(r.length) length from RD_LINK r where exists(select t.pid from DATA_PLAN t where t.data_type = 2 and "
+						+ "t.task_id = " + taskId + " and t.is_plan_selected = 0 and r.link_pid = t.pid)";
+				double linkUnWorkLenth = run.query(dailyConn, selectSql, handler);
+				
+				result.put("workRoad", linkNeedWorkLenth == 0 ? 0 : new java.text.DecimalFormat("#.00").format(linkNeedWorkLenth));
+				result.put("unworkRoad", linkUnWorkLenth == 0 ? 0 : new java.text.DecimalFormat("#.00").format(linkUnWorkLenth));
+				result.put("unworkPoi", poiData.get("unPlanSelected") == null ? 0 : poiData.get("unPlanSelected"));
+				result.put("workAPoi", poiData.get("important") == null ? 0 : poiData.get("important"));
+				result.put("workunAPoi", poiData.get("unImportant") == null ? 0 : poiData.get("unImportant"));
+				
+				return result;
+			}catch(Exception e){
+				log.error("从日库中查询规划数据信息异常：" + e.getMessage(), e);
+				throw e;
+			}
 		}
 		
 		/**

@@ -255,20 +255,20 @@ public class MediumMonitorJob extends AbstractStatJob {
 			mediumMonitorMap.put("poiActualPercent",DoubleUtil.keepSpecDecimal(poiActualPercent,2));
 			
 			mediumMonitorMap.put("collectPlanPercent", planPercent);
-			mediumMonitorMap.put("collectActualPercent", (roadActualPercent*0.33+poiActualPercent*0.67));
+			mediumMonitorMap.put("collectActualPercent", DoubleUtil.keepSpecDecimal((roadActualPercent*0.33+poiActualPercent*0.67),2));
 			
 			BasicDBObject queryProgram19 = new BasicDBObject();
 			queryProgram19.put("timestamp", timestamp);
 			queryProgram19.put("type", 2);
 			queryProgram19.put("programType", 1);
 			double monthPoiPlanOut = queryDatasSumInMongo(md, "task", queryProgram19,"poiPlanOut");
-			mediumMonitorMap.put("monthPoiPlanOut", monthPoiPlanOut);
+			mediumMonitorMap.put("monthPoiPlanOut", Math.floor(monthPoiPlanOut*1.1));
 			
 			BasicDBObject queryProgram20 = new BasicDBObject();
 			queryProgram20.put("timestamp", timestamp);
 			queryProgram20.put("type", 0);
 			queryProgram20.put("programType", 1);
-			double poiPlanTotal = queryDatasSumInMongo(md, "task", queryProgram20,"poiPlanOut");
+			double poiPlanTotal = queryDatasSumInMongo(md, "task", queryProgram20,"poiPlanTotal");
 			mediumMonitorMap.put("poiPlanTotal", poiPlanTotal);
 			
 			String monthPlanStartDate = getStartOrEndDate("task","plan_start_date",2,"");
@@ -337,7 +337,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 			if(collectPlanDate > 0){
 				tipsPlanNum =roadPlanOut/collectPlanDate*collectWorkDate;
 			}
-			mediumMonitorMap.put("tipsPlanNum", tipsPlanNum);
+			mediumMonitorMap.put("tipsPlanNum", DoubleUtil.keepSpecDecimal(tipsPlanNum,2));
 			
 			BasicDBObject queryProgram26 = new BasicDBObject();
 			queryProgram26.put("timestamp", timestamp);
@@ -634,16 +634,16 @@ public class MediumMonitorJob extends AbstractStatJob {
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				
 				if(jso.containsKey("roadPlanTotal")){
-					poiPlanTotal += jso.getInt("roadPlanTotal");
+					roadPlanTotal += jso.getInt("roadPlanTotal");
 				}
 				if(jso.containsKey("roadActualTotal")){
-					poiPlanTotal += jso.getInt("roadActualTotal");
+					roadActualTotal += jso.getInt("roadActualTotal");
 				}
 				if(jso.containsKey("poiPlanTotal")){
 					poiPlanTotal += jso.getInt("poiPlanTotal");
 				}
 				if(jso.containsKey("poiActualTotal")){
-					poiPlanTotal += jso.getInt("poiActualTotal");
+					poiActualTotal += jso.getInt("poiActualTotal");
 				}
 				if(jso.containsKey("collectTipsUploadNum")){
 					collectTipsUploadNum += jso.getInt("collectTipsUploadNum");

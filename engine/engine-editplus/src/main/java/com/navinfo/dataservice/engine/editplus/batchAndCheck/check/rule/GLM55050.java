@@ -22,18 +22,27 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
 
+/**
+ * @ClassName: GLM55050
+ * @author: zhangpengpeng
+ * @date: 2017年10月12日
+ * @Desc: GLM55050.java 检查条件： 非删除点门牌对象 检查原则：
+ *        点门牌的显示坐标与引导坐标之间的连线（以显示坐标和引导坐标为端点的线段），不应横跨（与面的边界相交2次视为横跨）
+ *        类别为非删除水系LC_FACE.KIND：（1～６），高尔夫（１２），滑雪场（１３），公园（１１）的土地覆盖面，否则报log：
+ *        点门牌显示坐标与引导坐标之间跨越土地覆盖！
+ */
 public class GLM55050 extends BasicCheckRule {
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -62,46 +71,40 @@ public class GLM55050 extends BasicCheckRule {
 		} else {
 			pidString = " PID IN (" + pidStr + ")";
 		}
-		
-        String sql = "SELECT T1.PID, T1.GEOMETRY, T1.MESH_ID " +
-                "  FROM IX_POI T1, LC_FACE T2" + 
-                " WHERE T1." + pidString +
-                "   AND T1.U_RECORD <> 2" + 
-                "   AND T1.X_GUIDE != 0" + 
-                "   AND T1.Y_GUIDE != 0" + 
-                "   AND SDO_RELATE(T2.GEOMETRY," + 
-                "                  SDO_GEOMETRY('LINESTRING(' || T1.GEOMETRY" + 
-                "                               .SDO_POINT.X || ' ' || T1.GEOMETRY.SDO_POINT.Y ||" + 
-                "                               ' , ' || T1.X_GUIDE || ' ' || T1.Y_GUIDE || ')'," + 
-                "                               8307)," + "                  'MASK=011011111') = 'TRUE'" + 
-                "   AND T2.U_RECORD <> 2" + 
-                "   AND T2.KIND IN (1,2,3,4,5,6,11,12,13) ";
+
+		String sql = "SELECT T1.PID, T1.GEOMETRY, T1.MESH_ID " + "  FROM IX_POINTADDRESS T1, LC_FACE T2" + " WHERE T1."
+				+ pidString + "   AND T1.U_RECORD <> 2" + "   AND T1.X_GUIDE != 0" + "   AND T1.Y_GUIDE != 0"
+				+ "   AND SDO_RELATE(T2.GEOMETRY," + "                  SDO_GEOMETRY('LINESTRING(' || T1.GEOMETRY"
+				+ "                               .SDO_POINT.X || ' ' || T1.GEOMETRY.SDO_POINT.Y ||"
+				+ "                               ' , ' || T1.X_GUIDE || ' ' || T1.Y_GUIDE || ')',"
+				+ "                               8307)," + "                  'MASK=011011111') = 'TRUE'"
+				+ "   AND T2.U_RECORD <> 2" + "   AND T2.KIND IN (1,2,3,4,5,6,11,12,13) ";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		try{
+		try {
 			pstmt = conn.prepareStatement(sql);
-			if(pids.size() > 1000){
+			if (pids.size() > 1000) {
 				pstmt.setClob(1, clob);
 			}
-			
-            rs = pstmt.executeQuery();
-            List<String> validate = new ArrayList<>();
-            while (rs.next()) {
-                int pid = rs.getInt("PID");
-                String targets = "[IX_POINTADDRESS," + pid + "]";
 
-                if (!validate.contains(targets)) {
-                	STRUCT struct = (STRUCT)rs.getObject("GEOMETRY");
-                    Geometry geo = GeoTranslator.struct2Jts(struct);
-                    setCheckResult(geo, targets, rs.getInt("MESH_ID"));
-                    validate.add(targets);
-                }
-            }
-		}catch(Exception e){
+			rs = pstmt.executeQuery();
+			List<String> validate = new ArrayList<>();
+			while (rs.next()) {
+				int pid = rs.getInt("PID");
+				String targets = "[IX_POINTADDRESS," + pid + "]";
+
+				if (!validate.contains(targets)) {
+					STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+					Geometry geo = GeoTranslator.struct2Jts(struct);
+					setCheckResult(geo, targets, rs.getInt("MESH_ID"));
+					validate.add(targets);
+				}
+			}
+		} catch (Exception e) {
 			throw e;
-		}finally{
-            DBUtils.closeResultSet(rs);
-            DBUtils.closeStatement(pstmt);
+		} finally {
+			DBUtils.closeResultSet(rs);
+			DBUtils.closeStatement(pstmt);
 		}
 	}
 }

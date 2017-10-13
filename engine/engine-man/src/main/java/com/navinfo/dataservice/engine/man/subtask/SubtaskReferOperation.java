@@ -115,7 +115,7 @@ public class SubtaskReferOperation {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();			
-			String updateSql = "delete from subtask_refer_detail where id in "+ids.toString().replace("[", "(").replace("]", ")");
+			String updateSql = "delete from subtask_refer_detail where refer_id in "+ids.toString().replace("[", "(").replace("]", ")");
 			run.update(conn, updateSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

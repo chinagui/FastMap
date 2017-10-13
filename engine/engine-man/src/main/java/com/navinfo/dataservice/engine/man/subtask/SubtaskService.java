@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -36,6 +39,7 @@ import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Program;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
@@ -60,6 +64,7 @@ import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
+import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
@@ -4176,6 +4181,225 @@ public class SubtaskService {
             throw new Exception("allCollectSubtaskId异常:"+e.getMessage(),e);
         }finally{
             DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
+    
+	/**
+	 * 统计不规则圈规划量
+	 * @param int referId
+	 * @return Map<String, Object>
+	 * @throws Exception 
+	 * 
+	 */
+	public JSONObject viewPlan(int referId) throws Exception{
+    	Connection conn = null;
+        try{
+            conn = DBConnector.getInstance().getManConnection();
+            Clob viewData = queryViewPlanData(conn, referId);
+            JSONObject viewJsonData = new JSONObject();
+            if(viewData == null){
+            	SubtaskRefer refer = queryReferByReferId(conn, referId);
+            	viewJsonData = queryViewPlanDataFromDailyDb(conn, refer);
+            	insertViewPlanData(conn, viewJsonData, referId);
+            }else{
+                Reader is = viewData.getCharacterStream();// 得到流
+                BufferedReader br = new BufferedReader(is);
+                String s = br.readLine();
+                StringBuffer sb = new StringBuffer();
+                while (s != null) {// 执行循环将字符串全部取出付值给StringBuffer由StringBuffer转成STRING
+                	sb.append(s);
+                	s = br.readLine();
+                }
+                String result = sb.toString();
+                viewJsonData = JSONObject.fromObject(result);
+            }
+            return viewJsonData;
+        }catch(Exception e){
+            DbUtils.rollbackAndCloseQuietly(conn);
+            throw new Exception("viewPlan异常:" + e.getMessage(), e);
+        }finally{
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
+    
+    /**
+     * 根据referId查询对应的详细描述
+     * @param Connection
+     * @param int referId
+     * @return Clob
+     * 
+     * */
+    public Clob queryViewPlanData(Connection conn, int referId) throws Exception{
+        try{
+            String sql = "select t.detail_info from SUBTASK_REFER_DETAIL t where t.refer_id = " + referId;
+            QueryRunner run = new QueryRunner();
+            return run.query(conn, sql, new ResultSetHandler<Clob>(){
+                @Override
+                public Clob handle(ResultSet rs) throws SQLException {
+                	Clob rferData = null;
+                    if(rs.next()){
+                    	rferData = rs.getClob("detail_info");
+                    }
+                    return rferData;
+                }
+            });
+        }catch(Exception e){
+        	log.error("从管理库统计不规则圈规划量出错:" + e.getMessage(), e);
+            throw e;
+        }
+    }
+    
+	/**
+	 * 根据referId查询对应的refer详细信息
+	 * @param conn
+	 * @param referId
+	 * @return SubtaskRefer
+	 * @throws ServiceException
+	 * 
+	 */
+	public SubtaskRefer queryReferByReferId(Connection conn, int referId) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String sql = "select s.id, s.geometry,s.block_id,t.task_id from subtask_refer s,block b, task t "
+					+ "where s.block_id = b.block_id and t.block_id = b.block_id and t.type = 0 and t.latest = 1 and s.id = " + referId;
+			log.info("queryReferByTaskId SQL：" + sql);
+			ResultSetHandler<SubtaskRefer> rsHandler = new ResultSetHandler<SubtaskRefer>() {
+				public SubtaskRefer handle(ResultSet rs) throws SQLException {
+					SubtaskRefer refer = new SubtaskRefer();	
+					if(rs.next()){
+						refer.setId(rs.getInt("ID"));		
+						refer.setBlockId(rs.getInt("BLOCK_ID"));
+						refer.setTaskId(rs.getInt("TASK_ID"));
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try{
+							refer.setGeometry(GeoTranslator.struct2Jts(struct));
+						}catch(Exception e1){
+							e1.printStackTrace();
+						}
+					}
+					return refer;
+				}	
+			};
+			return run.query(conn, sql,rsHandler);			
+		}catch(Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * 根据子任务圈范围从日库中查询poi和link的规划的详细信息
+	 * @param Connection
+	 * @param SubtaskRefer
+	 * @throws ServiceException
+	 * */
+	public JSONObject queryViewPlanDataFromDailyDb(Connection conn, SubtaskRefer refer) throws Exception{
+    	Connection dailyConn = null;
+    	try{
+    		QueryRunner run = new QueryRunner();
+    		int taskId = refer.getTaskId();
+        	Task task = TaskService.getInstance().queryNoGeoByTaskId(conn, taskId);
+        	Region region = RegionService.getInstance().query(conn, task.getRegionId());
+        	dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+        	String wkt = GeoTranslator.jts2Wkt(refer.getGeometry());
+			Clob clob = ConnectionUtil.createClob(dailyConn);
+			clob.setString(1, wkt);
+        	
+			StringBuffer linksb = new StringBuffer();
+			linksb.append("select p.is_plan_selected, p.is_important, t.length from RD_LINK t, DATA_PLAN p where ");
+			linksb.append("t.u_record <> 2 and sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE' ");
+			linksb.append("and p.pid = t.link_pid and p.data_type = 2 and p.task_id = "+taskId);
+			String linkSql = linksb.toString();
+			log.info("linkSql" + linkSql);
+			
+			JSONObject linkJson = run.query(dailyConn, linkSql, clob, new ResultSetHandler<JSONObject>(){
+                @Override
+                public JSONObject handle(ResultSet rs) throws SQLException {
+                	JSONObject linkData = new JSONObject();
+                	double workRoad = 0d;
+                	double unworkRoad = 0d;
+                    while(rs.next()){
+                    	int isWork = rs.getInt("is_plan_selected");
+                    	if(isWork == 1){
+                    		workRoad += rs.getDouble("length")/1000;
+                    	}else{
+                    		unworkRoad += rs.getDouble("length")/1000;
+                    	}
+                    }
+                    linkData.put("workRoad", workRoad == 0 ? 0 : new java.text.DecimalFormat("#.00").format(workRoad));
+                	linkData.put("unworkRoad", unworkRoad == 0 ? 0 : new java.text.DecimalFormat("#.00").format(unworkRoad));
+                    return linkData;
+                }
+            });
+			
+			StringBuffer poisb = new StringBuffer();
+			poisb.append("select t.is_plan_selected, t.is_important, p.pid from IX_POI p, DATA_PLAN t where ");
+			poisb.append("p.u_record <> 2 and sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE' ");
+			poisb.append("and p.pid = t.pid and t.data_type = 1 and t.task_id = "+taskId);
+			String poiSql = poisb.toString();
+			log.info("poiSql" + poiSql);
+			
+			JSONObject poiJson = run.query(dailyConn, poiSql, clob, new ResultSetHandler<JSONObject>(){
+                @Override
+                public JSONObject handle(ResultSet rs) throws SQLException {
+                	JSONObject poikData = new JSONObject();
+                	int workAPoi = 0;
+                	int workunAPoi = 0;
+                	int unworkPoi = 0;
+                    while(rs.next()){
+                    	int isWork = rs.getInt("is_plan_selected");
+                    	if(isWork == 1){
+                    		int important = rs.getInt("is_important");
+                    		if(important == 1){
+                    			workAPoi++;
+                    		}else{
+                    			workunAPoi++;
+                    		}
+                    	}else{
+                    		unworkPoi++;
+                    	}
+                    }
+                    poikData.put("workAPoi", workAPoi);
+                    poikData.put("workunAPoi", workunAPoi);
+                    poikData.put("unworkPoi", unworkPoi);
+                    return poikData;
+                }
+            });
+			JSONObject referJson = new JSONObject();
+			referJson.put("workRoad", linkJson.get("workRoad"));
+			referJson.put("unworkRoad", linkJson.get("unworkRoad"));
+			referJson.put("workAPoi", poiJson.get("workAPoi"));
+			referJson.put("workunAPoi", poiJson.get("workunAPoi"));
+			referJson.put("unworkPoi", poiJson.get("unworkPoi"));
+			return referJson;
+        }catch(Exception e){
+        	log.error("从日库查询viewPlan数据异常:" + e.getMessage(), e);
+            throw e;
+        }finally{
+        	 DbUtils.closeQuietly(dailyConn);
+        }
+    }
+    
+	/**
+	 * 将数据插入referDeatail表中
+	 * @param Connection
+	 * @param JSONObject
+	 * @param int
+	 * @throws ServiceException
+	 * */
+    public void insertViewPlanData(Connection conn, JSONObject viewJsonData, int referId) throws Exception{
+    	try{
+    		QueryRunner run = new QueryRunner();
+    		Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, viewJsonData.toString());
+			
+        	String sql = "insert into SUBTASK_REFER_DETAIL (refer_id, detail_info) values ("+referId+", ?)";
+        	run.update(conn, sql, clob);
+        }catch(Exception e){
+        	log.error("保存规划数据信息到管理库:" + e.getMessage(), e);
+            throw e;
         }
     }
 }

@@ -179,7 +179,7 @@ public class ExtractEightTypesPoi {
 						//若为新增:新增POI:官方标准中文名称|分类代码；
 						String information = new StringBuilder().append("新增POI：").append(name).append("|").append(kindCode).toString();
 						//POINT (120.31579 31.55737)
-						String location = new StringBuilder().append("POINT（").append(xShow).append(" ").append(yShow).append("）").toString();
+						String location = new StringBuilder().append("POINT(").append(xShow).append(" ").append(yShow).append(")").toString();
 						//[IX_POI,96706311]
 						String targets = new StringBuilder().append("[IX_POI,").append(String.valueOf(pid)).append("]").toString();
 						
@@ -270,7 +270,7 @@ public class ExtractEightTypesPoi {
 							//若为新增:新增POI:官方标准中文名称|分类代码；
 							String information = new StringBuilder().append("删除POI：").append(name).append("|").append(kindCode).toString();
 							//POINT (120.31579 31.55737)
-							String location = new StringBuilder().append("POINT（").append(xShow).append(" ").append(yShow).append("）").toString();
+							String location = new StringBuilder().append("POINT(").append(xShow).append(" ").append(yShow).append(")").toString();
 							//[IX_POI,96706311]
 							String targets = new StringBuilder().append("[IX_POI,").append(String.valueOf(pid)).append("]").toString();
 							
@@ -444,7 +444,7 @@ public class ExtractEightTypesPoi {
 							} else if ("GEOMETRY".equals(flag)){
 								information.append("POI改位移：").append(name).append("|").append(kindCode);
 							}
-							String location = new StringBuilder().append("POINT（").append(xShow).append(" ").append(yShow).append("）").toString();
+							String location = new StringBuilder().append("POINT(").append(xShow).append(" ").append(yShow).append(")").toString();
 							String targets = new StringBuilder().append("[IX_POI,").append(String.valueOf(pid)).append("]").toString();
 							
 							Map<String, Object> temp = new HashMap<>();

@@ -103,6 +103,7 @@ public class ScPlateresInfoSearch  {
 
                 ReflectionAttrUtils.executeResultSet(info, resultSet);
                 
+                //web界面显示区县级行政区划只需要文字标识，后续操作，依据市级行政区划编码
                 info.setAdminCode(adminCodeAndName.get(info.getAdminCode()));
                 
                 total = resultSet.getInt("TOTAL_ROW_NUM");
@@ -204,9 +205,18 @@ public class ScPlateresInfoSearch  {
             String infoCode = obj.getString("infoCode");
 
             if (infoCode != null && !infoCode.isEmpty()) {
-                sql.append(" AND INFO_INTEL_ID = ");
+                sql.append(" AND INFO_CODE = ");
                 sql.append("'" + infoCode + "'");
             }
+        }
+        
+        if(obj.containsKey("infoIntelId")){
+        	String infoIntelId = obj.getString("infoIntelId");
+        	
+        	if(infoIntelId != null && !infoIntelId.isEmpty()){
+        		sql.append(" AND INFO_INTEL_ID = ");
+        		sql.append("'" + infoIntelId + "'");
+        	}
         }
 
         if (obj.containsKey("startTime")) {

@@ -598,7 +598,7 @@ public class UserGroupService {
 	}
 	
 	/**
-	 * 组赋值方法 1采集2编辑3众包4情报5多源6月编
+	 * 组赋值方法 1采集2编辑3众包4情报5多源6月编7精细化
 	 * @param adminCode
 	 * @param type
 	 * @throws Exception 
@@ -629,6 +629,8 @@ public class UserGroupService {
 				case 6:
 					name = "MONTH_GROUP_NAME";
 					break;
+				case 7:
+					name = "REFINE_GROUP_NAME";
 				default:
 					return null;
 			}

@@ -3772,8 +3772,7 @@ public class TaskService {
 				return resultJson;
 			}
 			String admin = selectAdminCode(task.getProgramId());
-			int type=workKind+1;
-			UserGroup resultGroup=UserGroupService.getInstance().getGroupByAminCode(conn, admin, type);
+			UserGroup resultGroup=UserGroupService.getInstance().getGroupByAminCode(conn, admin, workKind);
 			List<UserInfo> users=UserInfoService.getInstance().list(resultGroup);
 			JSONObject resultJson = JSONObject.fromObject(resultGroup);
 			resultJson.put("users", JSONArray.fromObject(users));
@@ -4633,8 +4632,8 @@ public class TaskService {
 						+ "t.task_id = " + taskId + " and t.is_plan_selected = 0 and r.link_pid = t.pid)";
 				double linkUnWorkLenth = run.query(dailyConn, selectSql, handler);
 				
-				result.put("workRoad", linkNeedWorkLenth == 0 ? 0 : new java.text.DecimalFormat("#.00").format(linkNeedWorkLenth));
-				result.put("unworkRoad", linkUnWorkLenth == 0 ? 0 : new java.text.DecimalFormat("#.00").format(linkUnWorkLenth));
+				result.put("workRoad", String.format("%.2f", linkNeedWorkLenth));
+				result.put("unworkRoad", String.format("%.2f", linkUnWorkLenth));
 				result.put("unworkPoi", poiData.get("unPlanSelected") == null ? 0 : poiData.get("unPlanSelected"));
 				result.put("workAPoi", poiData.get("important") == null ? 0 : poiData.get("important"));
 				result.put("workunAPoi", poiData.get("unImportant") == null ? 0 : poiData.get("unImportant"));

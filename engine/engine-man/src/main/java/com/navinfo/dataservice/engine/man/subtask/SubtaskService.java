@@ -4328,8 +4328,8 @@ public class SubtaskService {
                     		unworkRoad += rs.getDouble("length")/1000;
                     	}
                     }
-                    linkData.put("workRoad", workRoad == 0 ? 0 : new java.text.DecimalFormat("#.00").format(workRoad));
-                	linkData.put("unworkRoad", unworkRoad == 0 ? 0 : new java.text.DecimalFormat("#.00").format(unworkRoad));
+                    linkData.put("workRoad", String.format("%.2f", workRoad));
+                	linkData.put("unworkRoad", String.format("%.2f", unworkRoad));
                     return linkData;
                 }
             });

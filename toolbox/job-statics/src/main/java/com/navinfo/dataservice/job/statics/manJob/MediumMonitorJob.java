@@ -541,7 +541,7 @@ public class MediumMonitorJob extends AbstractStatJob {
 		int unplanNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from program p,city c where p.city_id = c.city_id and p.type = 1 and c.plan_status = 0  ";
+			String sql  = "select count(1) num from city c where c.plan_status = 0  ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();

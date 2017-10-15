@@ -2,16 +2,13 @@ package com.navinfo.dataservice.engine.limit.search.limit;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRenderParam;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
 import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresFace;
-import com.navinfo.dataservice.engine.limit.search.RenderParam;
 import com.navinfo.navicommons.database.sql.DBUtils;
-
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -125,8 +122,6 @@ public class ScPlateresFaceSearch implements ISearch {
             while (resultSet.next()) {
                 SearchSnapshot snapshot = new SearchSnapshot();
 
-                snapshot.setT(1002);
-
                 STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
                 Geometry geom = GeoTranslator.struct2Jts(struct);
@@ -145,9 +140,18 @@ public class ScPlateresFaceSearch implements ISearch {
 
                 m.put("c", resultSet.getString("BOUNDARY_LINK"));
 
-                m.put("e", geom.getGeometryType());
+                String geometryType = geom.getGeometryType();
+                m.put("e", geometryType);
+
+                m.put("g", geojson.getJSONArray("coordinates"));
 
                 snapshot.setM(m);
+
+                if (geometryType.equals("LineString")) {
+                    snapshot.setT(1002);
+                } else if (geometryType.equals("Polygon")) {
+                    snapshot.setT(1003);
+                }
 
                 list.add(snapshot);
             }
@@ -340,5 +344,45 @@ public class ScPlateresFaceSearch implements ISearch {
             DBUtils.closeResultSet(resultSet);
             DBUtils.closeStatement(pstmt);
         }
+    }
+
+
+    public List<ScPlateresFace> loadByGroupId(String groupId) throws Exception {
+
+        List<ScPlateresFace> objs = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder();
+
+        sql.append(" SELECT * FROM SC_PLATERES_FACE WHERE GROUP_ID = ? ");
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql.toString());
+
+            pstmt.setString(1, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                ScPlateresFace obj = new ScPlateresFace();
+
+                ReflectionAttrUtils.executeResultSet(obj, resultSet);
+
+                objs.add(obj);
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return objs;
     }
 }

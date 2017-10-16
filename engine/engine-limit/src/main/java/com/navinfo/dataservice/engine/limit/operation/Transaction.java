@@ -246,6 +246,9 @@ public class Transaction {
 			case DELETE:
 				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.delete.Command(json,
 						requester);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.breakin.Command(json,
+						requester);
 			}
         }
         throw new Exception("不支持的操作类型");
@@ -341,6 +344,9 @@ public class Transaction {
             					command);
             		case DELETE:
             			return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.delete.Process(
+            					command);
+            		case BREAK:
+            			return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.breakin.Process(
             					command);
 			}    
         }

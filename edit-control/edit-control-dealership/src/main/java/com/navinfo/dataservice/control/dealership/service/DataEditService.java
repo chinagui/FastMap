@@ -2490,26 +2490,23 @@ public class DataEditService {
 			String telSpecial="";
 			String splitChar=";";
 			while(resultSet.next()) {
-				boolean flag1 = false,flag2 = false,flag3 = false;
 				if (resultSet.getInt("CONTACT_DEPART")==16){
 					if ("".equals(telService)){telService= resultSet.getString("CONTACT");}
 					else{telService+=splitChar+resultSet.getString("CONTACT");}
-					flag1 = true;
+					continue;
 				}
 				if (resultSet.getInt("CONTACT_DEPART")==8){
 					if ("".equals(telSale)){telSale= resultSet.getString("CONTACT");}
 					else{telSale+=splitChar+resultSet.getString("CONTACT");}
-					flag2 = true;
+					continue;
 				}
 				if (resultSet.getInt("CONTACT_TYPE")==3){
 					if ("".equals(telSpecial)){telSpecial= resultSet.getString("CONTACT");}
 					else{telSpecial+=splitChar+resultSet.getString("CONTACT");}
-					flag3 = true;
+					continue;
 				}
-				if((!flag1) && (!flag2) && (!flag3)){
-					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
-					else{telOther+=splitChar+resultSet.getString("CONTACT");}
-				}
+				if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
+				else{telOther+=splitChar+resultSet.getString("CONTACT");}
 			}
 			jsonObj.put("telOther", telOther);
 			jsonObj.put("telSale", telSale);

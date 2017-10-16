@@ -21,7 +21,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.ExportXSSFExcel;
+import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.scripts.model.ColumnQcProblem;
 
@@ -52,7 +52,7 @@ public class ExportColumnQcProblem {
 			}
 			
 			
-			ExportXSSFExcel<ColumnQcProblem> ex = new ExportXSSFExcel<ColumnQcProblem>();
+			ExportExcel<ColumnQcProblem> ex = new ExportExcel<ColumnQcProblem>();
 
 			String[] headers = { "序号", "当前项目编号", "项目名称", "作业对象", "fid", "作业项目（大分类）",
 					"项目类型（中分类）", "详细检查项（子分类）", "错误内容", "错误类型", "问题等级", "问题描述", "正确内容",
@@ -61,7 +61,7 @@ public class ExportColumnQcProblem {
 			try {
 				String path = SystemConfigFactory.getSystemConfig().getValue(
 						PropConstant.downloadFilePathPoi)+"/poiQuality/columnQcProblem";
-				File file = new File(path+"/" + excelName + ".xlsx");
+				File file = new File(path+"/" + excelName + ".xls");
 				if(!file.getParentFile().isDirectory()){
 					file.getParentFile().mkdirs();
 				}
@@ -155,7 +155,7 @@ public class ExportColumnQcProblem {
 		StringBuffer sb = new StringBuffer();
 		sb.append("SELECT SUBTASK_ID,p.poi_num,FIRST_WORK_ITEM,SECOND_WORK_ITEM,WORK_ITEM_ID,OLD_VALUE,ERROR_TYPE,");
 		sb.append("ERROR_LEVEL,PROBLEM_DESC,NEW_VALUE,WORKER,WORK_TIME,QC_WORKER,QC_TIME,ORIGINAL_INFO ");
-		sb.append("FROM Column_Qc_Problem c,ix_poi p WHERE c.pid = p.pid AND  c.qc_time between to_date('"+startDate+" 00:00:00','yyyyMMdd hh24:mi:ss') and to_date('"+endDate+" 23:59:59','yyyyMMdd hh24:mi:ss')");
+		sb.append("FROM Column_Qc_Problem c,ix_poi p WHERE c.pid = p.pid AND (c.is_problem='2' OR c.is_problem like '%:2%') AND  c.qc_time between to_date('"+startDate+" 00:00:00','yyyyMMdd hh24:mi:ss') and to_date('"+endDate+" 23:59:59','yyyyMMdd hh24:mi:ss')");
 
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

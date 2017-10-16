@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.limit.search.limit;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRenderParam;
 import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
@@ -10,7 +9,6 @@ import com.navinfo.dataservice.engine.limit.glm.iface.ISearch;
 import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
 import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresLink;
 import com.navinfo.navicommons.database.sql.DBUtils;
-
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -125,8 +123,6 @@ public class ScPlateresLinkSearch implements ISearch {
             while (resultSet.next()) {
                 SearchSnapshot snapshot = new SearchSnapshot();
 
-                snapshot.setT(1001);
-
                 STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
                 Geometry geom = GeoTranslator.struct2Jts(struct);
@@ -147,7 +143,11 @@ public class ScPlateresLinkSearch implements ISearch {
 
                 m.put("e", geom.getGeometryType());
 
+                m.put("g", geojson.getJSONArray("coordinates"));
+
                 snapshot.setM(m);
+
+                snapshot.setT(1001);
 
                 list.add(snapshot);
             }
@@ -273,6 +273,45 @@ public class ScPlateresLinkSearch implements ISearch {
             DBUtils.closeStatement(pstmt);
         }
         return objList;
+    }
+
+    public List<ScPlateresLink> loadByGroupId(String groupId) throws Exception {
+
+        List<ScPlateresLink> objs = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder();
+
+        sql.append(" SELECT * FROM SC_PLATERES_LINK WHERE GROUP_ID = ? ");
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql.toString());
+
+            pstmt.setString(1, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                ScPlateresLink obj = new ScPlateresLink();
+
+                ReflectionAttrUtils.executeResultSet(obj, resultSet);
+
+                objs.add(obj);
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return objs;
     }
 }
 

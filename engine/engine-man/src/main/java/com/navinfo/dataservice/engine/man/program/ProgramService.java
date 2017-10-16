@@ -2058,14 +2058,13 @@ public class ProgramService {
 						t.setWorkKind("1|0|0|0");
 					}
 					UserGroup group =null;
-					/*web端有人触发的情报项目发布，导致的采集任务创建，则不赋组；
-					 *否则均是后台自动触发的项目，任务，子任务创建，需要根据如下原则赋值:
+					/*满足如下条件，均需要赋组。（不区分前后台。by20171016）任务，子任务创建，需要根据如下原则赋值:
 					 *     根据INFOR表“情报对应方式”字段，进行赋值：
 					 *     1.“矢量制作”：赋值=空
 					 *     2.其它：根据INFOR表情报“情报省份城市”字段，参考<行政与作业组配置表>，取作业组赋值
 					 */
 					int groupType = 0;
-					if(t.getType()==0&&userId==0 && !"矢量制作".equals(infor.getMethod())){
+					if(t.getType()==0 && !"矢量制作".equals(infor.getMethod())){
 						groupType = 1;
 					}else if(t.getType()==1){
 						groupType = 2;

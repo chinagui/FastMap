@@ -20,6 +20,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
@@ -668,7 +669,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 		int unplanNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and  i.plan_status = 0 ";
+			String sql  = "select count(1) num from infor i where i.plan_status = 0 ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
@@ -775,32 +776,36 @@ public class QuickMonitorJob extends AbstractStatJob {
 	
 	private double getDateAvgInMongo(MongoDao md, String collName, BasicDBObject filter, String startDate, String endDate) throws Exception {
 		try {
-			if(filter == null ){
-//				filter = new BasicDBObject("timestamp", null);
-			}
 			FindIterable<Document> findIterable = md.find(collName, filter);
 			MongoCursor<Document> iterator = findIterable.iterator();
-			Map<String,Integer> stat = new HashMap<String,Integer>();
 			
 			double dateAvg = 0;
 			
 			int count = 0;
 			int total = 0;
 			//处理数据
-			while(iterator.hasNext()){
-				count++;
+			while(iterator.hasNext()){				
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				String strStart = null;
 				String strEnd = null;
-				if(jso.containsKey("startDate")){
-					strStart = jso.getString("startDate");
+				if(jso.containsKey(startDate)){
+					strStart = jso.getString(startDate);
+					if(strStart.length()>8){
+						strStart=strStart.substring(0, 8);
+					}
 				}
-				if(jso.containsKey("endDate")){
-					strEnd = jso.getString("endDate");
+				if(jso.containsKey(endDate)){
+					strEnd = jso.getString(endDate);
+					if(strEnd.length()>8){
+						strEnd=strEnd.substring(0, 8);
+					}
 				}
-				
-				total += StatUtil.daysOfTwo(strStart, strEnd);
+				if(!StringUtils.isEmpty(strStart)&&!StringUtils.isEmpty(strEnd)){
+					count++;
+					total += DateUtils.diffDay(DateUtils.stringToTimestamp(strStart, DateUtils.DATE_YMD),
+							DateUtils.stringToTimestamp(strEnd, DateUtils.DATE_YMD));
+				}
 			}
 
 			if(count > 0){

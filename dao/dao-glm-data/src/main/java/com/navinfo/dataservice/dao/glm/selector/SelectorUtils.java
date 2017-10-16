@@ -57,7 +57,7 @@ public class SelectorUtils {
 
 		String sql = "";
 
-		if (objType == ObjType.RDLINK || objType == ObjType.IXPOI) {
+		if (objType == ObjType.RDLINK || objType == ObjType.IXPOI || objType == ObjType.IXPOINTADDRESS) {
 			sql = getSearchSqlFromLinkPOI(objType, object, isLock);
 		} else {
 
@@ -279,6 +279,33 @@ public class SelectorUtils {
 								+ "and ix.PID = ps.PID and ps.STATUS <3)poi "
 								+ "LEFT JOIN ix_poi_name ipn ON poi.pid = ipn.poi_pid "
 								+ "AND ipn.name_class=1 AND ipn.name_type =2 AND ipn.lang_code = 'CHI' "
+								+ ")tmp");
+				sql = getSqlFromBufferCondition(bufferCondition.toString(),
+						isLock);
+
+			}
+		}
+		if (objType == ObjType.IXPOINTADDRESS) {
+			if (object.containsKey("name")) {
+				bufferCondition
+						.append(" select COUNT (1) OVER (PARTITION BY 1) total,ipa.pid pid,ipa.dpr_name name,ipa.geometry from ix_pointaddress ipa WHERE 1=1");
+				bufferCondition.append(" and ipa.dpr_name like '%"
+						+ object.getString("name") + "%' ");
+				sql = getSqlFromBufferCondition(bufferCondition.toString(),
+						isLock);
+			} else {
+				bufferCondition
+						.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name,tmp.geometry "
+								+ "FROM(select po.pid,po.name,po.geometry from( SELECT ix.pid,ix.geometry,ix.dpr_name as name FROM ix_pointaddress ix "
+								+ "where ix.pid ="
+								+ object.getInt("pid")
+								+ " and ix.U_RECORD !=2 "
+								+ "union all "
+								+ "select ix.pid,ix.geometry,ix.dpr_name as name from ix_pointaddress ix,pointaddress_edit_status ps "
+								+ "where ix.PID = "
+								+ object.getInt("pid")
+								+ " and ix.U_RECORD = 2 "
+								+ "and ix.PID = ps.PID and ps.STATUS <3) po "
 								+ ")tmp");
 				sql = getSqlFromBufferCondition(bufferCondition.toString(),
 						isLock);

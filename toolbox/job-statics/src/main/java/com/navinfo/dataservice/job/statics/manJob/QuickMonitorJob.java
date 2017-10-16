@@ -775,32 +775,35 @@ public class QuickMonitorJob extends AbstractStatJob {
 	
 	private double getDateAvgInMongo(MongoDao md, String collName, BasicDBObject filter, String startDate, String endDate) throws Exception {
 		try {
-			if(filter == null ){
-//				filter = new BasicDBObject("timestamp", null);
-			}
 			FindIterable<Document> findIterable = md.find(collName, filter);
 			MongoCursor<Document> iterator = findIterable.iterator();
-			Map<String,Integer> stat = new HashMap<String,Integer>();
 			
 			double dateAvg = 0;
 			
 			int count = 0;
 			int total = 0;
 			//处理数据
-			while(iterator.hasNext()){
-				count++;
+			while(iterator.hasNext()){				
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				String strStart = null;
 				String strEnd = null;
-				if(jso.containsKey("startDate")){
-					strStart = jso.getString("startDate");
+				if(jso.containsKey(startDate)){
+					strStart = jso.getString(startDate);
+					if(strStart.length()>8){
+						strStart=strStart.substring(0, 8);
+					}
 				}
-				if(jso.containsKey("endDate")){
-					strEnd = jso.getString("endDate");
+				if(jso.containsKey(endDate)){
+					strEnd = jso.getString(endDate);
+					if(strEnd.length()>8){
+						strEnd=strEnd.substring(0, 8);
+					}
 				}
-				
-				total += StatUtil.daysOfTwo(strStart, strEnd);
+				if(!StringUtils.isEmpty(strStart)&&!StringUtils.isEmpty(strEnd)){
+					count++;
+					total += StatUtil.daysOfTwo(strStart, strEnd);
+				}
 			}
 
 			if(count > 0){

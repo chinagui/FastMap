@@ -101,18 +101,20 @@ public class DataEditService {
 	 * @param useId
 	 */
 	public int applyDataService(String chainCode, Connection conn, long userId) throws Exception {
+		int applyTotal = 1000;
+		
 		String haveDataSql = String.format(
 				"SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s'",
 				userId, 3, 1, chainCode);
 		int count = run.queryForInt(conn, haveDataSql);
 
-		if (count >= 50)
+		if (count >= applyTotal)
 			return 0;
 
 		try {
 			String queryListSql = String.format(
 					"SELECT RESULT_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s' AND ROWNUM <= %d",
-					0, 3, 0, chainCode, 50 - count);
+					0, 3, 0, chainCode, applyTotal - count);
 			List<Object> resultID = ExecuteQuery(queryListSql, conn);
 
 			if (resultID.size() == 0)

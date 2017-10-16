@@ -6,13 +6,16 @@ import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.io.FileUtils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Title: TranslateOperator
@@ -69,7 +72,8 @@ public class TranslateOperator {
         String sql = "SELECT *" + 
                 "  FROM (SELECT T.ID," + 
                 "               T.FILE_NAME," + 
-                "               T.USER_ID," + 
+                "               T.FILE_SIZE," +
+                "               T.USER_ID," +
                 "               T.DOWNLOAD_PATH," +
                 "               T.DOWNLOAD_FILE_NAME," +
                 "               T.JOB_ID," +
@@ -90,11 +94,12 @@ public class TranslateOperator {
     public void save(JSONObject json) throws SQLException {
         String sql = "INSERT INTO TRANSLATE_LOG " +
                 TranslateLog.TABLE_NAME +
-                "(ID, FILE_NAME, USER_ID, DOWNLOAD_PATH, DOWNLOAD_FILE_NAME, JOB_ID) VALUES(?,?,?,?,?,?)";
+                "(ID, FILE_NAME, FILE_SIZE, USER_ID, DOWNLOAD_PATH, DOWNLOAD_FILE_NAME, JOB_ID) VALUES(?,?,?,?,?,?,?)";
 
         List<Object> objects = new ArrayList<>();
         objects.add(UuidUtils.genUuid());
         objects.add(json.getString("fileName"));
+        objects.add(json.getLong("fileSize"));
         objects.add(json.getLong("userId"));
         objects.add(json.getString("downloadPath"));
         objects.add(json.getString("downloadFileName"));
@@ -130,7 +135,7 @@ public class TranslateOperator {
             Page page = new Page(pageNum);
             page.setPageSize(pageSize);
 
-            List<TranslateLog> logs = new ArrayList<>();
+            List<Map<String, Object>> logs = new ArrayList<>();
 
             int total = 0;
             while (rs.next()) {
@@ -138,18 +143,23 @@ public class TranslateOperator {
                     total=rs.getInt("TOTAL_RECORD_NUM_");
                 }
 
-                TranslateLog log = new TranslateLog();
-                log.setId(rs.getString("ID"));
-                log.setFileName(rs.getString("FILE_NAME"));
-                log.setStartDate(rs.getDate("CREATE_TIME"));
-                log.setEndDate(rs.getDate("END_TIME"));
-                log.setUserId(rs.getLong("USER_ID"));
-                log.setDownloadUrl(rs.getString("DOWNLOAD_PATH") + rs.getString("DOWNLOAD_FILE_NAME"));
-                log.setJobId(rs.getInt("JOB_ID"));
-                log.setState(rs.getInt("STATUS"));
+                Map<String, Object> log = new HashedMap();
+                log.put("id", rs.getString("ID"));
+                log.put("fileName", rs.getString("FILE_NAME"));
+                log.put("fileSize", FileUtils.byteCountToDisplaySize(rs.getLong("FILE_SIZE")));
+                log.put("startDate", rs.getDate("CREATE_TIME"));
+                log.put("endDate", rs.getDate("END_TIME"));
+                log.put("userId", rs.getLong("USER_ID"));
+                log.put("downloadUrl", rs.getString("DOWNLOAD_PATH") + rs.getString("DOWNLOAD_FILE_NAME"));
+                log.put("jobId", rs.getInt("JOB_ID"));
+                log.put("state", rs.getInt("STATUS"));
 
                 logs.add(log);
             }
+
+            page.setResult(logs);
+            page.setTotalCount(total);
+
             return null;
         }
     }

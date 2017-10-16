@@ -18,6 +18,8 @@ public class TranslateLog {
 
     private String fileName;
 
+    private Long fileSize;
+
     private Long userId;
 
     private String downloadPath;
@@ -212,5 +214,23 @@ public class TranslateLog {
      */
     public void setDownloadUrl(String downloadUrl) {
         this.downloadUrl = downloadUrl;
+    }
+
+    /**
+     * Getter method for property <tt>fileSize</tt>.
+     *
+     * @return property value of fileSize
+     */
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    /**
+     * Setter method for property <tt>fileSize</tt>.
+     *
+     * @param fileSize value to be assigned to property fileSize
+     */
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
     }
 }

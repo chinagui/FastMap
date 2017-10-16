@@ -66,6 +66,7 @@ public class UploadOperation {
             uploadItem.write(file);
 
             json.put("fileName", uploadItem.getName());
+            json.put("fileSize", file.length());
             json.put("userId", userId);
             json.put("downloadPath", uploadRoot);
             json.put("downloadFileName", fileName);

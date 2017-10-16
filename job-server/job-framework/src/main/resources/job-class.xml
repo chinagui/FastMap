@@ -191,4 +191,8 @@
           class="com.navinfo.dataservice.row.job.PointAddressReleaseJob"
           request="com.navinfo.dataservice.row.job.PointAddressReleaseJobRequest" >
     </type>
+    <type name="translateJob"
+          class="com.navinfo.dataservice.edit.job.TranslateJob"
+          request="com.navinfo.dataservice.edit.job.TranslateJobRequest" >
+    </type>
 	</mapping>

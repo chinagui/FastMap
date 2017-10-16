@@ -41,7 +41,7 @@ public class GdbDataExporterForAdd {
 		String zipfile = null;
 		try {
 			//获取 NdsSqliteEncryptor 实例
-//			NdsSqliteEncryptor encryptor = NdsSqliteEncryptor.getInstance();
+			NdsSqliteEncryptor encryptor = NdsSqliteEncryptor.getInstance();
 			//判断相应省份的文件是否存在
 			File provinceFile = new File(dir);
 			if (!provinceFile.exists() || provinceFile.listFiles().length ==0) {
@@ -56,20 +56,20 @@ public class GdbDataExporterForAdd {
 			System.out.println("更新文件所在目录:"+sqliteFile);
 			//解密
 			System.out.println("......Start...解密...");
-//			try {
-//				//进行加密，参数1：源数据库文件名 参数2：加密后数据库文件吗 参数3：加密密码
-//				String gdbmm = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbSqlitePassword);
-//				encryptor.decryptDataBase(sqliteFile ,localUnzipDir+"/gdbdata_une.sqlite", gdbmm);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
+			try {
+				//进行加密，参数1：源数据库文件名 参数2：加密后数据库文件吗 参数3：加密密码
+				String gdbmm = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbSqlitePassword);
+				encryptor.decryptDataBase(sqliteFile ,localUnzipDir+"/gdbdata_une.sqlite", gdbmm);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			System.out.println("....解密成功..End......");
 			//删除原有sqlite 数据库
-//			File sqliteOld = new File(sqliteFile);
-//			if(sqliteOld.exists() && sqliteOld.isFile()){
-//				sqliteOld.delete();
-//				System.out.println(" 删除未加密sqlite 数据库成功!");
-//			}
+			File sqliteOld = new File(sqliteFile);
+			if(sqliteOld.exists() && sqliteOld.isFile()){
+				sqliteOld.delete();
+				System.out.println(" 删除未加密sqlite 数据库成功!");
+			}
 			// load the sqlite-JDBC driver using the current class loader
 			Class.forName("org.sqlite.JDBC");
 	
@@ -86,12 +86,12 @@ public class GdbDataExporterForAdd {
 			stmt.setQueryTimeout(30); // set timeout to 30 sec.
 	
 			// loading SpatiaLite
-//			stmt.execute("SELECT load_extension('/usr/local/lib/mod_spatialite.so')");
+			stmt.execute("SELECT load_extension('/usr/local/lib/mod_spatialite.so')");
 	
 			// enabling Spatial Metadata
 			// using v.2.4.0 this automatically initializes SPATIAL_REF_SYS and
 			// GEOMETRY_COLUMNS
-//			stmt.execute("SELECT InitSpatialMetadata()");
+			stmt.execute("SELECT InitSpatialMetadata()");
 	
 			sqliteConn.setAutoCommit(false);
 	

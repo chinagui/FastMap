@@ -2475,7 +2475,7 @@ public class DataEditService {
 			sbTel.append(" FROM IX_POI I, IX_POI_CONTACT C");
 			sbTel.append(" WHERE I.POI_NUM =:1");
 			sbTel.append(" AND I.PID = C.POI_PID");
-			sbTel.append(" AND C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8)");
+			sbTel.append(" AND C.CONTACT_TYPE IN (1,2,3,4)");
 			sbTel.append(" AND C.U_RECORD <> 2");
 			
 			pstmt = conn.prepareStatement(sbTel.toString());
@@ -2488,21 +2488,25 @@ public class DataEditService {
 			String telSpecial="";
 			String splitChar=";";
 			while(resultSet.next()) {
-				if (resultSet.getInt("CONTACT_DEPART")==0&&resultSet.getInt("CONTACT_TYPE")!=3){
-					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
-					else{telOther+=splitChar+resultSet.getString("CONTACT");}
-				}
+				boolean flag1 = false,flag2 = false,flag3 = false;
 				if (resultSet.getInt("CONTACT_DEPART")==16){
 					if ("".equals(telService)){telService= resultSet.getString("CONTACT");}
 					else{telService+=splitChar+resultSet.getString("CONTACT");}
+					flag1 = true;
 				}
 				if (resultSet.getInt("CONTACT_DEPART")==8){
 					if ("".equals(telSale)){telSale= resultSet.getString("CONTACT");}
 					else{telSale+=splitChar+resultSet.getString("CONTACT");}
+					flag2 = true;
 				}
-				if (resultSet.getInt("CONTACT_TYPE")==3 && resultSet.getInt("CONTACT_DEPART")==0){
+				if (resultSet.getInt("CONTACT_TYPE")==3){
 					if ("".equals(telSpecial)){telSpecial= resultSet.getString("CONTACT");}
 					else{telSpecial+=splitChar+resultSet.getString("CONTACT");}
+					flag3 = true;
+				}
+				if((!flag1) && (!flag2) && (!flag3)){
+					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
+					else{telOther+=splitChar+resultSet.getString("CONTACT");}
 				}
 			}
 			jsonObj.put("telOther", telOther);

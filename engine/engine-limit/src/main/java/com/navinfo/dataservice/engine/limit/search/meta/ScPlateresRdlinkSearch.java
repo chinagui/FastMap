@@ -198,7 +198,7 @@ public class ScPlateresRdlinkSearch implements ISearch {
             while (resultSet.next()) {
                 SearchSnapshot snapshot = new SearchSnapshot();
 
-                snapshot.setT(1004);
+                snapshot.setT(1006);
 
                 STRUCT struct = (STRUCT) resultSet.getObject("GEOMETRY_RDLINK");
 
@@ -217,8 +217,6 @@ public class ScPlateresRdlinkSearch implements ISearch {
                 m.put("b", resultSet.getInt("LIMIT_DIR"));
 
                 m.put("c", resultSet.getString("GEOMETRY_ID"));
-
-                m.put("e", geom.getGeometryType());
 
                 snapshot.setM(m);
 

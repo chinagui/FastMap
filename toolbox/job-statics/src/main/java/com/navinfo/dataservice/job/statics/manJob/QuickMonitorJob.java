@@ -20,6 +20,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
@@ -802,7 +803,8 @@ public class QuickMonitorJob extends AbstractStatJob {
 				}
 				if(!StringUtils.isEmpty(strStart)&&!StringUtils.isEmpty(strEnd)){
 					count++;
-					total += StatUtil.daysOfTwo(strStart, strEnd);
+					total += DateUtils.diffDay(DateUtils.stringToTimestamp(strStart, DateUtils.DATE_YMD),
+							DateUtils.stringToTimestamp(strEnd, DateUtils.DATE_YMD));
 				}
 			}
 

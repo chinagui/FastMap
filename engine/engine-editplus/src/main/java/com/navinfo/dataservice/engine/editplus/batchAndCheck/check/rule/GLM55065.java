@@ -74,7 +74,7 @@ public class GLM55065 extends BasicCheckRule {
             pidString = " PID IN (" + pidStr + ")";
         }
 
-        String sql = "SELECT T1.PID, T1.GEOMETRY, T1.MESH_ID, T2.KIND" + 
+        String sql = "SELECT T1.PID, T1.GEOMETRY, T1.MESH_ID" + 
                 "  FROM IX_POINTADDRESS T1, LU_FACE T2" + 
                 " WHERE T1." + pidString +
                 "   AND T1.U_RECORD <> 2" + 
@@ -97,15 +97,11 @@ public class GLM55065 extends BasicCheckRule {
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 int pid = resultSet.getInt("PID");
-                int kind = resultSet.getInt("KIND");
                 int meshId = resultSet.getInt("MESH_ID");
                 STRUCT struct = (STRUCT)resultSet.getObject("GEOMETRY");
                 Geometry geo = GeoTranslator.struct2Jts(struct);
 
-                String targets = null;
-                if (kind == 6) {
-                	targets = String.format("[IX_POINTADDRESS,%s]", pid);
-                }
+                String targets = String.format("[IX_POINTADDRESS,%s]", pid);
 
                 if (StringUtils.isNotEmpty(targets) && !validate.contains(targets)) {
 					setCheckResult(geo, targets, meshId);

@@ -1,6 +1,8 @@
 
 package com.navinfo.dataservice.engine.limit.search.meta;
 
+import com.alibaba.druid.util.StringUtils;
+import com.ctc.wstx.util.StringUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
@@ -11,6 +13,8 @@ import com.navinfo.dataservice.engine.limit.glm.model.ReflectionAttrUtils;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresRdLink;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -235,5 +239,86 @@ public class ScPlateresRdlinkSearch implements ISearch {
     public String loadMaxKeyId(String groupId) throws Exception {
         return null;
     }
+    
+    public List<ScPlateresRdLink> loadByIds(JSONArray linkpids) throws Exception{
 
+    	List<ScPlateresRdLink> rdlinks = new ArrayList<>();
+
+        String sqlstr = "SELECT * FROM SC_PLATERES_RDLINK WHERE LINK_PID IN ";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {            
+            String in = linkpids.toString().replace("[", "(").replace("]", ")");
+            
+            sqlstr += in;
+            
+            pstmt = this.conn.prepareStatement(sqlstr);
+
+            resultSet = pstmt.executeQuery();
+
+            while(resultSet.next()) {
+            	ScPlateresRdLink rdlink = new ScPlateresRdLink();
+            	
+                ReflectionAttrUtils.executeResultSet(rdlink, resultSet);
+                
+                rdlinks.add(rdlink);
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return rdlinks;
+    }
+    
+    public List<ScPlateresRdLink> loadByGeometryIds(JSONArray geometryIds) throws Exception {
+
+        List<ScPlateresRdLink> links = new ArrayList<>();
+
+        String sqlstr = "SELECT * FROM SC_PLATERES_RDLINK WHERE GEOMETRY_ID IN ";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+			String in = "";
+
+			for (int i = 0; i < geometryIds.size(); i++) {
+				in = "'" + geometryIds.getString(i) + "'";
+				if (i != geometryIds.size() - 1) {
+					in += ",";
+				}
+			}
+			
+			sqlstr += "(" + in + ")";
+
+			pstmt = this.conn.prepareStatement(sqlstr);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+                ScPlateresRdLink link =new ScPlateresRdLink();
+
+                ReflectionAttrUtils.executeResultSet(link, resultSet);
+
+                links.add(link);
+            }
+        } catch (Exception e) {
+
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return links;
+    }
 }

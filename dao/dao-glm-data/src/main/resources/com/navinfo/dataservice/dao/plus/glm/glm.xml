@@ -151,6 +151,15 @@
 			class="com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressNameTone">
 			<objRef col="NAME_ID" refTable="IX_POINTADDRESS_NAME" refCol="NAME_ID" isRefMain="false"/>
 		</table>
+		<table name="IX_POINTADDRESS_PARENT" pk="GROUP_ID"
+			class="com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressParent">
+			<objRef col="PARENT_PA_PID" refTable="IX_POINTADDRESS" refCol="PID" isRefMain="true"/>
+		</table>
+		<table name="IX_POINTADDRESS_CHILDREN" pk=""
+			class="com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressChildren">
+			<objRef col="GROUP_ID" refTable="IX_POINTADDRESS_PARENT" refCol="GROUP_ID" isRefMain="false"/>
+			<geoRef col="CHILD_PA_PID" refTable="IX_POINTADDRESS" refCol="PID" isRefMain="true"/>
+		</table>
 	</object>
 	
 	<ignoreColumns>U_RECORD,U_FIELDS,U_DATE</ignoreColumns>

@@ -40,6 +40,16 @@ public class PoiRecommender {
 	Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
 
+	private final static Map weightProperty = new HashMap() {
+		{
+			put("name", 0.35);
+			put("addr", 0.25);
+			put("tel", 0.3);
+			put("postcode", 0.03);
+			put("geo", 0.07);
+		}
+	};
+
 	public PoiRecommender(Connection conn) {
 		super();
 		this.conn = conn;
@@ -294,16 +304,16 @@ public class PoiRecommender {
 
 		sim1 = 1 - (1 - r1) * (1 - r2) * (1 - 0.9 * r3 - 0.1 * r4) * (1 - r5);
 		if (r1 != 0)
-			q += 0.2;
+			q += (Double)weightProperty.get("geo");
 		if (r2 != 0)
-			q += 0.3;
+			q += (Double)weightProperty.get("name");
 		if (r3 != 0)
-			q += 0.27;
+			q += (Double)weightProperty.get("addr");
 		if (r4 != 0)
-			q += 0.03;
+			q += (Double)weightProperty.get("postcode");
 		if (flag)
-			q += 0.2;
-		sim2 = (0.2 * r1 + 0.3 * r2 + 0.27 * r3 + 0.03 * r4 + 0.2 * r5);
+			q += (Double)weightProperty.get("tel");
+		sim2 = ((Double)weightProperty.get("geo")* r1 + (Double)weightProperty.get("name") * r2 + (Double)weightProperty.get("addr") * r3 + (Double)weightProperty.get("postcode") * r4 + (Double)weightProperty.get("tel") * r5);
 		if (q != 0 && q > 0.3)
 			sim2 /= q;
 		return (sim1 + sim2) / 2;
@@ -350,7 +360,7 @@ public class PoiRecommender {
 			sb.append("         LISTAGG(C.CONTACT, '|') WITHIN GROUP(ORDER BY C.POI_PID) AS TEL");
 			sb.append("    FROM IX_POI_CONTACT C,A ");
 			sb.append("   WHERE  C.POI_PID = A.PID ");
-			sb.append("     AND (C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8))");
+			sb.append("     AND C.CONTACT_TYPE IN (1,2,3,4) ");
 			sb.append("     AND C.U_RECORD <> 2");
 			sb.append("   GROUP BY C.POI_PID)");
 			sb.append(" SELECT POI_NUM,");
@@ -408,8 +418,7 @@ public class PoiRecommender {
 				JSONObject resultJson = metadataApi.getProvinceAndCityByAdminCode(adminCodeStr);
 				if(resultJson!=null){
 					fastPoi.setProvnm(resultJson.getString("province"));
-				}else
-				{
+				} else {
 					fastPoi.setProvnm(null);
 				}
 				

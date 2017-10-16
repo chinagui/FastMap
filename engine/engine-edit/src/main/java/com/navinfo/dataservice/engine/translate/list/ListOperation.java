@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.engine.translate.list;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.dao.tranlsate.selector.TranslateSelector;
+import com.navinfo.dataservice.dao.tranlsate.selector.TranslateOperator;
 import com.navinfo.navicommons.database.Page;
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
@@ -19,11 +19,11 @@ import java.sql.Connection;
 public class ListOperation {
 
     public Page loadPage(JSONObject params) throws Exception{
-        Page page = null;
+        Page page;
         Connection conn = null;
         try {
             conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-            TranslateSelector selector = new TranslateSelector(conn);
+            TranslateOperator selector = new TranslateOperator(conn);
             page = selector.list(params);
         } catch (Exception e) {
             throw e;

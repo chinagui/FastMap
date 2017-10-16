@@ -18,9 +18,11 @@ import com.navinfo.dataservice.dao.glm.selector.SearchAllObject;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
+import com.navinfo.dataservice.dao.tranlsate.entity.TranslateLog;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.release.Release;
+import com.navinfo.dataservice.engine.translate.download.DownloadOperation;
 import com.navinfo.dataservice.engine.translate.list.ListOperation;
 import com.navinfo.dataservice.engine.translate.upload.UploadOperation;
 import com.navinfo.navicommons.database.Page;
@@ -784,8 +786,8 @@ public class EditController extends BaseController {
     public ModelAndView translateUpload(HttpServletRequest request) {
         try {
             UploadOperation operation = new UploadOperation();
-            File file = operation.upload(request);
-            return new ModelAndView("jsonView", success(file.getName()));
+            operation.upload(request);
+            return new ModelAndView("jsonView", success());
         } catch(Exception e) {
             logger.error(String.format("上传失败，原因：%s", e.getMessage()), e);
             return new ModelAndView("jsonView", exception(e));
@@ -794,15 +796,15 @@ public class EditController extends BaseController {
 
     @RequestMapping("/translate/download")
     public void translateDownload(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-        long userId = tokenObj.getUserId();
-
+        //AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+        //long userId = tokenObj.getUserId();
         JSONObject parameters = JSONObject.fromObject(request.getParameter("parameters"));
-        String fileId = parameters.getString("id");
 
-        File file = new File(fileId);
-        IOUtils.copy(new FileInputStream(file), response.getOutputStream());
-        response.setHeader("Content-Disposition", String.format("attachment; filename=%s", file.getName()));
+        DownloadOperation operation = new DownloadOperation();
+        TranslateLog log = operation.download(parameters);
+
+        IOUtils.copy(new FileInputStream(log.getDownloadUrl()), response.getOutputStream());
+        response.setHeader("Content-Disposition", String.format("attachment; filename=%s", log.getFileName()));
         response.flushBuffer();
     }
 }

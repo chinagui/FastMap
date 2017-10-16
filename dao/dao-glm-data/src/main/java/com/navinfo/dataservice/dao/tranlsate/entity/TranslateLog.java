@@ -4,7 +4,7 @@ import java.util.Date;
 
 /**
  * @Title: TranslateLog
- * @Package: com.navinfo.dataservice.dao.tranlsate
+ * @Package: com.navinfo.dataservice.dao.tranlsate.entity
  * @Description: ${TODO}
  * @Author: Crayeres
  * @Date: 10/12/2017
@@ -12,19 +12,27 @@ import java.util.Date;
  */
 public class TranslateLog {
 
+    public static final String TABLE_NAME = "TRANSLATE_LOG";
+
     private String id;
 
     private String fileName;
 
-    private Date startDate;
-
-    private Date endDate;
-
     private Long userId;
 
-    private String downloadUrl;
+    private String downloadPath;
 
-    private Integer uRecord;
+    private String downloadFileName;
+
+    private Integer jobId;
+
+    protected String downloadUrl;
+
+    protected Date startDate;
+
+    protected Date endDate;
+
+    protected Integer state;
 
     /**
      * Getter method for property <tt>id</tt>.
@@ -117,6 +125,78 @@ public class TranslateLog {
     }
 
     /**
+     * Getter method for property <tt>downloadPath</tt>.
+     *
+     * @return property value of downloadPath
+     */
+    public String getDownloadPath() {
+        return downloadPath;
+    }
+
+    /**
+     * Setter method for property <tt>downloadPath</tt>.
+     *
+     * @param downloadPath value to be assigned to property downloadPath
+     */
+    public void setDownloadPath(String downloadPath) {
+        this.downloadPath = downloadPath;
+    }
+
+    /**
+     * Getter method for property <tt>downloadFileName</tt>.
+     *
+     * @return property value of downloadFileName
+     */
+    public String getDownloadFileName() {
+        return downloadFileName;
+    }
+
+    /**
+     * Setter method for property <tt>downloadFileName</tt>.
+     *
+     * @param downloadFileName value to be assigned to property downloadFileName
+     */
+    public void setDownloadFileName(String downloadFileName) {
+        this.downloadFileName = downloadFileName;
+    }
+
+    /**
+     * Getter method for property <tt>jobId</tt>.
+     *
+     * @return property value of jobId
+     */
+    public Integer getJobId() {
+        return jobId;
+    }
+
+    /**
+     * Setter method for property <tt>jobId</tt>.
+     *
+     * @param jobId value to be assigned to property jobId
+     */
+    public void setJobId(Integer jobId) {
+        this.jobId = jobId;
+    }
+
+    /**
+     * Getter method for property <tt>state</tt>.
+     *
+     * @return property value of state
+     */
+    public Integer getState() {
+        return state;
+    }
+
+    /**
+     * Setter method for property <tt>state</tt>.
+     *
+     * @param state value to be assigned to property state
+     */
+    public void setState(Integer state) {
+        this.state = state;
+    }
+
+    /**
      * Getter method for property <tt>downloadUrl</tt>.
      *
      * @return property value of downloadUrl
@@ -132,23 +212,5 @@ public class TranslateLog {
      */
     public void setDownloadUrl(String downloadUrl) {
         this.downloadUrl = downloadUrl;
-    }
-
-    /**
-     * Getter method for property <tt>uRecord</tt>.
-     *
-     * @return property value of uRecord
-     */
-    public Integer getuRecord() {
-        return uRecord;
-    }
-
-    /**
-     * Setter method for property <tt>uRecord</tt>.
-     *
-     * @param uRecord value to be assigned to property uRecord
-     */
-    public void setuRecord(Integer uRecord) {
-        this.uRecord = uRecord;
     }
 }

@@ -1,22 +1,31 @@
 package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.create;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.engine.limit.Utils.PidApply;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.glm.iface.Result;
+import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresFace;
+import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresLink;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresGeometry;
+import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresFaceSearch;
+import com.navinfo.dataservice.engine.limit.search.limit.ScPlateresLinkSearch;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
-import net.sf.json.JSONObject;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.List;
 
 public class Operation implements IOperation {
+
+    private static Logger logger = Logger.getLogger(Operation.class);
     private Command command;
     private Connection conn;
 
-    public Operation(Command command,	 Connection conn) {
+    public Operation(Command command, Connection conn) {
         this.command = command;
         this.conn = conn;
     }
@@ -24,29 +33,101 @@ public class Operation implements IOperation {
     @Override
     public String run(Result result) throws Exception {
 
-        for (int i = 0; i < this.command.getGeometrys().size(); i++) {
+        createByTmpGeo(result);
 
-            JSONObject obj = this.command.getGeometrys().getJSONObject(i);
+        return null;
+    }
+
+    private void createByTmpGeo(Result result) throws Exception {
+
+        String groupId = this.command.getGroupId();
+
+        ScPlateresFaceSearch faceSearch = new ScPlateresFaceSearch(this.conn);
+
+        List<ScPlateresFace> faces = faceSearch.loadByGroupId(this.command.getGroupId());
+
+        for (int i = 0; i < faces.size(); i++) {
 
             ScPlateresGeometry geometry = new ScPlateresGeometry();
 
-            String geomId = PidApply.getInstance(this.conn).pidForInsertGeometry(obj.getString("groupId"),
+            String geomId = PidApply.getInstance(this.conn).pidForInsertGeometry(groupId,
                     LimitObjType.SCPLATERESGEOMETRY, i);
 
             geometry.setGeometryId(geomId);
 
-            geometry.setGroupId(obj.getString("groupId"));
+            geometry.setGroupId(groupId);
 
-            Geometry geom = GeoTranslator.geojson2Jts(obj.getJSONObject("geometry"), 1, 5);
+            Geometry geom = faces.get(i).getGeometry();
+
+            if (geom.getGeometryType().equals("LineString")) {
+                throw new Exception("临时面图层包含线几何：" + geomId);
+            }
 
             geometry.setGeometry(geom);
 
-            if (obj.containsKey("boundaryLink")) {
-                geometry.setBoundaryLink(obj.getString("boundaryLink"));
-            }
+            geometry.setBoundaryLink(faces.get(i).getBoundaryLink());
 
             result.insertObject(geometry, ObjStatus.INSERT, geometry.getGeometryId());
         }
-        return null;
+
+        ScPlateresLinkSearch linkSearch = new ScPlateresLinkSearch(this.conn);
+
+        List<ScPlateresLink> links = linkSearch.loadByGroupId(this.command.getGroupId());
+
+        for (int i = 0; i < links.size(); i++) {
+
+            ScPlateresGeometry geometry = new ScPlateresGeometry();
+
+            String geomId = PidApply.getInstance(this.conn).pidForInsertGeometry(groupId,
+                    LimitObjType.SCPLATERESGEOMETRY, i + faces.size());
+
+            geometry.setGeometryId(geomId);
+
+            geometry.setGroupId(groupId);
+
+            Geometry geom = faces.get(i).getGeometry();
+
+            geometry.setGeometry(geom);
+
+            geometry.setBoundaryLink(faces.get(i).getBoundaryLink());
+
+            result.insertObject(geometry, ObjStatus.INSERT, geometry.getGeometryId());
+        }
+
+        delTempGeoObj(groupId);
     }
+
+    /**
+     * 删除Group对应的临时link、face几何
+     */
+    private void delTempGeoObj(String groupId) {
+        Connection conn = null;
+        try {
+            conn = DBConnector.getInstance().getLimitConnection();
+            QueryRunner runner = new QueryRunner();
+
+            //删除Group对应的临时link几何
+            String strSql = "DELETE SC_PLATERES_LINK WHERE GROUP_ID='" + groupId + "'";
+
+            runner.execute(conn, strSql);
+
+            //删除Group对应的临时link几何
+            strSql = "DELETE SC_PLATERES_FACE WHERE GROUP_ID='" + groupId + "'";
+
+            runner.execute(conn, strSql);
+
+            conn.commit();
+
+            logger.info(" 删除Group=" + groupId + "对应的临时link、face几何成功");
+
+        } catch (Exception e) {
+
+            logger.error(" 删除Group=" + groupId + "对应的临时link、face几何失败");
+
+        } finally {
+
+            DbUtils.closeQuietly(conn);
+        }
+    }
+
 }

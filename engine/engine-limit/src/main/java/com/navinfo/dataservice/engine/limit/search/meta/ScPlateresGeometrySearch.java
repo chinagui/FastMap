@@ -165,9 +165,8 @@ public class ScPlateresGeometrySearch implements ISearch {
             resultSet = pstmt.executeQuery();
 
             while (resultSet.next()) {
-                SearchSnapshot snapshot = new SearchSnapshot();
 
-                snapshot.setT(1003);
+                SearchSnapshot snapshot = new SearchSnapshot();
 
                 STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -187,9 +186,19 @@ public class ScPlateresGeometrySearch implements ISearch {
 
                 m.put("c", resultSet.getString("BOUNDARY_LINK"));
 
-                m.put("e", geom.getGeometryType());
+                String geometryType = geom.getGeometryType();
+
+                m.put("e", geometryType);
+
+                m.put("g", geojson.getJSONArray("coordinates"));
 
                 snapshot.setM(m);
+
+                if (geometryType.equals("LineString")) {
+                    snapshot.setT(1004);
+                } else if (geometryType.equals("Polygon")) {
+                    snapshot.setT(1005);
+                }
 
                 list.add(snapshot);
             }

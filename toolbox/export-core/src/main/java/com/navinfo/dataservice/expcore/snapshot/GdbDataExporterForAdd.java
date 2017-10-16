@@ -49,6 +49,7 @@ public class GdbDataExporterForAdd {
 			}
 			//查询最新的压缩文件
 			String localZipFile = getLastestInfo(dir,null);
+			System.out.println("最新文件所在目录:"+localZipFile);
 			//解压
 			String localUnzipDir = dir+File.separator+"/tmp";
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);

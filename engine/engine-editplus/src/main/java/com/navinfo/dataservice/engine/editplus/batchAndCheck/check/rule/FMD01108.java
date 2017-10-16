@@ -31,7 +31,7 @@ public class FMD01108 extends BasicCheckRule {
 			return;
 		}
 		String subnumStr = address.getSubnum();
-		String buildingStr = address.getBuilding();
+//		String buildingStr = address.getBuilding();
 		String unitStr = address.getUnit();
 		String floorStr = address.getFloor();
 		String roomStr = address.getRoom();
@@ -41,11 +41,11 @@ public class FMD01108 extends BasicCheckRule {
 				errorStr+="子号、";
 			}
 		}
-		if(StringUtils.isNotBlank(buildingStr)){
-			if(judgeMacher(buildingStr)){
-				errorStr+="楼栋号、";
-			}
-		}
+//		if(StringUtils.isNotBlank(buildingStr)){
+//			if(judgeMacher(buildingStr)){
+//				errorStr+="楼栋号、";
+//			}
+//		}
 		if(StringUtils.isNotBlank(unitStr)){
 			if(judgeMacher(unitStr)){
 				errorStr+="楼门、";

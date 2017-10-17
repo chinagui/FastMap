@@ -74,7 +74,7 @@ public class PointaddressEditStatus {
 				fPidsClob.setString(1, StringUtils.join(freshVerPois,","));
 				StringBuilder sb = new StringBuilder();
 			
-				sb.append("UPDATE POI_EDIT_STATUS P \n");
+				sb.append("UPDATE POINTADDRESS_EDIT_STATUS P \n");
 				sb.append("SET P.FRESH_VERIFIED=1, \n");
 				sb.append("P.RAW_FIELDS=NULL, \n");
 				sb.append("P.STATUS=2 \n");

@@ -110,7 +110,7 @@ public class PointAddressReleaseJob extends AbstractJob{
 			log.info("清理检查结果");
 			DeepCoreControl deepControl = new DeepCoreControl();
 			List<Integer> pidIntList=new ArrayList<Integer>();
-			for(Long pidTmp:poiPids){
+			for(Long pidTmp:allPoiPids){
 				pidIntList.add(Integer.valueOf(pidTmp.toString()));
 			}
 			deepControl.cleanExByCkRule(myRequest.getDbId(), pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POINTADDRESS);

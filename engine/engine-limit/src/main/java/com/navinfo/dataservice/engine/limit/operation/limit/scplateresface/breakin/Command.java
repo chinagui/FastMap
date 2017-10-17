@@ -24,7 +24,7 @@ public class Command extends AbstractCommand{
 	private Point breakpoint;
 	
 	private String geometryId;
-	
+		
 	private List<ScPlateresFace> newFaces = new ArrayList<>();
 	
 	public Command(JSONObject json,String requester){
@@ -59,7 +59,7 @@ public class Command extends AbstractCommand{
 	public String getGeometryId(){
 		return this.geometryId;
 	}
-	
+		
 	@Override
 	public OperType getOperType() {
 		// TODO Auto-generated method stub

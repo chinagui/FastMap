@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.breakin;
 
+import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,25 +58,25 @@ public class Operation implements IOperation {
 	}
 
 	private void createNewLinks(Result result, List<JSONArray> arrays) throws Exception {
-		for (JSONArray array : arrays) {
+		for (int i = 0; i<arrays.size(); i++) {
 			// 组装几何
 			JSONObject geojson = new JSONObject();
 
 			geojson.put("type", "LineString");
 
-			geojson.put("coordinates", array);
+			geojson.put("coordinates", arrays.get(i));
 
 			ScPlateresFace newface = new ScPlateresFace();
 
 			// 申請pid
 			newface.setGeometryId(PidApply.getInstance(conn)
-					.pidForInsertGeometry(this.command.getFace().getGeometryId(), LimitObjType.SCPLATERESRDLINK));
+					.pidForInsertGeometry(this.command.getFace().getGroupId(), LimitObjType.SCPLATERESFACE, i));
 
 			newface.setBoundaryLink(this.command.getFace().getBoundaryLink());
 
 			newface.setGroupId(this.command.getFace().getGroupId());
 
-			newface.setGeometry(GeoTranslator.geojson2Jts(geojson));
+			newface.setGeometry(GeoTranslator.geojson2Jts(geojson,0.00001,5));
 
 			this.command.getNewFaces().add(newface);
 

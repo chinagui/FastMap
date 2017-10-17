@@ -818,7 +818,7 @@ public class SubtaskService {
 			sb.append("        ST.QUALITY_METHOD,                       ");
 			sb.append("        ST.STATUS,                               ");
 			sb.append("        ST.STAGE,                                ");
-			sb.append("        ST.DESCP,                                ");
+			sb.append("        nvl(ST.DESCP,'') descp,                                ");
 			sb.append("        ST.PLAN_START_DATE,                      ");
 			sb.append("        ST.PLAN_END_DATE,                        ");
 			sb.append("        ST.TYPE,                                 ");
@@ -857,7 +857,7 @@ public class SubtaskService {
 						subtask.put("type",rs.getInt("TYPE"));
 						subtask.put("planStartDate",df.format(rs.getTimestamp("PLAN_START_DATE")));
 						subtask.put("planEndDate",df.format(rs.getTimestamp("PLAN_END_DATE")));
-						subtask.put("descp",rs.getString("DESCP"));
+						subtask.put("descp",(StringUtils.isEmpty(rs.getString("DESCP"))?"":rs.getString("DESCP")));
 						subtask.put("status",rs.getInt("STATUS"));
 						subtask.put("stage",rs.getInt("STAGE"));
 						int referId=rs.getInt("REFER_ID");

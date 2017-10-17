@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,6 +22,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
@@ -264,6 +266,8 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("commonPercent", getCommonPercent());
 			quickMonitorMap.put("poiPercent", getPoiPercent());
 			
+			quickMonitorMap.put("denyReasonNum", getDenyReasonNum());
+			
 			BasicDBObject queryProgram19 = new BasicDBObject();
 			queryProgram19.put("timestamp", timestamp);
 			queryProgram19.put("type", 4);	
@@ -455,7 +459,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 		int fastOtherNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and (i.info_type_name like '%道路|高速公路%' or i.info_type_name like '%道路|城市高速公路%') and ( i.method <> '预采集' and i.method <> '矢量制作') ";
+			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and (i.info_type_name like '%道路|高速公路%' or i.info_type_name like '%道路|城市高速公路%') and ((i.method <> '矢量制作' and i.method <> '预采集') or i.method is null) ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
@@ -552,7 +556,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 		int commonOtherNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and i.info_type_name like '%道路|重要一般道%' and ( i.method <> '矢量制作' and  i.method <> '预采集') ";
+			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and i.info_type_name like '%道路|重要一般道%' and ((i.method <> '矢量制作' and i.method <> '预采集') or i.method is null) ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
@@ -645,7 +649,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 		int poiOtherNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and i.info_type_name like '%设施%' and (i.method <> '矢量制作' and i.method <> '预采集') ";
+			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and i.info_type_name like '%设施%' and ((i.method <> '矢量制作' and i.method <> '预采集') or i.method is null) ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
@@ -931,6 +935,44 @@ public class QuickMonitorJob extends AbstractStatJob {
 			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 		return poiPercent;
+	}
+	//{“原因1”：2，“原因2”：3} //QP-MO-47	未采纳原因	某一项原因数量百分比=未采纳原因/所有未采纳原因的总和 * 100%. Oracle库program+infor
+	private JSONObject getDenyReasonNum() {
+		Connection conn = null;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		int total = 0;//采纳
+		JSONObject denyReasonJson=new JSONObject();
+		JSONObject returnJson=new JSONObject();
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			String sql  = "SELECT DENY_REASON, COUNT(1) c"
+					+ "  FROM INFOR I"
+					+ " WHERE IS_ADOPTED = 1"
+					+ " GROUP BY DENY_REASON";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()){
+				String denyReason=rs.getString("DENY_REASON");
+				int number=rs.getInt("C");
+				denyReasonJson.put(denyReason, number);
+				total=total+number;
+			}
+			Iterator iterable=denyReasonJson.keys();
+			while (iterable.hasNext()) {
+				String denyReason=String.valueOf(iterable.next());
+				int number=(int) denyReasonJson.get(denyReason);
+				returnJson.put(denyReason, DoubleUtil.keepSpecDecimal(Math.floor(number*100/total),2));
+			}
+			
+		} catch (Exception e) {
+			log.warn("未采纳原因统计报错", e);
+		}finally {
+			DbUtils.closeQuietly(conn, pstmt, rs);
+		}
+		return returnJson;
 	}
 	
 	private Map<String, Map<String, Integer>> getCityDetailMapInMongo(MongoDao md, String collName, BasicDBObject filter) throws Exception {

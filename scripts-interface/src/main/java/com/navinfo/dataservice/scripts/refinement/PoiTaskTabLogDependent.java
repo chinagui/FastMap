@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +20,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
@@ -45,9 +43,6 @@ import com.navinfo.navicommons.exception.ServiceException;
 
 public class PoiTaskTabLogDependent {
 
-//	static String deletedSql = "INSERT INTO POI_TASK_TAB (PID,DELFLAG) VALUES (?,?)";
-//	static String updatedSql = "INSERT INTO POI_TASK_TAB (PID,MOVEFLAG,LOG) VALUES (?,?,?)";
-//	static String insertedSql = "INSERT INTO POI_TASK_TAB (ADDFLAG) VALUES (?) where PID = ? ";
 	static String deletedSql = "UPDATE  POI_TASK_TAB SET DELFLAG = 'T' where PID in (select column_value from table(clob_to_table(?)))";
 	static String updatedSql = "UPDATE  POI_TASK_TAB SET MOVEFLAG= ? ,LOG = ? where PID = ? ";
 	static String insertedSql = "UPDATE  POI_TASK_TAB SET ADDFLAG = 'T' where PID in (select column_value from table(clob_to_table(?))) ";

@@ -17,7 +17,6 @@ import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
-import com.navinfo.dataservice.expcore.snapshot.GdbDataExporter;
 import com.navinfo.dataservice.expcore.snapshot.GdbDataExporterSp9;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.database.sql.PackageExec;
@@ -76,7 +75,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	@Test
+//	@Test
 	public void testgdbDonwnload() throws Exception{
 		JobScriptsInterface.initContext();
 
@@ -235,6 +234,8 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.out.println("Over.");
 		System.exit(0);
 	}
+	
+	
 	public static void main(String[] args) throws ParseException {
 		Set<String> grids = new HashSet<String>();
 		grids.add("48580601");
@@ -366,4 +367,22 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.out.println("Over.");
 		System.exit(0);
 	}
+	
+	@Test
+	public void testPoiToTab() throws Exception{
+		JobScriptsInterface.initContext();
+		//HUB_ThnklPMtnF  192.168.4.62
+		String json = "{'db_conf':{'db_ip':'192.168.4.62','db_port':'1521','service_name':'orcl','db_username':'HUB_ThnklPMtnF','db_password':'HUB_ThnklPMtnF'},'data':[{'taskId':109,'subTaskId':'546'},{'taskId':123,'subTaskId':'546'}]}";
+		JSONObject request1 = JSONObject.fromObject(json);
+//		JSONObject request = new JSONObject();
+//		request.put("sourceDbId", 382);
+//		request.put("targetDbId", 383);
+		System.out.println(request1.toString());
+		JSONObject response = InitDataPoi2Tab.execute(request1);
+		
+		System.out.println("response: "+response.toString());
+		System.out.println("Over.");
+		System.exit(0);
+	}
+
 }

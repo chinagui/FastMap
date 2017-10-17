@@ -204,33 +204,7 @@ public class TranslateLog {
      * @return property value of downloadUrl
      */
     public String getDownloadUrl() {
-        return downloadUrl;
+        return downloadPath + downloadFileName;
     }
 
-    /**
-     * Setter method for property <tt>downloadUrl</tt>.
-     *
-     * @param downloadUrl value to be assigned to property downloadUrl
-     */
-    public void setDownloadUrl(String downloadUrl) {
-        this.downloadUrl = downloadUrl;
-    }
-
-    /**
-     * Getter method for property <tt>fileSize</tt>.
-     *
-     * @return property value of fileSize
-     */
-    public Long getFileSize() {
-        return fileSize;
-    }
-
-    /**
-     * Setter method for property <tt>fileSize</tt>.
-     *
-     * @param fileSize value to be assigned to property fileSize
-     */
-    public void setFileSize(Long fileSize) {
-        this.fileSize = fileSize;
-    }
 }

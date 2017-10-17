@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.translate.download;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.dao.tranlsate.entity.TranslateLog;
 import com.navinfo.dataservice.dao.tranlsate.selector.TranslateOperator;
 import net.sf.json.JSONObject;
@@ -23,7 +24,7 @@ public class DownloadOperation {
     public TranslateLog download(JSONObject json) throws Exception{
         Connection conn = null;
         try {
-            conn = DBConnector.getInstance().getMkConnection();
+            conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
             TranslateOperator operator = new TranslateOperator(conn);
             TranslateLog log = operator.get(json);

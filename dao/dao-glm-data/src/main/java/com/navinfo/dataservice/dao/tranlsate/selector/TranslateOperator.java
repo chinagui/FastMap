@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.tranlsate.selector;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.tranlsate.entity.TranslateLog;
 import com.navinfo.navicommons.database.Page;
@@ -9,6 +10,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -26,6 +28,8 @@ import java.util.Map;
  * @Version: V1.0
  */
 public class TranslateOperator {
+
+    private static final Logger logger = LoggerRepos.getLogger(TranslateOperator.class);
 
     private Connection conn;
 
@@ -50,7 +54,8 @@ public class TranslateOperator {
                 while (rs.next()) {
                     log.setId(rs.getString("ID"));
                     log.setFileName(rs.getString("FILE_NAME"));
-                    log.setDownloadUrl(rs.getString("DOWNLOAD_PATH") + rs.getString("DOWNLOAD_FILE_NAME"));
+                    log.setDownloadPath(rs.getString("DOWNLOAD_PATH"));
+                    log.setDownloadFileName(rs.getString("DOWNLOAD_FILE_NAME"));
                 }
                 return log;
             }
@@ -66,34 +71,29 @@ public class TranslateOperator {
         final int pageSize = params.getInt("pageSize");
         final int pageNum = params.getInt("pageNum");
 
-        long pageStartNum = (pageNum - 1) * pageSize + 1;
-        long pageEndNum = pageNum * pageSize;
-
-        String sql = "SELECT *" + 
-                "  FROM (SELECT T.ID," + 
-                "               T.FILE_NAME," + 
-                "               T.FILE_SIZE," +
-                "               T.USER_ID," +
-                "               T.DOWNLOAD_PATH," +
-                "               T.DOWNLOAD_FILE_NAME," +
-                "               T.JOB_ID," +
-                "               J.CREATE_TIME," + 
-                "               J.END_TIME," + 
-                "               J.STATUS," + 
-                "               ROWNUM AS ROWNM" + 
-                "          FROM TRANSLATE_LOG T, JOB_INFO J" + 
-                "         WHERE T.USER_ID = ?" + 
-                "           AND T.JOB_ID = J.JOB_ID" + 
-                "           AND ROWNUM < ?)" + 
-                " WHERE ROWNM > ?";
+        String sql = "SELECT T.ID," +
+                "         T.FILE_NAME," +
+                "         T.FILE_SIZE," +
+                "         T.USER_ID," +
+                "         T.DOWNLOAD_PATH," +
+                "         T.DOWNLOAD_FILE_NAME," +
+                "         T.JOB_ID," +
+                "         J.CREATE_TIME," +
+                "         J.END_TIME," +
+                "         J.STATUS," +
+                "         ROWNUM AS ROWNM" +
+                "    FROM TRANSLATE_LOG T, JOB_INFO J" +
+                "   WHERE T.USER_ID = " + userId +
+                "     AND T.JOB_ID = J.JOB_ID";
 
         QueryRunner runner = new QueryRunner();
-        return runner.query(conn, sql, new Object[]{userId, pageEndNum, pageStartNum}, new TranslateHandler(pageNum, pageSize));
+        Page page = runner.query(pageNum, pageSize, conn, sql, new TranslateHandler(pageNum, pageSize));
+        logger.debug(String.format("page.size : %s", page.getTotalCount()));
+        return page;
     }
 
     public void save(JSONObject json) throws SQLException {
-        String sql = "INSERT INTO TRANSLATE_LOG " +
-                TranslateLog.TABLE_NAME +
+        String sql = "INSERT INTO " + TranslateLog.TABLE_NAME +
                 "(ID, FILE_NAME, FILE_SIZE, USER_ID, DOWNLOAD_PATH, DOWNLOAD_FILE_NAME, JOB_ID) VALUES(?,?,?,?,?,?,?)";
 
         List<Object> objects = new ArrayList<>();
@@ -106,7 +106,7 @@ public class TranslateOperator {
         objects.add(json.getInt("jobId"));
 
         QueryRunner runner = new QueryRunner();
-        runner.update(conn, sql, objects);
+        runner.update(conn, sql, objects.toArray());
     }
 
     private boolean checkParams(JSONObject params, String[] check) {
@@ -114,6 +114,7 @@ public class TranslateOperator {
             if (!params.containsKey(ck)) {
                 return false;
             }
+            logger.info(String.format("params:{%s,%s}", ck, params.getString(ck)));
         }
         return true;
     }
@@ -160,7 +161,7 @@ public class TranslateOperator {
             page.setResult(logs);
             page.setTotalCount(total);
 
-            return null;
+            return page;
         }
     }
 }

@@ -225,9 +225,9 @@ public class CreateCMSTaskPhase extends JobPhase {
     	}
     	//子任务不传poiMeshes和poiPlanLoad
     	Map<String, Object> poisData = queryMeshesByTasks(conn, tasks);
-    	if(poisData != null){
-        	taskPar.put("poiMeshes", poisData.get("poiMeshes"));
-        	taskPar.put("poiPlanLoad", poisData.get("poiPlanLoad").toString());
+    	if(poisData != null && poisData.size() > 0){
+        	taskPar.put("poiMeshes", poisData.containsKey("poiMeshes") && poisData.get("poiMeshes") != null ? poisData.get("poiMeshes") : "");
+        	taskPar.put("poiPlanLoad", poisData.containsKey("poiPlanLoad") && poisData.get("poiPlanLoad") != null ? poisData.get("poiPlanLoad") : "");
     	}
     	taskPar.put("taskBatch", taskBatch);
     	taskPar.put("uploadMethod", uploadMethod);

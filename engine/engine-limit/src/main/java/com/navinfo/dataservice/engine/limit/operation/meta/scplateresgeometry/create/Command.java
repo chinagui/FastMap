@@ -4,7 +4,6 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -12,17 +11,19 @@ public class Command extends AbstractCommand {
 
     private String requester;
 
-    private JSONArray geometrys;
+    private String groupId;
 
-    public JSONArray getGeometrys() {
-        return geometrys;
+    public String getGroupId() {
+        return groupId;
     }
 
     public Command(JSONObject json, String requester) {
 
         this.requester = requester;
 
-         geometrys = json.getJSONArray("data");
+        JSONObject data = json.getJSONObject("data");
+
+        this.groupId = data.getString("groupId");
     }
 
     @Override

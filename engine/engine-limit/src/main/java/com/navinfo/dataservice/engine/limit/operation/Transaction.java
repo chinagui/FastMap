@@ -207,6 +207,8 @@ public class Transaction {
                 switch (operType) {
                     case UPDATE:
                         return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.update.Command(json, requester);
+                    case DELETE:
+                    	return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.delete.Command(json, requester);
                 }
             case SCPLATERESGEOMETRY:
                 switch (operType) {
@@ -243,6 +245,9 @@ public class Transaction {
 						requester);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.delete.Command(json,
+						requester);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.breakin.Command(json,
 						requester);
 			}
         }
@@ -301,6 +306,8 @@ public class Transaction {
                 switch (operType) {
                     case UPDATE:
                         return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.update.Process(command);
+                    case DELETE:
+                    	return new com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.delete.Process(command);
                 }
             case SCPLATERESGEOMETRY:
                 switch (operType) {
@@ -337,6 +344,9 @@ public class Transaction {
             					command);
             		case DELETE:
             			return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.delete.Process(
+            					command);
+            		case BREAK:
+            			return new com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.breakin.Process(
             					command);
 			}    
         }

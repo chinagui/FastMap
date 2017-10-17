@@ -27,12 +27,11 @@ public class RdLinkSearch {
 	
 	public JSONObject searchDataByCondition(int type, JSONObject condition) throws Exception{
 		
-		if(!condition.containsKey("name")){
+		if(!condition.containsKey("names")){
 			throw new Exception("未输入道路名，无法查询道路信息");
 		}
 		
-		String name = condition.getString("name");
-		String[] names = name.split(",");
+		JSONArray names = condition.getJSONArray("names");
 		
 		StringBuilder sql = new StringBuilder();
 		
@@ -103,14 +102,14 @@ public class RdLinkSearch {
 		return result;
 	}
 	
-	private void componentSql(StringBuilder sql, String[] names) {
+	private void componentSql(StringBuilder sql, JSONArray names) {
 		sql.append("with tmp1 as ( select lang_code,name_groupid,name from rd_name where");
 
-		for (int i = 0; i < names.length; i++) {
+		for (int i = 0; i < names.size(); i++) {
 			if (i > 0) {
 				sql.append(" or");
 			}
-			sql.append(" name like '%" + names[i] + "%'");
+			sql.append(" name like '%" + names.getString(i) + "%'");
 		}
 
 		sql.append(" and u_record != 2),");
@@ -122,14 +121,14 @@ public class RdLinkSearch {
 				" select * from tmp2 for update nowait");
 	}
 	
-	private void componentSqlForAccurate(StringBuilder sql,String[] names){
+	private void componentSqlForAccurate(StringBuilder sql,JSONArray names){
 		sql.append("with tmp1 as ( select lang_code,name_groupid,name from rd_name where name in (");
 
-		for (int i = 0; i < names.length; i++) {
+		for (int i = 0; i < names.size(); i++) {
 			if (i > 0) {
 				sql.append(", ");
 			}
-			sql.append(" name like '" + names[i] + "'");
+			sql.append("'" + names.getString(i) + "'");
 		}
 
 		sql.append(") and u_record != 2),");

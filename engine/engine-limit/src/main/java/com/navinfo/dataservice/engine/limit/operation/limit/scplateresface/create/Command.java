@@ -10,6 +10,9 @@ import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Command extends AbstractCommand {
 
 	private String requester;
@@ -21,6 +24,8 @@ public class Command extends AbstractCommand {
 	private JSONArray links;
 
 	private int dbId;
+
+	private List<String> geometryIds = null;
 	
 	public Command(JSONObject json, String requester) {
 
@@ -39,6 +44,10 @@ public class Command extends AbstractCommand {
 		if (data.containsKey("geometry")) {
 			this.geo = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
 		}
+		if (data.containsKey("geometryIds")) {
+
+			geometryIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("geometryIds")));
+		}
 	}
 
 	public Geometry getGeo() {
@@ -55,6 +64,10 @@ public class Command extends AbstractCommand {
 	
 	public int getDbId(){
 		return this.dbId;
+	}
+
+	public List<String> getGeometryIds() {
+		return geometryIds;
 	}
 
 	@Override

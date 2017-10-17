@@ -6,8 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
+
+import net.sf.json.JSONObject;
 
 
 
@@ -151,5 +156,25 @@ public class IxSamePoiObj extends AbstractIxObj {
 
 	public static final String IX_SAMEPOI = "IX_SAMEPOI";
 	public static final String IX_SAMEPOI_PART = "IX_SAMEPOI_PART";
+	
+	public long isDelSamepoiPart() {
+		long poiPid = 0;
+		if (!getPreDelRowLogs().containsKey("IX_SAMEPOI_PART")) {
+			return poiPid;
+		}
+		List<LogDetail> list = getPreDelRowLogs().get("IX_SAMEPOI_PART");
+		for (LogDetail detail : list) {
+			if (StringUtils.isEmpty(detail.getOld())) {
+				continue;
+			}
+			JSONObject jo = JSONObject.fromObject(detail.getOld());
+			
+			if (jo.containsKey(IxSamepoiPart.POI_PID)){
+				poiPid = jo.getLong(IxSamepoiPart.POI_PID);
+				return poiPid;
+			}
+		}
+		return poiPid;
+	}
 
 }

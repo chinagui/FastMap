@@ -1,26 +1,15 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.utils.Constant;
-import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
-import org.junit.Test;
-
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author zhangyt
@@ -70,7 +59,7 @@ public class RdLinkTest extends InitApplication {
                 "408001028],\"data\":{\"longitude\":116.20895085842606,\"latitude\":39.80757077990377,\"nodePid\":0}}";
         TestUtil.run(requester);
     }
-
+/*
     @Test
     public void search() {
         String parameter = "{\"dbId\":13,\"gap\":10,\"types\":[\"RDNODE\"],\"x\":07588,\"y\":24870,\"z\":16}";
@@ -79,7 +68,7 @@ public class RdLinkTest extends InitApplication {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     @Test
     public void updownDepart() {
@@ -140,7 +129,7 @@ public class RdLinkTest extends InitApplication {
         TestUtil.run(parameter);
     }
 
-    @Test
+   /* @Test
     public void delete() throws Exception {
         Connection conn = DBConnector.getInstance().getConnectionById(13);
         ZoneFaceSelector selector = new ZoneFaceSelector(conn);
@@ -151,5 +140,5 @@ public class RdLinkTest extends InitApplication {
         Connection conn = DBConnector.getInstance().getConnectionById(13);
         ZoneFaceSelector selector = new ZoneFaceSelector(conn);
         selector.load(GeoTranslator.transform(((RdLink)new RdLinkSelector(conn).loadById(506000466, false)).getGeometry(), 0.00001,5));
-    }
+    }*/
 }

@@ -6,9 +6,11 @@ import java.util.Map;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddress;
+import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressFlag;
 import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressName;
 import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressNameTone;
+import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressParent;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class IxPointAddressObj extends AbstractIxObj {
@@ -160,9 +162,49 @@ public class IxPointAddressObj extends AbstractIxObj {
 		}
 		return ixPointaddressNameTone;
 	}
+	
+	
+	public List<IxPointaddressChildren> getIxPointaddressChildrens(){
+		return (List) subrows.get(IX_POINTADDRESS_CHILDREN);
+	}
+	
+	public IxPointaddressChildren createIxPointaddressChildren(long groupId) throws Exception {
+		IxPointaddressChildren ixPointaddressChildren = (IxPointaddressChildren) ObjFactory.getInstance()
+				.createRow(IX_POINTADDRESS_CHILDREN, this.objPid());
+		ixPointaddressChildren.setGroupId(groupId);
+		if(subrows.containsKey(IX_POINTADDRESS_CHILDREN)){
+			subrows.get(IX_POINTADDRESS_CHILDREN).add(ixPointaddressChildren);
+		}else{
+			List<BasicRow> ixPointaddressChildrenList = new ArrayList<BasicRow>();
+			ixPointaddressChildrenList.add(ixPointaddressChildren);
+			subrows.put(IX_POINTADDRESS_CHILDREN, ixPointaddressChildrenList);
+		}
+		return ixPointaddressChildren;
+	}
+	
+	
+	public List<IxPointaddressParent> getIxPointaddressParents(){
+		return (List) subrows.get(IX_POINTADDRESS_PARENT);
+	}
+	
+	public IxPointaddressParent createIxPointaddressParent() throws Exception {
+		IxPointaddressParent ixPointaddressParent = (IxPointaddressParent) ObjFactory.getInstance()
+				.createRow(IX_POINTADDRESS_PARENT, this.objPid());
+		if(subrows.containsKey(IX_POINTADDRESS_PARENT)){
+			subrows.get(IX_POINTADDRESS_PARENT).add(ixPointaddressParent);
+		}else{
+			List<BasicRow> ixPointaddressParentList = new ArrayList<BasicRow>();
+			ixPointaddressParentList.add(ixPointaddressParent);
+			subrows.put(IX_POINTADDRESS_PARENT, ixPointaddressParentList);
+		}
+		return ixPointaddressParent;
+	}
 
 	public static final String IX_POINTADDRESS = "IX_POINTADDRESS";
 	public static final String IX_POINTADDRESS_NAME = "IX_POINTADDRESS_NAME";
 	public static final String IX_POINTADDRESS_FLAG = "IX_POINTADDRESS_FLAG";
 	public static final String IX_POINTADDRESS_NAME_TONE = "IX_POINTADDRESS_NAME_TONE";
+	public static final String IX_POINTADDRESS_PARENT = "IX_POINTADDRESS_PARENT";
+	public static final String IX_POINTADDRESS_CHILDREN = "IX_POINTADDRESS_CHILDREN";
+	
 }

@@ -122,12 +122,12 @@ public class CodeGen {
 //	 	codeGen.genModel();
 //	    }
 	 public static void main(String[] args) throws Exception {
-		    Table table = new Table("jdbc:oracle:thin:@192.168.3.227:1521/orcl","metadata_pd_17sum","metadata_pd_17sum","SC_ROADNAME_ABB");
+		    Table table = new Table("jdbc:oracle:thin:@192.168.4.61:1521/orcl","fm_regiondb_trunk_d_1","fm_regiondb_trunk_d_1","ix_pointaddress_children");
 		    
-		    CodeGen codeGen = new CodeGen("com.navinfo.dataservice.engine.meta.model",table,"D:\\code\\dataservice20161027\\DataService\\engine\\engine-meta\\src\\main\\java");
+		    CodeGen codeGen = new CodeGen("com.navinfo.dataservice.dao.plus.model.ixpointaddress",table,"W:\\code\\DataService\\dao\\dao-glm-data\\src\\main\\java");
 		    //codeGen.genController();
 		 	//codeGen.genService();
-		 	//codeGen.genModel();
+		 	codeGen.genModel();
 		    }
 	
 }

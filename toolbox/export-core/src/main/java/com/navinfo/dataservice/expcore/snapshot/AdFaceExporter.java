@@ -10,7 +10,6 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 
-import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
 public class AdFaceExporter {

@@ -19,6 +19,7 @@ public class GdbLuFaceExporter {
 			Statement stmt, Connection conn, String operateDate, Set<Integer> meshes)
 			throws Exception {
 		// creating a LINESTRING table
+		stmt.execute("DROP TABLE IF EXISTS gdb_luFace");
 		stmt.execute("create table gdb_luFace(pid integer primary key)");
 		stmt.execute("select addgeometrycolumn('gdb_luFace','geometry',4326,'GEOMETRY','XY')");
 		stmt.execute("select createspatialindex('gdb_luFace','geometry')");

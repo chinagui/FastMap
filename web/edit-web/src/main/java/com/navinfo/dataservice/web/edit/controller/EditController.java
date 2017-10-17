@@ -26,12 +26,16 @@ import com.navinfo.dataservice.engine.translate.download.DownloadOperation;
 import com.navinfo.dataservice.engine.translate.list.ListOperation;
 import com.navinfo.dataservice.engine.translate.upload.UploadOperation;
 import com.navinfo.navicommons.database.Page;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -39,7 +43,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.*;
@@ -769,7 +773,7 @@ public class EditController extends BaseController {
         AccessToken tokenObj = (AccessToken) request.getAttribute("token");
         long userId = tokenObj.getUserId();
 
-        JSONObject parameters = JSONObject.fromObject(request.getParameter("parameters"));
+        JSONObject parameters = JSONObject.fromObject(request.getParameter("parameter"));
         parameters.put("userId", userId);
 
         ListOperation operation = new ListOperation();
@@ -795,16 +799,26 @@ public class EditController extends BaseController {
     }
 
     @RequestMapping("/translate/download")
-    public void translateDownload(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        //AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-        //long userId = tokenObj.getUserId();
-        JSONObject parameters = JSONObject.fromObject(request.getParameter("parameters"));
+    public ResponseEntity<byte[]> translateDownload(HttpServletRequest request, HttpServletResponse response) throws Exception{
+        AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+        long userId = tokenObj.getUserId();
+
+        JSONObject parameters = JSONObject.fromObject(request.getParameter("parameter"));
 
         DownloadOperation operation = new DownloadOperation();
         TranslateLog log = operation.download(parameters);
 
-        IOUtils.copy(new FileInputStream(log.getDownloadUrl()), response.getOutputStream());
-        response.setHeader("Content-Disposition", String.format("attachment; filename=%s", log.getFileName()));
-        response.flushBuffer();
+        if (!log.getUserId().equals(userId)) {
+            throw new ServiceException("不可下载非本人上传文件!");
+        }
+
+        File file = new File(log.getDownloadUrl());
+        String downloadFielName = new String(file.getName().getBytes("UTF-8"),"iso-8859-1");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", downloadFielName);
+        //IOUtils.copy(new FileInputStream(log.getDownloadUrl()), response.getOutputStream());
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        return new ResponseEntity<>(FileUtils.readFileToByteArray(file), headers, HttpStatus.OK);
     }
 }

@@ -56,6 +56,7 @@ public class TranslateOperator {
                     log.setFileName(rs.getString("FILE_NAME"));
                     log.setDownloadPath(rs.getString("DOWNLOAD_PATH"));
                     log.setDownloadFileName(rs.getString("DOWNLOAD_FILE_NAME"));
+                    log.setUserId(rs.getLong("USER_ID"));
                 }
                 return log;
             }

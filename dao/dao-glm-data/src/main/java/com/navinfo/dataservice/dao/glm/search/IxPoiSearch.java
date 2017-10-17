@@ -4,14 +4,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -24,19 +25,16 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiAddressSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
-import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
-import com.vividsolutions.jts.geom.Geometry;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
@@ -1150,6 +1148,79 @@ public class IxPoiSearch implements ISearch {
 			throw e;
 		}
 	}
+	
+	public Map<Integer,Integer> searchAdminCodeMapByPid(List<Integer> pids) throws Exception {
+		Map<Integer,Integer> adAdminMap=new HashMap<Integer,Integer>();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			String sql = "SELECT i.pid,a.admin_id FROM ad_admin a,ix_poi i WHERE i.pid in (" + org.apache.commons.lang.StringUtils.join(pids, ",") + ") and a.region_id=i.region_id";
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			while(resultSet.next()){
+				adAdminMap.put(resultSet.getInt("pid"), resultSet.getInt("admin_id"));
+				}
+			return adAdminMap;
+			
+		} catch (Exception e) {
+			throw e;
+		}
+		}
+	
+	private JSONObject searchColumnDataByPid(String firstWordItem,
+			String secondWorkItem, IxPoi poi, long userId, 
+			JSONObject classifyRules, JSONObject ckRules,
+			Map<Integer, JSONObject> isProblems,Map<Integer,Integer> adminCodeMap)throws Exception {
+		
+       JSONObject poiObj = new JSONObject();
+
+       boolean isLock = false;
+	   try{
+			if(!(firstWordItem.equals("poi_englishaddress"))){
+			log.info("查询Names");
+			poi.setNames(new AbstractSelector(IxPoiName.class, conn)
+					.loadRowsByParentId(poi.getPid(), isLock));}
+			log.info("查询Photos");
+			poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
+					.loadRowsByParentId(poi.getPid(), isLock));
+			
+			log.info("获取各专项共用字段");
+			// 获取各专项共用字段
+			getCommenfields(poi,adminCodeMap,poiObj);
+			poiObj.put("userId", userId);
+			log.info("classifyRules赋值");
+			// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
+			String classifyRule = "";
+			Object cf = classifyRules.get(Integer.toString(poi.getPid()));
+			if (cf != null) {
+				classifyRule = cf.toString();
+			}
+			poiObj.put("classifyRules", classifyRule);
+			log.info("ckRules赋值，获取检查错误");
+			// ckRules赋值，获取检查错误
+			List<JSONObject> ckRule = (List<JSONObject>) ckRules.get(Integer.toString(poi.getPid()));
+			poiObj.put("ckRules", ckRule);
+			if (ckRule == null) {
+				List<JSONObject> value = new ArrayList<JSONObject>();
+				poiObj.put("ckRules", value);
+			}
+			log.info("isProblem赋值");
+			// isProblem赋值
+			if (isProblems != null && isProblems.containsKey(poi.getPid())) {
+				JSONObject isProblem = (JSONObject) isProblems.get(poi.getPid());
+				poiObj.put("isProblem", isProblem);
+			}
+
+			// 大陆作业无值，港澳后续补充
+			poiObj.put("namerefMsg", "");
+			log.info("获取特殊字段");
+			// 获取特殊字段
+			getUnCommenfields(firstWordItem, secondWorkItem,poi, poiObj);
+			return  poiObj;
+	} catch (Exception e) {
+		throw e;
+	}
+	}
 
 	/**
 	 * 精编作业数据查询
@@ -1197,65 +1268,63 @@ public class IxPoiSearch implements ISearch {
 			this.CHISHORT = metaData.getChishort();
 
 			this.ALIASNAME = metaData.getAliasName();
-			log.info("循环查询精编作业字段");
-			for (int pid : pids) {
+			log.info("查詢adminCode");
+			Map<Integer,Integer> adminCodeMap=searchAdminCodeMapByPid(pids);
+		
+			log.info("查询poiList");
+			IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			String querySql="select pid,row_id,poi_num,kind_code,mesh_id,chain from ix_poi where pid in ("+org.apache.commons.lang.StringUtils.join(pids.toArray(), ",") + ")";
+			List<IRow> poiList =poiSelector.loadBySql(querySql, false,false);
+			
+			log.info("循环补充精编作业字段");
+			
+			for (IRow iRow:poiList) {
+				IxPoi poi=(IxPoi) iRow;
+				if(!(firstWordItem.equals("poi_englishaddress"))){
+					log.info("查询Names");
+					poi.setNames(new AbstractSelector(IxPoiName.class, conn)
+							.loadRowsByParentId(poi.getPid(), isLock));}
+					log.info("查询Photos");
+					poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
+							.loadRowsByParentId(poi.getPid(), isLock));
+					
+					log.info("获取各专项共用字段");
+					// 获取各专项共用字段
+					getCommenfields(poi,adminCodeMap,poiObj);
+					poiObj.put("userId", userId);
+					log.info("classifyRules赋值");
+					// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
+					String classifyRule = "";
+					Object cf = classifyRules.get(Integer.toString(poi.getPid()));
+					if (cf != null) {
+						classifyRule = cf.toString();
+					}
+					poiObj.put("classifyRules", classifyRule);
+					log.info("ckRules赋值，获取检查错误");
+					// ckRules赋值，获取检查错误
+					List<JSONObject> ckRule = (List<JSONObject>) ckRules.get(Integer.toString(poi.getPid()));
+					poiObj.put("ckRules", ckRule);
+					if (ckRule == null) {
+						List<JSONObject> value = new ArrayList<JSONObject>();
+						poiObj.put("ckRules", value);
+					}
+					log.info("isProblem赋值");
+					// isProblem赋值
+					if (isProblems != null && isProblems.containsKey(poi.getPid())) {
+						JSONObject isProblem = (JSONObject) isProblems.get(poi.getPid());
+						poiObj.put("isProblem", isProblem);
+					}
 
-				IxPoiSelector poiSelector = new IxPoiSelector(conn);
-				IxPoi poi = (IxPoi) poiSelector.loadById(pid, isLock);
-
-				// IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
-				// List<IRow> nameList =
-				// nameSelector.loadRowsByParentId(poi.getPid(), isLock);
-				// poi.setNames(nameList);
-				log.info("查询Names");
-				poi.setNames(new AbstractSelector(IxPoiName.class, conn)
-						.loadRowsByParentId(poi.getPid(), isLock));
-				log.info("查询Photos");
-				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
-						.loadRowsByParentId(poi.getPid(), isLock));
-				log.info("查询Parents");
-				poi.setParents(new AbstractSelector(IxPoiParent.class, conn)
-						.loadRowsByParentId(poi.getPid(), isLock));
-				log.info("查询Children");
-				poi.setChildren(new AbstractSelector(IxPoiChildren.class, conn)
-						.loadRowsByParentId(poi.getPid(), isLock));
-				log.info("获取各专项共用字段");
-				// 获取各专项共用字段
-				poiObj = getCommenfields(pid, poi);
-				poiObj.put("userId", userId);
-				log.info("classifyRules赋值");
-				// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
-				String classifyRule = "";
-				Object cf = classifyRules.get(Integer.toString(pid));
-				if (cf != null) {
-					classifyRule = cf.toString();
-				}
-				poiObj.put("classifyRules", classifyRule);
-				log.info("ckRules赋值，获取检查错误");
-				// ckRules赋值，获取检查错误
-				List<JSONObject> ckRule = (List<JSONObject>) ckRules
-						.get(Integer.toString(pid));
-				poiObj.put("ckRules", ckRule);
-				if (ckRule == null) {
-					List<JSONObject> value = new ArrayList<JSONObject>();
-					poiObj.put("ckRules", value);
-				}
-				log.info("isProblem赋值");
-				// isProblem赋值
-				if (isProblems != null && isProblems.containsKey(pid)) {
-					JSONObject isProblem = (JSONObject) isProblems.get(pid);
-					poiObj.put("isProblem", isProblem);
-				}
-
-				// 大陆作业无值，港澳后续补充
-				poiObj.put("namerefMsg", "");
-				log.info("获取特殊字段");
-				// 获取特殊字段
-				poiObj = getUnCommenfields(firstWordItem, secondWorkItem, pid,
-						poi, poiObj);
-				dataList.add(poiObj);
+					// 大陆作业无值，港澳后续补充
+					poiObj.put("namerefMsg", "");
+					log.info("获取特殊字段");
+					// 获取特殊字段
+					getUnCommenfields(firstWordItem, secondWorkItem,poi, poiObj);
+					dataList.add(poiObj);
+					
 			}
-			log.info("end searchColumnPoiByPid");
+			
+			log.info("end searchColumnPoiByPid,dataList.size:"+dataList.size());
 
 			return dataList;
 		} catch (Exception e) {
@@ -1273,52 +1342,42 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getCommenfields(int pid, IxPoi poi) throws Exception {
+	/**
+	 * 查询个专项公共返回字段
+	 * 
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	private void getCommenfields(IxPoi poi,Map<Integer,Integer> adminCodeMap,JSONObject dataObj) throws Exception {
 		try {
-			JSONObject dataObj = new JSONObject();
-			dataObj.put("pid", pid);
+			dataObj.put("pid", poi.getPid());
 			dataObj.put("rowId", poi.getRowId());
 			dataObj.put("poiNum", poi.getPoiNum());
 			dataObj.put("kindCode", poi.getKindCode());
 			dataObj.put("meshId", poi.getMeshId());
 
-			MetadataApi apiService = (MetadataApi) ApplicationContextUtil
-					.getBean("metadataApi");
-			String KindName = apiService.searchKindName(poi.getKindCode());
-			dataObj.put("kindName", KindName);
+//			MetadataApi apiService = (MetadataApi) ApplicationContextUtil
+//					.getBean("metadataApi");
+//			String KindName = apiService.searchKindName(poi.getKindCode());
+			dataObj.put("kindName", KINDCODEMAP.get(poi.getKindCode()));
 
 			// ix_poi表通过region_id关联ad_admin，获取adminCode
 			int regionId = poi.getRegionId();
-			if (regionId == 0) {
+			if (adminCodeMap.containsKey(poi.getPid())) {
+				dataObj.put("adminCode", adminCodeMap.get(poi.getPid()));
+			} else{
 				dataObj.put("adminCode", 0);
-			} else {
-				AdAdminSearch adAdminSearch = new AdAdminSearch(conn);
-				AdAdmin adAdmin = (AdAdmin) adAdminSearch
-						.searchDataByPid(regionId);
-				dataObj.put("adminCode", adAdmin.getAdminId());
 			}
-
-			int parProupId = 0, childProupId = 0;
-			// ix_poi表通过pid关联ix_poi_parent，取group_id
-			List<IRow> pRows = poi.getParents();
-			for (IRow pRow : pRows) {
-				IxPoiParent parents = (IxPoiParent) pRow;
-				parProupId = parents.getPid();
-			}
-			dataObj.put("parentGroupId", parProupId);
-			// ix_poi表通过pid关联ix_poi_children，取group_id
-			List<IRow> cRows = poi.getChildren();
-			for (IRow cRow : cRows) {
-				IxPoiChildren Children = (IxPoiChildren) cRow;
-				childProupId = Children.getGroupId();
-			}
-			dataObj.put("childrenGroupId", childProupId);
 
 			JSONObject poiObj = poi.Serialize(null);
 			// ix_poi表通过pid关联Ix_Poi_Photo，将照片记录转换为json格式的名称组
 			dataObj.put("photos", poiObj.get("photos"));
 			// ix_poi表通过pid关联ix_poi_parent，将父子关系记录转换为json格式的名称组
-			dataObj.put("parent", poiObj.get("parents"));
+//			dataObj.put("parent", poiObj.get("parents"));
 
 			// 通过ix_poi表中的chain，去元数据表ci_para_chain中匹配获取相应的名称
 			String brandName = "";
@@ -1336,7 +1395,6 @@ public class IxPoiSearch implements ISearch {
 				dataObj.put("whole", "");
 			}
 
-			return dataObj;
 		} catch (Exception e) {
 
 			throw e;
@@ -1354,7 +1412,7 @@ public class IxPoiSearch implements ISearch {
 	 * @throws Exception
 	 */
 	private JSONObject getUnCommenfields(String firstWordItem,
-			String secondWorkItem, int pid, IxPoi poi, JSONObject dataObj)
+			String secondWorkItem,IxPoi poi, JSONObject dataObj)
 			throws Exception {
 		try {
 			log.info("取该poi的父名称");

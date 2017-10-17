@@ -51,7 +51,7 @@ public class GdbDataExporterForAdd {
 			String localZipFile = getLastestInfo(dir,null);
 			System.out.println("最新文件所在目录:"+localZipFile);
 			//解压
-			String localUnzipDir = dir+File.separator+"/tmp";
+			String localUnzipDir = dir+File.separator+"tmp";
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);
 			String sqliteFile = localUnzipDir+File.separator+"gdbdata.sqlite";
 			System.out.println("更新文件所在目录:"+sqliteFile);
@@ -60,7 +60,7 @@ public class GdbDataExporterForAdd {
 			try {
 				//进行加密，参数1：源数据库文件名 参数2：加密后数据库文件吗 参数3：加密密码
 				String gdbmm = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbSqlitePassword);
-				encryptor.decryptDataBase(sqliteFile ,localUnzipDir+"/gdbdata_une.sqlite", gdbmm);
+				encryptor.decryptDataBase(sqliteFile ,localUnzipDir+File.separator+"gdbdata_une.sqlite", gdbmm);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -82,7 +82,7 @@ public class GdbDataExporterForAdd {
 			config.enableLoadExtension(true);
 	
 			// create a database connection
-			sqliteConn = DriverManager.getConnection("jdbc:sqlite:" + localUnzipDir+"/gdbdata_une.sqlite", config.toProperties());
+			sqliteConn = DriverManager.getConnection("jdbc:sqlite:" + localUnzipDir+File.separator+"gdbdata_une.sqlite", config.toProperties());
 			stmt = sqliteConn.createStatement();
 			stmt.setQueryTimeout(30); // set timeout to 30 sec.
 	
@@ -139,28 +139,26 @@ public class GdbDataExporterForAdd {
 			
 			System.out.println("......Start......");
 			
-//			try {
-//				//进行加密，参数1：源数据库文件名 参数2：加密后数据库文件吗 参数3：加密密码
-//				String gdbmm = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbSqlitePassword);
-//	//			System.out.println("密码: "+gdbmm);
-//				encryptor.encryptDataBase(dir + "/tmp/gdbdata_une.sqlite",dir + "/tmp/gdbdata.sqlite", gdbmm);
-//				
-//			} catch (Exception e) {
-//				
-//				e.printStackTrace();
-//			}
+			try {
+				//进行加密，参数1：源数据库文件名 参数2：加密后数据库文件吗 参数3：加密密码
+				String gdbmm = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbSqlitePassword);
+	//			System.out.println("密码: "+gdbmm);
+				encryptor.encryptDataBase(localUnzipDir+File.separator+"gdbdata_une.sqlite",localUnzipDir+File.separator+"gdbdata.sqlite", gdbmm);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			System.out.println("....加密成功..End......");
 	
 			//删除原有sqlite 数据库
-//			File fileOld = new File(dir + "/tmp/gdbdata_une.sqlite");
-//			if(fileOld.exists() && fileOld.isFile()){
-//				fileOld.delete();
-//				System.out.println(" 删除未加密sqlite 数据库成功!");
-//			}
+			File fileOld = new File(localUnzipDir+File.separator+"gdbdata_une.sqlite");
+			if(fileOld.exists() && fileOld.isFile()){
+				fileOld.delete();
+				System.out.println(" 删除未加密sqlite 数据库成功!");
+			}
 			
-			zipfile = dir + "/" + operateDate + ".zip";
+			zipfile = dir + File.separator + operateDate + ".zip";
 			// 压缩文件
-			ZipUtils.zipFile(dir + "/tmp/", zipfile);
+			ZipUtils.zipFile(localUnzipDir, zipfile);
 	
 			FileUtil.deleteDirectory(new File(localUnzipDir));
 			

@@ -27,6 +27,8 @@ public class Command extends AbstractCommand {
 
 	private List<String> geometryIds = null;
 	
+	private String type;
+	
 	public Command(JSONObject json, String requester) {
 
 		this.requester = requester;
@@ -36,6 +38,8 @@ public class Command extends AbstractCommand {
 		this.dbId = json.getInt("dbId");
 
 		this.groupId = data.getString("groupId");
+		
+		this.type = data.getString("type");
 
 		if (data.containsKey("links")) {
 			this.links = data.getJSONArray("links");
@@ -44,8 +48,8 @@ public class Command extends AbstractCommand {
 		if (data.containsKey("geometry")) {
 			this.geo = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
 		}
+		
 		if (data.containsKey("geometryIds")) {
-
 			geometryIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("geometryIds")));
 		}
 	}
@@ -68,6 +72,10 @@ public class Command extends AbstractCommand {
 
 	public List<String> getGeometryIds() {
 		return geometryIds;
+	}
+	
+	public String getType(){
+		return this.type;
 	}
 
 	@Override

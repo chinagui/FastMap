@@ -40,23 +40,31 @@ public class Operation implements IOperation {
 			line2Face( result,this.command.getGeometryIds());
 		}
 
-		JSONArray array = this.command.getLinks();
+		JSONArray arrayrd = this.command.getRdLinks();
+		
+		JSONArray arrayad = this.command.getAdLinks();
 
 		Geometry geo = this.command.getGeo();
 
 		int seq = 0;
 		
-		if (array != null && array.size() != 0) {
-			seq = array.size();
-			
-			@SuppressWarnings("unchecked")
-			List<Integer> pidList = JSONArray.toList(array, Integer.class, JsonUtils.getJsonConfig());
+		int rdseq = 0;
+		
+		if (arrayrd != null && arrayrd.size() != 0) {
+			rdseq = seq = arrayrd.size();
 
-			if (this.command.getType().equals("RDLINK")) {
-				createFaceByLinks(pidList, result);
-			} else if (this.command.getType().equals("ADLINK")) {
-				createFaceByAdLinks(pidList, result);
-			}
+			@SuppressWarnings("unchecked")
+			List<Integer> pidList = JSONArray.toList(arrayrd, Integer.class, JsonUtils.getJsonConfig());
+
+			createFaceByLinks(pidList, result);
+		}
+		if (arrayad != null && arrayad.size() != 0) {
+			seq += arrayad.size();
+
+			@SuppressWarnings("unchecked")
+			List<Integer> pidList = JSONArray.toList(arrayad, Integer.class, JsonUtils.getJsonConfig());
+
+			createFaceByAdLinks(pidList, result, rdseq);
 		}
 		if (geo != null) {
 			ScPlateresFace face = new ScPlateresFace();
@@ -120,7 +128,7 @@ public class Operation implements IOperation {
 		}
 	}
 	
-	private void createFaceByAdLinks(List<Integer> pidList, Result result) throws Exception {
+	private void createFaceByAdLinks(List<Integer> pidList, Result result, int seq) throws Exception {
 		Connection regionConn = null;
 
 		try {
@@ -135,7 +143,7 @@ public class Operation implements IOperation {
 				ScPlateresFace face = new ScPlateresFace();
 
 				String geomId = PidApply.getInstance(this.conn).pidForInsertGeometry(this.command.getGroupId(),
-						LimitObjType.SCPLATERESFACE, i);
+						LimitObjType.SCPLATERESFACE, seq + i);
 
 				AdLink currentLink = null;
 

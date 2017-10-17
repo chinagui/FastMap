@@ -21,13 +21,13 @@ public class Command extends AbstractCommand {
 
 	private String groupId;
 
-	private JSONArray links;
+	private JSONArray rdlinks;
+	
+	private JSONArray adlinks;
 
 	private int dbId;
 
 	private List<String> geometryIds = null;
-	
-	private String type;
 	
 	public Command(JSONObject json, String requester) {
 
@@ -38,11 +38,13 @@ public class Command extends AbstractCommand {
 		this.dbId = json.getInt("dbId");
 
 		this.groupId = data.getString("groupId");
-		
-		this.type = data.getString("type");
 
-		if (data.containsKey("links")) {
-			this.links = data.getJSONArray("links");
+		if (data.containsKey("rdlinks")) {
+			this.rdlinks = data.getJSONArray("rdlinks");
+		}
+		
+		if (data.containsKey("adlinks")) {
+			this.adlinks = data.getJSONArray("adlinks");
 		}
 
 		if (data.containsKey("geometry")) {
@@ -62,8 +64,12 @@ public class Command extends AbstractCommand {
 		return this.groupId;
 	}
 
-	public JSONArray getLinks() {
-		return this.links;
+	public JSONArray getRdLinks() {
+		return this.rdlinks;
+	}
+	
+	public JSONArray getAdLinks() {
+		return this.adlinks;
 	}
 	
 	public int getDbId(){
@@ -72,10 +78,6 @@ public class Command extends AbstractCommand {
 
 	public List<String> getGeometryIds() {
 		return geometryIds;
-	}
-	
-	public String getType(){
-		return this.type;
 	}
 
 	@Override

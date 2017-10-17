@@ -69,7 +69,7 @@ public class GdbDataExporterForAdd {
 			File sqliteOld = new File(sqliteFile);
 			if(sqliteOld.exists() && sqliteOld.isFile()){
 				sqliteOld.delete();
-				System.out.println(" 删除未加密sqlite 数据库成功!");
+				System.out.println(" 删除解压的加密sqlite 数据库成功!");
 			}
 			// load the sqlite-JDBC driver using the current class loader
 			Class.forName("org.sqlite.JDBC");

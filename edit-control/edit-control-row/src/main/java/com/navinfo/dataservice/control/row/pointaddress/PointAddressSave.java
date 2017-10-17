@@ -3,7 +3,7 @@ package com.navinfo.dataservice.control.row.pointaddress;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -112,18 +112,23 @@ public class PointAddressSave {
  			importor.setSubtaskId(subtaskId);
  			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
  			OperationResult operationResult = importor.getResult();
-        	long pid = operationResult.getAllObjs().get(0).getMainrow().getObjPid();
+        	long pid = 0L;
+        	if(operType == OperType.CREATE){
+        		pid = operationResult.getAllObjs().get(0).getMainrow().getObjPid();
+            }else if(operType == OperType.UPDATE || operType == OperType.DELETE ){
+        		pid = json.getInt("objId");
+            }
         	
- 			afterOperate(operType, pid, conn, result);//新增或修改之后的操作
+ 			afterOperate(operType, pid,subtaskId, conn, result);//新增或修改之后的操作
         	
             return result;
         } catch (DataNotChangeException e) {
             DbUtils.rollback(conn);
-            logger.error(e.getMessage(), e);
+            logger.error("点门牌保存发生错误", e);
             throw e;
         } catch (Exception e) {
             DbUtils.rollback(conn);
-            logger.error(e.getMessage(), e);
+            logger.error("点门牌保存发生错误", e);
             throw e;
         } finally {
             DbUtils.commitAndCloseQuietly(conn);
@@ -131,10 +136,56 @@ public class PointAddressSave {
 	}
 	
 	/**
+	 * 查询点门牌库中的任务号和状态
+	 * @param pid
+	 * @param subtaskId
+	 * @param conn
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<String,Integer> getStatusAndExistsSubtask(long pid,Connection conn) throws Exception{
+
+		String sql = "SELECT p.status,p.quick_subtask_id,p.quick_task_id,p.medium_subtask_id,p.medium_task_id FROM pointaddress_edit_status p WHERE pid = "+pid;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			Map<String,Integer> map = new LinkedHashMap<>();
+			while (rs.next()) {
+				int status = rs.getInt(1);
+				int quickSubtaskId = rs.getInt(2);
+				int quickTaskId = rs.getInt(3);
+				int mediumSubtaskId = rs.getInt(4);
+				int mediumTaskId = rs.getInt(5);
+				boolean flag1 = (quickSubtaskId !=0 && quickTaskId != 0 && mediumSubtaskId == 0 && mediumTaskId == 0);
+				boolean flag2 = (mediumSubtaskId !=0 && mediumTaskId != 0 && quickSubtaskId == 0 && quickTaskId == 0);
+				boolean flag3 = (mediumSubtaskId ==0 && mediumTaskId == 0 && quickSubtaskId == 0 && quickTaskId == 0);
+				map.put("status",status);
+				map.put("subtaskId",0);
+				if(flag1){
+					map.put("subtaskId",quickSubtaskId);
+				}else if(flag2){
+					map.put("subtaskId",mediumSubtaskId);
+				}else if(flag3){
+					map.put("subtaskId",0);
+				}
+			}
+			return map;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(rs);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	/**
 	 * 新增或修改之后的操作
 	 * @throws Exception 
 	 */
-	public void afterOperate(OperType operType,long pid,Connection conn,JSONObject result) throws Exception{
+	public void afterOperate(OperType operType,long pid,int subtaskId,Connection conn,JSONObject result) throws Exception{
 		if(operType == OperType.CREATE){
         	insertDayEditStatus(pid, conn);
         	JSONArray logArray = new JSONArray();
@@ -148,20 +199,37 @@ public class PointAddressSave {
         	result.put("log", logArray);
         	result.put("check", new JSONArray());
         	result.put("pid", pid);
-        }else if(operType == OperType.UPDATE){
-        	boolean isFreshVerified = isFreshVerified(pid, conn);
-        	updateDayEditStatus(pid, isFreshVerified, conn);
-        	JSONArray logArray = new JSONArray();
-        	JSONObject logObject = new JSONObject();
-        	logObject.put("type", "IXPOINTADDRESS");
-        	logObject.put("pid", pid);
-        	logObject.put("childPid", "");
-        	logObject.put("op", "修改");
-        	logArray.add(logObject);
-        	
-        	result.put("log", logArray);
-        	result.put("check", new JSONArray());
-        	result.put("pid", pid);
+        }else {
+        	boolean isFreshVerified = false;
+        	if(operType == OperType.UPDATE){
+        		isFreshVerified = isFreshVerified(pid, conn);
+        	}
+        	Map<String,Integer> resultMap = getStatusAndExistsSubtask(pid,conn);
+        	int persistSubtaskId = resultMap.get("subtaskId");
+        	int persistStatus = resultMap.get("status");
+			if(persistStatus == 3 && persistSubtaskId != 0) {//表示该点门牌已提交且存在任务
+				updateDayEditStatus(pid, isFreshVerified, conn,true);
+			}else if(persistStatus == 0 && persistSubtaskId == 0){//原库中点
+				updateDayEditStatus(pid, isFreshVerified, conn,true);
+			}else{
+				if(persistSubtaskId == subtaskId){//表示当前该点门牌任务和库中相同
+					updateDayEditStatus(pid, isFreshVerified, conn,false);
+				}
+			}
+				
+			if(operType == OperType.UPDATE){
+				JSONArray logArray = new JSONArray();
+	        	JSONObject logObject = new JSONObject();
+	        	logObject.put("type", "IXPOINTADDRESS");
+	        	logObject.put("pid", pid);
+	        	logObject.put("childPid", "");
+	        	logObject.put("op", "修改");
+	        	logArray.add(logObject);
+	        	
+	        	result.put("log", logArray);
+	        	result.put("check", new JSONArray());
+	        	result.put("pid", pid);
+			}
         }
 			
 	}
@@ -225,9 +293,10 @@ public class PointAddressSave {
 	
 	/**
 	 * 修改DayEditStatus
+	 * @param flag 
 	 * @throws Exception 
 	 */
-	public void updateDayEditStatus(long pid,boolean isFreshVerified,Connection conn) throws Exception{
+	public void updateDayEditStatus(long pid,boolean isFreshVerified,Connection conn, boolean flag) throws Exception{
 		PreparedStatement pstmt = null;
     	StringBuilder sb = new StringBuilder();
     	if(isFreshVerified){// 鲜度验证保存时调用
@@ -237,20 +306,25 @@ public class PointAddressSave {
 			sb.append(" MEDIUM_SUBTASK_ID = CASE WHEN"+ condition +" THEN "+MST+" ELSE MEDIUM_SUBTASK_ID END,");
 			sb.append(" MEDIUM_TASK_ID = CASE WHEN"+ condition +" THEN "+MT+" ELSE MEDIUM_TASK_ID END WHERE pid = "+pid+"");
     	}else{
-    		sb.append(" MERGE INTO POINTADDRESS_EDIT_STATUS T1 ");
-    		sb.append(" USING (SELECT (CASE WHEN "+MST+" = 0 THEN T.MEDIUM_SUBTASK_ID WHEN T.STATUS IN (1, 2) AND ");
-    		sb.append(" T.MEDIUM_SUBTASK_ID NOT IN (0, "+MST+") THEN T.MEDIUM_SUBTASK_ID WHEN T.STATUS = 1 AND T.MEDIUM_SUBTASK_ID = 0 THEN ");
-    		sb.append(" T.MEDIUM_SUBTASK_ID ELSE "+MST+" END) MST,");
-    		sb.append(" (CASE WHEN "+MT+" = 0 THEN T.MEDIUM_TASK_ID WHEN T.STATUS IN (1, 2) AND T.MEDIUM_TASK_ID NOT IN (0, "+MT+") THEN ");
-    		sb.append(" T.MEDIUM_TASK_ID WHEN T.STATUS = 1 AND T.MEDIUM_TASK_ID = 0 THEN T.MEDIUM_TASK_ID ELSE "+MT+"  END) MT,");
-    		sb.append(" (CASE WHEN "+QST+"  = 0 THEN T.QUICK_SUBTASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_SUBTASK_ID NOT IN (0,"+QST+") THEN ");
-    		sb.append(" T.QUICK_SUBTASK_ID WHEN T.STATUS = 1 AND T.QUICK_SUBTASK_ID = 0 THEN T.QUICK_SUBTASK_ID ELSE "+QST+" END) QST,");
-    		sb.append(" (CASE WHEN "+QT+" = 0 THEN T.QUICK_TASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_TASK_ID NOT IN (0, "+QT+") THEN ");
-    		sb.append(" T.QUICK_TASK_ID WHEN T.STATUS = 1 AND T.QUICK_TASK_ID = 0 THEN T.QUICK_TASK_ID ELSE "+QT+" END) QT, ");
-    		sb.append(" IX.PID AS D FROM IX_POINTADDRESS IX, POINTADDRESS_EDIT_STATUS T WHERE IX.PID = T.PID(+) AND IX.PID = "+pid+") T2 ");
-    		sb.append(" ON (T1.PID = T2.D) WHEN MATCHED THEN UPDATE SET T1.STATUS = 2,T1.FRESH_VERIFIED = 0,");
-    		sb.append(" T1.QUICK_SUBTASK_ID  = T2.QST,T1.QUICK_TASK_ID = T2.QT,T1.MEDIUM_SUBTASK_ID = T2.MST,T1.MEDIUM_TASK_ID = T2.MT ");
-    	}
+    		if(flag){
+    			sb.append(" UPDATE pointaddress_edit_status SET STATUS = 2 ,FRESH_VERIFIED = 0,QUICK_SUBTASK_ID = "+QST+", QUICK_TASK_ID = "+QT+",");
+    			sb.append(" MEDIUM_SUBTASK_ID = "+MST+", MEDIUM_TASK_ID = "+MT+" WHERE pid = "+pid+"");
+    		}else{
+	    		sb.append(" MERGE INTO POINTADDRESS_EDIT_STATUS T1 ");
+	    		sb.append(" USING (SELECT (CASE WHEN "+MST+" = 0 THEN T.MEDIUM_SUBTASK_ID WHEN T.STATUS IN (1, 2) AND ");
+	    		sb.append(" T.MEDIUM_SUBTASK_ID NOT IN (0, "+MST+") THEN T.MEDIUM_SUBTASK_ID WHEN T.STATUS = 1 AND T.MEDIUM_SUBTASK_ID = 0 THEN ");
+	    		sb.append(" T.MEDIUM_SUBTASK_ID ELSE "+MST+" END) MST,");
+	    		sb.append(" (CASE WHEN "+MT+" = 0 THEN T.MEDIUM_TASK_ID WHEN T.STATUS IN (1, 2) AND T.MEDIUM_TASK_ID NOT IN (0, "+MT+") THEN ");
+	    		sb.append(" T.MEDIUM_TASK_ID WHEN T.STATUS = 1 AND T.MEDIUM_TASK_ID = 0 THEN T.MEDIUM_TASK_ID ELSE "+MT+"  END) MT,");
+	    		sb.append(" (CASE WHEN "+QST+"  = 0 THEN T.QUICK_SUBTASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_SUBTASK_ID NOT IN (0,"+QST+") THEN ");
+	    		sb.append(" T.QUICK_SUBTASK_ID WHEN T.STATUS = 1 AND T.QUICK_SUBTASK_ID = 0 THEN T.QUICK_SUBTASK_ID ELSE "+QST+" END) QST,");
+	    		sb.append(" (CASE WHEN "+QT+" = 0 THEN T.QUICK_TASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_TASK_ID NOT IN (0, "+QT+") THEN ");
+	    		sb.append(" T.QUICK_TASK_ID WHEN T.STATUS = 1 AND T.QUICK_TASK_ID = 0 THEN T.QUICK_TASK_ID ELSE "+QT+" END) QT, ");
+	    		sb.append(" IX.PID AS D FROM IX_POINTADDRESS IX, POINTADDRESS_EDIT_STATUS T WHERE IX.PID = T.PID(+) AND IX.PID = "+pid+") T2 ");
+	    		sb.append(" ON (T1.PID = T2.D) WHEN MATCHED THEN UPDATE SET T1.STATUS = 2,T1.FRESH_VERIFIED = 0,");
+	    		sb.append(" T1.QUICK_SUBTASK_ID  = T2.QST,T1.QUICK_TASK_ID = T2.QT,T1.MEDIUM_SUBTASK_ID = T2.MST,T1.MEDIUM_TASK_ID = T2.MT ");
+    		}
+		}
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 			pstmt.executeUpdate();

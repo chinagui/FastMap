@@ -53,7 +53,7 @@ public class GLM55111 extends BasicCheckRule {
 	
 	
 	public boolean judgeBanByVehicleType(Long linkPid) throws Exception{
-		String sql = "select count(1) from rd_link_limit ll where ip.guide_link_pid = "+linkPid+" and ll.type=2 and ll.vehicle=9 ";
+		String sql = "select count(1) from rd_link_limit ll where ll.link_pid = "+linkPid+" and ll.type=2 and ll.vehicle=9 ";
     	
     	PreparedStatement pstmt = null;
 		

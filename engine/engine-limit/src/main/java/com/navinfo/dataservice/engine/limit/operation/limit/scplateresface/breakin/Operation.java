@@ -35,7 +35,13 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
-		
+
+		Geometry geo = this.command.getFace().getGeometry();
+
+		if (false == geo.isSimple()) {
+			throw new Exception("打断几何为闭合圈，不能打断！");
+		}
+
 		List<JSONArray> breaklinks = this.breakpoint(this.command.getFace().getGeometry(),
 				this.command.getBreakpoint());
 
@@ -115,7 +121,7 @@ public class Operation implements IOperation {
 			}
 		}
 		if (!hasFound) {
-			throw new Exception("打断的点不在打断LINK上");
+			throw new Exception("打断的点不在打断线上");
 		}
 		// 生成新的link
 		arrays.add(ja1);

@@ -9,28 +9,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
 import org.apache.commons.dbutils.ResultSetHandler;
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.expcore.snapshot.GdbDataExporterForAdd;
+import com.navinfo.dataservice.expcore.snapshot.GdbDataUnzipForAdd;
 import com.navinfo.navicommons.database.QueryRunner;
 
-/**
- * 
- * @ClassName GdbExportForAddScriptsInterface
- * @author Han Shaoming
- * @date 2017年10月16日 下午4:37:19
- * @Description TODO
- */
-public class GdbExportForAddScriptsInterface {
-	
+public class GdbUnzipForAddScriptsInterface {
 	public static Map<Integer, Map<Integer, Set<Integer>>> getProvinceMeshList(String type,int regionId) throws SQLException {
 		Connection conn = DBConnector.getInstance().getManConnection();
 
@@ -98,19 +85,21 @@ public class GdbExportForAddScriptsInterface {
 	public static void main(String[] args) {
 
 		try {
-			String path = args[0];
+			String zipType = args[0];
+			
+			String path = args[1];
 			
 			if (!path.endsWith("/")) {
 				path += "/";
 			}
 			String type="month";
-			if(args.length>1){
-				type = args[1];
+			if(args.length>2){
+				type = args[2];
 			}
 			
 			int regionId = 0;
-			if(args.length==3){
-				regionId = Integer.valueOf(args[2]);
+			if(args.length==4){
+				regionId = Integer.valueOf(args[3]);
 			}
 			
 			System.out.println("gdb begin time :"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
@@ -119,8 +108,6 @@ public class GdbExportForAddScriptsInterface {
 
 			Map<Integer, Map<Integer, Set<Integer>>> map = getProvinceMeshList(type,regionId);
 
-			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
-					.getBean("datahubApi");
 
 			for (Map.Entry<Integer, Map<Integer, Set<Integer>>> entry : map
 					.entrySet()) {
@@ -131,15 +118,6 @@ public class GdbExportForAddScriptsInterface {
 
 				Map<Integer, Set<Integer>> data = entry.getValue();
 
-				DbInfo dbinfo = datahub.getDbById(dbId);
-
-				DbConnectConfig connConfig = DbConnectConfig
-						.createConnectConfig(dbinfo.getConnectParam());
-
-				DataSource datasource = MultiDataSourceFactory.getInstance()
-						.getDataSource(connConfig);
-
-				Connection conn = datasource.getConnection();
 
 				for (Map.Entry<Integer, Set<Integer>> en : data.entrySet()) {
 
@@ -147,20 +125,21 @@ public class GdbExportForAddScriptsInterface {
 					
 					System.out.println("export admincode "+admincode+" ...");
 					
-					Set<Integer> meshes = en.getValue();
-
 					String output = path + admincode / 10000;
 					//解压及解密
-//					String sqliteFile = "/data/resources/17win/download_prep/basedata/13/gdbdata_une.sqlite";
-//					String sqliteFile = GdbDataUnzipForAdd.unzip(output);
-//					if(StringUtils.isEmpty(sqliteFile)){
-//						System.out.println(admincode+",没有要增量的sqlite数据库!,"+output);
-//						continue;
-//					}
-					GdbDataExporterForAdd.run(conn,output, meshes);
-					//加密及压缩
-//					String filename = GdbDataUnzipForAdd.zip(sqliteFile, output);
-//					System.out.println("export admincode "+admincode+" success: "+null);
+					if ("1".equals(zipType)){
+//					    String sqliteFile = "/data/resources/17win/download_prep/basedata/13/gdbdata_une.sqlite";
+						String sqliteFile = GdbDataUnzipForAdd.unzip(output);
+						if(StringUtils.isEmpty(sqliteFile)){
+							System.out.println(admincode+",没有要增量的sqlite数据库!,"+output);
+							continue;
+						}
+					}
+					if ("2".equals(zipType)){
+						//加密及压缩
+						String filename = GdbDataUnzipForAdd.zip(output);
+						System.out.println("export admincode "+admincode+" success: "+filename);
+					}
 				}
 			}
 

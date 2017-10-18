@@ -2,14 +2,14 @@ package com.navinfo.dataservice.edit.job;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,9 @@ public class TranslateJob extends AbstractJob {
 
     private final static Integer PART_SIZE = 3000;
 
-    private final static String TABLE_NAME = "";
+    private final static String TABLE_NAME = "TRANSLATE";
+
+    private final static Logger logger = LoggerRepos.getLogger(TranslateJob.class);
 
     public TranslateJob(JobInfo jobInfo) {
         super(jobInfo);
@@ -65,19 +67,19 @@ public class TranslateJob extends AbstractJob {
 
             stmt = conn.createStatement();
 
-            result = stmt.executeQuery("SELECT * FROM ALL_KIND_MAP");
+            result = stmt.executeQuery("SELECT * FROM " + TranslateJob.TABLE_NAME);
             result.setFetchSize(2000);
 
             List<TranslateData> datas = new ArrayList<>();
 
             while (result.next()) {
                 TranslateData data = new TranslateData();
-                data.setId(result.getString("ID"));
-                data.setType(result.getString("TYPE"));
-                data.setKindCode(result.getString("KIND_CODE"));
-                data.setChain(result.getString("CHAIN"));
-                data.setName(result.getString("NAME"));
-                data.setPhonetic(result.getString("PHONETIC"));
+                data.id = result.getString("ID");
+                data.type = result.getString("TYPE");
+                data.kindCode = result.getString("KIND_CODE");
+                data.chain = result.getString("CHAIN");
+                data.name = result.getString("NAME");
+                data.phonetic = result.getString("PHONETIC");
                 datas.add(data);
             }
 
@@ -87,13 +89,15 @@ public class TranslateJob extends AbstractJob {
                     new ArrayBlockingQueue<Runnable>(1000), new ThreadPoolExecutor.DiscardOldestPolicy());
 
             for (List<TranslateData> data : partition) {
-                executor.execute(new MyThread(data, conn));
+                Task task = new Task(data, conn);
+                executor.execute(task);
             }
 
-            while (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                //logger.info(String.format("running mesh is [%s]", JSONObject.fromObject(runningMesh).toString()));
-                //logger.info(String.format("executor.getPoolSize()：%d，executor.getQueue().size()：%d，executor.getCompletedTaskCo" +
-                //        "unt()：%d", executor.getPoolSize(), executor.getQueue().size(), executor.getCompletedTaskCount()));
+            executor.shutdown();
+
+            while (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                logger.info(String.format("executor.getPoolSize()：%d，executor.getQueue().size()：%d，executor.getCompletedTaskCo" +
+                        "unt()：%d", executor.getPoolSize(), executor.getQueue().size(), executor.getCompletedTaskCount()));
             }
 
             conn.commit();
@@ -121,134 +125,9 @@ public class TranslateJob extends AbstractJob {
 
         private String nameEng;
 
-        /**
-         * Getter method for property <tt>id</tt>.
-         *
-         * @return property value of id
-         */
-        public String getId() {
-            return id;
-        }
-
-        /**
-         * Setter method for property <tt>id</tt>.
-         *
-         * @param id value to be assigned to property id
-         */
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        /**
-         * Getter method for property <tt>type</tt>.
-         *
-         * @return property value of type
-         */
-        public String getType() {
-            return type;
-        }
-
-        /**
-         * Setter method for property <tt>type</tt>.
-         *
-         * @param type value to be assigned to property type
-         */
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        /**
-         * Getter method for property <tt>kindCode</tt>.
-         *
-         * @return property value of kindCode
-         */
-        public String getKindCode() {
-            return kindCode;
-        }
-
-        /**
-         * Setter method for property <tt>kindCode</tt>.
-         *
-         * @param kindCode value to be assigned to property kindCode
-         */
-        public void setKindCode(String kindCode) {
-            this.kindCode = kindCode;
-        }
-
-        /**
-         * Getter method for property <tt>chain</tt>.
-         *
-         * @return property value of chain
-         */
-        public String getChain() {
-            return chain;
-        }
-
-        /**
-         * Setter method for property <tt>chain</tt>.
-         *
-         * @param chain value to be assigned to property chain
-         */
-        public void setChain(String chain) {
-            this.chain = chain;
-        }
-
-        /**
-         * Getter method for property <tt>name</tt>.
-         *
-         * @return property value of name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Setter method for property <tt>name</tt>.
-         *
-         * @param name value to be assigned to property name
-         */
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        /**
-         * Getter method for property <tt>phonetic</tt>.
-         *
-         * @return property value of phonetic
-         */
-        public String getPhonetic() {
-            return phonetic;
-        }
-
-        /**
-         * Setter method for property <tt>phonetic</tt>.
-         *
-         * @param phonetic value to be assigned to property phonetic
-         */
-        public void setPhonetic(String phonetic) {
-            this.phonetic = phonetic;
-        }
-
-        /**
-         * Getter method for property <tt>nameEng</tt>.
-         *
-         * @return property value of nameEng
-         */
-        public String getNameEng() {
-            return nameEng;
-        }
-
-        /**
-         * Setter method for property <tt>nameEng</tt>.
-         *
-         * @param nameEng value to be assigned to property nameEng
-         */
-        public void setNameEng(String nameEng) {
-            this.nameEng = nameEng;
-        }
     }
 
-    class MyThread extends Thread {
+    class Task implements Runnable {
 
         Connection conn;
 
@@ -256,7 +135,7 @@ public class TranslateJob extends AbstractJob {
 
         private AtomicInteger atomicInteger;
 
-        public MyThread(List<TranslateData> datas, Connection conn) {
+        public Task(List<TranslateData> datas, Connection conn) {
             this.datas = datas;
             this.conn = conn;
             this.atomicInteger = new AtomicInteger(1);
@@ -269,18 +148,19 @@ public class TranslateJob extends AbstractJob {
             try {
                 stmt = conn.createStatement();
 
-                String sql = "UPDATE " + TranslateJob.TABLE_NAME + " SET NAME_ENG = %s WHERE ID = %s";
+                String sql = "UPDATE " + TranslateJob.TABLE_NAME + " SET NAME_ENG = '%s' WHERE ID = '%s'";
 
                 for (TranslateData data : datas) {
-                    String engName = api.convertEng(data.getName(), data.getChain());
-                    stmt.addBatch(String.format(sql, data.getId(), engName));
+                    String engName = api.convertEng(data.name, data.chain);
+                    stmt.addBatch(String.format(sql, engName, data.id));
                     if (atomicInteger.addAndGet(1) % 500 == 0) {
                         stmt.executeBatch();
                     }
                 }
                 stmt.executeBatch();
+                logger.info(String.format("thread %s over.", Thread.currentThread().getName()));
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.error("translate has error", e.fillInStackTrace());
             } finally {
                 DbUtils.closeQuietly(stmt);
             }

@@ -592,6 +592,7 @@ public class DeepCoreControl {
 			
 			//实际申请到的数据pids
 			List<Integer> applyDataPids = new ArrayList<Integer>();
+			canApply = canApply > 50 ? 50:canApply;//申请数据时数量控制，单次上限50
 			if (pids.size() >= canApply){
 				applyDataPids = pids.subList(0, canApply);
 			}else{

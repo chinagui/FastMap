@@ -126,12 +126,6 @@ public class ScPlateresFaceSearch implements ISearch {
 
                 Geometry geom = GeoTranslator.struct2Jts(struct);
 
-                JSONObject geojson = GeoTranslator.jts2Geojson(geom);
-
-                JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
-
-                snapshot.setG(jo.getJSONArray("coordinates"));
-
                 JSONObject m = new JSONObject();
 
                 m.put("a", resultSet.getString("GEOMETRY_ID"));
@@ -143,14 +137,27 @@ public class ScPlateresFaceSearch implements ISearch {
                 String geometryType = geom.getGeometryType();
                 m.put("e", geometryType);
 
-                m.put("g", geojson.getJSONArray("coordinates"));
+                m.put("g", GeoTranslator.jts2Geojson(geom).getJSONArray("coordinates"));
 
                 snapshot.setM(m);
 
+                JSONObject geojson = GeoTranslator.jts2Geojson(geom);
+
                 if (geometryType.equals("LineString")) {
+
                     snapshot.setT(1002);
+
+                    JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
+
+                    snapshot.setG(jo.getJSONArray("coordinates"));
+
                 } else if (geometryType.equals("Polygon")) {
+
                     snapshot.setT(1003);
+
+                    JSONObject jo = Geojson.face2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
+
+                    snapshot.setG(jo.getJSONArray("coordinates"));
                 }
 
                 list.add(snapshot);

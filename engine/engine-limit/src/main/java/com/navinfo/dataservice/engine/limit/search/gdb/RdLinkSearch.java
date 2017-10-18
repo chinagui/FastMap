@@ -11,6 +11,7 @@ import java.util.Map;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -91,13 +92,15 @@ public class RdLinkSearch {
 	    	
 	    	obj.put("name", entry.getKey());
 	    	obj.put("pid", entry.getValue().toArray());
-	    	
+	    		    	
 	    	array.add(obj);
 	    }
 	        
 		result.put("total", classify.size());
 
 		result.put("rows", array);
+		
+		result.put("geoLiveType", ObjType.RDLINK);
 		
 		return result;
 	}

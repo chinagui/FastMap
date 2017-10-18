@@ -942,13 +942,13 @@ public class SubtaskOperation {
 						int status = rs.getInt("status");
 						int count = rs.getInt("count(1)");
 						switch(status){
-						case 1:
+						case 3:
 							pointCommit = count;
 							break;
 						case 2:
 							pointWorked = count;
 							break;
-						case 3:
+						case 1:
 							pointWaitWork = count;
 							break;
 						}

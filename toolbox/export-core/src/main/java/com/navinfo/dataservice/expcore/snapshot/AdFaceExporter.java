@@ -17,7 +17,7 @@ public class AdFaceExporter {
 			Statement stmt, Connection conn, String operateDate, Set<Integer> meshes)
 			throws Exception {
 		// creating a GEOMETRY table
-		stmt.execute("DROP TABLE IF EXISTS gdb_adFace");
+		stmt.execute("DROP TABLE IF EXISTS gdb_adFace;");
 		stmt.execute("create table gdb_adFace(pid integer primary key, admin_id integer)");
 		stmt.execute("select addgeometrycolumn('gdb_adFace','geometry',4326,'GEOMETRY','XY')");
 		stmt.execute("select createspatialindex('gdb_adFace','geometry')");

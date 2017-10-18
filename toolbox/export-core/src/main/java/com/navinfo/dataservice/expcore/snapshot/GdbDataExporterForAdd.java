@@ -41,39 +41,65 @@ public class GdbDataExporterForAdd {
 		String zipfile = null;
 		try {
 			//获取 NdsSqliteEncryptor 实例
-			NdsSqliteEncryptor encryptor = NdsSqliteEncryptor.getInstance();
+//			NdsSqliteEncryptor encryptor = NdsSqliteEncryptor.getInstance();
+			File file = new File(dir + "/tmp");
+			
+			if (file.exists()) {
+				FileUtil.deleteDirectory(file);
+			}
+	
+			file.mkdirs();
+			
 			//判断相应省份的文件是否存在
 			File provinceFile = new File(dir);
-			if (!provinceFile.exists() || provinceFile.listFiles().length ==0) {
+			if (!provinceFile.exists() || provinceFile.listFiles().length < 1) {
 				return null;
 			}
-			//查询最新的压缩文件
-			String localZipFile = getLastestInfo(dir,null);
-			System.out.println("最新文件所在目录:"+localZipFile);
-			//解压
-			String localUnzipDir = dir+File.separator+"tmp";
-			ZipUtils.unzipFile(localZipFile,localUnzipDir);
-			String sqliteFile = localUnzipDir+File.separator+"gdbdata.sqlite";
+			String sqliteFile = null;
+			if(provinceFile.exists() && provinceFile.listFiles().length >0){
+				sqliteFile = dir+File.separator+provinceFile.listFiles()[0].getName();
+			}
+			if(StringUtils.isEmpty(sqliteFile)){return null;}
 			System.out.println("更新文件所在目录:"+sqliteFile);
-			//解密
-			System.out.println("......Start...解密...");
-			try {
-				//进行加密，参数1：源数据库文件名 参数2：加密后数据库文件吗 参数3：加密密码
-				String gdbmm = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbSqlitePassword);
-				encryptor.decryptDataBase(sqliteFile ,localUnzipDir+File.separator+"gdbdata_une.sqlite", gdbmm);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			System.out.println("....解密成功..End......");
+			//查询最新的压缩文件
+//			String localZipFile = getLastestInfo(dir,null);
+//			System.out.println("最新文件所在目录:"+localZipFile);
+			//解压
+//			String localUnzipDir = dir+File.separator+"tmp";
+//			File unzipDir = new File(localUnzipDir);
+//			if (unzipDir.exists()) {
+//				FileUtil.deleteDirectory(unzipDir);
+//			}
+//			unzipDir.mkdirs();
+//			ZipUtils.unzipFile(localZipFile,localUnzipDir);
+//			String sqliteFile = null;
+//			File unzipFile = new File(localUnzipDir);
+//			if(unzipFile.exists() && unzipFile.listFiles().length >0){
+//				sqliteFile = localUnzipDir+File.separator+unzipFile.listFiles()[0].getName();
+//			}
+//			if(StringUtils.isEmpty(sqliteFile)){return null;}
+//			System.out.println("更新文件所在目录:"+sqliteFile);
+			
+//			//解密
+//			System.out.println("......Start...解密...");
+//			try {
+//				//进行加密，参数1：源数据库文件名 参数2：加密后数据库文件吗 参数3：加密密码
+//				String gdbmm = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbSqlitePassword);
+//				encryptor.decryptDataBase(sqliteFile ,localUnzipDir+File.separator+"gdbdata_une.sqlite", gdbmm);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//			System.out.println("....解密成功..End......");
+//			Utils.decryptDataBase(sqliteFile,localUnzipDir);
 			//删除原有sqlite 数据库
-			File sqliteOld = new File(sqliteFile);
-			if(sqliteOld.exists() && sqliteOld.isFile()){
-				sqliteOld.delete();
-				System.out.println(" 删除解压的加密sqlite 数据库成功!");
-			}
+//			File sqliteOld = new File(sqliteFile);
+//			if(sqliteOld.exists() && sqliteOld.isFile()){
+//				sqliteOld.delete();
+//				System.out.println(" 删除解压的加密sqlite 数据库成功!");
+//			}
+	
 			// load the sqlite-JDBC driver using the current class loader
 			Class.forName("org.sqlite.JDBC");
-	
 			//Connection sqliteConn = null;
 	
 			// enabling dynamic extension loading
@@ -82,49 +108,23 @@ public class GdbDataExporterForAdd {
 			config.enableLoadExtension(true);
 	
 			// create a database connection
-			sqliteConn = DriverManager.getConnection("jdbc:sqlite:" + localUnzipDir+File.separator+"gdbdata_une.sqlite", config.toProperties());
+			sqliteConn = DriverManager.getConnection("jdbc:sqlite:" + sqliteFile, config.toProperties());
+			sqliteConn.setAutoCommit(false);
 			stmt = sqliteConn.createStatement();
 			stmt.setQueryTimeout(30); // set timeout to 30 sec.
 	
 			// loading SpatiaLite
+			System.out.println("SELECT load_extension('/usr/local/lib/mod_spatialite.so')");
 			stmt.execute("SELECT load_extension('/usr/local/lib/mod_spatialite.so')");
-	
+			sqliteConn.commit();
+//			NdsSqliteEncryptor encryptor = NdsSqliteEncryptor.getInstance();
 			// enabling Spatial Metadata
 			// using v.2.4.0 this automatically initializes SPATIAL_REF_SYS and
 			// GEOMETRY_COLUMNS
-			stmt.execute("SELECT InitSpatialMetadata()");
+//			stmt.execute("SELECT InitSpatialMetadata()");
 	
-			sqliteConn.setAutoCommit(false);
 	
 			String operateDate = StringUtils.getCurrentTime();
-	
-//			System.out.println("exporting region_index: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
-//			
-//			RegionIndexExporter.run(sqliteConn, stmt, meshes,dir);
-//			
-//			System.out.println("exporting rdline: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
-//			
-//			RdLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
-//	
-//			System.out.println("exporting rdnode: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
-//	
-//			RdNodeExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
-//	
-//			System.out.println("exporting bkline: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
-//	
-//			BkLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
-//	
-//			System.out.println("exporting bkface: time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
-//	
-//			BkFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
-//	
-//			System.out.println("exporting rdlinegsc : time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
-//	
-//			RdGscExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
-//			
-			System.out.println("exporting adface :time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
-	
-			AdFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 			
 			//********2017.09.26 zl*********
 			System.out.println("exporting gdb_cmkFace :time:"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
@@ -137,30 +137,35 @@ public class GdbDataExporterForAdd {
 	
 			sqliteConn.close();
 			
-			System.out.println("......Start......");
+//			Utils.decryptDataBase(sqliteFile,localUnzipDir);
 			
+			System.out.println("......Start......");
+			//获取 NdsSqliteEncryptor 实例
+			NdsSqliteEncryptor encryptor = NdsSqliteEncryptor.getInstance();
 			try {
 				//进行加密，参数1：源数据库文件名 参数2：加密后数据库文件吗 参数3：加密密码
 				String gdbmm = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbSqlitePassword);
 	//			System.out.println("密码: "+gdbmm);
-				encryptor.encryptDataBase(localUnzipDir+File.separator+"gdbdata_une.sqlite",localUnzipDir+File.separator+"gdbdata.sqlite", gdbmm);
+				encryptor.encryptDataBase(sqliteFile,dir + "/tmp/gdbdata.sqlite", gdbmm);
+				
 			} catch (Exception e) {
+				
 				e.printStackTrace();
 			}
 			System.out.println("....加密成功..End......");
 	
 			//删除原有sqlite 数据库
-			File fileOld = new File(localUnzipDir+File.separator+"gdbdata_une.sqlite");
-			if(fileOld.exists() && fileOld.isFile()){
-				fileOld.delete();
-				System.out.println(" 删除未加密sqlite 数据库成功!");
-			}
+//			File fileOld = new File(dir + "/tmp/gdbdata_une.sqlite");
+//			if(fileOld.exists() && fileOld.isFile()){
+//				fileOld.delete();
+//				System.out.println(" 删除未加密sqlite 数据库成功!");
+//			}
 			
 			zipfile = dir + File.separator + operateDate + ".zip";
 			// 压缩文件
-			ZipUtils.zipFile(localUnzipDir, zipfile);
+			ZipUtils.zipFile(dir + "/tmp/", zipfile);
 	
-			FileUtil.deleteDirectory(new File(localUnzipDir));
+			FileUtil.deleteDirectory(file);
 			
 			return zipfile;
 		} catch (Exception e) {
@@ -213,4 +218,6 @@ public class GdbDataExporterForAdd {
 		}
 		
 	}
+	
+	
 }

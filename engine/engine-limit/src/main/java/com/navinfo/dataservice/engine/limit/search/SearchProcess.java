@@ -211,8 +211,7 @@ public class SearchProcess {
 
             } else if (LimitObjType.SCPLATERESGEOMETRY.equals(type) || LimitObjType.SCPLATERESRDLINK.equals(type)) {
 
-//              conn = DBConnector.getInstance().getMetaConnection();
-                conn = DBConnector.getInstance().getLimitConnection();
+              conn = DBConnector.getInstance().getMetaConnection();
             } else {
                 throw new Exception("不支持的渲染类型：" + type.toString());
             }

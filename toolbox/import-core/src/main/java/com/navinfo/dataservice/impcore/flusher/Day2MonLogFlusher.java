@@ -31,6 +31,7 @@ public class Day2MonLogFlusher {
 		flushResult.setTempFailLogTable(failLogTempTable);
 		log.info("将错误日志记录到错误日志temp表中："+failLogTempTable);
 		flushResult.recordFailLog2Temptable(logConn);//
+		logConn.commit();
 		return flushResult;
 	}
 	private String selectLogSql(){

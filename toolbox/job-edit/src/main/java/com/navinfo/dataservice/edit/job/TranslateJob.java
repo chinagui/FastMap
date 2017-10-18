@@ -111,18 +111,39 @@ public class TranslateJob extends AbstractJob {
     }
 
     class TranslateData {
+        /**
+         * 主键
+         */
         private String id;
 
+        /**
+         * 要素类型
+         */
         private String type;
 
+        /**
+         * 分类
+         */
         private String kindCode;
 
+        /**
+         * 品牌
+         */
         private String chain;
 
+        /**
+         * 名称
+         */
         private String name;
 
+        /**
+         * 拼音
+         */
         private String phonetic;
 
+        /**
+         * 英文名
+         */
         private String nameEng;
 
     }
@@ -151,8 +172,9 @@ public class TranslateJob extends AbstractJob {
                 String sql = "UPDATE " + TranslateJob.TABLE_NAME + " SET NAME_ENG = '%s' WHERE ID = '%s'";
 
                 for (TranslateData data : datas) {
-                    String engName = api.convertEng(data.name, data.chain);
-                    stmt.addBatch(String.format(sql, engName, data.id));
+                    String engName = api.convertEng(data.name, data.kindCode, data.chain, data.phonetic);
+                    stmt.addBatch(String.format(sql, "", data.id));
+                    //stmt.addBatch(String.format(sql, engName, data.id));
                     if (atomicInteger.addAndGet(1) % 500 == 0) {
                         stmt.executeBatch();
                     }

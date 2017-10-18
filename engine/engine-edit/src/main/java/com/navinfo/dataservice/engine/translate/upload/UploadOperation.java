@@ -98,9 +98,9 @@ public class UploadOperation {
             JobApi api = (JobApi) ApplicationContextUtil.getBean("jobApi");
             JSONObject dataJson = new JSONObject();
             dataJson.put("filePath", uploadRoot + fileName.toString());
-            //long jobId = api.createJob("translateJob", json, userId, 0, "英文翻译工具");
-            //json.put("jobId", jobId);
-            json.put("jobId", 14554);
+            long jobId = api.createJob("translateJob", json, userId, 0, "英文翻译工具");
+            json.put("jobId", jobId);
+            //json.put("jobId", 14554);
 
             logger.info(String.format("save params:[%s]", json.toString()));
 
@@ -115,9 +115,5 @@ public class UploadOperation {
         } finally {
             DbUtils.closeQuietly(conn);
         }
-    }
-
-    public static void main(String[] args) {
-        System.out.println("rules.xml".lastIndexOf('.'));
     }
 }

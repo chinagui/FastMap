@@ -616,6 +616,15 @@ public class MetadataApiImpl implements MetadataApi {
 
         return convert.convert(word);
 	}
+
+	@Override
+	public String convertEng(String word, String kindCode, String chain, String phonetic) {
+        EnglishConvert convert = new EnglishConvert();
+        convert.setKindCode(kindCode);
+        convert.setChain(chain);
+
+        return convert.convert(word, phonetic);
+	}
 	
 	@Override
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception {

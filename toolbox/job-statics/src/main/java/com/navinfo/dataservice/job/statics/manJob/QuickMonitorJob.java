@@ -202,7 +202,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			queryProgram11.put("type", 4);
 			Map<String,Integer> statMap = getStatDataInMongo(md, "program", queryProgram11);
 			quickMonitorMap.put("roadPlanTotal",statMap.get("roadPlanTotal"));
-			quickMonitorMap.put("roadActualTotal",Math.floor(statMap.get("roadActualTotal")/1000));
+			quickMonitorMap.put("roadActualTotal",Math.floor(statMap.get("roadActualTotal")));
 			quickMonitorMap.put("poiPlanTotal",statMap.get("poiPlanTotal"));
 			quickMonitorMap.put("poiActualTotal",statMap.get("poiActualTotal"));
 			

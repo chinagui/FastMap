@@ -46,6 +46,6 @@ public class PersonJobExe {
 		RunJobInfo info = new RunJobInfo(jobType,request);
 		
 		JobApi jobApi = (JobApi)ApplicationContextUtil.getBean("jobApi");
-		jobApi.createJob(info.getJobType(), info.getRequest(), info.getUserId(), info.getTaskId(), info.getDescp());
+		jobApi.createStaticsJob(info.getJobType(), info.getRequest(), info.getUserId(), info.getTaskId(), info.getDescp());
 	}
 }

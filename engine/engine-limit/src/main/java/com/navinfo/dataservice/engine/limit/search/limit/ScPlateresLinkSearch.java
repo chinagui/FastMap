@@ -129,9 +129,6 @@ public class ScPlateresLinkSearch implements ISearch {
 
                 JSONObject geojson = GeoTranslator.jts2Geojson(geom);
 
-                JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
-
-                snapshot.setG(jo.getJSONArray("coordinates"));
 
                 JSONObject m = new JSONObject();
 
@@ -143,11 +140,15 @@ public class ScPlateresLinkSearch implements ISearch {
 
                 m.put("e", geom.getGeometryType());
 
-                m.put("g", geojson.getJSONArray("coordinates"));
+                m.put("g", GeoTranslator.jts2Geojson(geom).getJSONArray("coordinates"));
 
                 snapshot.setM(m);
 
                 snapshot.setT(1001);
+
+                JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
+
+                snapshot.setG(jo.getJSONArray("coordinates"));
 
                 list.add(snapshot);
             }

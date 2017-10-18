@@ -82,6 +82,9 @@ public class GLM55047 extends BasicCheckRule {
         ResultSet rs = null;
         try{
         	pstmt = conn.prepareStatement(sql);
+        	if (map.size() > 1000) {
+        		pstmt.setClob(1, clob);
+        	}
         	rs = pstmt.executeQuery();
         	Set<String> validate = new HashSet<>();
         	 

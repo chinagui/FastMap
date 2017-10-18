@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.brea
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
@@ -16,8 +17,6 @@ import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand{
 
-	private GeometryFactory geometryFactory = new GeometryFactory();
-	
 	private String requester;
 	
 	private ScPlateresFace breakface;
@@ -25,7 +24,7 @@ public class Command extends AbstractCommand{
 	private Point breakpoint;
 	
 	private String geometryId;
-	
+		
 	private List<ScPlateresFace> newFaces = new ArrayList<>();
 	
 	public Command(JSONObject json,String requester){
@@ -38,8 +37,7 @@ public class Command extends AbstractCommand{
 		Coordinate coord = new Coordinate(data.getDouble("longitude"),
 				data.getDouble("latitude"));
 
-		this.breakpoint = geometryFactory.createPoint(coord);
-
+		this.breakpoint = (Point)GeoTranslator.createPoint(coord);
 	}
 	
 	public void setFace(ScPlateresFace value){
@@ -61,7 +59,7 @@ public class Command extends AbstractCommand{
 	public String getGeometryId(){
 		return this.geometryId;
 	}
-	
+		
 	@Override
 	public OperType getOperType() {
 		// TODO Auto-generated method stub

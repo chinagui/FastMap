@@ -169,7 +169,7 @@ public class CollectorPaImportor extends AbstractOperation {
 					//删除
 					obj.deleteObj();
 					result.putObj(obj);
-					//allPas.put(obj.objPid(), deletePas.get(((IxPoi)obj.getMainrow()).getPoiNum()).getString("rawFields"));
+					allPas.put(obj.objPid(), "");
 					successNum++;
 				}
 				for(String fid:deletePas.keySet()){

@@ -266,6 +266,11 @@ public class TaskOperation {
 			Map<String, Object> changeFields = bean.getChangeFields();
 			StringBuffer insert = new StringBuffer();
 			StringBuffer value = new StringBuffer();
+			if (changeFields.containsKey("UPLOAD_METHOD")){
+				StringConverter.manCreatDataUtils(insert, value);
+				insert.append(" UPLOAD_METHOD ");
+				value.append("'" + bean.getUploadMethod() + "'");
+			};
 			if (changeFields.containsKey("WORK_KIND")){
 				StringConverter.manCreatDataUtils(insert, value);
 				insert.append(" WORK_KIND ");

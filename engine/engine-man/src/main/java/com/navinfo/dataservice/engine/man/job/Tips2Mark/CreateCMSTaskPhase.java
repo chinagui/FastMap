@@ -226,8 +226,8 @@ public class CreateCMSTaskPhase extends JobPhase {
     	//子任务不传poiMeshes和poiPlanLoad
     	Map<String, Object> poisData = queryMeshesByTasks(conn, tasks);
     	if(poisData != null && poisData.size() > 0){
-        	taskPar.put("poiMeshes", poisData.containsKey("poiMeshes") && poisData.get("poiMeshes") != null ? poisData.get("poiMeshes") : "");
-        	taskPar.put("poiPlanLoad", poisData.containsKey("poiPlanLoad") && poisData.get("poiPlanLoad") != null ? poisData.get("poiPlanLoad") : "");
+        	taskPar.put("poiMeshes", poisData.containsKey("poiMeshes") && poisData.get("poiMeshes") != null ? poisData.get("poiMeshes") : new HashSet<Integer>());
+        	taskPar.put("poiPlanLoad", poisData.containsKey("poiPlanLoad") && poisData.get("poiPlanLoad") != null && poisData.size() > 0 ? poisData.get("poiPlanLoad").toString() : new HashMap<String, Integer>());
     	}
     	taskPar.put("taskBatch", taskBatch);
     	taskPar.put("uploadMethod", uploadMethod);
@@ -280,11 +280,11 @@ public class CreateCMSTaskPhase extends JobPhase {
             	
             	log.info("querypoiSql :" + poiSql);
             	
-            	ResultSetHandler<Map<String, Integer>> handler = new ResultSetHandler<Map<String, Integer>>() {
-            		public Map<String, Integer> handle(ResultSet rs) throws SQLException {
-            			Map<String, Integer> meshesCount = new HashMap<>();
+            	ResultSetHandler<Map<Integer, Integer>> handler = new ResultSetHandler<Map<Integer, Integer>>() {
+            		public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+            			Map<Integer, Integer> meshesCount = new HashMap<>();
             			while(rs.next()) {
-            				meshesCount.put(rs.getString("mesh_id"), rs.getInt("count(1)"));
+            				meshesCount.put(rs.getInt("mesh_id"), rs.getInt("count(1)"));
             			}
             			return meshesCount;
             		}

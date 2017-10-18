@@ -1125,6 +1125,9 @@ public class TaskJob extends AbstractStatJob {
 			}
 			//任务road计划量
 			roadPlanTotal = task.getRoadPlanTotal();
+			if(task.getProgramType()==1){
+				roadPlanTotal=roadPlanTotal/1000;
+			}
 			//任务poi计划量
 			poiPlanTotal = task.getPoiPlanTotal();
 			//新增道路计划覆盖度
@@ -1139,14 +1142,20 @@ public class TaskJob extends AbstractStatJob {
 			//统计里程,道路实际作业里程
 			if(dataMap.containsKey("collectRoadActualTotal")){
 				collectRoadActualTotal = (double) dataMap.get("collectRoadActualTotal");
+				//if(task.getProgramType()==1){
+				collectRoadActualTotal=collectRoadActualTotal/1000;
+				//}
 			}
+			
 			/*
 			 * 道路实际作业里程【MT-CR-7】
 			 * 采集上传现场轨迹匹配的link里程+根据采集任务ID，查找所有新增测线tips，统计里程
 			 */
 			if(programType == 1){
 				if(fccData.containsKey("linkLen")){
-					collectRoadActualTotal=collectRoadActualTotal+(double) fccData.get("linkLen");}
+					double linkLen=(double) fccData.get("linkLen");
+					linkLen=linkLen/1000;
+					collectRoadActualTotal=collectRoadActualTotal+linkLen;}
 			}
 			//采集上传个数
 			if(dataMap.containsKey("collectTipsUploadNum")){
@@ -1203,6 +1212,7 @@ public class TaskJob extends AbstractStatJob {
 			//原库道路里程
 			if(dataMap.containsKey("linkAllLen")){
 				linkAllLen = (double) dataMap.get("linkAllLen");
+				linkAllLen=linkAllLen/1000;
 			}
 			//原库道路里程（1-7级）
 			if(dataMap.containsKey("link17AllLen")){
@@ -1253,6 +1263,7 @@ public class TaskJob extends AbstractStatJob {
 			//道路规划完成量
 			if(dataMap.containsKey("linkUpdateAndPlanLen")){
 				linkUpdateAndPlanLen = (double) dataMap.get("linkUpdateAndPlanLen");
+				linkUpdateAndPlanLen=linkUpdateAndPlanLen/1000;
 			}
 			
 

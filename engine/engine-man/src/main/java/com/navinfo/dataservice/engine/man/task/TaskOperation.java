@@ -1413,14 +1413,14 @@ public class TaskOperation {
 		try{
 			QueryRunner run = new QueryRunner();
 			
-			String insertTask="INSERT INTO TASK  (TASK_ID,CREATE_USER_ID,CREATE_DATE,STATUS,NAME,"
+			String insertTask="INSERT INTO TASK (TASK_ID,CREATE_USER_ID,CREATE_DATE,STATUS,NAME,"
 					+ "   DESCP,PLAN_START_DATE,PLAN_END_DATE,LATEST,PROGRAM_ID,BLOCK_ID,REGION_ID,"
 					+ "   PRODUCE_PLAN_START_DATE,PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,"
-					+ "   POI_PLAN_TOTAL,WORK_KIND)"
+					+ "   POI_PLAN_TOTAL,WORK_KIND,geometry)"
 					+ "  SELECT "+newTaskId+","+userId+",SYSDATE,2,b.block_name||'_'||TO_CHAR(SYSDATE,'YYYYMMDD'),t.DESCP,t.PLAN_START_DATE,"
 					+ "         t.PLAN_END_DATE,1,t.PROGRAM_ID,t.BLOCK_ID,t.REGION_ID,t.PRODUCE_PLAN_START_DATE,"
 					+ "         t.PRODUCE_PLAN_END_DATE,t.TYPE,t.LOT,t.GROUP_ID,t.ROAD_PLAN_TOTAL,t.POI_PLAN_TOTAL,"
-					+ "t.WORK_KIND"
+					+ "t.WORK_KIND,t.geometry"
 					+ "    FROM TASK t,block b"
 					+ "   WHERE t.block_id=b.block_id AND t.TASK_ID = "+taskId;
 			String insertTaskGrid="INSERT INTO TASK_GRID_MAPPING"

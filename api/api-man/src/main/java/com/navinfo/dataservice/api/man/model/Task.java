@@ -66,6 +66,7 @@ public class Task implements Serializable{
 	}
 
 	public void setUploadMethod(String uploadMethod) {
+		changeFields.put("UPLOAD_METHOD", uploadMethod);
 		this.uploadMethod = uploadMethod;
 	}
 

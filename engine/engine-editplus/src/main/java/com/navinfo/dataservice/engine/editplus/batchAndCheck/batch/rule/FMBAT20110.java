@@ -223,7 +223,7 @@ public class FMBAT20110 extends BasicBatchRule {
 			long pid = poi.getPid();
 			log.debug("pid=" + pid);
 			try{
-				allPid.add(pid);
+				
 				List<IxPoiAddress> addresses = poiObj.getIxPoiAddresses();
 				if (addresses == null || addresses.size() == 0) {
 					continue;
@@ -265,6 +265,7 @@ public class FMBAT20110 extends BasicBatchRule {
 						}
 						log.debug("addFull=" + addFull);
 						log.debug("addFull转全角");
+						allPid.add(pid);
 						String sbc = ExcelReader.h2f(addFull);
 						if (!addFull.equals(sbc)) {
 							addressWrap.setFullname(sbc);
@@ -640,7 +641,12 @@ public class FMBAT20110 extends BasicBatchRule {
 						if (StringUtils.isNotEmpty(county)
 								&& StringUtils.isNotEmpty(placePre)
 								&& placePre.startsWith(county)) {
-							placePre = placePre.replaceFirst(county, "");
+							// 加判断区县后面是否为"乡"."镇"或者"街道",如果有则说明区县名和乡镇名称一样,则区县名不取,放到乡镇去中
+							if(!placePre.startsWith(county+"镇") && !placePre.startsWith(county+"乡") && !placePre.startsWith(county+"街道")){
+								placePre = placePre.replaceFirst(county, "");
+							}else{
+								county = "";
+							}
 						} else {
 							county = "";
 						}

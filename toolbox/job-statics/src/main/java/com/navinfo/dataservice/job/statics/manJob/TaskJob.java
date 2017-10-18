@@ -1142,9 +1142,9 @@ public class TaskJob extends AbstractStatJob {
 			//统计里程,道路实际作业里程
 			if(dataMap.containsKey("collectRoadActualTotal")){
 				collectRoadActualTotal = (double) dataMap.get("collectRoadActualTotal");
-				if(task.getProgramType()==1){
-					collectRoadActualTotal=collectRoadActualTotal/1000;
-				}
+				//if(task.getProgramType()==1){
+				collectRoadActualTotal=collectRoadActualTotal/1000;
+				//}
 			}
 			
 			/*
@@ -1154,9 +1154,7 @@ public class TaskJob extends AbstractStatJob {
 			if(programType == 1){
 				if(fccData.containsKey("linkLen")){
 					double linkLen=(double) fccData.get("linkLen");
-					if(task.getProgramType()==1){
-						linkLen=linkLen/1000;
-					}
+					linkLen=linkLen/1000;
 					collectRoadActualTotal=collectRoadActualTotal+linkLen;}
 			}
 			//采集上传个数
@@ -1214,9 +1212,7 @@ public class TaskJob extends AbstractStatJob {
 			//原库道路里程
 			if(dataMap.containsKey("linkAllLen")){
 				linkAllLen = (double) dataMap.get("linkAllLen");
-				if(task.getProgramType()==1){
-					linkAllLen=linkAllLen/1000;
-				}
+				linkAllLen=linkAllLen/1000;
 			}
 			//原库道路里程（1-7级）
 			if(dataMap.containsKey("link17AllLen")){
@@ -1267,9 +1263,7 @@ public class TaskJob extends AbstractStatJob {
 			//道路规划完成量
 			if(dataMap.containsKey("linkUpdateAndPlanLen")){
 				linkUpdateAndPlanLen = (double) dataMap.get("linkUpdateAndPlanLen");
-				if(task.getProgramType()==1){
-					linkUpdateAndPlanLen=linkUpdateAndPlanLen/1000;
-				}
+				linkUpdateAndPlanLen=linkUpdateAndPlanLen/1000;
 			}
 			
 

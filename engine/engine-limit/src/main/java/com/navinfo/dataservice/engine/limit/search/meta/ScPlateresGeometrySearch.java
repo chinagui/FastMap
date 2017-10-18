@@ -47,7 +47,7 @@ public class ScPlateresGeometrySearch implements ISearch {
         sql.append("WITH query AS (");
         sql.append(" SELECT * FROM SC_PLATERES_GEOMETRY WHERE GROUP_ID = '" + groupId + "')");
         sql.append(" SELECT query.*,(SELECT COUNT(1) FROM query) AS TOTAL_ROW_NUM FROM query WHERE");
-        sql.append(" rownum BETWEEN " + ((pageSize - 1) * pageNum + 1) + " AND " + (pageSize * pageNum) + " FOR UPDATE NOWAIT");
+        sql.append(" rownum BETWEEN " + ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " FOR UPDATE NOWAIT");
 
         PreparedStatement pstmt = null;
         int total = 0;

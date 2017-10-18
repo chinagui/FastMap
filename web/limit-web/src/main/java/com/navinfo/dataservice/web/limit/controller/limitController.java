@@ -62,7 +62,7 @@ public class limitController extends BaseController {
 
             String objType = jsonReq.getString("type");
 
-            conn = DBConnector.getInstance().getLimitConnection();
+            conn = DBConnector.getInstance().getMetaConnection();
 
             JSONObject condition = jsonReq.getJSONObject("condition");
 

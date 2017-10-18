@@ -58,7 +58,7 @@ public class Command extends AbstractCommand{
 	@Override
 	public DbType getDbType() {
 		// TODO Auto-generated method stub
-		return DbType.LIMITDB;
+		return DbType.METADB;
 	}
 
 	@Override

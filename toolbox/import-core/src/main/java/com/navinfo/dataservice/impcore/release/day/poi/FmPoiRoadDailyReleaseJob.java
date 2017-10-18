@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,6 +38,7 @@ import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
 import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -585,11 +587,14 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 			sb.append("update RELEASE_TASK set RELEASE_STATUS="+status);
 			if(oldTaskId!=0){sb.append(",REF_TASK_ID="+oldTaskId);}
 			if(jobId!=0){sb.append(",JOBID='"+String.valueOf(jobId)+"'");}
-			if(jsonProject!=null){sb.append(",PARAMETER='"+jsonProject+"'");}
+			if(jsonProject!=null){sb.append(",PARAMETER=?");}
 			if(jsonTempTab!=null){sb.append(",TEMP_TAB='"+jsonObject.toString()+"'");}
 			sb.append(" where task_Id="+taskId);
 			String sql = sb.toString();
-			run.update(conn,sql);
+			
+			Clob prjClob = ConnectionUtil.createClob(conn);
+			prjClob.setString(1, jsonProject);
+			run.update(conn, sql, prjClob);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);

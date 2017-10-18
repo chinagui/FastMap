@@ -128,7 +128,7 @@ public class DefaultWriter {
 		}
 		
 		// 删除时间点相同的重复统计数据
-		log.info("删除时间点相同的重复统计数据 mongo "+collectionName+",timestamp="+timestamp);
+		log.info("删除时间点相同的重复统计数据 mongo "+collectionName+",identifyJson="+identifyJson);
 		BasicDBObject query = new BasicDBObject();
 		query.putAll(identifyJson);
 		mdao.deleteMany(collectionName, query);

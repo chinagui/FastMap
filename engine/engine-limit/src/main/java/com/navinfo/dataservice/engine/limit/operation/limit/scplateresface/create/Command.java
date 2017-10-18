@@ -52,7 +52,7 @@ public class Command extends AbstractCommand {
 		}
 		
 		if (data.containsKey("geometryIds")) {
-			geometryIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("geometryIds")));
+			geometryIds = new ArrayList<>(JSONArray.toCollection(data.getJSONArray("geometryIds")));
 		}
 	}
 

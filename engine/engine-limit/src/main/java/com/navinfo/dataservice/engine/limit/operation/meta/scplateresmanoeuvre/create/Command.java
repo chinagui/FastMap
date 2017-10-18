@@ -182,7 +182,7 @@ public class Command extends AbstractCommand {
 
 	@Override
 	public DbType getDbType() {
-		return DbType.LIMITDB;
+		return DbType.METADB;
 	}
 
 	@Override

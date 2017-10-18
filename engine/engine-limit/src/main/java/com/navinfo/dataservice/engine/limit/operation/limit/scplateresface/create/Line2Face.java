@@ -28,18 +28,18 @@ class Line2Face {
 
         LineInfo firstLine = lineStorage.firstEntry().getValue();
 
-        List<List<Coordinate>> allCoordinates = new ArrayList<>();
+        List<String> lineIds = new ArrayList<>();
 
-        List<Coordinate> polygonCoordinate = Arrays.asList(firstLine.getCoordinates());
+        lineIds.add(firstLine.getLineId());
 
-        getCoordinate(firstLine, firstLine.sPoint, allCoordinates);
+        List<Coordinate> polygonCoordinate = new ArrayList<>();
 
-        if (allCoordinates.size() != faces.size()) {
+        polygonCoordinate.addAll(Arrays.asList(firstLine.getCoordinates()));
+
+        getCoordinate(firstLine, firstLine.ePoint, lineIds,polygonCoordinate);
+
+        if (lineIds.size() != faces.size()) {
             throw new Exception(" 临时几何不闭合，errcode：003");
-        }
-
-        for (List<Coordinate> coordinates : allCoordinates) {
-            polygonCoordinate.addAll(1, coordinates);
         }
 
         if (!polygonCoordinate.get(0).equals(polygonCoordinate.get(polygonCoordinate.size() - 1))) {
@@ -92,21 +92,30 @@ class Line2Face {
         }
     }
 
-    private void getCoordinate(LineInfo currLine, String pointFlag, List<List<Coordinate>> allCoordinates) {
+    private void getCoordinate(LineInfo currLine, String pointFlag, List<String> ids,List<Coordinate> polygonCoordinate) {
 
         LineInfo relationLine = getRelationLine(pointFlag, currLine.getLineId());
 
-        if (relationLine == null) {
+        if (relationLine == null || ids.contains(relationLine.getLineId())) {
             return;
         }
 
-        List<Coordinate> Coordinates = Arrays.asList(relationLine.getCoordinates());
+        ids.add(relationLine.getLineId());
 
-        allCoordinates.add(Coordinates);
+        List<Coordinate> coordinates = Arrays.asList(relationLine.getCoordinates());
 
-        String nextPointFlag = currLine.sPoint.equals(pointFlag) ? currLine.ePoint : currLine.sPoint;
+        String nextPointFlag = relationLine.ePoint;
 
-        getCoordinate(relationLine, nextPointFlag, allCoordinates);
+        if (relationLine.ePoint.equals(pointFlag)) {
+
+            Collections.reverse(coordinates);
+
+            nextPointFlag = relationLine.sPoint;
+        }
+
+        polygonCoordinate.addAll(coordinates.subList(1, coordinates.size()));
+
+        getCoordinate(relationLine, nextPointFlag, ids, polygonCoordinate);
     }
 
     private LineInfo getRelationLine(String pointFlag, String currLineId) {

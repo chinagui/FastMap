@@ -62,9 +62,19 @@ public class operationTest extends ClassPathXmlAppContextInit {
         Transaction t = new Transaction(parameter);
 
         String msg = t.run();
-
-
     }
+
+
+    @Test
+    public void create03() throws Exception {
+
+        String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"CREATE\",\"dbId\":13,\"data\":{\"groupId\":\"D1100000006\",\"geometryIds\":[\"D1100000006000057\",\"D1100000006000063\",\"D1100000006000064\",\"D1100000006000062\"]}}\n";
+
+        Transaction t = new Transaction(parameter);
+
+        String msg = t.run();
+    }
+
 
     @Test
     public void delete01() throws Exception {
@@ -174,4 +184,49 @@ public class operationTest extends ClassPathXmlAppContextInit {
         }
     }
 
+
+    @Test
+    public void render03() throws Exception {
+
+
+        String parameter = "{\"dbId\":13,\"gap\":10,\"types\":[\"SCPLATERESFACE\"],\"x\":107917,\"y\":49661,\"z\":17}";
+
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+        try {
+
+            JSONArray type = jsonReq.getJSONArray("types");
+
+            RenderParam param = new RenderParam();
+
+            param.setX(jsonReq.getInt("x"));
+
+            param.setY(jsonReq.getInt("y"));
+
+            param.setZ(jsonReq.getInt("z"));
+
+            if (jsonReq.containsKey("gap")) {
+                param.setGap(jsonReq.getInt("gap"));
+            }
+
+            List<LimitObjType> types = new ArrayList<>();
+
+            for (int i = 0; i < type.size(); i++) {
+                types.add(LimitObjType.valueOf(type.getString(i)));
+            }
+
+            JSONObject data = null;
+
+            if (param.getZ() > 13) {
+                com.navinfo.dataservice.engine.limit.search.SearchProcess p = new com.navinfo.dataservice.engine.limit.search.SearchProcess();
+
+                data = p.searchDataByTileWithGap(types, param);
+            }
+
+        } catch (Exception e) {
+
+        } finally {
+
+        }
+    }
 }

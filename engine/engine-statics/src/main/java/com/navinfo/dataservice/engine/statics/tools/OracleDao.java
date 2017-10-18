@@ -763,4 +763,23 @@ public class OracleDao {
 		}
 	}
 	
+	/**
+	 * Map<Integer, Long>
+	 * @return
+	 */
+	public static ResultSetHandler<Map<Integer, Long>> numRsHandler(){
+		ResultSetHandler<Map<Integer, Long>> rsHandler = new ResultSetHandler<Map<Integer, Long>>() {
+			public Map<Integer, Long> handle(ResultSet rs) throws SQLException {
+				Map<Integer, Long> result=new HashMap<>();
+				while (rs.next()) {
+					int subtaskId = rs.getInt("ID");
+					long num=rs.getLong("NUM");
+					result.put(subtaskId, num);
+				}
+				return result;
+			}	
+		};
+	return rsHandler;
+	}
+	
 }

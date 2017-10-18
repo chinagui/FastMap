@@ -8,8 +8,11 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import org.apache.commons.dbutils.DbUtils;
@@ -212,9 +215,9 @@ public class TipsJob extends AbstractStatJob {
 	}
 	
 	public List<Map<String, Object>> getTaskGridTips(Connection conn) {
-		List<Map<String, Object>> tipsAddLenList = new ArrayList<>();
-		List<Map<String, Object>> tipsUploadNumList = new ArrayList<>();
-		List<Map<String, Object>> taskGridTipsList = new ArrayList<>();
+		Map<Integer,Map<String, Object>> tipsAddLenList = new HashMap();
+		Map<Integer,Map<String, Object>> tipsUploadNumList = new HashMap();
+		List<Map<String, Object>> taskGridTipsList =new ArrayList<>();
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -251,30 +254,24 @@ public class TipsJob extends AbstractStatJob {
 			
 			compomentTipsUploadNumMap(rs, tipsUploadNumList);
 			
-			for (int i = tipsAddLenList.size()-1; i >=0 ; i--) {
-				Map<String, Object> map = tipsAddLenList.get(i);
-				for (int j = tipsUploadNumList.size()-1; j >=0 ; j--) {
-					Map<String, Object> tipsUploadNumMap = tipsUploadNumList.get(j);
-					if((int)map.get("taskId")==(int)tipsUploadNumMap.get("taskId")){
-						map.putAll(tipsUploadNumMap);
-						taskGridTipsList.add(map);
-						tipsUploadNumList.remove(j);
-						tipsAddLenList.remove(i);
-						break;
-					}
+			Set<Integer> taskIds=new HashSet<>();
+			taskIds.addAll(tipsUploadNumList.keySet());
+			taskIds.addAll(tipsAddLenList.keySet());
+			
+			for(int taskId:taskIds){
+				Map<String, Object> taskStatOne=new HashMap<>();
+				taskStatOne.put("taskId", taskId);
+				taskStatOne.put("tipsUploadNum", 0);
+				taskStatOne.put("tipsAddLen", 0);
+				if(tipsUploadNumList.containsKey(taskId)){
+					Map<String, Object> poiUploadNum = tipsUploadNumList.get(taskId);
+					taskStatOne.put("tipsUploadNum",poiUploadNum.get("tipsUploadNum"));
+				}
+				if(tipsAddLenList.containsKey(taskId)){
+					Map<String, Object> tipsAddLen = tipsAddLenList.get(taskId);
+					taskStatOne.put("tipsAddLen",tipsAddLen.get("tipsAddLen"));
 				}
 			}
-			
-			for (Map<String, Object> map : tipsAddLenList) {
-				map.put("tipsUploadNum", 0);
-			}
-			
-			for (Map<String, Object> map : tipsUploadNumList) {
-				map.put("tipsAddLen", "0");
-			}
-			
-			taskGridTipsList.addAll(tipsAddLenList);
-			taskGridTipsList.addAll(tipsUploadNumList);
 			
 			log.debug("taskGridTipsList-------"+ JSONArray.fromObject(taskGridTipsList));
 			
@@ -296,28 +293,30 @@ public class TipsJob extends AbstractStatJob {
 		}
 	}
 	
-	public void compomentTipsUploadNumMap(ResultSet rs,List<Map<String, Object>> tipsUploadNumList) throws SQLException{
+	public void compomentTipsUploadNumMap(ResultSet rs,Map<Integer,Map<String, Object>> tipsUploadNumList) throws SQLException{
 		while(rs.next()){
 			Map<String, Object> tipsUploadNumMap = new HashMap<>(); 
-			tipsUploadNumMap.put("taskId",rs.getInt(1));
+			int taskId=rs.getInt(1);
+			tipsUploadNumMap.put("taskId",taskId);
 			tipsUploadNumMap.put("tipsUploadNum",rs.getInt(2));
-			tipsUploadNumList.add(tipsUploadNumMap);
+			tipsUploadNumList.put(taskId,tipsUploadNumMap);
 		}
 	}
-	
-	
-	public void compomentTipsAddLenMap(ResultSet rs,List<Map<String, Object>> taskGridTipsList, Table htab) throws SQLException, IOException {
-		int taskId = 0;
-		Map<String, Object> taskGridTipsMap = null;
+		
+	public void compomentTipsAddLenMap(ResultSet rs,Map<Integer,Map<String, Object>> taskGridTipsList, Table htab) throws SQLException, IOException {
+		//int taskId = 0;
+		//Map<String, Object> taskGridTipsMap = null;
 		DecimalFormat df=new DecimalFormat("0.00");
 		while(rs.next()){
-			if(taskId!=rs.getInt(1)) {
-				taskGridTipsMap = new HashMap<>(); 
+			int taskId=rs.getInt(1);
+			if(!taskGridTipsList.containsKey(taskId)){
+				Map<String, Object> taskGridTipsMap = new HashMap<>(); 
 				taskId = rs.getInt(1);
 				taskGridTipsMap.put("taskId",taskId);
 				taskGridTipsMap.put("tipsAddLen",df.format(0.0).toString());
-				taskGridTipsList.add(taskGridTipsMap);
+				taskGridTipsList.put(taskId,taskGridTipsMap);
 			}
+			Map<String, Object> taskGridTipsMap =taskGridTipsList.get(taskId);
 			double tipsAddLen = Double.valueOf((String) taskGridTipsMap.get("tipsAddLen"));
             //20170927 新增里程区分测线来源统计
             //测线来源src=0（GPS测线手持端）和2（自绘测线）

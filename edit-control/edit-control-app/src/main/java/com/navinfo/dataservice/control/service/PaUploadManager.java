@@ -127,6 +127,8 @@ public class PaUploadManager {
 			
 			
 			Set<Long> freshVerPas = imp.getFreshVerPas();
+			//只修改了memo 的记录
+			Set<Long> memoPas = imp.getMemoPas();
 			//获取所有pois
 			Map<Long,String> allPas = imp.getAllPas();
 			//写入数据库
@@ -144,7 +146,7 @@ public class PaUploadManager {
 			for(Long fpi : freshVerPas){
 				allPas.remove(fpi);
 			}
-			PointaddressEditStatus.forCollector(conn,allPas,freshVerPas,stkId,tkId,tkType);
+			PointaddressEditStatus.forCollector(conn,allPas,freshVerPas,memoPas,stkId,tkId,tkType);
 			long t2 = System.currentTimeMillis();
 			log.info("pas imported,total time:"+(t2-t1)+"ms.");
 		}catch(Exception e){

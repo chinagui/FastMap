@@ -6,8 +6,11 @@ import java.util.List;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.limit.Utils.PidApply;
 import com.navinfo.dataservice.engine.limit.glm.iface.IOperation;
@@ -35,21 +38,34 @@ public class Operation implements IOperation {
 		if (this.command.getGeometryIds()!=null)
 		{
 			line2Face( result,this.command.getGeometryIds());
+			return null;
 		}
 
-		JSONArray array = this.command.getLinks();
+		JSONArray arrayrd = this.command.getRdLinks();
+		
+		JSONArray arrayad = this.command.getAdLinks();
 
 		Geometry geo = this.command.getGeo();
 
 		int seq = 0;
 		
-		if (array != null && array.size() != 0) {
-			seq = array.size();
-			
+		int rdseq = 0;
+		
+		if (arrayrd != null && arrayrd.size() != 0) {
+			rdseq = seq = arrayrd.size();
+
 			@SuppressWarnings("unchecked")
-			List<Integer> pidList = JSONArray.toList(array, Integer.class, JsonUtils.getJsonConfig());
+			List<Integer> pidList = JSONArray.toList(arrayrd, Integer.class, JsonUtils.getJsonConfig());
 
 			createFaceByLinks(pidList, result);
+		}
+		if (arrayad != null && arrayad.size() != 0) {
+			seq += arrayad.size();
+
+			@SuppressWarnings("unchecked")
+			List<Integer> pidList = JSONArray.toList(arrayad, Integer.class, JsonUtils.getJsonConfig());
+
+			createFaceByAdLinks(pidList, result, rdseq);
 		}
 		if (geo != null) {
 			ScPlateresFace face = new ScPlateresFace();
@@ -91,6 +107,52 @@ public class Operation implements IOperation {
 				for (RdLink link : links) {
 					if (link.getPid() == pidList.get(i)) {
 						currentLink = link;
+						break;
+					}
+				}
+
+				if (currentLink == null)
+					continue;
+
+				face.setGeometryId(geomId);
+
+				face.setGroupId(this.command.getGroupId());
+
+				face.setGeometry(currentLink.getGeometry());
+
+				result.insertObject(face, ObjStatus.INSERT, geomId);
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			regionConn.close();
+		}
+	}
+	
+	private void createFaceByAdLinks(List<Integer> pidList, Result result, int seq) throws Exception {
+		Connection regionConn = null;
+
+		try {
+			regionConn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
+
+			AdLinkSelector selector = new AdLinkSelector(regionConn);
+
+			List<IRow> links = selector.loadByIds(pidList, true, false);
+
+			for (int i = 0; i < pidList.size(); i++) {
+
+				ScPlateresFace face = new ScPlateresFace();
+
+				String geomId = PidApply.getInstance(this.conn).pidForInsertGeometry(this.command.getGroupId(),
+						LimitObjType.SCPLATERESFACE, seq + i);
+
+				AdLink currentLink = null;
+
+				for (IRow link : links) {
+					AdLink adlink = (AdLink)link;
+					
+					if (adlink.getPid() == pidList.get(i)) {
+						currentLink = adlink;
 						break;
 					}
 				}

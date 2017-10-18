@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
@@ -199,6 +200,7 @@ public class IxPointaddressSearch implements ISearch {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
+		LogReader logRead = new LogReader(conn);
 		try {
 			log.info(sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
@@ -225,6 +227,8 @@ public class IxPointaddressSearch implements ISearch {
 				json.put("status", resultSet.getInt("STATUS"));
 				json.put("rawFields", resultSet.getInt("RAW_FIELDS"));
 				json.put("geoLiveType",ObjType.IXPOINTADDRESS.toString());
+				json.put("state",logRead.getObjectState(resultSet.getInt("PID"), "IX_POINTADDRESS"));
+				
 				
 			}
 			return json;

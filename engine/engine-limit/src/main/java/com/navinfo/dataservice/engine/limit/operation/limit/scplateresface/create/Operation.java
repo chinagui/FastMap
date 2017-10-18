@@ -38,6 +38,7 @@ public class Operation implements IOperation {
 		if (this.command.getGeometryIds()!=null)
 		{
 			line2Face( result,this.command.getGeometryIds());
+			return null;
 		}
 
 		JSONArray arrayrd = this.command.getRdLinks();

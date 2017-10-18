@@ -48,6 +48,7 @@ public class PointaddressEditStatus {
 	 * @param conn
 	 * @param normalPois 非鲜度验证pa
 	 * @param freshVerPois 鲜度验证pa
+	 * @param memoPas 
 	 * @param subtaskId 
 	 * @param taskId
 	 * @param taskType
@@ -56,22 +57,22 @@ public class PointaddressEditStatus {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年10月11日  
 	 */
-	public static void forCollector(Connection conn, Map<Long, String> normalPois, Set<Long> freshVerPois,
-			int subtaskId, int taskId, int taskType) throws Exception {
+	public static void forCollector(Connection conn, Map<Long, String> normalPas, Set<Long> freshVerPas,
+			Set<Long> memoPas, int subtaskId, int taskId, int taskType) throws Exception {
 		PreparedStatement stmt = null;
 		try{
 			
 			//全部pids为空则无上传数据
-			if((normalPois==null || normalPois.size()==0) 
-					&& (freshVerPois==null || freshVerPois.size()==0)){
+			if((normalPas==null || normalPas.size()==0) 
+					&& (freshVerPas==null || freshVerPas.size()==0)){
 				return;
 			}
 			QueryRunner run = new QueryRunner();
 			Set<Long> pids = new HashSet<Long>();
-			if(freshVerPois!=null && freshVerPois.size()>0){
-				pids.addAll(freshVerPois);
+			if(freshVerPas!=null && freshVerPas.size()>0){
+				pids.addAll(freshVerPas);
 				Clob fPidsClob = ConnectionUtil.createClob(conn);
-				fPidsClob.setString(1, StringUtils.join(freshVerPois,","));
+				fPidsClob.setString(1, StringUtils.join(freshVerPas,","));
 				StringBuilder sb = new StringBuilder();
 			
 				sb.append("UPDATE POINTADDRESS_EDIT_STATUS P \n");
@@ -85,8 +86,21 @@ public class PointaddressEditStatus {
 				
 			}
 			
-			if(normalPois!=null && normalPois.size()>0){
-				pids.addAll(normalPois.keySet());
+			if(memoPas!=null && memoPas.size()>0){
+				Clob photoPidsClob = ConnectionUtil.createClob(conn);
+				photoPidsClob.setString(1, StringUtils.join(memoPas,","));
+				StringBuilder sb = new StringBuilder();
+			
+				sb.append("UPDATE POI_EDIT_STATUS P \n");
+				sb.append("SET P.STATUS=1 \n");
+				sb.append("   WHERE P.PID IN \n");
+				sb.append("   (SELECT TO_NUMBER(COLUMN_VALUE) PID FROM TABLE(CLOB_TO_TABLE(?))) \n");
+				sb.append("   AND P.STATUS=2 \n");
+				run.update(conn, sb.toString(), photoPidsClob);			
+			}
+			
+			if(normalPas!=null && normalPas.size()>0){
+				pids.addAll(normalPas.keySet());
 				StringBuilder sb = new StringBuilder();
 				sb.append("MERGE INTO POINTADDRESS_EDIT_STATUS P \n");
 				sb.append("USING (SELECT TO_NUMBER(?) PID,? as rawFields \n");
@@ -101,7 +115,7 @@ public class PointaddressEditStatus {
 				sb.append("WHEN NOT MATCHED THEN \n");
 				sb.append("  INSERT(P.PID, P.STATUS,P.RAW_FIELDS) VALUES (T.PID, 1,T.rawFields)");
 				stmt = conn.prepareStatement(sb.toString());
-				for(Entry<Long,String> entry:normalPois.entrySet()){
+				for(Entry<Long,String> entry:normalPas.entrySet()){
 					String rawFields = "";
 					if(entry.getValue() != null){
 						rawFields = entry.getValue();

@@ -82,7 +82,6 @@ public class IxPointAddressObj extends AbstractIxObj {
 						|| key.equals(IxPointaddress.Y_GUIDE) 
 						|| key.equals(IxPointaddress.MEMOIRE) 
 						|| key.equals(IxPointaddress.GEOMETRY) 
-						|| key.equals(IxPointaddress.MEMO) 
 					) {
 					return false;
 				} else {

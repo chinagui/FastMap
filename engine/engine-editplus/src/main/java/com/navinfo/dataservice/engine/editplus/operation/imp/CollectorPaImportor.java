@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
@@ -52,6 +54,8 @@ public class CollectorPaImportor extends AbstractOperation {
 //	protected CollectorUploadPoiPcRelation pcs = new CollectorUploadPoiPcRelation();
 	protected Set<Long> freshVerPas = new HashSet<Long>();
 	
+	protected Set<Long> memoPas = new HashSet<Long>();
+	
 	//****zl 2017.06.06 ***
 	protected Map<Long,String> allPas = new HashMap<Long,String>();
 	public Map<Long, String> getAllPas() {
@@ -87,7 +91,11 @@ public class CollectorPaImportor extends AbstractOperation {
 	public Set<Long> getNoChangedPas(){
 		return noChangedPas;
 	}
-	
+		
+	public Set<Long> getMemoPas() {
+		return memoPas;
+	}
+
 	/**
 	 * 初始化所需子表、属性和子表名的映射关系
 	 */
@@ -140,6 +148,9 @@ public class CollectorPaImportor extends AbstractOperation {
 					//计算鲜度验证
 					if(paObj.isFreshFlag()){//鲜度验证
 						freshVerPas.add(paObj.objPid());
+						if(paObj.getMainrow().isChanged(IxPointaddress.MEMO)){
+							memoPas.add(paObj.objPid());
+						}
 					}
 					//所有的pa
 					allPas.put(paObj.objPid(), "");

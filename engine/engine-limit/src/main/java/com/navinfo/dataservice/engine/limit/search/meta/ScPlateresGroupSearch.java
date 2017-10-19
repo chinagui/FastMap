@@ -88,10 +88,6 @@ public class ScPlateresGroupSearch {
 
 
     public int searchDataByCondition(JSONObject condition,List<IRow> rows) throws Exception {
-
-    	if(!condition.containsKey("adminArea") && !condition.containsKey("infoCode")){
-            throw new Exception("筛选GROUP参数不完善，请重新输入！");
-        }
     	
     	StringBuilder sqlstr = new StringBuilder();
     	sqlstr.append("SELECT * FROM SC_PLATERES_GROUP WHERE");
@@ -142,11 +138,20 @@ public class ScPlateresGroupSearch {
     
 	private void componentSql(JSONObject obj, StringBuilder sql) {
 
+		if (obj.containsKey("infoIntelId")) {
+			String infoIntelId = obj.getString("infoIntelId");
+
+			if (infoIntelId != null && !infoIntelId.isEmpty()) {
+				sql.append(" INFO_INTEL_ID = ");
+				sql.append("'" + infoIntelId + "'");
+			}
+		}
+		
 		if (obj.containsKey("infoCode")) {
 			String infoCode = obj.getString("infoCode");
 
 			if (infoCode != null && !infoCode.isEmpty()) {
-				sql.append(" INFO_INTEL_ID = ");
+				sql.append(" INFO_CODE = ");
 				sql.append("'" + infoCode + "'");
 			}
 		}

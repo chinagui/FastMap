@@ -65,12 +65,15 @@ public class FMBATD20007 extends BasicBatchRule {
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
+		log.info("FMBATD20007 start loadReferDatas ---");
 		
 		scPointMinganNameList = getScPointMinganNameList();
 		
 		scSensitiveWordsType4KindList = getScSensitiveWordsType4KindList();
 		
+		log.info("FMBATD20007 start scSensitiveWordsMap  ---");
 		scSensitiveWordsMap	= metadataApi.scSensitiveWordsMap();
+		log.info("FMBATD20007 end scSensitiveWordsMap  ---");
 		
 		Set<Long> pidList = new HashSet<>();
 
@@ -78,7 +81,10 @@ public class FMBATD20007 extends BasicBatchRule {
 
             pidList.add(obj.objPid());
         }
+        
 		pidAdminId = IxPoiSelector.getAdminIdByPids(getBatchRuleCommand().getConn(), pidList);
+		
+		log.info("FMBATD20007 end loadReferDatas ---");
 	}
 
 	@Override
@@ -89,6 +95,8 @@ public class FMBATD20007 extends BasicBatchRule {
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 			
 			IxPoiName ixPoiName = poiObj.getOfficeOriginCHIName();
+			
+			log.info("FMBATD20007 start runBatch pid---" +poi.getPid());
 			
 			if(poi.getOpType().equals(OperationType.INSERT)||ixPoiName.getOpType().equals(OperationType.UPDATE)){
 				long pid = poi.getPid();
@@ -145,7 +153,8 @@ public class FMBATD20007 extends BasicBatchRule {
 				}
 				
 			}
-		
+			
+			log.info("FMBATD20007 end runBatch pid---" +poi.getPid());
 		}
 		
 	}
@@ -355,7 +364,7 @@ public class FMBATD20007 extends BasicBatchRule {
 
             for (IxPoiFlag flag : ixPoiFlags) {
 
-                if (!flag.getHisOpType().equals(OperationType.DELETE) && flag.getFlagCode().equals("110009010001")) {
+                if (!flag.getOpType().equals(OperationType.DELETE) && flag.getFlagCode().equals("110009010001")) {
 
                     return flag;
                 }

@@ -27,8 +27,7 @@ public class TranslateTest {
     @Test
     public void translateTest() {
         EnglishConvert convert = new EnglishConvert();
-
-        System.out.println(convert.convert("九度＠三米"));
+        System.out.println(convert.convert("三三村"));
         System.out.println(convert.convert("视立明视力恢复训练中心福州五四北泰禾店"));
         System.out.println(convert.convert("蜀风王火锅五四北泰禾店"));
         System.out.println(convert.convert("老子山张咀镇电子商务专业合作社"));

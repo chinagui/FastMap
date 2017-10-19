@@ -207,6 +207,18 @@ public interface MetadataApi {
 	 */
 	public String convertEng(String word, String admin);
 
+    /**
+     * <p>中文转英文接口</p>
+     * 根据SC_POINT_CHI2KEY_WORD转英文（未匹配内容转为拼音）
+     * @param word 待翻译文本
+     * @param kindCode 类型
+     * @param chain
+     * @param phonetic 拼音
+     * @return 翻译后文本
+     * @throws Exception
+     */
+    public String convertEng(String word, String kindCode, String chain, String phonetic);
+
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception;
 
 	/**

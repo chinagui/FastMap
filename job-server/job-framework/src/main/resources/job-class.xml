@@ -179,6 +179,10 @@
           class="com.navinfo.dataservice.job.statics.manJob.MediumMonitorJob"
           request="com.navinfo.dataservice.job.statics.manJob.MediumMonitorJobRequest" >
     </type>
+    <type name="translateJob"
+          class="com.navinfo.dataservice.edit.job.TranslateJob"
+          request="com.navinfo.dataservice.edit.job.TranslateJobRequest" >
+    </type>
   	<type name="productMonitorStat"
           class="com.navinfo.dataservice.job.statics.manJob.ProductMonitorJob"
           request="com.navinfo.dataservice.job.statics.manJob.ProductMonitorJobRequest" >

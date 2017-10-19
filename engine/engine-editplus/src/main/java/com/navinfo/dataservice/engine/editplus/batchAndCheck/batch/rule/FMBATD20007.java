@@ -85,14 +85,12 @@ public class FMBATD20007 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		
 		if(obj.objName().equals(ObjectName.IX_POI)){
-			
 			IxPoiObj poiObj = (IxPoiObj) obj;
-			
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 			
 			IxPoiName ixPoiName = poiObj.getOfficeOriginCHIName();
 			
-			if(poi.getHisOpType().equals(OperationType.INSERT)||ixPoiName.getHisOpType().equals(OperationType.UPDATE)){
+			if(poi.getOpType().equals(OperationType.INSERT)||ixPoiName.getOpType().equals(OperationType.UPDATE)){
 				long pid = poi.getPid();
 			
 				String name = ixPoiName.getName();
@@ -106,17 +104,50 @@ public class FMBATD20007 extends BasicBatchRule {
 				
 				IxPoiFlag ixPoiFlag = getFlagCode(poiObj);
 				
-				if(ixPoiFlag==null){
-					if(suitContidion1(name) || suitContidion5(name, kindCode,adminCode)){
+				if(suitContidion1(name)){
+					if(ixPoiFlag == null){
 						addIxPoiFlag(poiObj);
-					}
-				}else {
-					if(suitContidion2(pid,name) || suitContidion3(kindCode) || suitContidion4(name,kindCode,adminCode)){
-						poiObj.deleteSubrow(ixPoiFlag);
+					}else{
+						return;
 					}
 				}
+				
+				if(suitContidion2(pid,name)){
+					if(ixPoiFlag != null){
+						ixPoiFlag.setOpType(OperationType.DELETE);
+					}else{
+						return;
+					}
+				}
+				
+				if(suitContidion3(kindCode)){
+					if(ixPoiFlag != null){
+						ixPoiFlag.setOpType(OperationType.DELETE);
+					}else{
+						return;
+					}
+				}
+				
+				if(suitContidion4(name,kindCode,adminCode)){
+					if(ixPoiFlag != null){
+						ixPoiFlag.setOpType(OperationType.DELETE);
+					}else{
+						return;
+					}
+				}
+				
+				if(suitContidion5(name, kindCode,adminCode)){
+					if(ixPoiFlag == null){
+						addIxPoiFlag(poiObj);
+					}else{
+						return;
+					}
+				}
+				
 			}
+		
 		}
+		
 	}
 	
 	/**
@@ -155,17 +186,21 @@ public class FMBATD20007 extends BasicBatchRule {
 				int reCount = 0;
 				
 				String word1 = sc.getRegexSensitiveWord();
+				int wordType1 = sc.getRegexWordType();
 				if(word1 != null && !word1.isEmpty()){
 					count += 1;
-					if(Pattern.matches(word1, String.valueOf(name))){
+					if((wordType1 == 0 && Pattern.matches(word1, String.valueOf(name)))||
+							(wordType1 == 1 && !Pattern.matches(word1, String.valueOf(name)))){
 						reCount += 1;
 					}
 				}
 				
 				String word2 = sc.getRegexSensitiveWord2();
+				int wordType2 = sc.getRegexWordType2();
 				if(word2 != null && !word2.isEmpty()){
 					count += 1;
-					if(Pattern.matches(word2, String.valueOf(name))){
+					if((wordType2 == 0 && Pattern.matches(word2, String.valueOf(name)))||
+							(wordType2 == 1 && !Pattern.matches(word2, String.valueOf(name)))){
 						reCount += 1;
 					}
 				}

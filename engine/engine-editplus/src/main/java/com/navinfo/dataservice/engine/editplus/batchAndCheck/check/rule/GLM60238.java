@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,7 +13,6 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
@@ -117,7 +115,7 @@ public class GLM60238 extends BasicCheckRule {
 	}
 
 	public String assembleContact(Long pid) throws SQLException{
-		String sql = "SELECT contact_type,contact FROM ix_poi_contact WHERE poi_pid = "+pid+" AND (contact_type = 1 OR contact_type = 2)  ORDER BY contact_type,contact";
+		String sql = "SELECT contact_type,contact FROM ix_poi_contact WHERE poi_pid = "+pid+" AND (contact_type = 1 OR contact_type = 2) AND u_record != 2 ORDER BY contact_type,contact";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		Connection conn = null;

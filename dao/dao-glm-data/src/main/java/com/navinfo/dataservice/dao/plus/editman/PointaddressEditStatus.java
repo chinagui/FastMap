@@ -91,7 +91,7 @@ public class PointaddressEditStatus {
 				photoPidsClob.setString(1, StringUtils.join(memoPas,","));
 				StringBuilder sb = new StringBuilder();
 			
-				sb.append("UPDATE POI_EDIT_STATUS P \n");
+				sb.append("UPDATE POINTADDRESS_EDIT_STATUS P \n");
 				sb.append("SET P.STATUS=1 \n");
 				sb.append("   WHERE P.PID IN \n");
 				sb.append("   (SELECT TO_NUMBER(COLUMN_VALUE) PID FROM TABLE(CLOB_TO_TABLE(?))) \n");

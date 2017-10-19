@@ -123,9 +123,9 @@ public class InitDataPoi2Tab {
 						//遍历各个日大区库,将大区库中需要导出的数据导入目标大区库
 						for(Integer dDbID : daylyDbIds){
 							//TODO 临时加的
-							if(dDbID != 13){
+							/*if(dDbID != 13){
 								continue;
-							}
+							}*/
 							moveDataToTargetDB(dataSource,conn,dDbID,taskId,subtIds,subTaskIdStr,db_conf);
 						}
 					}else{
@@ -192,7 +192,7 @@ public class InitDataPoi2Tab {
 					}
 				}
 					subtsClob.setString(1, subts);
-					
+				System.out.println(subts);	
 			//4.1 为中间库导入POI_TASK_TAB数据
 				StringBuilder insertPoiTaskTabDataSql = new StringBuilder();
 				insertPoiTaskTabDataSql.append( " insert into POI_TASK_TAB (pid,task_id,subtask_id) select distinct pid, "+taskId+" task,subtask_id   from ("
@@ -216,6 +216,7 @@ public class InitDataPoi2Tab {
 			//6.创建中间库的其他表
 				
 				String tableName = createIxpoiTempTable(dDbID, taskId, "IX_POI","PID");
+				System.out.println("tableName: "+tableName);
 				createAndInsertTable(conn, taskId, "IX_POI","PID", tableName);
 				//insertTable(conn,taskId,"IX_POI","PID");
 				insertTable(conn,taskId,"IX_POI_NAME","POI_PID");
@@ -373,9 +374,9 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 			r.execute(conn, sb.toString());
 			
 			String currentDate = com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();	
-			String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+			String seasonVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
 			String insertFmPoiCutoutSql = " insert into  fm_poi_cutout(gdbversion,pid,poi_num,task_id,subtask_id,fetchdate) "
-					+ "   select '"+gdbVersion+"' gdbversion,p.pid,i.poi_num,p.task_id,p.subtask_id,'"+currentDate+"' fetchdate from poi_task_tab p,ix_poi i where p.pid = i.pid  ";
+					+ "   select '"+seasonVersion+"' gdbversion,p.pid,i.poi_num,p.task_id,p.subtask_id,'"+currentDate+"' fetchdate from poi_task_tab p,ix_poi i where p.pid = i.pid  ";
 			System.out.println("insertFmPoiCutoutSql: "+insertFmPoiCutoutSql.toString());
 			r.execute(conn, insertFmPoiCutoutSql);	
 			conn.commit();
@@ -572,18 +573,17 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 	}
 	
 	private static String createIxpoiTempTable(int DbId, int taskId ,String tbName, String column) throws Exception {
-		System.out.println("开始新增表:"+tbName);
-		
 		String tableName = tbName+"_"+taskId;
+		System.out.println("开始新增表:"+tableName);
 		StringBuilder createAndInsertTableSql = new StringBuilder();
 		createAndInsertTableSql.append( " CREATE TABLE "+tableName+" as select p.*  from "+tbName+" p ,POI_TASK_TEMP t  "
 				+ "  where p."+column+" = t.pid and t.TASK_ID ="+taskId);
-		System.out.println("createAndInsertTable.toString(): "+createAndInsertTableSql.toString());
+		System.out.println("createIxpoiTempTable.toString(): "+createAndInsertTableSql.toString());
 		Connection dDbConn = null;
 		
 		try {
 			//获取大区库连接
-			dDbConn = DBConnector.getInstance().getConnectionById(13);
+			dDbConn = DBConnector.getInstance().getConnectionById(DbId);
 			QueryRunner r = new QueryRunner();
 			StringBuilder sb = new StringBuilder();
 			sb.append("declare                                                                                              ");
@@ -595,16 +595,17 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 			sb.append("    end if;                                                                                          ");
 			sb.append("end;                                                                                                 ");
 			r.execute(dDbConn, sb.toString());
-			
+			System.out.println("drop table : drop table "+tableName);
 			r.update(dDbConn, createAndInsertTableSql.toString());
-
+			System.out.println("createInsert table :  "+tableName);
 			
 			dDbConn.commit();
-			System.out.println("新增表:"+tbName+"完毕.");
+			System.out.println("新增表:"+tableName+"完毕.");
 			return tableName;
 		} catch (SQLException e) {
 			dDbConn.rollback();
 			e.printStackTrace();
+			System.out.println("createIxpoiTempTable 异常:"+e.getMessage());
 			return null;
 		}
 	}

@@ -52,7 +52,7 @@ public class ImportPlan {
 		String filepath = String.valueOf(args[0]);
 		try {
 			JobScriptsInterface.initContext();
-//			String filepath = "E:/2.xls";
+//			String filepath = "E:/0929.xls";
 			ImportPlan blockPlan = new ImportPlan();	
 			
 			// 读取Excel表格内容生成对应条数的blockPlan数据
@@ -370,6 +370,7 @@ public class ImportPlan {
 		excelHeader.put("LOT", "LOT");
 		excelHeader.put("DESCP", "DESCP");
 		excelHeader.put("IS_PLAN", "IS_PLAN");
+		excelHeader.put("UPLOAD_METHOD", "UPLOAD_METHOD");
 		
 		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
@@ -449,6 +450,7 @@ public class ImportPlan {
 				taskJson.put("lot", 0);
 				//三种type类型分别创建
 				if(i == 0){
+					taskJson.put("uploadMethod", taskDataMap.get("UPLOAD_METHOD"));
 					taskJson.put("type", 0);
 					
 					if(StringUtils.isNotBlank(taskDataMap.get("WORK_KIND").toString())){

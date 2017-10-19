@@ -66,9 +66,9 @@ public class QuickMonitorJob extends AbstractStatJob {
 			
 			JSONObject result = new JSONObject();
 			
-			log.debug("quick_monitor---"+JSONObject.fromObject(result).toString());
+			//log.debug("quick_monitor---"+JSONObject.fromObject(result).toString());
 			log.debug("快线监控统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
-			System.out.println(JSONObject.fromObject(result).toString());
+			//System.out.println(JSONObject.fromObject(result).toString());
 			result.put("quick_monitor", stats);
 			//System.out.println(result.toString());
 			return result.toString();
@@ -294,8 +294,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 				+ " WHERE I.S_QTASKID != 0"
 				+ "   AND I.T_TIPSTATUS = 2"
 				+ "   AND I.T_DEDITSTATUS = 2"
-				+ "   AND I.STAGE IN (1, 2, 6, 7)"
-				+ " GROUP BY I.S_QTASKID";//快线日编完成tips个数		
+				+ "   AND I.STAGE IN (1, 2, 6, 7)";//快线日编完成tips个数		
 		Connection conn = null;
 		
 		PreparedStatement pstmt = null;
@@ -767,7 +766,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			int poiActualTotal = 0;
 			
 			int collectTipsUploadNum = 0;
-			int dayEditTipsFinishNum = 0;
+			//int dayEditTipsFinishNum = 0;
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据

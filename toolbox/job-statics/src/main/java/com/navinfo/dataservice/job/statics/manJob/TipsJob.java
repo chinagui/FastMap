@@ -261,8 +261,8 @@ public class TipsJob extends AbstractStatJob {
 			for(int taskId:taskIds){
 				Map<String, Object> taskStatOne=new HashMap<>();
 				taskStatOne.put("taskId", taskId);
-				taskStatOne.put("tipsUploadNum", 0);
-				taskStatOne.put("tipsAddLen", 0);
+				taskStatOne.put("tipsUploadNum", "0");
+				taskStatOne.put("tipsAddLen", "0");
 				if(tipsUploadNumList.containsKey(taskId)){
 					Map<String, Object> poiUploadNum = tipsUploadNumList.get(taskId);
 					taskStatOne.put("tipsUploadNum",poiUploadNum.get("tipsUploadNum"));
@@ -271,6 +271,7 @@ public class TipsJob extends AbstractStatJob {
 					Map<String, Object> tipsAddLen = tipsAddLenList.get(taskId);
 					taskStatOne.put("tipsAddLen",tipsAddLen.get("tipsAddLen"));
 				}
+				taskGridTipsList.add(taskStatOne);
 			}
 			
 			log.debug("taskGridTipsList-------"+ JSONArray.fromObject(taskGridTipsList));

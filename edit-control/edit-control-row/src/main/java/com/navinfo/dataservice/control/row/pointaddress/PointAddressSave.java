@@ -95,17 +95,19 @@ public class PointAddressSave {
 			if(poiData.containsKey("longitude") && poiData.containsKey("latitude")){
 				calcGeometryAndMesh(poiData, conn);
 			}
-            
+			
+			 if(operType == OperType.CREATE){
+			 	String date = StringUtils.getCurrentTime();
+	            String userIdStr = Long.toString(userId);
+	            String idcode = org.apache.commons.lang.StringUtils.leftPad(userIdStr.concat(date), 20, "0");
+	            poiData.put("idcode",idcode);
+	         }
             
             json.put("data", poiData);
             
             calcSubtaskId(subtaskId);
             
             if(operType == OperType.CREATE){
-            	String date = StringUtils.getCurrentTime();
-                String userIdStr = Long.toString(userId);
-                String idcode = org.apache.commons.lang.StringUtils.leftPad(userIdStr.concat(date), 20, "0");
-                poiData.put("idcode",idcode);
             	json.put("command", "INSERT");
             }
             

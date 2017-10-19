@@ -90,7 +90,7 @@ public class ScPlateresGroupSearch {
     public int searchDataByCondition(JSONObject condition,List<IRow> rows) throws Exception {
     	
     	StringBuilder sqlstr = new StringBuilder();
-    	sqlstr.append("SELECT * FROM SC_PLATERES_GROUP WHERE");
+    	sqlstr.append("SELECT t.*, row_number() over(order by GROUP_ID) as row_num FROM SC_PLATERES_GROUP t WHERE");
         componentSql(condition,sqlstr);
         
         StringBuilder sql = new StringBuilder();
@@ -101,7 +101,7 @@ public class ScPlateresGroupSearch {
             int pageSize = condition.getInt("pageSize");
             int pageNum = condition.getInt("pageNum");
 
-            sql.append(" WHERE rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " FOR UPDATE NOWAIT");
+            sql.append(" WHERE row_num BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize));
         }
     	
         PreparedStatement pstmt = null;
@@ -142,7 +142,7 @@ public class ScPlateresGroupSearch {
 			String infoIntelId = obj.getString("infoIntelId");
 
 			if (infoIntelId != null && !infoIntelId.isEmpty()) {
-				sql.append(" INFO_INTEL_ID = ");
+				sql.append(" t.INFO_INTEL_ID = ");
 				sql.append("'" + infoIntelId + "'");
 			}
 		}
@@ -155,7 +155,7 @@ public class ScPlateresGroupSearch {
 			}
 
 			if (admin != null && !admin.isEmpty()) {
-				sql.append(" AD_ADMIN = ");
+				sql.append(" t.AD_ADMIN = ");
 				sql.append(admin);
 			}
 		}
@@ -164,7 +164,7 @@ public class ScPlateresGroupSearch {
 			String groupId = obj.getString("groupId");
 
 			if (groupId != null && !groupId.isEmpty()) {
-				sql.append(" AND GROUP_ID = ");
+				sql.append(" AND t.GROUP_ID = ");
 				sql.append("'" + groupId + "'");
 			}
 		}
@@ -173,7 +173,7 @@ public class ScPlateresGroupSearch {
 			JSONArray groupType = obj.getJSONArray("groupType");
 
 			if (groupType != null && groupType.size() != 0) {
-				sql.append(" AND GROUP_TYPE IN ");
+				sql.append(" AND t.GROUP_TYPE IN ");
 				sql.append("(" + groupType.toString().replace("[", "").replace("]", "") + ")");
 			}
 		}

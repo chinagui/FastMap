@@ -587,14 +587,21 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 			sb.append("update RELEASE_TASK set RELEASE_STATUS="+status);
 			if(oldTaskId!=0){sb.append(",REF_TASK_ID="+oldTaskId);}
 			if(jobId!=0){sb.append(",JOBID='"+String.valueOf(jobId)+"'");}
-			if(jsonProject!=null){sb.append(",PARAMETER=?");}
+			if(jsonProject!=null){
+				sb.append(",PARAMETER=?");
+			}
 			if(jsonTempTab!=null){sb.append(",TEMP_TAB='"+jsonObject.toString()+"'");}
 			sb.append(" where task_Id="+taskId);
 			String sql = sb.toString();
 			
-			Clob prjClob = ConnectionUtil.createClob(conn);
-			prjClob.setString(1, jsonProject);
-			run.update(conn, sql, prjClob);
+			if(jsonProject!=null){
+				Clob prjClob = ConnectionUtil.createClob(conn);
+				prjClob.setString(1, jsonProject);
+				run.update(conn, sql, prjClob);
+			}else{
+				run.update(conn, sql);
+			}
+			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);

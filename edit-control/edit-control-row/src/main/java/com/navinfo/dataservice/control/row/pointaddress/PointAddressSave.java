@@ -16,6 +16,7 @@ import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -101,6 +102,10 @@ public class PointAddressSave {
             calcSubtaskId(subtaskId);
             
             if(operType == OperType.CREATE){
+            	String date = StringUtils.getCurrentTime();
+                String userIdStr = Long.toString(userId);
+                String idcode = org.apache.commons.lang.StringUtils.leftPad(userIdStr.concat(date), 20, "0");
+                poiData.put("idcode",idcode);
             	json.put("command", "INSERT");
             }
             

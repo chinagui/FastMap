@@ -36,7 +36,7 @@ import net.sf.json.JSONObject;
 
 /**
  * 项目统计
- * @ClassName TaskJob
+ * @ClassName ProgramJob
  * @author songhe
  * @date 2017年9月4日
  * 

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
@@ -24,6 +25,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
+import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
@@ -32,6 +34,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.StringConvertUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.expect.ExpectStatusMain;
@@ -666,11 +669,42 @@ public class StaticsService {
 				JSONArray cityDetail2=reFormCity(cityDetail ,8);
 				task.put("cityDetail",cityDetail2);
 			}
+			queryStandardData(task);
 			log.info("end quickMonitor");
 			return task;
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	/**
+	 * 快线项目监控配置表中标准值查询
+	 * 
+	 * 
+	 * */
+	public void queryStandardData(Map<String, Object> map) throws Exception{
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String sql = "select t.conf_key,t.conf_value from MAN_CONFIG t where t.conf_desc like '快线统计%'";
+			Map<String, Object> config = run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+				
+				@Override
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> configMap = new HashMap<>();
+					while(rs.next()){
+						configMap.put(StringConvertUtils.lineToHump(rs.getString("conf_key")), rs.getObject("conf_value"));
+					}
+					return configMap;
+				}});
+			for(Entry<String, Object> enty : config.entrySet()){
+				map.put(enty.getKey(), enty.getValue());
+			}
+		} catch (Exception e) {
+			throw e;
+		}
+	
 	}
 	
 	/**

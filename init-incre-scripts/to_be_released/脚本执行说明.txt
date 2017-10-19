@@ -15,3 +15,8 @@
 	功能：SYS库创建翻译工具记录表
 	目标库：fm_sys
 	author：张云涛
+
+2. fmlimitline_init_new/initLimitLineInfoDB.sh
+   功能：生成限行限号情报库
+   目标库：限行限号库（测试环境与开发环境命名不同）
+   author：冯海霞

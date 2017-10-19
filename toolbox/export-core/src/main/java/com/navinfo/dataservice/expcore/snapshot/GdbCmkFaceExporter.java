@@ -26,7 +26,7 @@ public class GdbCmkFaceExporter {
 		stmt.execute("alter table gdb_cmkFace add display_style text;");
 		stmt.execute("alter table gdb_cmkFace add display_text text;");
 		stmt.execute("alter table gdb_cmkFace add meshid text;");
-		stmt.execute("alter table gdb_cmkFace add height integer;");
+		stmt.execute("alter table gdb_cmkFace add height REAL;");
 		stmt.execute("alter table gdb_cmkFace add op_date text;");
 		stmt.execute("alter table gdb_cmkFace add op_lifecycle integer;");
 

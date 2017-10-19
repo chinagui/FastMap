@@ -64,6 +64,8 @@ public class ScPlateresGeometrySearch implements ISearch {
                 ScPlateresGeometry geometry = new ScPlateresGeometry();
 
                 ReflectionAttrUtils.executeResultSet(geometry, resultSet);
+                
+                total = resultSet.getInt("TOTAL_ROW_NUM");
 
                 rows.add(geometry);
             }

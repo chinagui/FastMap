@@ -25,9 +25,15 @@ public class Operation implements IOperation {
     private Command command;
     private Connection conn;
 
-    public Operation(Command command, Connection conn) {
+    private Connection limitConn;
+
+    public Operation(Command command, Connection conn,Connection limitConn) {
+
         this.command = command;
+
         this.conn = conn;
+
+        this.limitConn = limitConn;
     }
 
     @Override
@@ -42,7 +48,7 @@ public class Operation implements IOperation {
 
         String groupId = this.command.getGroupId();
 
-        ScPlateresFaceSearch faceSearch = new ScPlateresFaceSearch(this.conn);
+        ScPlateresFaceSearch faceSearch = new ScPlateresFaceSearch(limitConn);
 
         List<ScPlateresFace> faces = faceSearch.loadByGroupId(this.command.getGroupId());
 
@@ -70,7 +76,7 @@ public class Operation implements IOperation {
             result.insertObject(geometry, ObjStatus.INSERT, geometry.getGeometryId());
         }
 
-        ScPlateresLinkSearch linkSearch = new ScPlateresLinkSearch(this.conn);
+        ScPlateresLinkSearch linkSearch = new ScPlateresLinkSearch(limitConn);
 
         List<ScPlateresLink> links = linkSearch.loadByGroupId(this.command.getGroupId());
 
@@ -85,11 +91,11 @@ public class Operation implements IOperation {
 
             geometry.setGroupId(groupId);
 
-            Geometry geom = faces.get(i).getGeometry();
+            Geometry geom = links.get(i).getGeometry();
 
             geometry.setGeometry(geom);
 
-            geometry.setBoundaryLink(faces.get(i).getBoundaryLink());
+            geometry.setBoundaryLink(links.get(i).getBoundaryLink());
 
             result.insertObject(geometry, ObjStatus.INSERT, geometry.getGeometryId());
         }
@@ -100,33 +106,30 @@ public class Operation implements IOperation {
     /**
      * 删除Group对应的临时link、face几何
      */
-    private void delTempGeoObj(String groupId) {
-        Connection conn = null;
+    private void delTempGeoObj(String groupId) throws Exception {
         try {
-            conn = DBConnector.getInstance().getLimitConnection();
+
             QueryRunner runner = new QueryRunner();
 
             //删除Group对应的临时link几何
             String strSql = "DELETE SC_PLATERES_LINK WHERE GROUP_ID='" + groupId + "'";
 
-            runner.execute(conn, strSql);
+            runner.execute(limitConn, strSql);
 
             //删除Group对应的临时link几何
             strSql = "DELETE SC_PLATERES_FACE WHERE GROUP_ID='" + groupId + "'";
 
-            runner.execute(conn, strSql);
-
-            conn.commit();
+            runner.execute(limitConn, strSql);
 
             logger.info(" 删除Group=" + groupId + "对应的临时link、face几何成功");
 
         } catch (Exception e) {
 
-            logger.error(" 删除Group=" + groupId + "对应的临时link、face几何失败");
+            String errStr = " 删除Group=" + groupId + "对应的临时link、face几何失败";
 
-        } finally {
+            logger.error(errStr);
 
-            DbUtils.closeQuietly(conn);
+            throw new Exception(errStr);
         }
     }
 

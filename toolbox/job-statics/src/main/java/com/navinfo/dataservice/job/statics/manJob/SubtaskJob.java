@@ -121,7 +121,6 @@ public class SubtaskJob extends AbstractStatJob {
 				Map<String, Object> subManTimelineStart = null;
 				Map<String, Object> subManTimelineEnd = null;
 				Map<String, Object> subDayPoiStat = null;
-				Map<String, Object> subTipsStat = null;
 				if(manTimelineStart.containsKey(subtaskId)){
 					subManTimelineStart = manTimelineStart.get(subtaskId);
 				}
@@ -138,7 +137,7 @@ public class SubtaskJob extends AbstractStatJob {
 
 				Map<String, Integer> tipsStat = handleTipsStatData(subtask, tipsStatData, collectionTasks);
 				//处理具体统计数据
-				Map<String, Object> subtaskMap = getSubtaskStat(subtask,subManTimelineStart,subManTimelineEnd,tipsStat,subMonthPoiStat,subDayPoiStat,subTipsStat);
+				Map<String, Object> subtaskMap = getSubtaskStat(subtask,subManTimelineStart,subManTimelineEnd,tipsStat,subMonthPoiStat,subDayPoiStat);
 				
 				subtaskStatList.add(subtaskMap);
 			}
@@ -435,7 +434,7 @@ public class SubtaskJob extends AbstractStatJob {
 	 * @throws ParseException
 	 */
 	public Map<String, Object> getSubtaskStat(Subtask subtask, Map<String, Object> subManTimelineStart, Map<String, Object> subManTimelineEnd, Map<String, Integer> tipsStat,
-			Map<String, Integer> subMonthPoiStat, Map<String, Object> subDayPoiStat, Map<String, Object> subTipsStat) throws Exception{
+			Map<String, Integer> subMonthPoiStat, Map<String, Object> subDayPoiStat) throws Exception{
 		
 		int subtaskId = 0;
 		int type = 0;
@@ -514,8 +513,8 @@ public class SubtaskJob extends AbstractStatJob {
 				if(subManTimelineStart != null && subManTimelineStart.size() > 0){
 					tipsFirstCollectDate = (String) subManTimelineStart.get("operateDate");
 				}
-				if(subTipsStat != null && subTipsStat.size() > 0){
-				}
+//				if(subTipsStat != null && subTipsStat.size() > 0){
+//				}
 				//处理具体时间
 				if(StringUtils.isNotEmpty(firstCollectDate) && StringUtils.isEmpty(tipsFirstCollectDate)){
 					actualStartDate = firstCollectDate;

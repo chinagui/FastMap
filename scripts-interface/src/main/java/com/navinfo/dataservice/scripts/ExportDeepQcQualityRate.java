@@ -73,7 +73,7 @@ public class ExportDeepQcQualityRate {
 			
 			String excelName = "deep_quality_rate_list_"+startDate+"_"+endDate;
 
-			convertQcNum(monthConn);
+			convertQcNum(startDate, endDate,monthConn);
 			
 			convertQcProblemNumByDate(startDate, endDate, manConn);
 			
@@ -160,8 +160,8 @@ public class ExportDeepQcQualityRate {
 	 * @throws Exception
 	 */
 	private static void setWorkerInfo(DeepQcQualityRate data,Connection conn) throws Exception {
-		String sql  = "SELECT  U.USER_REAL_NAME, G.GROUP_NAME FROM SUBTASK S, USER_INFO U, USER_GROUP G";
-		sql += " WHERE  S.EXE_GROUP_ID = G.GROUP_ID AND U.USER_ID = "+data.getWorkerId()+" AND subtask_id = "+data.getSubtaskGroup()+"";
+		String sql  = "SELECT  U.USER_REAL_NAME, G.GROUP_NAME FROM GROUP_USER_MAPPING GM,USER_INFO U, USER_GROUP G";
+		sql += " WHERE  GM.GROUP_ID = G.GROUP_ID AND U.USER_ID = "+data.getWorkerId()+"";
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -188,11 +188,12 @@ public class ExportDeepQcQualityRate {
 	 * @param monthConn
 	 * @throws SQLException 
 	 */
-	private static void convertQcNum(Connection monthConn) throws SQLException {
+	private static void convertQcNum(String startDate, String endDate,Connection monthConn) throws SQLException {
 		StringBuffer sb = new StringBuffer();
-		sb.append(" SELECT PS.COMMON_HANDLER,TASK_ID, PW.SECOND_WORK_ITEM, COUNT(1) NUM FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PW ");
-		sb.append(" WHERE PS.WORK_ITEM_ID = PW.WORK_ITEM_ID  AND PS.QC_FLAG = 1 AND PS.SECOND_WORK_STATUS = 3 AND PW.FIRST_WORK_ITEM = 'poi_deep'");
-		sb.append(" GROUP BY COMMON_HANDLER,TASK_ID, SECOND_WORK_ITEM ");
+		sb.append(" SELECT PS.COMMON_HANDLER,PW.SECOND_WORK_ITEM, COUNT(1) NUM FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PW ");
+		sb.append(" WHERE PS.WORK_ITEM_ID = PW.WORK_ITEM_ID AND PS.SECOND_WORK_STATUS = 3 AND PS.QC_FLAG = 1  AND PW.FIRST_WORK_ITEM = 'poi_deep'");
+		sb.append(" AND APPLY_DATE BETWEEN TO_DATE('" + startDate + " 00:00:00', 'yyyyMMdd hh24:mi:ss') AND TO_DATE('" + endDate + " 23:59:59','yyyyMMdd hh24:mi:ss')");
+		sb.append(" GROUP BY COMMON_HANDLER,SECOND_WORK_ITEM ");
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -207,7 +208,6 @@ public class ExportDeepQcQualityRate {
 				if(!deepQcQualityRateMap.containsKey(worker)) {
 					deepQcQualityRate = new DeepQcQualityRate();
 					deepQcQualityRate.setWorkerId(worker);
-					deepQcQualityRate.setSubtaskGroup(rs.getInt(2)+"");
 					deepQcQualityRateMap.put(worker, deepQcQualityRate);
 				}
 				
@@ -251,11 +251,11 @@ public class ExportDeepQcQualityRate {
 			Connection conn) throws Exception {
 		
 		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT U.USER_REAL_NAME,D.COMMON_WORKER_ID, G.GROUP_NAME, D.SECOND_WORKITEM, D.NUM ");
-		sb.append("FROM (SELECT COMMON_WORKER_ID, SECOND_WORKITEM,SUBTASK_ID, COUNT(1) NUM FROM DEEP_QC_PROBLEM WHERE QC_TIME BETWEEN ");
+		sb.append("SELECT U.USER_REAL_NAME,D.COMMON_WORKER_ID,G.GROUP_NAME, D.SECOND_WORKITEM, D.NUM ");
+		sb.append("FROM (SELECT COMMON_WORKER_ID, SECOND_WORKITEM,COUNT(1) NUM FROM DEEP_QC_PROBLEM WHERE QC_TIME BETWEEN ");
 		sb.append("TO_DATE('" + startDate + " 00:00:00', 'yyyyMMdd hh24:mi:ss') AND TO_DATE('" + endDate + " 23:59:59','yyyyMMdd hh24:mi:ss')");
-		sb.append(" GROUP BY COMMON_WORKER_ID, SECOND_WORKITEM, SUBTASK_ID) D, SUBTASK S, USER_INFO U, USER_GROUP G ");
-		sb.append(" WHERE D.SUBTASK_ID = S.SUBTASK_ID  AND S.EXE_GROUP_ID = G.GROUP_ID AND D.COMMON_WORKER_ID = U.USER_ID ORDER BY COMMON_WORKER_ID");
+		sb.append(" GROUP BY COMMON_WORKER_ID, SECOND_WORKITEM) D,USER_INFO U, USER_GROUP G,GROUP_USER_MAPPING GM ");
+		sb.append(" WHERE GM.GROUP_ID = G.GROUP_ID AND D.COMMON_WORKER_ID = U.USER_ID ORDER BY COMMON_WORKER_ID");
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -279,7 +279,7 @@ public class ExportDeepQcQualityRate {
 				if(StringUtils.isBlank(deepQcQualityRate.getWorkerName())){
 					deepQcQualityRate.setWorkerName(rs.getString(1));
 				}
-
+				
 				deepQcQualityRate.setSubtaskGroup(rs.getString(3));
 				
 				String secondWorkItem = rs.getString("SECOND_WORKITEM");

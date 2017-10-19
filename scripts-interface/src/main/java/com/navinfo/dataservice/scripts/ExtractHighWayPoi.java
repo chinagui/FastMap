@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,7 +33,6 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
-import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.scripts.model.HighWayPoi;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -58,12 +57,12 @@ import oracle.sql.STRUCT;
  */
 public class ExtractHighWayPoi {
 	private static Logger log = LoggerRepos.getLogger(ExtractHighWayPoi.class);
-	private static Map<Connection,List<Long>> connPidListMap = new HashMap<>();
-	private static Map<String,Map<String,String>> adminCodeMap = new HashMap<>();
-	private static Map<String,Integer> meshActionMap = new HashMap<>();
-	private static Map<Integer, Connection> regionConMap = new HashMap<Integer, Connection>();
-	private static Map<Long,HighWayPoi> pidHighWayPoiMap = new HashMap<>();
-	private static Map<Long, String> pidSubtaskName = new HashMap<>(); 
+	private static Map<Connection,List<Long>> connPidListMap = new LinkedHashMap<>();
+	private static Map<String,Map<String,String>> adminCodeMap = new LinkedHashMap<>();
+	private static Map<String,Integer> meshActionMap = new LinkedHashMap<>();
+	private static Map<Integer, Connection> regionConMap = new LinkedHashMap<Integer, Connection>();
+	private static Map<Long,HighWayPoi> pidHighWayPoiMap = new LinkedHashMap<>();
+	private static Map<Long, String> pidSubtaskName = new LinkedHashMap<>(); 
 	
 	public static void execute(String startDate,String endDate) throws Exception {
 		
@@ -77,8 +76,8 @@ public class ExtractHighWayPoi {
 			 
 			sb.append(" LO.OP_ID = LD.OP_ID AND LD.OB_PID = p.pid AND LO.OP_DT > TO_DATE('"+startDate+"000000', 'yyyymmddhh24miss')");
 			sb.append(" AND LO.OP_DT <= TO_DATE('"+endDate+"235959', 'yyyymmddhh24miss') AND LD.OB_NM  = 'IX_POI' AND TB_NM = 'IX_POI'");
-			sb.append(" AND LD.OB_PID IN (SELECT CHILD_POI_PID FROM IX_POI_CHILDREN ) ");
-			sb.append(" AND LD.OB_PID NOT IN (SELECT PARENT_POI_PID FROM IX_POI_PARENT)  AND( p.kind_code = '230215' OR ");
+			sb.append(" AND EXISTS (SELECT IPC.CHILD_POI_PID FROM IX_POI_CHILDREN IPC ,IX_POI_PARENT IPP WHERE IPC.CHILD_POI_PID = LD.OB_PID AND IPC.GROUP_ID = IPP.GROUP_ID) ");
+			sb.append(" AND LD.OB_PID NOT IN (SELECT PARENT_POI_PID FROM IX_POI_PARENT) AND( p.kind_code = '230215' OR ");
 			sb.append(" p.kind_code = '210215' OR p.kind_code LIKE '110%' OR  p.kind_code LIKE '120%' OR  p.kind_code LIKE '130%') ");
   
 			String condition = sb.toString();
@@ -108,28 +107,33 @@ public class ExtractHighWayPoi {
 			for (Entry<Integer, Connection> entry : regionConMap.entrySet()) {
 				Connection regionConn = entry.getValue();
 				Set<Long> deletePidList = searchDeletePidExtractHighWayPoi(condition, regionConn);//删除履历，日落月成功,叶子节点HighWayPoiList（日库）
+				log.info("start query delete logdetail HW POI,region = "+entry.getKey());
 				updatePidList.removeAll(deletePidList);//如果一条pid既有修改履历也有删除履历，需在修改履历的pidList和删除履历pidList求差集，以删除为准。
 				insertPidList.removeAll(deletePidList);//如果一条pid既有新增履历也有删除履历，需在新增履历的pidList和删除履历pidList求差集，以删除为准。
 				if(!CollectionUtils.isEmpty(deletePidList)){
-					filterChildPidListByParent(deletePidList,2, regionConn);//筛选出符合条件修改履历的子pidList
+					deletePidList = filterChildPidListByParent(deletePidList,2, regionConn);//筛选出符合条件修改履历的子pidList
 					convertPidListToHighWayList(deletePidList, 2, regionConn);//组装成HighWayList
+				
 				}
-				log.info("大区库"+entry.getKey()+"-----"+regionConn+"筛选出符合条件删除履历的pidList成功");
+				log.info("region "+entry.getKey()+"-----"+regionConn+"filter delete logdetail HW pidList complete");
 			}
 			
 			updatePidList.removeAll(insertPidList);//如果一条pid既有新增履历也有修改履历，需在修改履历的pidList和新增履历pidList求差集，以新增为准。
 			
-			
+			log.info("----start filter update logdetail HW POI, updatePidList----"+updatePidList);
 			if(!CollectionUtils.isEmpty(updatePidList)){
-				filterChildPidListByParent(updatePidList,3, monthConn);//筛选出符合条件修改履历的子pidList
+				updatePidList = filterChildPidListByParent(updatePidList,3, monthConn);//筛选出符合条件修改履历的子pidList
 				convertPidListToHighWayList(updatePidList, 3, monthConn);//组装成HighWayList
 			}
-
+			log.info("----end filter update logdetail HW POI, updatePidList----"+updatePidList);
 			
+
+			log.info("----start filter insert logdetail HW POI, insertPidList----"+insertPidList);
 			if(!CollectionUtils.isEmpty(insertPidList)){
-				filterChildPidListByParent(insertPidList,1, monthConn);//筛选出符合条件新增履历的子pidList
+				insertPidList = filterChildPidListByParent(insertPidList,1, monthConn);//筛选出符合条件新增履历的子pidList
 				convertPidListToHighWayList(insertPidList, 1, monthConn);//组装成HighWayList
 			}
+			log.info("----end filter insert logdetail HW POI, insertPidList----"+insertPidList);
 			
 			
 			for (Connection regionConn : regionConMap.values()) {
@@ -388,6 +392,7 @@ public class ExtractHighWayPoi {
 	 */
 	public static void convertPidListToHighWayList(Set<Long> pidList,int type,Connection conn) throws Exception{
 		if(!CollectionUtils.isEmpty(pidList)){
+			log.info("start convertPidListToHighWayList pidList----"+pidList);
 			String sql = "SELECT P.PID,P.MESH_ID,Substr(ad.admin_id,0,2),p.GEOMETRY FROM IX_POI p,AD_ADMIN AD WHERE p.region_id = ad.region_id AND"
 					+ " p.PID IN ";
 			String pidsString = StringUtils.join(pidList, ",");
@@ -474,17 +479,13 @@ public class ExtractHighWayPoi {
 		Set<Long> tempChildPidList = new HashSet<>();
 		tempChildPidList.addAll(childPidList);
 		Map<Long, Long> parentMap = new HashMap<>();
-		if(type==2){
-			parentMap = IxPoiSelector.getAllNoFilterDeleteParentPidsByChildrenPids(conn, tempChildPidList);//通过子poi查询一级父， 不过滤删除
-		}else{
-			parentMap = IxPoiSelector.getAllParentPidsByChildrenPids(conn, tempChildPidList);//通过子poi查询一级父， 过滤删除
-		}
-		Map<Long, Long> parentChildrenMap = new HashMap<>();
+		parentMap = getAllParentPidsByChildrenPids(conn, tempChildPidList, type);//通过子poi查询一级父， 过滤删除
+/*		Map<Long, Long> parentChildrenMap = new HashMap<>();
 		Iterator<Long> iter = childPidList.iterator();
 		while (iter.hasNext()) {
 			Long childPid = iter.next();
 			Long parentPid=parentMap.get(childPid);
-			while(parentMap.containsKey(parentPid)){
+			if(parentMap.containsKey(parentPid)){
 				parentPid=parentMap.get(parentPid);
 			}
 			if(parentPid==null){
@@ -493,48 +494,59 @@ public class ExtractHighWayPoi {
 			}
 			parentChildrenMap.put(parentPid, childPid);
 		}
+*/		
+		Set<Long> PidList = new HashSet<>();
+		Set<Long> resultChildList = new HashSet<>();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		
-		
-		if(parentChildrenMap.keySet().size()>0){
-			String sql = "SELECT PID,KIND_CODE FROM IX_POI WHERE PID IN ";
-			String pidsString = StringUtils.join(parentChildrenMap.keySet().toArray(), ",");
-			boolean clobFlag = false;
-			if (parentChildrenMap.keySet().toArray().length > 1000) {
-				sql += " (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
-				clobFlag = true;
-			} else {
-				sql += " (" + pidsString + ")";
-			}
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try {
-				pstmt = conn.prepareStatement(sql);
-				if (clobFlag) {
-					Clob clob = ConnectionUtil.createClob(conn);
-					clob.setString(1, pidsString);
-					pstmt.setClob(1, clob);
+		try {
+			if(parentMap.values().size()>0){
+				String sql = "SELECT PID,KIND_CODE FROM IX_POI WHERE PID IN ";
+				String pidsString = StringUtils.join(parentMap.values().toArray(), ",");
+				boolean clobFlag = false;
+				if (parentMap.values().toArray().length > 1000) {
+					sql += " (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+					clobFlag = true;
+				} else {
+					sql += " (" + pidsString + ")";
 				}
-				rs = pstmt.executeQuery();
-				
-				while (rs.next()) {
-					long pid = rs.getLong(1);
-					String kindCode = rs.getString(2);
-					if(!kindCode.equals("230206")&&!kindCode.equals("230207")){
-						childPidList.remove(parentChildrenMap.get(pid));
+			
+					pstmt = conn.prepareStatement(sql);
+					if (clobFlag) {
+						Clob clob = ConnectionUtil.createClob(conn);
+						clob.setString(1, pidsString);
+						pstmt.setClob(1, clob);
 					}
+					rs = pstmt.executeQuery();
+					
+					while (rs.next()) {
+						long pid = rs.getLong(1);
+						String kindCode = rs.getString(2);
+						if(kindCode.equals("230206")||kindCode.equals("230207")){
+							PidList.add(pid);
+						}
+					}
+					
+					log.info("---allow parent PidList---"+PidList);
+			}	
+				
+		
+			for (Entry<Long, Long> entry : parentMap.entrySet()) {
+				Long parentPid  = entry.getValue();
+				if(parentPid != null && PidList.contains(parentPid)){
+					resultChildList.add(entry.getKey());
 				}
-				
-				return childPidList;
-				
-			} catch (Exception e) {
-				log.error(e.getMessage());
-				throw e;
-			} finally {
-				DbUtils.closeQuietly(rs);
-				DbUtils.closeQuietly(pstmt);
 			}
+			
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
 		}
-		return null;
+		return resultChildList;
 	}
 	
 	
@@ -727,6 +739,74 @@ public class ExtractHighWayPoi {
 				new String[] { "dubbo-app-scripts.xml", "dubbo-scripts.xml" });
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
+	}
+	
+	
+	/**
+	 * 通过子poi查询父，祖父等，一直到一级父（即父没有父了，只有子）
+	 * @param conn
+	 * @param pidList
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static Map<Long,Long> getAllParentPidsByChildrenPids(Connection conn,Set<Long> pidList,int type) throws ServiceException{
+		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		if(pidList.isEmpty()){
+			return childPidParentPid;
+		}
+		childPidParentPid=getParentPidsByChildrenPids(conn, pidList,type);
+		Set<Long> poiPids=new HashSet<Long>();
+		poiPids.addAll(childPidParentPid.keySet());
+		poiPids.addAll(childPidParentPid.values());
+		poiPids.addAll(pidList);
+		
+		//循环查询直到没有新父被查出来为止
+		while(poiPids.size()!=pidList.size()){
+			pidList.addAll(poiPids);
+			childPidParentPid=getParentPidsByChildrenPids(conn, pidList,type);
+			poiPids.addAll(childPidParentPid.values());
+		}
+		return childPidParentPid;
+	}
+	
+	public static Map<Long,Long> getParentPidsByChildrenPids(Connection conn,Set<Long> pidList,int type) throws ServiceException{
+		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		if(pidList.isEmpty()){
+			return childPidParentPid;
+		}
+		try{
+			Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, StringUtils.join(pidList, ","));
+			
+			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
+					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
+					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID";
+					if(type!=2){
+						sql+= " AND IPP.U_RECORD != 2 AND IPC.U_RECORD != 2";
+					}
+					sql+= " AND IPC.CHILD_POI_PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+			
+			ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {
+				public Map<Long,Long> handle(ResultSet rs) throws SQLException {
+					Map<Long,Long> result = new HashMap<Long,Long>();
+					while (rs.next()) {
+						long parentPid = rs.getLong("PARENT_POI_PID");
+						long childPid = rs.getLong("CHILD_POI_PID");
+						result.put(childPid, parentPid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getParentPidsByChildrenPids："+sql);
+			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler,clob);
+			return childPidParentPid;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
 	}
 
 

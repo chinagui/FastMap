@@ -98,7 +98,7 @@ public class SyncTips2Oracle {
 							log.info("index:"+index+",num:"+num);
 						}
 					}catch(Exception e){
-						log.error(e.getMessage(),e);
+						log.error(result.getRow() + ": " +e.getMessage(),e);
 					}
 				}
 

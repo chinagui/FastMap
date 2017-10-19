@@ -77,20 +77,20 @@ public class Operation implements IOperation {
 
         updateContent.put("linkPid", command.getLinkPid());
 
-        RdLink link = (RdLink) new RdLinkSelector(conn).loadById(command.getLinkPid(), false);
-
-        Geometry geometry = GeoTranslator.geojson2Jts(geojson, 1, Constant.BASE_PRECISION);
+        //RdLink link = (RdLink) new RdLinkSelector(conn).loadById(command.getLinkPid(), false);
+        //
+        //Geometry geometry = GeoTranslator.geojson2Jts(geojson, 1, Constant.BASE_PRECISION);
         // 计算行政区划代表点与关联线的左右关系
-        Coordinate c = GeometryUtils.GetNearestPointOnLine(geometry.getCoordinate(),
-                GeoTranslator.transform(link.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION));
-
-        JSONObject nearPoint = new JSONObject();
-        nearPoint.put("type", "Point");
-        nearPoint.put("coordinates", new double[]{c.x, c.y});
-        Geometry nearestPointGeo = GeoTranslator.geojson2Jts(nearPoint, Constant.BASE_EXPAND, Constant.BASE_PRECISION);
-        int side = GeometryUtils.calulatPointSideOflink(
-                GeoTranslator.transform(geometry, Constant.BASE_EXPAND, Constant.BASE_PRECISION), link.getGeometry(), nearestPointGeo);
-        updateContent.put("side", side);
+        //Coordinate c = GeometryUtils.GetNearestPointOnLine(geometry.getCoordinate(),
+        //        GeoTranslator.transform(link.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION));
+        //
+        //JSONObject nearPoint = new JSONObject();
+        //nearPoint.put("type", "Point");
+        //nearPoint.put("coordinates", new double[]{c.x, c.y});
+        //Geometry nearestPointGeo = GeoTranslator.geojson2Jts(nearPoint, Constant.BASE_EXPAND, Constant.BASE_PRECISION);
+        //int side = GeometryUtils.calulatPointSideOflink(
+        //        GeoTranslator.transform(geometry, Constant.BASE_EXPAND, Constant.BASE_PRECISION), link.getGeometry(), nearestPointGeo);
+        //updateContent.put("side", side);
 
         moveAdmin.fillChangeFields(updateContent);
 

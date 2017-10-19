@@ -67,16 +67,16 @@ public class Operation implements IOperation {
 
         adAdmin.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
         // 计算行政区划代表点与关联线的左右关系
-        Coordinate c = GeometryUtils.GetNearestPointOnLine(
-                GeoTranslator.transform(adAdmin.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION).getCoordinate(),
-                GeoTranslator.transform(command.getLink().getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION));
-        JSONObject geojson = new JSONObject();
-        geojson.put("type", "Point");
-        geojson.put("coordinates", new double[]{c.x, c.y});
-        Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 100000, 5);
-        int side = GeometryUtils.calulatPointSideOflink(
-                adAdmin.getGeometry(), command.getLink().getGeometry(), nearestPointGeo);
-        adAdmin.setSide(side);
+        //Coordinate c = GeometryUtils.GetNearestPointOnLine(
+        //        GeoTranslator.transform(adAdmin.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION).getCoordinate(),
+        //        GeoTranslator.transform(command.getLink().getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION));
+        //JSONObject geojson = new JSONObject();
+        //geojson.put("type", "Point");
+        //geojson.put("coordinates", new double[]{c.x, c.y});
+        //Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 100000, 5);
+        //int side = GeometryUtils.calulatPointSideOflink(
+        //        adAdmin.getGeometry(), command.getLink().getGeometry(), nearestPointGeo);
+        //adAdmin.setSide(side);
 
         result.insertObject(adAdmin, ObjStatus.INSERT, adAdmin.pid());
 

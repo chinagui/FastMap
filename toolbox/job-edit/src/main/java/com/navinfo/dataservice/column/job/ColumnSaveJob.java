@@ -67,7 +67,7 @@ public class ColumnSaveJob extends AbstractJob {
 		
 		Connection conn = null;
 		PoiColumnOpConf columnOpConf =null;
-		DeepCoreControl deepControl =null;
+		DeepCoreControl deepControl = new DeepCoreControl();
 		int dbId = 0;
 		try {
 			ColumnSaveJobRequest columnSaveJobRequest = (ColumnSaveJobRequest) this.request;
@@ -125,7 +125,6 @@ public class ColumnSaveJob extends AbstractJob {
 			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
 			columnOpConf = ixPoiOpConfSelector.getDeepOpConf("",secondWorkItem, type);
 			
-			deepControl = new DeepCoreControl();
 			OperationResult operationResult = new OperationResult();
 			
 			PoiLogDetailStat logDetail = new PoiLogDetailStat();

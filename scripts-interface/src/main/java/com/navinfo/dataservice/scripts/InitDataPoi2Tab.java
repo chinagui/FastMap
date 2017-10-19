@@ -80,8 +80,24 @@ public class InitDataPoi2Tab {
 				//解析参数
 				for(Object obj : data){
 					JSONObject jObj = (JSONObject) obj;
-					int taskId = jObj.getInt("taskId");
-					String subTaskIdStr = jObj.getString("subTaskId");
+					
+					int taskId = 0;
+					if(jObj.containsKey("taskId")){
+						taskId = jObj.getInt("taskId");
+					}else{
+						JSONObject errorLog = new JSONObject();
+						errorLog.put("taskId", taskId);
+						errorLog.put("taskName", "");
+						errorLog.put("subTaskId", "");
+						errorLog.put("errorMsg", "脚本本参数无任好号,请检查.");
+						errorLogs.add(errorLog);
+					}
+					
+					String subTaskIdStr = "";
+					if(jObj.containsKey("subTaskId")){
+						subTaskIdStr = jObj.getString("subTaskId");
+					}
+					
 					//判断:任务号和对应子任务号有一个未关闭，则任务号、子任务号都不提，报log，报出采集任务名称
 					Set<String> unclosedTasks = queryUnclosedTasks(taskId,subTaskIdStr);
 					if(unclosedTasks != null  && unclosedTasks.size() > 0){
@@ -822,7 +838,7 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 		sb.append("  task_id NUMBER(10) default 0 not null,");
 		sb.append("  subtask_id NUMBER(10) default 0 not null,");
 		sb.append("  DELFLAG  VARCHAR2(1) default 'F' not null,");
-		sb.append("  moveflag VARCHAR2(1) ,");
+		sb.append("  moveflag VARCHAR2(1) default 'F' not null,");
 		sb.append("  addflag  VARCHAR2(1) default 'F' not null,");
 		sb.append("  OPERATOR VARCHAR2(50), ");
 		sb.append("  log     VARCHAR2(50) ");

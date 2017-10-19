@@ -258,6 +258,7 @@ public class HBaseController {
 		photo.setA_content(aContent);
 		// 设置上传时间
 		String a_uploadDate = DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT);
+		photo.setA_uploadDate(a_uploadDate);
 		putPhoto(rowkey, in,photo);
 		return rowkey;
 	}

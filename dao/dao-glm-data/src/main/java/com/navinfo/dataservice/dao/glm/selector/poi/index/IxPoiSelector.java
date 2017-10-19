@@ -128,9 +128,9 @@ public class IxPoiSelector extends AbstractSelector {
 				}
 				JSONObject json = new JSONObject();
 				long pid = resultSet.getLong("pid");
-				json.put("poiNum", resultSet.getString("poi_num"));
+				json.put("poiNum", resultSet.getString("poi_num") == null ? "" : resultSet.getString("poi_num"));
 				json.put("pid", pid);
-				json.put("name", resultSet.getString("name")==null?"":resultSet.getString("name"));
+				json.put("name", resultSet.getString("name") == null ? "" : resultSet.getString("name"));
 				json.put("kindCode", resultSet.getString("kind_code"));
 				String flag = "";
 				if (StringUtils.isNotEmpty(resultSet.getString("flag"))) {

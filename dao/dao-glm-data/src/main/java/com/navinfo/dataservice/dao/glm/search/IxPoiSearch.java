@@ -88,30 +88,26 @@ public class IxPoiSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt)
-			throws Exception {
+	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition)
-			throws Exception {
+	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE,POI_NUM, INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, LINK_PID, ROW_ID "
 				+ "FROM IX_POI WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT') "
-				+ "= 'TRUE' AND U_RECORD != 2), TMP2 AS "
-				+ "(SELECT PN.NAME, PN.POI_PID FROM TMP1 A "
+				+ "= 'TRUE' AND U_RECORD != 2), TMP2 AS " + "(SELECT PN.NAME, PN.POI_PID FROM TMP1 A "
 				+ "LEFT JOIN IX_POI_NAME PN ON PN.POI_PID = A.PID "
 				+ "WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' "
 				+ "AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) "
@@ -149,12 +145,9 @@ public class IxPoiSearch implements ISearch {
 				m.put("e", resultSet.getString("name"));
 
 				m.put("g", resultSet.getInt("indoor") == 0 ? 0 : 1);
-				m.put("quickFlag",
-						resultSet.getInt("quick_subtask_id") == 0 ? 0 : 1);
-				m.put("mediumFlag",
-						resultSet.getInt("medium_subtask_id") == 0 ? 0 : 1);
-				m.put("n", resultSet.getString("poi_num") == null ? ""
-						: resultSet.getString("poi_num"));
+				m.put("quickFlag", resultSet.getInt("quick_subtask_id") == 0 ? 0 : 1);
+				m.put("mediumFlag", resultSet.getInt("medium_subtask_id") == 0 ? 0 : 1);
+				m.put("n", resultSet.getString("poi_num") == null ? "" : resultSet.getString("poi_num"));
 
 				// Double xGuide = resultSet.getDouble("x_guide");
 
@@ -225,12 +218,11 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 *             List<SearchSnapshot>
-	 * @throws
-	 * @author zl zhangli5174@navinfo.com
+	 * @throws @author
+	 *             zl zhangli5174@navinfo.com
 	 * @date 2017年7月4日 上午10:57:18
 	 */
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap, int taskId) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap, int taskId) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		StringBuilder sb = new StringBuilder();
@@ -246,7 +238,8 @@ public class IxPoiSearch implements ISearch {
 		sb.append("         I.LINK_PID");
 		sb.append("    FROM IX_POI I");
 		sb.append("   WHERE SDO_RELATE(I.GEOMETRY,");
-		sb.append("                    SDO_GEOMETRY(:1,8307),'MASK=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+		sb.append(
+				"                    SDO_GEOMETRY(:1,8307),'MASK=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
 		sb.append("     AND I.U_RECORD != 2),");
 		sb.append(" TMP2 AS");
 		sb.append(" (SELECT /*+ NO_MERGE(A),INDEX(D) */");
@@ -310,10 +303,8 @@ public class IxPoiSearch implements ISearch {
 				m.put("e", resultSet.getString("name"));
 
 				m.put("g", resultSet.getInt("indoor") == 0 ? 0 : 1);
-				m.put("quickFlag",
-						resultSet.getInt("quick_subtask_id") == 0 ? 0 : 1);
-				m.put("mediumFlag",
-						resultSet.getInt("medium_subtask_id") == 0 ? 0 : 1);
+				m.put("quickFlag", resultSet.getInt("quick_subtask_id") == 0 ? 0 : 1);
+				m.put("mediumFlag", resultSet.getInt("medium_subtask_id") == 0 ? 0 : 1);
 
 				/*
 				 * Double xGuide = resultSet.getDouble("x_guide");
@@ -388,12 +379,12 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 *             List<SearchSnapshot>
-	 * @throws
-	 * @author zl zhangli5174@navinfo.com
+	 * @throws @author
+	 *             zl zhangli5174@navinfo.com
 	 * @date 2017年7月4日 上午10:57:18
 	 */
-	public List<SearchSnapshot> searchDataByTileWithGapSnapshot(int x, int y,
-			int z, int gap, int taskId) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGapSnapshot(int x, int y, int z, int gap, int taskId)
+			throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		StringBuilder sb = new StringBuilder();
@@ -403,7 +394,8 @@ public class IxPoiSearch implements ISearch {
 		sb.append("         I.GEOMETRY");
 		sb.append("    FROM IX_POI I");
 		sb.append("   WHERE SDO_RELATE(I.GEOMETRY,");
-		sb.append("                    SDO_GEOMETRY(:1,8307),'MASK=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
+		sb.append(
+				"                    SDO_GEOMETRY(:1,8307),'MASK=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'");
 		sb.append("     AND I.U_RECORD != 2)");
 		sb.append(" SELECT /*+ORDERED ,NO_MERGE(B)*/");
 		sb.append(" B.PID,");
@@ -466,16 +458,15 @@ public class IxPoiSearch implements ISearch {
 		return list;
 	}
 
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap, JSONArray noQFilter) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap, JSONArray noQFilter)
+			throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE,POI_NUM, INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, LINK_PID, ROW_ID "
 				+ "FROM IX_POI WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT') "
-				+ "= 'TRUE' AND U_RECORD != 2), TMP2 AS "
-				+ "(SELECT PN.NAME, PN.POI_PID FROM TMP1 A "
+				+ "= 'TRUE' AND U_RECORD != 2), TMP2 AS " + "(SELECT PN.NAME, PN.POI_PID FROM TMP1 A "
 				+ "LEFT JOIN IX_POI_NAME PN ON PN.POI_PID = A.PID "
 				+ "WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' "
 				+ "AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) "
@@ -483,8 +474,7 @@ public class IxPoiSearch implements ISearch {
 
 		if (noQFilter != null) {
 			if (noQFilter.size() > 0) {
-				sb.append("SELECT A.*, B.STATUS,B.QUICK_TASK_ID,"
-						+ "B.MEDIUM_TASK_ID  FROM TMP1 A,POI_EDIT_STATUS B "
+				sb.append("SELECT A.*, B.STATUS,B.QUICK_TASK_ID," + "B.MEDIUM_TASK_ID  FROM TMP1 A,POI_EDIT_STATUS B "
 						+ " WHERE A.PID = B.PID AND B.QUICK_TASK_ID = 0 AND B.STATUS <> 0 ");
 				if (noQFilter.contains(1) && noQFilter.size() == 1) {
 					sb.append(" AND B.MEDIUM_TASK_ID <> 0 ");
@@ -498,8 +488,7 @@ public class IxPoiSearch implements ISearch {
 				return null;
 			}
 		} else {
-			sb.append("SELECT A.*, 0 STATUS,0 QUICK_TASK_ID ,"
-					+ "0 MEDIUM_TASK_ID  FROM TMP1 A");
+			sb.append("SELECT A.*, 0 STATUS,0 QUICK_TASK_ID ," + "0 MEDIUM_TASK_ID  FROM TMP1 A");
 		}
 		sb.append(" ) TMP LEFT JOIN TMP2 T ON T.POI_PID = TMP.PID ");
 		PreparedStatement pstmt = null;
@@ -533,12 +522,9 @@ public class IxPoiSearch implements ISearch {
 				m.put("e", resultSet.getString("name"));
 
 				m.put("g", resultSet.getInt("indoor") == 0 ? 0 : 1);
-				m.put("quickFlag", resultSet.getInt("quick_task_id") == 0 ? 0
-						: 1);
-				m.put("mediumFlag", resultSet.getInt("medium_task_id") == 0 ? 0
-						: 1);
-				m.put("n", resultSet.getString("poi_num") == null ? ""
-						: resultSet.getString("poi_num"));
+				m.put("quickFlag", resultSet.getInt("quick_task_id") == 0 ? 0 : 1);
+				m.put("mediumFlag", resultSet.getInt("medium_task_id") == 0 ? 0 : 1);
+				m.put("n", resultSet.getString("poi_num") == null ? "" : resultSet.getString("poi_num"));
 
 				// Double xGuide = resultSet.getDouble("x_guide");
 				//
@@ -622,8 +608,8 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONArray getPoiNameData(String secondWorkItem,
-			List<String> rowIds, String type, String langCode) throws Exception {
+	private JSONArray getPoiNameData(String secondWorkItem, List<String> rowIds, String type, String langCode)
+			throws Exception {
 
 		JSONArray dataList = new JSONArray();
 
@@ -635,18 +621,14 @@ public class IxPoiSearch implements ISearch {
 
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
-			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(
-					conn);
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 
 			for (String rowId : rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
-				List<IRow> nameList = nameSelector.loadRowsByParentId(
-						poi.getPid(), isLock);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setNames(nameList);
-				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
-						.loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,
-						secondWorkItem);
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn).loadRowsByParentId(poi.getPid(), isLock));
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId, secondWorkItem);
 
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
@@ -656,17 +638,14 @@ public class IxPoiSearch implements ISearch {
 					poiObj.put("chainName", poi.getChain());
 				}
 				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
-					poiObj.put("kindCodeName",
-							KINDCODEMAP.get(poi.getKindCode()));
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
 				} else {
 					poiObj.put("kindCodeName", poi.getKindCode());
 				}
 				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
-					poiObj.put("detailArea",
-							ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
 				} else {
-					poiObj.put("detailArea",
-							Integer.toString(poi.getAdminReal()));
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
 				}
 
 				poiObj.put("classifyRules", status.getString("workItemId"));
@@ -674,17 +653,14 @@ public class IxPoiSearch implements ISearch {
 
 				// 港澳作业,参考信息
 				if (langCode.equals("CHT")
-						&& (secondWorkItem.equals("nameUnify") || secondWorkItem
-								.equals("shortName"))) {
-					List<String> msgList = getNamerefMsg(secondWorkItem,
-							nameList);
+						&& (secondWorkItem.equals("nameUnify") || secondWorkItem.equals("shortName"))) {
+					List<String> msgList = getNamerefMsg(secondWorkItem, nameList);
 					poiObj.put("namerefMsg", msgList);
 				}
 
 				// 名称统一，查询父名称
 				if (secondWorkItem.equals("nameUnify")) {
-					poiObj.put("parentName", nameSelector.loadByIdForColumn(
-							poi.getPid(), langCode));
+					poiObj.put("parentName", nameSelector.loadByIdForColumn(poi.getPid(), langCode));
 				}
 
 				// 名称拼音作业，获取拼音组
@@ -694,11 +670,8 @@ public class IxPoiSearch implements ISearch {
 					for (IRow temp : nameList) {
 						IxPoiName name = (IxPoiName) temp;
 						JSONObject nameObj = name.Serialize(null);
-						if (name.getLangCode().equals(langCode)
-								&& name.getNameType() == 1) {
-							if (name.getNameClass() == 1
-									|| name.getNameClass() == 3
-									|| name.getNameClass() == 5
+						if (name.getLangCode().equals(langCode) && name.getNameType() == 1) {
+							if (name.getNameClass() == 1 || name.getNameClass() == 3 || name.getNameClass() == 5
 									|| name.getNameClass() == 8) {
 								pyList = pyConvertor(name.getName());
 								nameObj.put("multiPinyin", pyList);
@@ -728,8 +701,8 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONArray getPoiAddressData(String secondWorkItem,
-			List<String> rowIds, String type, String langCode) throws Exception {
+	private JSONArray getPoiAddressData(String secondWorkItem, List<String> rowIds, String type, String langCode)
+			throws Exception {
 		JSONArray dataList = new JSONArray();
 
 		try {
@@ -740,23 +713,17 @@ public class IxPoiSearch implements ISearch {
 
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
-			IxPoiAddressSelector addressSelector = new IxPoiAddressSelector(
-					conn);
-			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(
-					conn);
+			IxPoiAddressSelector addressSelector = new IxPoiAddressSelector(conn);
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 
 			for (String rowId : rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
-				List<IRow> nameList = nameSelector.loadRowsByParentId(
-						poi.getPid(), isLock);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setNames(nameList);
-				List<IRow> addressList = addressSelector.loadRowsByParentId(
-						poi.getPid(), isLock);
+				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setAddresses(addressList);
-				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
-						.loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,
-						secondWorkItem);
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn).loadRowsByParentId(poi.getPid(), isLock));
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId, secondWorkItem);
 
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
@@ -766,17 +733,14 @@ public class IxPoiSearch implements ISearch {
 					poiObj.put("chainName", poi.getChain());
 				}
 				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
-					poiObj.put("kindCodeName",
-							KINDCODEMAP.get(poi.getKindCode()));
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
 				} else {
 					poiObj.put("kindCodeName", poi.getKindCode());
 				}
 				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
-					poiObj.put("detailArea",
-							ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
 				} else {
-					poiObj.put("detailArea",
-							Integer.toString(poi.getAdminReal()));
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
 				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
@@ -795,26 +759,17 @@ public class IxPoiSearch implements ISearch {
 						IxPoiAddress address = (IxPoiAddress) temp;
 						JSONObject addrObj = address.Serialize(null);
 						if (address.getLangCode().equals(langCode)) {
-							if (address.getAddrname() != null
-									&& !address.getAddrname().isEmpty()) {
-								List<List<String>> addrNameMultiPinyin = pyConvertor(address
-										.getAddrname());
-								addrObj.put("addrNameMultiPinyin",
-										addrNameMultiPinyin);
+							if (address.getAddrname() != null && !address.getAddrname().isEmpty()) {
+								List<List<String>> addrNameMultiPinyin = pyConvertor(address.getAddrname());
+								addrObj.put("addrNameMultiPinyin", addrNameMultiPinyin);
 							}
-							if (address.getRoadname() != null
-									&& !address.getRoadname().isEmpty()) {
-								List<List<String>> roadNameMultiPinyin = pyConvertor(address
-										.getRoadname());
-								addrObj.put("roadNameMultiPinyin",
-										roadNameMultiPinyin);
+							if (address.getRoadname() != null && !address.getRoadname().isEmpty()) {
+								List<List<String>> roadNameMultiPinyin = pyConvertor(address.getRoadname());
+								addrObj.put("roadNameMultiPinyin", roadNameMultiPinyin);
 							}
-							if (address.getFullname() != null
-									&& !address.getFullname().isEmpty()) {
-								List<List<String>> fullNameMultiPinyin = pyConvertor(address
-										.getFullname());
-								addrObj.put("fullNameMultiPinyin",
-										fullNameMultiPinyin);
+							if (address.getFullname() != null && !address.getFullname().isEmpty()) {
+								List<List<String>> fullNameMultiPinyin = pyConvertor(address.getFullname());
+								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
 							}
 						}
 						addrArray.add(addrObj);
@@ -841,8 +796,8 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONArray getPoiEngnameData(String secondWorkItem,
-			List<String> rowIds, String type, String langCode) throws Exception {
+	private JSONArray getPoiEngnameData(String secondWorkItem, List<String> rowIds, String type, String langCode)
+			throws Exception {
 
 		JSONArray dataList = new JSONArray();
 
@@ -854,18 +809,14 @@ public class IxPoiSearch implements ISearch {
 
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
-			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(
-					conn);
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 
 			for (String rowId : rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
-				List<IRow> nameList = nameSelector.loadRowsByParentId(
-						poi.getPid(), isLock);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setNames(nameList);
-				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
-						.loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,
-						secondWorkItem);
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn).loadRowsByParentId(poi.getPid(), isLock));
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId, secondWorkItem);
 
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
@@ -875,17 +826,14 @@ public class IxPoiSearch implements ISearch {
 					poiObj.put("chainName", poi.getChain());
 				}
 				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
-					poiObj.put("kindCodeName",
-							KINDCODEMAP.get(poi.getKindCode()));
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
 				} else {
 					poiObj.put("kindCodeName", poi.getKindCode());
 				}
 				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
-					poiObj.put("detailArea",
-							ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
 				} else {
-					poiObj.put("detailArea",
-							Integer.toString(poi.getAdminReal()));
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
 				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
@@ -908,8 +856,8 @@ public class IxPoiSearch implements ISearch {
 	 * @param langCode
 	 * @return
 	 */
-	private JSONArray getPoiEngaddrData(String secondWorkItem,
-			List<String> rowIds, String type, String langCode) throws Exception {
+	private JSONArray getPoiEngaddrData(String secondWorkItem, List<String> rowIds, String type, String langCode)
+			throws Exception {
 		JSONArray dataList = new JSONArray();
 
 		try {
@@ -920,23 +868,17 @@ public class IxPoiSearch implements ISearch {
 
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
-			IxPoiAddressSelector addressSelector = new IxPoiAddressSelector(
-					conn);
-			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(
-					conn);
+			IxPoiAddressSelector addressSelector = new IxPoiAddressSelector(conn);
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 
 			for (String rowId : rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
-				List<IRow> nameList = nameSelector.loadRowsByParentId(
-						poi.getPid(), isLock);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setNames(nameList);
-				List<IRow> addressList = addressSelector.loadRowsByParentId(
-						poi.getPid(), isLock);
+				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setAddresses(addressList);
-				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
-						.loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,
-						secondWorkItem);
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn).loadRowsByParentId(poi.getPid(), isLock));
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId, secondWorkItem);
 
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
@@ -946,17 +888,14 @@ public class IxPoiSearch implements ISearch {
 					poiObj.put("chainName", poi.getChain());
 				}
 				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
-					poiObj.put("kindCodeName",
-							KINDCODEMAP.get(poi.getKindCode()));
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
 				} else {
 					poiObj.put("kindCodeName", poi.getKindCode());
 				}
 				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
-					poiObj.put("detailArea",
-							ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
 				} else {
-					poiObj.put("detailArea",
-							Integer.toString(poi.getAdminReal()));
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
 				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
@@ -968,8 +907,7 @@ public class IxPoiSearch implements ISearch {
 						String[] addrList = addr.getFullname().split(" ");
 						for (String addrTemp : addrList) {
 							if (ENGSHORTMAP.containsKey(addrTemp)) {
-								addressesList.add(addrTemp + "&"
-										+ ENGSHORTMAP.get(addrTemp));
+								addressesList.add(addrTemp + "&" + ENGSHORTMAP.get(addrTemp));
 							}
 						}
 						break;
@@ -994,8 +932,7 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private List<String> getNamerefMsg(String secondWorkItem,
-			List<IRow> nameList) throws Exception {
+	private List<String> getNamerefMsg(String secondWorkItem, List<IRow> nameList) throws Exception {
 
 		List<String> msgList = new ArrayList<String>();
 		String name = "";
@@ -1003,14 +940,12 @@ public class IxPoiSearch implements ISearch {
 			for (IRow temp : nameList) {
 				IxPoiName ixPoiName = (IxPoiName) temp;
 				if (secondWorkItem.equals("nameUnify")) {
-					if (ixPoiName.getLangCode().equals("CHT")
-							&& ixPoiName.getNameType() == 1
+					if (ixPoiName.getLangCode().equals("CHT") && ixPoiName.getNameType() == 1
 							&& ixPoiName.getNameClass() == 1) {
 						name = ixPoiName.getName();
 					}
 				} else if (secondWorkItem.equals("shortName")) {
-					if (ixPoiName.getLangCode().equals("CHT")
-							&& ixPoiName.getNameType() == 1
+					if (ixPoiName.getLangCode().equals("CHT") && ixPoiName.getNameType() == 1
 							&& ixPoiName.getNameClass() == 5) {
 						name = ixPoiName.getName();
 					}
@@ -1058,18 +993,13 @@ public class IxPoiSearch implements ISearch {
 							String addrNameSingle = addrNamelis[i];
 							if (!addrNameSingle.isEmpty()) {
 								for (int j = 0; j < addrNameSingle.length(); j++) {
-									if (CHARACTERMAP.containsKey(addrNameSingle
-											.substring(i, i + 1))) {
-										String correct = CHARACTERMAP
-												.get(addrNameSingle.substring(
-														i, i + 1));
+									if (CHARACTERMAP.containsKey(addrNameSingle.substring(i, i + 1))) {
+										String correct = CHARACTERMAP.get(addrNameSingle.substring(i, i + 1));
 										if (correct.isEmpty()) {
 											correct = "";
 										}
-										msgList.add(strAddrlis[i]
-												+ "&"
-												+ addrNameSingle.substring(j,
-														j + 1) + "&" + correct);
+										msgList.add(strAddrlis[i] + "&" + addrNameSingle.substring(j, j + 1) + "&"
+												+ correct);
 									}
 								}
 							}
@@ -1084,18 +1014,13 @@ public class IxPoiSearch implements ISearch {
 							String roadNameSingle = roadNamelis[i];
 							if (!roadNameSingle.isEmpty()) {
 								for (int j = 0; j < roadNameSingle.length(); j++) {
-									if (CHARACTERMAP.containsKey(roadNameSingle
-											.substring(i, i + 1))) {
-										String correct = CHARACTERMAP
-												.get(roadNameSingle.substring(
-														i, i + 1));
+									if (CHARACTERMAP.containsKey(roadNameSingle.substring(i, i + 1))) {
+										String correct = CHARACTERMAP.get(roadNameSingle.substring(i, i + 1));
 										if (correct.isEmpty()) {
 											correct = "";
 										}
-										msgList.add(strRoadlis[i]
-												+ "&"
-												+ roadNameSingle.substring(j,
-														j + 1) + "&" + correct);
+										msgList.add(strRoadlis[i] + "&" + roadNameSingle.substring(j, j + 1) + "&"
+												+ correct);
 									}
 								}
 							}
@@ -1127,14 +1052,12 @@ public class IxPoiSearch implements ISearch {
 			for (int i = 0; i < word.length(); i++) {
 				List<String> sigleWordList = new ArrayList<String>();
 				if (NAVICOVPYMAP.containsKey(String.valueOf(word.charAt(i)))) {
-					List<String> sigleWord = NAVICOVPYMAP.get(String
-							.valueOf(word.charAt(i)));
+					List<String> sigleWord = NAVICOVPYMAP.get(String.valueOf(word.charAt(i)));
 					if (sigleWord.size() > 1) {
 						sigleWordList.add(Integer.toString(i));
 						sigleWordList.add(String.valueOf(word.charAt(i)));
 						for (String sigelTemp : sigleWord) {
-							String tmpPinyin = String.valueOf(
-									sigelTemp.charAt(0)).toUpperCase()
+							String tmpPinyin = String.valueOf(sigelTemp.charAt(0)).toUpperCase()
 									+ sigelTemp.substring(1);
 							sigleWordList.add(tmpPinyin);
 						}
@@ -1148,45 +1071,44 @@ public class IxPoiSearch implements ISearch {
 			throw e;
 		}
 	}
-	
-	public Map<Integer,Integer> searchAdminCodeMapByPid(List<Integer> pids) throws Exception {
-		Map<Integer,Integer> adAdminMap=new HashMap<Integer,Integer>();
+
+	public Map<Integer, Integer> searchAdminCodeMapByPid(List<Integer> pids) throws Exception {
+		Map<Integer, Integer> adAdminMap = new HashMap<Integer, Integer>();
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
-			String sql = "SELECT i.pid,a.admin_id FROM ad_admin a,ix_poi i WHERE i.pid in (" + org.apache.commons.lang.StringUtils.join(pids, ",") + ") and a.region_id=i.region_id";
+			String sql = "SELECT i.pid,a.admin_id FROM ad_admin a,ix_poi i WHERE i.pid in ("
+					+ org.apache.commons.lang.StringUtils.join(pids, ",") + ") and a.region_id=i.region_id";
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();
-			while(resultSet.next()){
+			while (resultSet.next()) {
 				adAdminMap.put(resultSet.getInt("pid"), resultSet.getInt("admin_id"));
-				}
+			}
 			return adAdminMap;
-			
+
 		} catch (Exception e) {
 			throw e;
 		}
-		}
-	
-	private JSONObject searchColumnDataByPid(String firstWordItem,
-			String secondWorkItem, IxPoi poi, long userId, 
-			JSONObject classifyRules, JSONObject ckRules,
-			Map<Integer, JSONObject> isProblems,Map<Integer,Integer> adminCodeMap)throws Exception {
-		
-       JSONObject poiObj = new JSONObject();
+	}
 
-       boolean isLock = false;
-	   try{
-			if(!(firstWordItem.equals("poi_englishaddress"))){
-			log.info("查询Names");
-			poi.setNames(new AbstractSelector(IxPoiName.class, conn)
-					.loadRowsByParentId(poi.getPid(), isLock));}
+	private JSONObject searchColumnDataByPid(String firstWordItem, String secondWorkItem, IxPoi poi, long userId,
+			JSONObject classifyRules, JSONObject ckRules, Map<Integer, JSONObject> isProblems,
+			Map<Integer, Integer> adminCodeMap) throws Exception {
+
+		JSONObject poiObj = new JSONObject();
+
+		boolean isLock = false;
+		try {
+			if (!(firstWordItem.equals("poi_englishaddress"))) {
+				log.info("查询Names");
+				poi.setNames(new AbstractSelector(IxPoiName.class, conn).loadRowsByParentId(poi.getPid(), isLock));
+			}
 			log.info("查询Photos");
-			poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
-					.loadRowsByParentId(poi.getPid(), isLock));
-			
+			poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn).loadRowsByParentId(poi.getPid(), isLock));
+
 			log.info("获取各专项共用字段");
 			// 获取各专项共用字段
-			getCommenfields(poi,adminCodeMap,poiObj);
+			getCommenfields(poi, adminCodeMap, poiObj);
 			poiObj.put("userId", userId);
 			log.info("classifyRules赋值");
 			// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
@@ -1215,11 +1137,11 @@ public class IxPoiSearch implements ISearch {
 			poiObj.put("namerefMsg", "");
 			log.info("获取特殊字段");
 			// 获取特殊字段
-			getUnCommenfields(firstWordItem, secondWorkItem,poi, poiObj);
-			return  poiObj;
-	} catch (Exception e) {
-		throw e;
-	}
+			getUnCommenfields(firstWordItem, secondWorkItem, poi, poiObj);
+			return poiObj;
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 
 	/**
@@ -1233,10 +1155,9 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray searchColumnPoiByPid(String firstWordItem,
-			String secondWorkItem, List<Integer> pids, long userId, int status,
-			JSONObject classifyRules, JSONObject ckRules,
-			Map<Integer, JSONObject> isProblems) throws Exception {
+	public JSONArray searchColumnPoiByPid(String firstWordItem, String secondWorkItem, List<Integer> pids, long userId,
+			int status, JSONObject classifyRules, JSONObject ckRules, Map<Integer, JSONObject> isProblems)
+			throws Exception {
 		log.info("start searchColumnPoiByPid");
 		JSONArray dataList = new JSONArray();
 
@@ -1246,8 +1167,7 @@ public class IxPoiSearch implements ISearch {
 
 		try {
 			log.info("load metaData");
-			MetadataApi apiService = (MetadataApi) ApplicationContextUtil
-					.getBean("metadataApi");
+			MetadataApi apiService = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 
 			MetadataMap metaData = apiService.getMetadataMap();
 
@@ -1269,62 +1189,67 @@ public class IxPoiSearch implements ISearch {
 
 			this.ALIASNAME = metaData.getAliasName();
 			log.info("查詢adminCode");
-			Map<Integer,Integer> adminCodeMap=searchAdminCodeMapByPid(pids);
-		
+			Map<Integer, Integer> adminCodeMap = searchAdminCodeMapByPid(pids);
+
 			log.info("查询poiList");
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
-			String querySql="select pid,row_id,poi_num,kind_code,mesh_id,chain from ix_poi where pid in ("+org.apache.commons.lang.StringUtils.join(pids.toArray(), ",") + ")";
-			List<IRow> poiList =poiSelector.loadBySql(querySql, false,false);
-			
-			log.info("循环补充精编作业字段");
-			
-			for (IRow iRow:poiList) {
-				IxPoi poi=(IxPoi) iRow;
-				if(!(firstWordItem.equals("poi_englishaddress"))){
-					log.info("查询Names");
-					poi.setNames(new AbstractSelector(IxPoiName.class, conn)
-							.loadRowsByParentId(poi.getPid(), isLock));}
-					log.info("查询Photos");
-					poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn)
-							.loadRowsByParentId(poi.getPid(), isLock));
-					
-					log.info("获取各专项共用字段");
-					// 获取各专项共用字段
-					getCommenfields(poi,adminCodeMap,poiObj);
-					poiObj.put("userId", userId);
-					log.info("classifyRules赋值");
-					// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
-					String classifyRule = "";
-					Object cf = classifyRules.get(Integer.toString(poi.getPid()));
-					if (cf != null) {
-						classifyRule = cf.toString();
-					}
-					poiObj.put("classifyRules", classifyRule);
-					log.info("ckRules赋值，获取检查错误");
-					// ckRules赋值，获取检查错误
-					List<JSONObject> ckRule = (List<JSONObject>) ckRules.get(Integer.toString(poi.getPid()));
-					poiObj.put("ckRules", ckRule);
-					if (ckRule == null) {
-						List<JSONObject> value = new ArrayList<JSONObject>();
-						poiObj.put("ckRules", value);
-					}
-					log.info("isProblem赋值");
-					// isProblem赋值
-					if (isProblems != null && isProblems.containsKey(poi.getPid())) {
-						JSONObject isProblem = (JSONObject) isProblems.get(poi.getPid());
-						poiObj.put("isProblem", isProblem);
-					}
+			String querySql = "select pid,row_id,poi_num,kind_code,mesh_id,chain from ix_poi where pid in ("
+					+ org.apache.commons.lang.StringUtils.join(pids.toArray(), ",") + ")";
+			List<IRow> poiList = poiSelector.loadBySql(querySql, false, false);
 
-					// 大陆作业无值，港澳后续补充
-					poiObj.put("namerefMsg", "");
-					log.info("获取特殊字段");
-					// 获取特殊字段
-					getUnCommenfields(firstWordItem, secondWorkItem,poi, poiObj);
-					dataList.add(poiObj);
-					
+			log.info("循环补充精编作业字段");
+
+			for (IRow iRow : poiList) {
+				IxPoi poi = (IxPoi) iRow;
+				if (!(firstWordItem.equals("poi_englishaddress"))) {
+					log.info("查询Names");
+					poi.setNames(new AbstractSelector(IxPoiName.class, conn).loadRowsByParentId(poi.getPid(), isLock));
+				}
+				if (firstWordItem.equals("poi_address")
+						|| firstWordItem.equals("poi_englishaddress")) {
+					log.info("查询Address");
+					poi.setAddresses(new AbstractSelector(IxPoiAddress.class, conn).loadRowsByParentId(poi.getPid(), isLock));
+				}
+				log.info("查询Photos");
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class, conn).loadRowsByParentId(poi.getPid(), isLock));
+
+				log.info("获取各专项共用字段");
+				// 获取各专项共用字段
+				getCommenfields(poi, adminCodeMap, poiObj);
+				poiObj.put("userId", userId);
+				log.info("classifyRules赋值");
+				// classifyRules赋值,避免每条数据查一次库，整体查出再处理；
+				String classifyRule = "";
+				Object cf = classifyRules.get(Integer.toString(poi.getPid()));
+				if (cf != null) {
+					classifyRule = cf.toString();
+				}
+				poiObj.put("classifyRules", classifyRule);
+				log.info("ckRules赋值，获取检查错误");
+				// ckRules赋值，获取检查错误
+				List<JSONObject> ckRule = (List<JSONObject>) ckRules.get(Integer.toString(poi.getPid()));
+				poiObj.put("ckRules", ckRule);
+				if (ckRule == null) {
+					List<JSONObject> value = new ArrayList<JSONObject>();
+					poiObj.put("ckRules", value);
+				}
+				log.info("isProblem赋值");
+				// isProblem赋值
+				if (isProblems != null && isProblems.containsKey(poi.getPid())) {
+					JSONObject isProblem = (JSONObject) isProblems.get(poi.getPid());
+					poiObj.put("isProblem", isProblem);
+				}
+
+				// 大陆作业无值，港澳后续补充
+				poiObj.put("namerefMsg", "");
+				log.info("获取特殊字段");
+				// 获取特殊字段
+				getUnCommenfields(firstWordItem, secondWorkItem, poi, poiObj);
+				dataList.add(poiObj);
+
 			}
-			
-			log.info("end searchColumnPoiByPid,dataList.size:"+dataList.size());
+
+			log.info("end searchColumnPoiByPid,dataList.size:" + dataList.size());
 
 			return dataList;
 		} catch (Exception e) {
@@ -1352,7 +1277,7 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private void getCommenfields(IxPoi poi,Map<Integer,Integer> adminCodeMap,JSONObject dataObj) throws Exception {
+	private void getCommenfields(IxPoi poi, Map<Integer, Integer> adminCodeMap, JSONObject dataObj) throws Exception {
 		try {
 			dataObj.put("pid", poi.getPid());
 			dataObj.put("rowId", poi.getRowId());
@@ -1360,16 +1285,16 @@ public class IxPoiSearch implements ISearch {
 			dataObj.put("kindCode", poi.getKindCode());
 			dataObj.put("meshId", poi.getMeshId());
 
-//			MetadataApi apiService = (MetadataApi) ApplicationContextUtil
-//					.getBean("metadataApi");
-//			String KindName = apiService.searchKindName(poi.getKindCode());
+			// MetadataApi apiService = (MetadataApi) ApplicationContextUtil
+			// .getBean("metadataApi");
+			// String KindName = apiService.searchKindName(poi.getKindCode());
 			dataObj.put("kindName", KINDCODEMAP.get(poi.getKindCode()));
 
 			// ix_poi表通过region_id关联ad_admin，获取adminCode
 			int regionId = poi.getRegionId();
 			if (adminCodeMap.containsKey(poi.getPid())) {
 				dataObj.put("adminCode", adminCodeMap.get(poi.getPid()));
-			} else{
+			} else {
 				dataObj.put("adminCode", 0);
 			}
 
@@ -1377,7 +1302,7 @@ public class IxPoiSearch implements ISearch {
 			// ix_poi表通过pid关联Ix_Poi_Photo，将照片记录转换为json格式的名称组
 			dataObj.put("photos", poiObj.get("photos"));
 			// ix_poi表通过pid关联ix_poi_parent，将父子关系记录转换为json格式的名称组
-//			dataObj.put("parent", poiObj.get("parents"));
+			// dataObj.put("parent", poiObj.get("parents"));
 
 			// 通过ix_poi表中的chain，去元数据表ci_para_chain中匹配获取相应的名称
 			String brandName = "";
@@ -1389,8 +1314,7 @@ public class IxPoiSearch implements ISearch {
 			// ix_poi表通过region_id关联ad_admin，获取adminCode，去元数据表sc_point_adminarea中匹配获取相应的名称
 			// 待确认
 			if (ADMINMAP.containsKey(dataObj.get("adminCode").toString())) {
-				dataObj.put("whole",
-						ADMINMAP.get(dataObj.get("adminCode").toString()));
+				dataObj.put("whole", ADMINMAP.get(dataObj.get("adminCode").toString()));
 			} else {
 				dataObj.put("whole", "");
 			}
@@ -1411,8 +1335,7 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getUnCommenfields(String firstWordItem,
-			String secondWorkItem,IxPoi poi, JSONObject dataObj)
+	private JSONObject getUnCommenfields(String firstWordItem, String secondWorkItem, IxPoi poi, JSONObject dataObj)
 			throws Exception {
 		try {
 			log.info("取该poi的父名称");
@@ -1420,16 +1343,13 @@ public class IxPoiSearch implements ISearch {
 			dataObj = getParentName(secondWorkItem, poi, dataObj);
 			log.info("取名称相关字段");
 			// 名称相关字段
-			dataObj = getNamesNameFlagNameList(firstWordItem, secondWorkItem,
-					poi, dataObj);
+			dataObj = getNamesNameFlagNameList(firstWordItem, secondWorkItem, poi, dataObj);
 			log.info("取地址相关字段");
 			// 地址相关字段
-			dataObj = getAddressesAddressList(firstWordItem, secondWorkItem,
-					poi, dataObj);
+			dataObj = getAddressesAddressList(firstWordItem, secondWorkItem, poi, dataObj);
 			log.info("取英文名称批处理前后值");
 			// oldOriginalEngName,newOriginalEngName,oldStandardEngName,newStandardEngName
-			dataObj = getEngNameBeforBatch(firstWordItem, secondWorkItem, poi,
-					dataObj);
+			dataObj = getEngNameBeforBatch(firstWordItem, secondWorkItem, poi, dataObj);
 
 			return dataObj;
 		} catch (Exception e) {
@@ -1446,23 +1366,20 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getParentName(String secondWorkItem, IxPoi poi,
-			JSONObject dataObj) throws Exception {
+	private JSONObject getParentName(String secondWorkItem, IxPoi poi, JSONObject dataObj) throws Exception {
 		try {
 			if (secondWorkItem.equals("nameUnify")) {
 				int cPid = poi.getPid();
 				int parentPoiPid = 0;
 				IxPoiParentSelector parents = new IxPoiParentSelector(conn);
-				List<IRow> pRows = parents.loadParentRowsByChildrenId(cPid,
-						false);
+				List<IRow> pRows = parents.loadParentRowsByChildrenId(cPid, false);
 				for (IRow pRow : pRows) {
 					IxPoiParent parent = (IxPoiParent) pRow;
 					parentPoiPid = parent.getParentPoiPid();
 				}
 				if (parentPoiPid != 0) {
 					IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
-					dataObj.put("parentName",
-							nameSelector.loadByIdForColumn(parentPoiPid, "CHI"));
+					dataObj.put("parentName", nameSelector.loadByIdForColumn(parentPoiPid, "CHI"));
 				} else {
 					dataObj.put("parentName", "");
 				}
@@ -1483,9 +1400,8 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getNamesNameFlagNameList(String firstWordItem,
-			String secondWorkItem, IxPoi poi, JSONObject dataObj)
-			throws Exception {
+	private JSONObject getNamesNameFlagNameList(String firstWordItem, String secondWorkItem, IxPoi poi,
+			JSONObject dataObj) throws Exception {
 		JSONArray nameArray = new JSONArray();
 		// String nameFlag="";
 		List<IRow> nRows = poi.getNames();
@@ -1511,11 +1427,8 @@ public class IxPoiSearch implements ISearch {
 				 */
 				if (secondWorkItem.equals("namePinyin")) {
 					List<List<String>> pyList = new ArrayList<List<String>>();
-					if (name.getLangCode().equals("CHI")
-							&& name.getNameType() == 1) {
-						if (name.getNameClass() == 1
-								|| name.getNameClass() == 3
-								|| name.getNameClass() == 5
+					if (name.getLangCode().equals("CHI") && name.getNameType() == 1) {
+						if (name.getNameClass() == 1 || name.getNameClass() == 3 || name.getNameClass() == 5
 								|| name.getNameClass() == 8) {
 							pyList = pyConvertor(name.getName());
 							nameObj.put("multiPinyin", pyList);
@@ -1546,9 +1459,7 @@ public class IxPoiSearch implements ISearch {
 				 */
 				if (secondWorkItem.equals("nameUnify")) {
 					Map<String, String> nameUnifyshort = (Map<String, String>) NAMEUNIFYSHORT;
-					if (name.getLangCode().equals("CHI")
-							&& name.getNameType() == 1
-							&& name.getNameClass() == 1) {
+					if (name.getLangCode().equals("CHI") && name.getNameType() == 1 && name.getNameClass() == 1) {
 						for (String key : nameUnifyshort.keySet()) {
 							if (name.getName().contains(key)) {
 								JSONObject jsonObject = new JSONObject();
@@ -1570,9 +1481,7 @@ public class IxPoiSearch implements ISearch {
 				 */
 				if (secondWorkItem.equals("shortName")) {
 					Map<String, String> chiShort = (Map<String, String>) CHISHORT;
-					if (name.getLangCode().equals("CHI")
-							&& name.getNameType() == 1
-							&& name.getNameClass() == 5) {
+					if (name.getLangCode().equals("CHI") && name.getNameType() == 1 && name.getNameClass() == 5) {
 						for (String key : chiShort.keySet()) {
 							if (name.getName().contains(key)) {
 								JSONObject jsonObject = new JSONObject();
@@ -1593,9 +1502,7 @@ public class IxPoiSearch implements ISearch {
 				 */
 				if (secondWorkItem.equals("aliasName")) {
 					Map<String, String> aliasShort = (Map<String, String>) ALIASNAME;
-					if (name.getLangCode().equals("CHI")
-							&& name.getNameType() == 1
-							&& name.getNameClass() == 3) {
+					if (name.getLangCode().equals("CHI") && name.getNameType() == 1 && name.getNameClass() == 3) {
 						for (String key : aliasShort.keySet()) {
 							if (name.getName().contains(key)) {
 								JSONObject jsonObject = new JSONObject();
@@ -1610,17 +1517,13 @@ public class IxPoiSearch implements ISearch {
 				// nameList赋值
 				if (firstWordItem.equals("poi_englishname")) {
 					if (!secondWorkItem.equals("confirmAliasEngName")
-							&& !secondWorkItem
-									.equals("officalStandardAliasEngName")) {
-						if (name.getLangCode().equals("ENG")
-								&& name.getNameType() == 2
-								&& name.getNameClass() == 1) {
+							&& !secondWorkItem.equals("officalStandardAliasEngName")) {
+						if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass() == 1) {
 							List<String> nameList = new ArrayList<String>();
 							String[] wordList = nameStr.split(" ");
 							for (String word : wordList) {
 								if (ENGSHORTMAP.containsKey(word)) {
-									nameList.add(word + "&"
-											+ ENGSHORTMAP.get(word));
+									nameList.add(word + "&" + ENGSHORTMAP.get(word));
 								}
 							}
 							dataObj.put("nameList", nameList);
@@ -1659,92 +1562,48 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getAddressesAddressList(String firstWordItem,
-			String secondWorkItem, IxPoi poi, JSONObject dataObj)
-			throws Exception {
+	private JSONObject getAddressesAddressList(String firstWordItem, String secondWorkItem, IxPoi poi,
+			JSONObject dataObj) throws Exception {
 		JSONArray addrArray = new JSONArray();
 		List<IRow> aRows = poi.getAddresses();
 		try {
-			if (firstWordItem.equals("poi_address")
-					|| firstWordItem.equals("poi_englishaddress")) {
+			if (firstWordItem.equals("poi_address") || firstWordItem.equals("poi_englishaddress")) {
 				for (IRow aRow : aRows) {
 					// 地址组:当一级作业项=poi_address或poi_englishaddress时，pid关联ix_poi_address，将多组名称记录转换为json格式的名称组；
 					IxPoiAddress address = (IxPoiAddress) aRow;
 					JSONObject addrObj = address.Serialize(null);
 					// 由于现在数据addrname和roadname本身为空，因此给前台组合addrnameStr和roadnameStr返回
 					if (address.getLangCode().equals("CHI")) {
-						String roadnameStr = stringIsNull(address.getProvince())
-								+ "|"
-								+ stringIsNull(address.getCity())
-								+ "|"
-								+ stringIsNull(address.getCounty())
-								+ "|"
-								+ stringIsNull(address.getTown())
-								+ "|"
-								+ stringIsNull(address.getPlace())
-								+ "|"
-								+ stringIsNull(address.getStreet());
+						String roadnameStr = stringIsNull(address.getProvince()) + "|" + stringIsNull(address.getCity())
+								+ "|" + stringIsNull(address.getCounty()) + "|" + stringIsNull(address.getTown()) + "|"
+								+ stringIsNull(address.getPlace()) + "|" + stringIsNull(address.getStreet());
 
-						String addrnameStr = stringIsNull(address.getLandmark())
-								+ "|"
-								+ stringIsNull(address.getPrefix())
-								+ "|"
-								+ stringIsNull(address.getHousenum())
-								+ "|"
-								+ stringIsNull(address.getType())
-								+ "|"
-								+ stringIsNull(address.getSubnum())
-								+ "|"
-								+ stringIsNull(address.getSurfix())
-								+ "|"
-								+ stringIsNull(address.getEstab())
-								+ "|"
-								+ stringIsNull(address.getBuilding())
-								+ "|"
-								+ stringIsNull(address.getUnit())
-								+ "|"
-								+ stringIsNull(address.getFloor())
-								+ "|"
-								+ stringIsNull(address.getRoom())
-								+ "|"
+						String addrnameStr = stringIsNull(address.getLandmark()) + "|"
+								+ stringIsNull(address.getPrefix()) + "|" + stringIsNull(address.getHousenum()) + "|"
+								+ stringIsNull(address.getType()) + "|" + stringIsNull(address.getSubnum()) + "|"
+								+ stringIsNull(address.getSurfix()) + "|" + stringIsNull(address.getEstab()) + "|"
+								+ stringIsNull(address.getBuilding()) + "|" + stringIsNull(address.getUnit()) + "|"
+								+ stringIsNull(address.getFloor()) + "|" + stringIsNull(address.getRoom()) + "|"
 								+ stringIsNull(address.getAddons());
 
-						String roadnamePhoneticStr = stringIsNull(address
-								.getProvPhonetic())
-								+ "|"
-								+ stringIsNull(address.getCityPhonetic())
-								+ "|"
-								+ stringIsNull(address.getCountyPhonetic())
-								+ "|"
-								+ stringIsNull(address.getTownPhonetic())
-								+ "|"
-								+ stringIsNull(address.getPlacePhonetic())
-								+ "|"
+						String roadnamePhoneticStr = stringIsNull(address.getProvPhonetic()) + "|"
+								+ stringIsNull(address.getCityPhonetic()) + "|"
+								+ stringIsNull(address.getCountyPhonetic()) + "|"
+								+ stringIsNull(address.getTownPhonetic()) + "|"
+								+ stringIsNull(address.getPlacePhonetic()) + "|"
 								+ stringIsNull(address.getStreetPhonetic());
 
-						String addrnamePhoneticStr = stringIsNull(address
-								.getLandmarkPhonetic())
-								+ "|"
-								+ stringIsNull(address.getPrefixPhonetic())
-								+ "|"
-								+ stringIsNull(address.getHousenumPhonetic())
-								+ "|"
-								+ stringIsNull(address.getTypePhonetic())
-								+ "|"
-								+ stringIsNull(address.getSubnumPhonetic())
-								+ "|"
-								+ stringIsNull(address.getSurfixPhonetic())
-								+ "|"
-								+ stringIsNull(address.getEstabPhonetic())
-								+ "|"
-								+ stringIsNull(address.getBuildingPhonetic())
-								+ "|"
-								+ stringIsNull(address.getUnitPhonetic())
-								+ "|"
-								+ stringIsNull(address.getFloorPhonetic())
-								+ "|"
-								+ stringIsNull(address.getRoomPhonetic())
-								+ "|"
+						String addrnamePhoneticStr = stringIsNull(address.getLandmarkPhonetic()) + "|"
+								+ stringIsNull(address.getPrefixPhonetic()) + "|"
+								+ stringIsNull(address.getHousenumPhonetic()) + "|"
+								+ stringIsNull(address.getTypePhonetic()) + "|"
+								+ stringIsNull(address.getSubnumPhonetic()) + "|"
+								+ stringIsNull(address.getSurfixPhonetic()) + "|"
+								+ stringIsNull(address.getEstabPhonetic()) + "|"
+								+ stringIsNull(address.getBuildingPhonetic()) + "|"
+								+ stringIsNull(address.getUnitPhonetic()) + "|"
+								+ stringIsNull(address.getFloorPhonetic()) + "|"
+								+ stringIsNull(address.getRoomPhonetic()) + "|"
 								+ stringIsNull(address.getAddonsPhonetic());
 
 						addrObj.put("addrnameStr", addrnameStr);
@@ -1754,21 +1613,20 @@ public class IxPoiSearch implements ISearch {
 
 						/**
 						 * 特殊处理：特殊处理：当二级作业项为：addrPinyin时，对'langCode'==
-						 * 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMul
-						 * t i P i n y i n ， 取值原则：对address中字段addrName、roadName、
+						 * 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、
+						 * fullNameMul t i P i n y i n ，
+						 * 取值原则：对address中字段addrName、roadName、
 						 * fullName存在多音字分别获取其对应的拼音
 						 */
 						if (secondWorkItem.equals("addrPinyin")) {
 
 							if (addrnameStr != null && !addrnameStr.isEmpty()) {
 								List<List<String>> addrnameMultiPinyin = pyConvertor(addrnameStr);
-								addrObj.put("addrNameMultiPinyin",
-										addrnameMultiPinyin);
+								addrObj.put("addrNameMultiPinyin", addrnameMultiPinyin);
 							}
 							if (roadnameStr != null && !roadnameStr.isEmpty()) {
 								List<List<String>> roadnameMultiPinyin = pyConvertor(roadnameStr);
-								addrObj.put("roadNameMultiPinyin",
-										roadnameMultiPinyin);
+								addrObj.put("roadNameMultiPinyin", roadnameMultiPinyin);
 							}
 							// if (address.getFullname()!=null &&
 							// !address.getFullname().isEmpty()) {
@@ -1822,11 +1680,10 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getEngNameBeforBatch(String firstWordItem,
-			String secondWorkItem, IxPoi poi, JSONObject dataObj)
+	private JSONObject getEngNameBeforBatch(String firstWordItem, String secondWorkItem, IxPoi poi, JSONObject dataObj)
 			throws Exception {
 		String oldOriginalEngName = "", newOriginalEngName = "", oldStandardEngName = "", newStandardEngName = "";
-		if(!("poi_englishname".equals(firstWordItem))){
+		if (!("poi_englishname".equals(firstWordItem))) {
 			dataObj.put("oldOriginalEngName", oldOriginalEngName);
 			dataObj.put("newOriginalEngName", newOriginalEngName);
 			dataObj.put("oldStandardEngName", oldStandardEngName);
@@ -1840,20 +1697,13 @@ public class IxPoiSearch implements ISearch {
 			for (IRow nRow : nRows) {
 				IxPoiName name = (IxPoiName) nRow;
 				// 官方原始英文改前改后
-				if (name.getLangCode().equals("ENG") && name.getNameType() == 2
-						&& name.getNameClass() == 1) {
+				if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass() == 1) {
 					String rowId = name.getRowId();
-					result = logReader.getHisByOperate("FM-BAT-20-115",
-							"IX_POI_NAME", rowId);
+					result = logReader.getHisByOperate("FM-BAT-20-115", "IX_POI_NAME", rowId);
 					if (!result.isEmpty()) {
-						if (result.containsKey("old")
-								&& StringUtils.isNotEmpty(result
-										.getString("old"))
-								&& JSONObject.fromObject(
-										result.getString("old")).containsKey(
-										"NAME")) {
-							JSONObject jo = JSONObject.fromObject(result
-									.getString("old"));
+						if (result.containsKey("old") && StringUtils.isNotEmpty(result.getString("old"))
+								&& JSONObject.fromObject(result.getString("old")).containsKey("NAME")) {
+							JSONObject jo = JSONObject.fromObject(result.getString("old"));
 							if (JSONUtils.isNull(jo.get("NAME"))) {
 								oldOriginalEngName = "";
 							} else {
@@ -1861,14 +1711,9 @@ public class IxPoiSearch implements ISearch {
 							}
 
 						}
-						if (result.containsKey("new")
-								&& StringUtils.isNotEmpty(result
-										.getString("new"))
-								&& JSONObject.fromObject(
-										result.getString("new")).containsKey(
-										"NAME")) {
-							JSONObject jo = JSONObject.fromObject(result
-									.getString("new"));
+						if (result.containsKey("new") && StringUtils.isNotEmpty(result.getString("new"))
+								&& JSONObject.fromObject(result.getString("new")).containsKey("NAME")) {
+							JSONObject jo = JSONObject.fromObject(result.getString("new"));
 							if (JSONUtils.isNull(jo.get("NAME"))) {
 								newOriginalEngName = "";
 							} else {
@@ -1879,21 +1724,14 @@ public class IxPoiSearch implements ISearch {
 					}
 				}
 				// 官方标准化英文改前改后
-				if (name.getLangCode().equals("ENG") && name.getNameType() == 1
-						&& name.getNameClass() == 1) {
+				if (name.getLangCode().equals("ENG") && name.getNameType() == 1 && name.getNameClass() == 1) {
 					String rowId = name.getRowId();
-					result = logReader.getHisByOperate("FM-BAT-20-147",
-							"IX_POI_NAME", rowId);
+					result = logReader.getHisByOperate("FM-BAT-20-147", "IX_POI_NAME", rowId);
 					if (!result.isEmpty()) {
 
-						if (result.containsKey("old")
-								&& StringUtils.isNotEmpty(result
-										.getString("old"))
-								&& JSONObject.fromObject(
-										result.getString("old")).containsKey(
-										"NAME")) {
-							JSONObject jo = JSONObject.fromObject(result
-									.getString("old"));
+						if (result.containsKey("old") && StringUtils.isNotEmpty(result.getString("old"))
+								&& JSONObject.fromObject(result.getString("old")).containsKey("NAME")) {
+							JSONObject jo = JSONObject.fromObject(result.getString("old"));
 							if (JSONUtils.isNull(jo.get("NAME"))) {
 								oldStandardEngName = "";
 							} else {
@@ -1901,14 +1739,9 @@ public class IxPoiSearch implements ISearch {
 							}
 
 						}
-						if (result.containsKey("new")
-								&& StringUtils.isNotEmpty(result
-										.getString("new"))
-								&& JSONObject.fromObject(
-										result.getString("new")).containsKey(
-										"NAME")) {
-							JSONObject jo = JSONObject.fromObject(result
-									.getString("new"));
+						if (result.containsKey("new") && StringUtils.isNotEmpty(result.getString("new"))
+								&& JSONObject.fromObject(result.getString("new")).containsKey("NAME")) {
+							JSONObject jo = JSONObject.fromObject(result.getString("new"));
 							if (JSONUtils.isNull(jo.get("NAME"))) {
 								newStandardEngName = "";
 							} else {

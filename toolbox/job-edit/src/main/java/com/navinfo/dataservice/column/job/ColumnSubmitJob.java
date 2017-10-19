@@ -309,7 +309,10 @@ public class ColumnSubmitJob extends AbstractJob {
 				}
 				
 				// 清理重分类检查结果
-				objLists.put(classifyRules, pidList);
+				if(classifyRules.size()>0&&pidList.size()>0){
+					objLists.put(classifyRules, pidList);
+				}
+				
 //				log.info("清理重分类检查结果");
 //				if (classifyRules.size()>0) {
 //					deepControl.cleanExByCkRule(dbId, pidList, classifyRules, "IX_POI");

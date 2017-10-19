@@ -1,19 +1,14 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.adadmin.create;
 
+import java.sql.Connection;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
-import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
-
-import java.sql.Connection;
 
 /**
  * @author 张小龙
@@ -67,16 +62,16 @@ public class Operation implements IOperation {
 
         adAdmin.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
         // 计算行政区划代表点与关联线的左右关系
-        Coordinate c = GeometryUtils.GetNearestPointOnLine(
-                GeoTranslator.transform(adAdmin.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION).getCoordinate(),
-                GeoTranslator.transform(command.getLink().getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION));
-        JSONObject geojson = new JSONObject();
-        geojson.put("type", "Point");
-        geojson.put("coordinates", new double[]{c.x, c.y});
-        Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 100000, 5);
-        int side = GeometryUtils.calulatPointSideOflink(
-                adAdmin.getGeometry(), command.getLink().getGeometry(), nearestPointGeo);
-        adAdmin.setSide(side);
+        //Coordinate c = GeometryUtils.GetNearestPointOnLine(
+        //        GeoTranslator.transform(adAdmin.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION).getCoordinate(),
+        //        GeoTranslator.transform(command.getLink().getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION));
+        //JSONObject geojson = new JSONObject();
+        //geojson.put("type", "Point");
+        //geojson.put("coordinates", new double[]{c.x, c.y});
+        //Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 100000, 5);
+        //int side = GeometryUtils.calulatPointSideOflink(
+        //        adAdmin.getGeometry(), command.getLink().getGeometry(), nearestPointGeo);
+        //adAdmin.setSide(side);
 
         result.insertObject(adAdmin, ObjStatus.INSERT, adAdmin.pid());
 

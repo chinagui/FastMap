@@ -86,6 +86,8 @@ public class FMYW20031 extends BasicCheckRule {
 						+ "		AND N1.NAME <> N2.NAME"
 						+ "			AND P1.PID = C1.POI_PID"
 						+ "			AND P2.PID = C2.POI_PID"
+						+ "			AND C1.CONTACT_TYPE IN (1,2) "
+						+ "			AND C2.CONTACT_TYPE IN (1,2) "
 						+ "			AND C1.CONTACT = C2.CONTACT"
 						+ "     AND C1.CONTACT_TYPE = C2.CONTACT_TYPE"
 						+ "		AND P1.U_RECORD!=2"

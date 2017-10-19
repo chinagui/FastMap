@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -15,6 +16,8 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -81,30 +84,76 @@ public class RdLinkSearch {
         }
 	}
 	
-	private JSONObject componetQueryResult(Map<String,List<Integer>> classify){
+	private JSONObject componetQueryResult(Map<String, List<Integer>> classify) throws Exception {
 		JSONArray array = new JSONArray();
 
-	    JSONObject result = new JSONObject();
-	    
-	    for(Map.Entry<String, List<Integer>> entry:classify.entrySet()){
-	    	
-	    	JSONObject obj = new JSONObject();
-	    	
-	    	obj.put("name", entry.getKey());
-	    	obj.put("pid", entry.getValue().toArray());
-	    		    	
-	    	array.add(obj);
-	    }
-	        
+		JSONObject result = new JSONObject();
+
+		RdLinkSelector selector = new RdLinkSelector(this.conn);
+
+		for (Map.Entry<String, List<Integer>> entry : classify.entrySet()) {
+
+			JSONObject obj = new JSONObject();
+
+			obj.put("name", entry.getKey());
+
+			List<IRow> links = selector.loadByIds(entry.getValue(), true, false);
+
+			JSONArray linkarray = new JSONArray();
+
+			for (IRow row : links) {
+				RdLink link = (RdLink) row;
+
+				JSONObject subobj = new JSONObject();
+
+				subobj.put("pid", link.getPid());
+				subobj.put("geometry", getMidShapePoint(GeoTranslator.transform(link.getGeometry(), 0.00001, 5)));
+
+				linkarray.add(subobj);
+			}
+
+			obj.put("links", linkarray);
+
+			array.add(obj);
+		}
+
 		result.put("total", classify.size());
 
 		result.put("rows", array);
-		
+
 		result.put("geoLiveType", ObjType.RDLINK);
-		
+
 		return result;
 	}
 	
+	private JSONObject getMidShapePoint(Geometry linkgeo) {
+		Coordinate coor = new Coordinate();
+		JSONObject obj = new JSONObject();
+
+		Coordinate[] coors = linkgeo.getCoordinates();
+
+		if (coors.length < 2) {
+			return obj;
+
+		} else if (coors.length == 2) {
+			double x1 = coors[0].x;
+			double y1 = coors[0].y;
+
+			double x2 = coors[1].x;
+			double y2 = coors[1].y;
+
+			coor.x = (x1 + x2) / 2;
+			coor.y = (y1 + y2) / 2;
+
+		} else {
+			coor = coors[coors.length / 2 + 1];
+		}
+
+		obj = GeoTranslator.jts2Geojson(GeoTranslator.createPoint(coor));
+
+		return obj;
+	}
+
 	private void componentSql(StringBuilder sql, JSONArray names) {
 		sql.append("with tmp1 as ( select lang_code,name_groupid,name from rd_name where");
 

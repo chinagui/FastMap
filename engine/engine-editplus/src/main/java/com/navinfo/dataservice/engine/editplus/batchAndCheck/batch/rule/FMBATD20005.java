@@ -105,11 +105,14 @@ public class FMBATD20005 extends BasicBatchRule {
                 continue;
             }
 
-            //poi新增或名称被修改
-            if (poi.getHisOpType().equals(OperationType.INSERT) || name.getHisOpType().equals(OperationType.UPDATE)) {
+            //poi新增、修改或新增名称
+            if (poi.getHisOpType().equals(OperationType.INSERT)
+                    || (name.getHisOpType().equals(OperationType.UPDATE)
+                    || name.getHisOpType().equals(OperationType.INSERT))) {
 
                 convertNames.add(name);
             }
+
         }
     }
 

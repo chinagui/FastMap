@@ -66,6 +66,9 @@ public class ColumnSaveJob extends AbstractJob {
 		List<Long> pidListL = new ArrayList<Long>();
 		
 		Connection conn = null;
+		PoiColumnOpConf columnOpConf =null;
+		DeepCoreControl deepControl = new DeepCoreControl();
+		int dbId = 0;
 		try {
 			ColumnSaveJobRequest columnSaveJobRequest = (ColumnSaveJobRequest) this.request;
 			JSONObject paramJson = columnSaveJobRequest.getParam();
@@ -93,7 +96,7 @@ public class ColumnSaveJob extends AbstractJob {
 				log.info("月编常规保存");
 			}
 			
-			int dbId = subtask.getDbId();
+			dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			log.info("dbId:"+dbId);
 			
@@ -120,9 +123,8 @@ public class ColumnSaveJob extends AbstractJob {
 			
 			// 查询检查、批处理和重分类配置
 			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
-			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf("",secondWorkItem, type);
+			columnOpConf = ixPoiOpConfSelector.getDeepOpConf("",secondWorkItem, type);
 			
-			DeepCoreControl deepControl = new DeepCoreControl();
 			OperationResult operationResult = new OperationResult();
 			
 			PoiLogDetailStat logDetail = new PoiLogDetailStat();
@@ -208,16 +210,6 @@ public class ColumnSaveJob extends AbstractJob {
 				}
 			}
 
-			// 清理重分类检查结果
-			log.info("清理重分类检查结果");
-			List<String> ckRules = new ArrayList<String>();
-			String classifyrules = columnOpConf.getSaveClassifyrules();
-			if (classifyrules != null) {
-				for (String classifyrule:classifyrules.split(",")) {
-					ckRules.add(classifyrule);
-				}
-				deepControl.cleanExByCkRule(dbId, pidList, ckRules, "IX_POI");
-			}
 			
 			log.info("月编保存完成");
 		} catch (Exception e) {
@@ -225,6 +217,22 @@ public class ColumnSaveJob extends AbstractJob {
 			throw new JobException(e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+			// 清理重分类检查结果
+			try{
+				log.info("清理重分类检查结果");
+				List<String> ckRules = new ArrayList<String>();
+				if(columnOpConf!=null){
+					String classifyrules = columnOpConf.getSaveClassifyrules();
+					if (classifyrules != null&&dbId!=0&&pidList.size()>0) {
+						for (String classifyrule:classifyrules.split(",")) {
+							ckRules.add(classifyrule);
+						}
+						deepControl.cleanExByCkRule(dbId, pidList, ckRules, "IX_POI");
+					}
+				}
+			} catch (Exception e) {
+				throw new JobException(e);
+			}
 		}
 	}
 	

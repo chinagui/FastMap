@@ -63,6 +63,10 @@ public class ColumnSubmitJob extends AbstractJob {
 		
 		Connection conn = null;
 		
+		DeepCoreControl deepControl = new DeepCoreControl();
+		int dbId = 0;
+		Map<List<String>,List<Integer>> objLists = new HashMap<List<String>,List<Integer>>();
+		
 		try {
 			ColumnSubmitJobRequest columnSubmitJobRequest = (ColumnSubmitJobRequest) this.request;
 			
@@ -88,7 +92,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				log.info("月编常规提交");
 			}
 			
-			int dbId = subtask.getDbId();
+			dbId = subtask.getDbId();
 			log.info("dbId="+dbId);
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
@@ -112,7 +116,6 @@ public class ColumnSubmitJob extends AbstractJob {
 				qcPidList = ixPoiDeepStatusSelector.getPIdForSubmit(firstWorkItem, second, comSubTaskId,userId,true);
 				log.info("查询可提交数据pdis:"+allPidList);
 				// 清理检查结果
-				DeepCoreControl deepControl = new DeepCoreControl();
 				deepControl.cleanCheckResult(allPidList, conn);
 				
 				OperationResult operationResult=new OperationResult();
@@ -306,10 +309,11 @@ public class ColumnSubmitJob extends AbstractJob {
 				}
 				
 				// 清理重分类检查结果
-				log.info("清理重分类检查结果");
-				if (classifyRules.size()>0) {
-					deepControl.cleanExByCkRule(dbId, pidList, classifyRules, "IX_POI");
-				}
+				objLists.put(classifyRules, pidList);
+//				log.info("清理重分类检查结果");
+//				if (classifyRules.size()>0) {
+//					deepControl.cleanExByCkRule(dbId, pidList, classifyRules, "IX_POI");
+//				}
 				
 			}
 			
@@ -319,6 +323,22 @@ public class ColumnSubmitJob extends AbstractJob {
 			throw new JobException(e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+			// 清理重分类检查结果
+			try{
+				if(!objLists.isEmpty()){
+					log.info("清理重分类检查结果");
+					Set<List<String>> aLLClassifyRules = objLists.keySet();
+					for(List<String> classifyRules:aLLClassifyRules){
+						List<Integer> pidList=objLists.get(classifyRules);
+						if (classifyRules.size()>0&&dbId!=0&&pidList.size()>0) {
+							deepControl.cleanExByCkRule(dbId, pidList, classifyRules, "IX_POI");
+						}
+					}
+				}
+				
+			} catch (Exception e) {
+				throw new JobException(e);
+			}
 		}
 	}
 	

@@ -236,11 +236,11 @@ public class TipsUpload {
                     s_qTaskId = 0;
                     s_qSubTaskId = 0;
 
-                    //只查中线子任务的第一采集时间
-                    Map<String, Object> timelineMap = manApi.queryTimelineByCondition(subTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
-                    if(timelineMap == null || timelineMap.size() == 0) {
-                        isInsertFirstTime = true;
-                    }
+//                    //只查中线子任务的第一采集时间
+//                    Map<String, Object> timelineMap = manApi.queryTimelineByCondition(subTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
+//                    if(timelineMap == null || timelineMap.size() == 0) {
+//                        isInsertFirstTime = true;
+//                    }
                 }
 
                 if (TaskType.Q_TASK_TYPE == taskType) {// 快线
@@ -250,6 +250,12 @@ public class TipsUpload {
                     // 20170519 赋快线清空中线
                     s_mTaskId = 0;
                     s_mSubTaskId = 0;
+                }
+
+                //20171016快线中线子任务都需要统计第一采集时间
+                Map<String, Object> timelineMap = manApi.queryTimelineByCondition(subTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE);
+                if(timelineMap == null || timelineMap.size() == 0) {
+                    isInsertFirstTime = true;
                 }
 
                 subtask = manApi.queryBySubtaskId(subTaskId);
@@ -397,9 +403,9 @@ public class TipsUpload {
             // 道路名入元数据库
             importRoadNameToMeta();
 
-            //中线子任务第一采集时间
+            //快线中线子任务第一采集时间
             if(StringUtils.isNotEmpty(firstCollectTime) && total-failed > 0) {
-                manApi.saveTimeline(s_mSubTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE, firstCollectTime);
+                manApi.saveTimeline(subTaskId, "subtask", TIMELINE_FIRST_DATE_TYPE, firstCollectTime);
             }
 
             //20170828 跨大区日志统计,记录无任务
@@ -987,8 +993,8 @@ public class TipsUpload {
                 TipsDao tipsIndexModel = TipsUtils.generateSolrIndex(json, TipsUpload.IMPORT_STAGE);
                 solrIndexList.add(tipsIndexModel);
 
-                //中线子任务第一采集时间
-                if(s_mSubTaskId > 0 && isInsertFirstTime) {
+                //快线中线子任务第一采集时间
+                if(subTaskId > 0 && isInsertFirstTime) {
                     if(StringUtils.isNotEmpty(firstCollectTime)) {
                         long lastTime = DateUtils.stringToLong(firstCollectTime, "yyyyMMddHHmmss");
                         long thisTime = DateUtils.stringToLong(json.getString("t_operateDate"), "yyyyMMddHHmmss");
@@ -1297,8 +1303,8 @@ public class TipsUpload {
                 // 修改的需要差分
                 allNeedDiffRowkeysCodeMap.put(rowkey, json.getString("s_sourceType"));
 
-                //中线子任务第一采集时间
-                if(s_mSubTaskId > 0 && isInsertFirstTime) {
+                //快线中线子任务第一采集时间
+                if(subTaskId > 0 && isInsertFirstTime) {
                     if(StringUtils.isNotEmpty(firstCollectTime)) {
                         long lastTime = DateUtils.stringToLong(firstCollectTime, "yyyyMMddHHmmss");
                         long thisTime = DateUtils.stringToLong(json.getString("t_operateDate"), "yyyyMMddHHmmss");

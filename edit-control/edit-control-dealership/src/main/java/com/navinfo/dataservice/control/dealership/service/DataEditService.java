@@ -101,18 +101,20 @@ public class DataEditService {
 	 * @param useId
 	 */
 	public int applyDataService(String chainCode, Connection conn, long userId) throws Exception {
+		int applyTotal = 1000;
+		
 		String haveDataSql = String.format(
 				"SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s'",
 				userId, 3, 1, chainCode);
 		int count = run.queryForInt(conn, haveDataSql);
 
-		if (count >= 50)
+		if (count >= applyTotal)
 			return 0;
 
 		try {
 			String queryListSql = String.format(
 					"SELECT RESULT_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s' AND ROWNUM <= %d",
-					0, 3, 0, chainCode, 50 - count);
+					0, 3, 0, chainCode, applyTotal - count);
 			List<Object> resultID = ExecuteQuery(queryListSql, conn);
 
 			if (resultID.size() == 0)
@@ -2475,7 +2477,7 @@ public class DataEditService {
 			sbTel.append(" FROM IX_POI I, IX_POI_CONTACT C");
 			sbTel.append(" WHERE I.POI_NUM =:1");
 			sbTel.append(" AND I.PID = C.POI_PID");
-			sbTel.append(" AND C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8)");
+			sbTel.append(" AND C.CONTACT_TYPE IN (1,2,3,4)");
 			sbTel.append(" AND C.U_RECORD <> 2");
 			
 			pstmt = conn.prepareStatement(sbTel.toString());
@@ -2488,22 +2490,23 @@ public class DataEditService {
 			String telSpecial="";
 			String splitChar=";";
 			while(resultSet.next()) {
-				if (resultSet.getInt("CONTACT_DEPART")==0&&resultSet.getInt("CONTACT_TYPE")!=3){
-					if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
-					else{telOther+=splitChar+resultSet.getString("CONTACT");}
-				}
 				if (resultSet.getInt("CONTACT_DEPART")==16){
 					if ("".equals(telService)){telService= resultSet.getString("CONTACT");}
 					else{telService+=splitChar+resultSet.getString("CONTACT");}
+					continue;
 				}
 				if (resultSet.getInt("CONTACT_DEPART")==8){
 					if ("".equals(telSale)){telSale= resultSet.getString("CONTACT");}
 					else{telSale+=splitChar+resultSet.getString("CONTACT");}
+					continue;
 				}
-				if (resultSet.getInt("CONTACT_TYPE")==3 && resultSet.getInt("CONTACT_DEPART")==0){
+				if (resultSet.getInt("CONTACT_TYPE")==3){
 					if ("".equals(telSpecial)){telSpecial= resultSet.getString("CONTACT");}
 					else{telSpecial+=splitChar+resultSet.getString("CONTACT");}
+					continue;
 				}
+				if ("".equals(telOther)){telOther= resultSet.getString("CONTACT");}
+				else{telOther+=splitChar+resultSet.getString("CONTACT");}
 			}
 			jsonObj.put("telOther", telOther);
 			jsonObj.put("telSale", telSale);

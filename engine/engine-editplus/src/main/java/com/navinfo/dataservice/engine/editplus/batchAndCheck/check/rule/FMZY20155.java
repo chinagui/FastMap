@@ -47,24 +47,22 @@ public class FMZY20155 extends BasicCheckRule {
 			if (remark == null) {
 				continue;
 			}
-			if (!remark.isEmpty() && remark.indexOf("|") < 0) {
-				for (char c : remark.toCharArray()) {
-					if (!defaultList.contains(String.valueOf(c))) {
-						setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
-								"停车场停车备注的值没有'| '且不为空时，值不在{0,1,2,3,4,5,6,7,11,12,14,16,17,18}中");
-						break;
-					}
+			if (!remark.isEmpty() && remark.indexOf("|") == -1) {
+				if (!defaultList.contains(remark)) {
+					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
+							"停车场停车备注的值没有'| '且不为空时，值不在{0,1,2,3,4,5,6,7,11,12,14,16,17,18}中");
+					break;
 				}
-			} else if (remark.indexOf("|") >= 0) {
+			} else if (remark.indexOf("|") != -1) {
 				String[] remarks = remark.split("\\|");
-				for (int i=0;i<remarks.length;i++) {
+				for (int i = 0; i < remarks.length; i++) {
 					String tempRemark = remarks[i];
 					if (!defaultList.contains(tempRemark)) {
 						setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 								"停车场停车备注的值有'|'时，'|'前后的值不在{0,1,2,3,4,5,6,7,11,12,14,16,17,18}中");
 						break;
 					}
-					for (int j=i+1;j<remarks.length;j++) {
+					for (int j = i + 1; j < remarks.length; j++) {
 						if (tempRemark.equals(remarks[j])) {
 							setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 									"（停车场停车备注）重复");

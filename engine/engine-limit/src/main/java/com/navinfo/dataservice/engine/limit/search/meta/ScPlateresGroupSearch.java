@@ -146,15 +146,6 @@ public class ScPlateresGroupSearch {
 				sql.append("'" + infoIntelId + "'");
 			}
 		}
-		
-		if (obj.containsKey("infoCode")) {
-			String infoCode = obj.getString("infoCode");
-
-			if (infoCode != null && !infoCode.isEmpty()) {
-				sql.append(" INFO_CODE = ");
-				sql.append("'" + infoCode + "'");
-			}
-		}
 
 		if (obj.containsKey("adminArea")) {
 			String admin = obj.getString("adminArea");

@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +41,6 @@ public class GLM55048 extends BasicCheckRule {
 
 	@Override
 	public void run() throws Exception {
-        List<Integer> waters = Arrays.asList(new Integer[]{1, 2, 3, 4, 5, 6});
 
         List<Long> pids = new ArrayList<>();
         for (Map.Entry<Long, BasicObj> entryRow : getRowList().entrySet()) {
@@ -107,7 +105,7 @@ public class GLM55048 extends BasicCheckRule {
                 Geometry geo = GeoTranslator.struct2Jts(struct);
 
                 String targets = null;
-                if (waters.contains(kind) && label.indexOf("绿地") == -1) {
+                if (label.indexOf("绿地") == -1) {
                 	targets = String.format("[IX_POINTADDRESS,%s]", pid);
                 }
 

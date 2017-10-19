@@ -21,7 +21,9 @@ public class Command extends AbstractCommand {
 
 	private String groupId;
 
-	private JSONArray links;
+	private JSONArray rdlinks;
+	
+	private JSONArray adlinks;
 
 	private int dbId;
 
@@ -37,16 +39,20 @@ public class Command extends AbstractCommand {
 
 		this.groupId = data.getString("groupId");
 
-		if (data.containsKey("links")) {
-			this.links = data.getJSONArray("links");
+		if (data.containsKey("rdlinks")) {
+			this.rdlinks = data.getJSONArray("rdlinks");
+		}
+		
+		if (data.containsKey("adlinks")) {
+			this.adlinks = data.getJSONArray("adlinks");
 		}
 
 		if (data.containsKey("geometry")) {
 			this.geo = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
 		}
+		
 		if (data.containsKey("geometryIds")) {
-
-			geometryIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("geometryIds")));
+			geometryIds = new ArrayList<>(JSONArray.toCollection(data.getJSONArray("geometryIds")));
 		}
 	}
 
@@ -58,8 +64,12 @@ public class Command extends AbstractCommand {
 		return this.groupId;
 	}
 
-	public JSONArray getLinks() {
-		return this.links;
+	public JSONArray getRdLinks() {
+		return this.rdlinks;
+	}
+	
+	public JSONArray getAdLinks() {
+		return this.adlinks;
 	}
 	
 	public int getDbId(){

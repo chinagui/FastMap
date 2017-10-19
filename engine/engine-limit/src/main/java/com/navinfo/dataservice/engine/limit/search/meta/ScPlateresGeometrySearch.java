@@ -47,7 +47,7 @@ public class ScPlateresGeometrySearch implements ISearch {
         sql.append("WITH query AS (");
         sql.append(" SELECT * FROM SC_PLATERES_GEOMETRY WHERE GROUP_ID = '" + groupId + "')");
         sql.append(" SELECT query.*,(SELECT COUNT(1) FROM query) AS TOTAL_ROW_NUM FROM query WHERE");
-        sql.append(" rownum BETWEEN " + ((pageSize - 1) * pageNum + 1) + " AND " + (pageSize * pageNum) + " FOR UPDATE NOWAIT");
+        sql.append(" rownum BETWEEN " + ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " FOR UPDATE NOWAIT");
 
         PreparedStatement pstmt = null;
         int total = 0;
@@ -172,12 +172,6 @@ public class ScPlateresGeometrySearch implements ISearch {
 
                 Geometry geom = GeoTranslator.struct2Jts(struct);
 
-                JSONObject geojson = GeoTranslator.jts2Geojson(geom);
-
-                JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
-
-                snapshot.setG(jo.getJSONArray("coordinates"));
-
                 JSONObject m = new JSONObject();
 
                 m.put("a", resultSet.getString("GEOMETRY_ID"));
@@ -190,13 +184,26 @@ public class ScPlateresGeometrySearch implements ISearch {
 
                 m.put("e", geometryType);
 
-                m.put("g", geojson.getJSONArray("coordinates"));
+                m.put("g", GeoTranslator.jts2Geojson(geom).getJSONArray("coordinates"));
 
                 snapshot.setM(m);
 
+                JSONObject geojson = GeoTranslator.jts2Geojson(geom);
+
                 if (geometryType.equals("LineString")) {
+
+                    JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
+
+                    snapshot.setG(jo.getJSONArray("coordinates"));
+
                     snapshot.setT(1004);
+
                 } else if (geometryType.equals("Polygon")) {
+
+                    JSONObject jo = Geojson.face2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
+
+                    snapshot.setG(jo.getJSONArray("coordinates"));
+
                     snapshot.setT(1005);
                 }
 

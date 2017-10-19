@@ -62,7 +62,7 @@ public class limitController extends BaseController {
 
             String objType = jsonReq.getString("type");
 
-            conn = DBConnector.getInstance().getLimitConnection();
+            conn = DBConnector.getInstance().getMetaConnection();
 
             JSONObject condition = jsonReq.getJSONObject("condition");
 
@@ -395,6 +395,7 @@ public class limitController extends BaseController {
 
 				for (RdLink obj : objList) {
 					JSONObject json = obj.Serialize(ObjLevel.FULL);
+					json.put("geoLiveType", objType);
 					array.add(json);
 				}
 				return new ModelAndView("jsonView", success(array));

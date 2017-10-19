@@ -477,6 +477,23 @@ public abstract class BasicObj {
 		}
 		return false;
 	}
+	
+	public boolean isDelIxPoiChildren() {
+		if (!getPreDelRowLogs().containsKey("IX_POI_CHILDREN")) {
+			return false;
+		}
+
+		List<LogDetail> list = getPreDelRowLogs().get("IX_POI_CHILDREN");
+		for (LogDetail detail : list) {
+			if (StringUtils.isEmpty(detail.getOld())) {
+				continue;
+			}else{
+				return true;
+			}
+		}
+		return false;
+	}
+
 
 	public boolean isDelPoiHotel() {
 

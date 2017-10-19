@@ -8,6 +8,7 @@ import com.navinfo.dataservice.engine.limit.glm.iface.IRow;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresManoeuvre;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresRdLink;
 import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
@@ -219,7 +220,9 @@ public class BasicOperator extends AbstractOperator {
                 String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
                         0.00001, 5);
 
-                String newWkt = Geojson.geojson2Wkt(columnValue.toString());
+                Geometry newGeo = GeoTranslator.geojson2Jts((JSONObject) columnValue, 0.00001, 5);
+
+                String newWkt = GeoTranslator.jts2Wkt(newGeo);
 
                 if (!StringUtils.isStringSame(oldWkt, newWkt)) {
                     if (newWkt.length() > 4000) {

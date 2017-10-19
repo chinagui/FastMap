@@ -631,6 +631,7 @@ public class UserGroupService {
 					break;
 				case 7:
 					name = "REFINE_GROUP_NAME";
+					break;
 				default:
 					return null;
 			}

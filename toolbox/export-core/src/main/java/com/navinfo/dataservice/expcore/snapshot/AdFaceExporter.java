@@ -10,7 +10,6 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 
-import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
 public class AdFaceExporter {
@@ -18,6 +17,7 @@ public class AdFaceExporter {
 			Statement stmt, Connection conn, String operateDate, Set<Integer> meshes)
 			throws Exception {
 		// creating a GEOMETRY table
+		stmt.execute("DROP TABLE IF EXISTS gdb_adFace;");
 		stmt.execute("create table gdb_adFace(pid integer primary key, admin_id integer)");
 		stmt.execute("select addgeometrycolumn('gdb_adFace','geometry',4326,'GEOMETRY','XY')");
 		stmt.execute("select createspatialindex('gdb_adFace','geometry')");
@@ -35,7 +35,7 @@ public class AdFaceExporter {
 		try{
 			pstm = sqliteConn.prepareStatement(insertSql);
 
-			String sql = "select a.face_pid,a.mesh_id,nvl((select distinct d.admin_id from ad_admin d where a.region_id = d.region_id),0) admin_id, a.geometry from ad_face a where a.u_record != 2  and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+			String sql = "select a.face_pid,a.mesh_id,nvl((select distinct d.admin_id from ad_admin d where a.region_id = d.region_id),0) admin_id, a.geometry from ad_face a where  a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
 			Clob clob = conn.createClob();
 			clob.setString(1, StringUtils.join(meshes, ","));

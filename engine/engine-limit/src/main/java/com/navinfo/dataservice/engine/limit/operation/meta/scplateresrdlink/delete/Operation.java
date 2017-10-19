@@ -13,14 +13,25 @@ public class Operation implements IOperation {
 
 
     private Connection conn=null;
+    
+    private Command command = null;
 
     public Operation(Connection conn) {
         this.conn = conn;
+    }
+    
+    public Operation (Connection conn,Command command){
+    	this.conn = conn;
+    	this.command = command;
     }
 
     @Override
     public String run(Result result) throws Exception {
 
+    	for(ScPlateresRdLink link:this.command.getRdLinks()){
+    		 result.insertObject(link, ObjStatus.DELETE, String.valueOf(link.getLinkPid()));
+    	}
+    	
         return null;
     }
 

@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,11 +21,16 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.navicommons.database.QueryRunner;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -60,9 +66,9 @@ public class QuickMonitorJob extends AbstractStatJob {
 			
 			JSONObject result = new JSONObject();
 			
-			log.debug("quick_monitor---"+JSONObject.fromObject(result).toString());
+			//log.debug("quick_monitor---"+JSONObject.fromObject(result).toString());
 			log.debug("快线监控统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
-			System.out.println(JSONObject.fromObject(result).toString());
+			//System.out.println(JSONObject.fromObject(result).toString());
 			result.put("quick_monitor", stats);
 			//System.out.println(result.toString());
 			return result.toString();
@@ -199,7 +205,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			queryProgram11.put("type", 4);
 			Map<String,Integer> statMap = getStatDataInMongo(md, "program", queryProgram11);
 			quickMonitorMap.put("roadPlanTotal",statMap.get("roadPlanTotal"));
-			quickMonitorMap.put("roadActualTotal",Math.floor(statMap.get("roadActualTotal")/1000));
+			quickMonitorMap.put("roadActualTotal",Math.floor(statMap.get("roadActualTotal")));
 			quickMonitorMap.put("poiPlanTotal",statMap.get("poiPlanTotal"));
 			quickMonitorMap.put("poiActualTotal",statMap.get("poiActualTotal"));
 			
@@ -212,7 +218,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			
 			quickMonitorMap.put("collectTipsUploadNum", statMap.get("collectTipsUploadNum"));
 			
-			quickMonitorMap.put("dayEditTipsFinishNum", statMap.get("dayEditTipsFinishNum"));
+			quickMonitorMap.put("dayEditTipsFinishNum", queryDayEditTipsFinishNum());
 			
 			BasicDBObject queryProgram12 = new BasicDBObject();
 			queryProgram12.put("timestamp", timestamp);
@@ -263,6 +269,8 @@ public class QuickMonitorJob extends AbstractStatJob {
 			quickMonitorMap.put("commonPercent", getCommonPercent());
 			quickMonitorMap.put("poiPercent", getPoiPercent());
 			
+			quickMonitorMap.put("denyReasonNum", getDenyReasonNum());
+			
 			BasicDBObject queryProgram19 = new BasicDBObject();
 			queryProgram19.put("timestamp", timestamp);
 			queryProgram19.put("type", 4);	
@@ -279,6 +287,33 @@ public class QuickMonitorJob extends AbstractStatJob {
 			
 	 }
 	
+
+	private int queryDayEditTipsFinishNum() {
+		String sql = "SELECT COUNT(1) NUM"
+				+ "  FROM TIPS_INDEX I"
+				+ " WHERE I.S_QTASKID != 0"
+				+ "   AND I.T_TIPSTATUS = 2"
+				+ "   AND I.T_DEDITSTATUS = 2"
+				+ "   AND I.STAGE IN (1, 2, 6, 7)";//快线日编完成tips个数		
+		Connection conn = null;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		int programNum = 0;
+		try {
+			conn=DBConnector.getInstance().getTipsIdxConnection();
+			pstmt = conn.prepareStatement(sql);				
+			rs = pstmt.executeQuery();				
+			while(rs.next()){
+				programNum = rs.getInt("num");
+			}				
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			DbUtils.closeQuietly(conn, pstmt, rs);
+		}
+		return programNum;
+	}
 
 	private Map<String,Integer> getOverdueResonMap(int taskType) throws SQLException {
 		//select t.overdue_reason,count(t.overdue_reason) from task t,program p where t.program_id = p.program_id  and t.type = 0 and p.type = 4 group by t.overdue_reason;
@@ -454,7 +489,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 		int fastOtherNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and (i.info_type_name like '%道路|高速公路%' or i.info_type_name like '%道路|城市高速公路%') and ( i.method <> '预采集' and i.method <> '矢量制作') ";
+			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and (i.info_type_name like '%道路|高速公路%' or i.info_type_name like '%道路|城市高速公路%') and ((i.method <> '矢量制作' and i.method <> '预采集') or i.method is null) ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
@@ -551,7 +586,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 		int commonOtherNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and i.info_type_name like '%道路|重要一般道%' and ( i.method <> '矢量制作' and  i.method <> '预采集') ";
+			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and i.info_type_name like '%道路|重要一般道%' and ((i.method <> '矢量制作' and i.method <> '预采集') or i.method is null) ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
@@ -644,7 +679,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 		int poiOtherNum = 0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and i.info_type_name like '%设施%' and (i.method <> '矢量制作' and i.method <> '预采集') ";
+			String sql  = "select count(1) num from program p,infor i where p.infor_id = i.infor_id and  p.type = 4 and i.info_type_name like '%设施%' and ((i.method <> '矢量制作' and i.method <> '预采集') or i.method is null) ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
@@ -731,7 +766,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			int poiActualTotal = 0;
 			
 			int collectTipsUploadNum = 0;
-			int dayEditTipsFinishNum = 0;
+			//int dayEditTipsFinishNum = 0;
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
@@ -752,9 +787,9 @@ public class QuickMonitorJob extends AbstractStatJob {
 				if(jso.containsKey("collectTipsUploadNum")){
 					collectTipsUploadNum += jso.getInt("collectTipsUploadNum");
 				}
-				if(jso.containsKey("dayEditTipsFinishNum")){
-					dayEditTipsFinishNum += jso.getInt("dayEditTipsFinishNum");
-				}
+//				if(jso.containsKey("dayEditTipsFinishNum")){
+//					dayEditTipsFinishNum += jso.getInt("dayEditTipsFinishNum");
+//				}
 				
 			}
 			stat.put("roadPlanTotal", roadPlanTotal);
@@ -762,10 +797,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			stat.put("poiPlanTotal",poiPlanTotal );
 			stat.put("poiActualTotal", poiActualTotal);
 			stat.put("collectTipsUploadNum", collectTipsUploadNum);
-			stat.put("dayEditTipsFinishNum", dayEditTipsFinishNum);
-
-			
-			
+//			stat.put("dayEditTipsFinishNum", dayEditTipsFinishNum);
 			return stat;
 		} catch (Exception e) {
 			log.error("查询mongo "+collName+" 中统计数据报错"+e.getMessage());
@@ -775,32 +807,36 @@ public class QuickMonitorJob extends AbstractStatJob {
 	
 	private double getDateAvgInMongo(MongoDao md, String collName, BasicDBObject filter, String startDate, String endDate) throws Exception {
 		try {
-			if(filter == null ){
-//				filter = new BasicDBObject("timestamp", null);
-			}
 			FindIterable<Document> findIterable = md.find(collName, filter);
 			MongoCursor<Document> iterator = findIterable.iterator();
-			Map<String,Integer> stat = new HashMap<String,Integer>();
 			
 			double dateAvg = 0;
 			
 			int count = 0;
 			int total = 0;
 			//处理数据
-			while(iterator.hasNext()){
-				count++;
+			while(iterator.hasNext()){				
 				//获取统计数据
 				JSONObject jso = JSONObject.fromObject(iterator.next());
 				String strStart = null;
 				String strEnd = null;
-				if(jso.containsKey("startDate")){
-					strStart = jso.getString("startDate");
+				if(jso.containsKey(startDate)){
+					strStart = jso.getString(startDate);
+					if(strStart.length()>8){
+						strStart=strStart.substring(0, 8);
+					}
 				}
-				if(jso.containsKey("endDate")){
-					strEnd = jso.getString("endDate");
+				if(jso.containsKey(endDate)){
+					strEnd = jso.getString(endDate);
+					if(strEnd.length()>8){
+						strEnd=strEnd.substring(0, 8);
+					}
 				}
-				
-				total += StatUtil.daysOfTwo(strStart, strEnd);
+				if(!StringUtils.isEmpty(strStart)&&!StringUtils.isEmpty(strEnd)){
+					count++;
+					total += DateUtils.diffDay(DateUtils.stringToTimestamp(strStart, DateUtils.DATE_YMD),
+							DateUtils.stringToTimestamp(strEnd, DateUtils.DATE_YMD));
+				}
 			}
 
 			if(count > 0){
@@ -926,6 +962,44 @@ public class QuickMonitorJob extends AbstractStatJob {
 			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 		return poiPercent;
+	}
+	//{“原因1”：2，“原因2”：3} //QP-MO-47	未采纳原因	某一项原因数量百分比=未采纳原因/所有未采纳原因的总和 * 100%. Oracle库program+infor
+	private JSONObject getDenyReasonNum() {
+		Connection conn = null;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		int total = 0;//采纳
+		JSONObject denyReasonJson=new JSONObject();
+		JSONObject returnJson=new JSONObject();
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			String sql  = "SELECT DENY_REASON, COUNT(1) c"
+					+ "  FROM INFOR I"
+					+ " WHERE IS_ADOPTED = 1"
+					+ " GROUP BY DENY_REASON";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()){
+				String denyReason=rs.getString("DENY_REASON");
+				int number=rs.getInt("C");
+				denyReasonJson.put(denyReason, number);
+				total=total+number;
+			}
+			Iterator iterable=denyReasonJson.keys();
+			while (iterable.hasNext()) {
+				String denyReason=String.valueOf(iterable.next());
+				int number=(int) denyReasonJson.get(denyReason);
+				returnJson.put(denyReason, DoubleUtil.keepSpecDecimal(Math.floor(number*100/total),2));
+			}
+			
+		} catch (Exception e) {
+			log.warn("未采纳原因统计报错", e);
+		}finally {
+			DbUtils.closeQuietly(conn, pstmt, rs);
+		}
+		return returnJson;
 	}
 	
 	private Map<String, Map<String, Integer>> getCityDetailMapInMongo(MongoDao md, String collName, BasicDBObject filter) throws Exception {

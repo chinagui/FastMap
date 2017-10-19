@@ -256,6 +256,8 @@ public class HBaseController {
 		photo.setA_version(SystemConfigFactory.getSystemConfig()
 				.getValue(PropConstant.seasonVersion));
 		photo.setA_content(aContent);
+		// 设置上传时间
+		String a_uploadDate = DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT);
 		putPhoto(rowkey, in,photo);
 		return rowkey;
 	}

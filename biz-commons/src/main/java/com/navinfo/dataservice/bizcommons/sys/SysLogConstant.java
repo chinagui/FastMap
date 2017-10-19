@@ -21,9 +21,10 @@ public class SysLogConstant {
 	public static final int DAY_CROWD_IMPORT = 4;
     public static final int TIPS_DOWNLOAD_TYPE = 7;
     public static final int POI_DOWNLOAD_TYPE = 6;
-    public static final int DAY_TO_PRODUCT = 8;
+    //注: 类型 8 情报上传  和 9 情报下载
+    public static final int DAY_TO_PRODUCT = 10;
     
-    public static final int PA_UPLOAD_TYPE = 9;
-    public static final int PA_DOWNLOAD_TYPE = 10;
+    public static final int PA_UPLOAD_TYPE = 11;
+    public static final int PA_DOWNLOAD_TYPE = 12;
 
 }

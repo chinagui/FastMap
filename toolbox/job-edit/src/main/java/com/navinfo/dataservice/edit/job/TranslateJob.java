@@ -44,6 +44,8 @@ public class TranslateJob extends AbstractJob {
         TranslateJobRequest translateJobRequest = (TranslateJobRequest) request;
         String filePath = translateJobRequest.getFilePath();
 
+        logger.info(String.format("translate file path:%s", filePath));
+
         try {
             //Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
             Class.forName("com.hxtt.sql.access.AccessDriver");
@@ -173,7 +175,7 @@ public class TranslateJob extends AbstractJob {
 
                 for (TranslateData data : datas) {
                     String engName = api.convertEng(data.name, data.kindCode, data.chain, data.phonetic);
-                    stmt.addBatch(String.format(sql, "", data.id));
+                    stmt.addBatch(String.format(sql, engName, data.id));
                     //stmt.addBatch(String.format(sql, engName, data.id));
                     if (atomicInteger.addAndGet(1) % 500 == 0) {
                         stmt.executeBatch();

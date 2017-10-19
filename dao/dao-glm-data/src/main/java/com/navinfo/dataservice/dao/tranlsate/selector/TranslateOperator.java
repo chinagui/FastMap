@@ -85,7 +85,8 @@ public class TranslateOperator {
                 "         ROWNUM AS ROWNM" +
                 "    FROM TRANSLATE_LOG T, JOB_INFO J" +
                 "   WHERE T.USER_ID = " + userId +
-                "     AND T.JOB_ID = J.JOB_ID";
+                "     AND T.JOB_ID = J.JOB_ID" +
+                "     ORDER BY J.CREATE_TIME DESC";
 
         QueryRunner runner = new QueryRunner();
         Page page = runner.query(pageNum, pageSize, conn, sql, new TranslateHandler(pageNum, pageSize));

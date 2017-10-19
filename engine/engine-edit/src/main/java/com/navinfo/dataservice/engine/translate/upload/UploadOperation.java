@@ -83,10 +83,10 @@ public class UploadOperation {
             }
 
             logger.info(String.format("file:%s", file.getPath()));
-            if (!file.exists()) {
+            //if (!file.exists()) {
                 file.createNewFile();
                 logger.info(String.format("file create!"));
-            }
+            //}
             uploadItem.write(file);
 
             json.put("fileName", uploadItem.getName());
@@ -97,8 +97,8 @@ public class UploadOperation {
 
             JobApi api = (JobApi) ApplicationContextUtil.getBean("jobApi");
             JSONObject dataJson = new JSONObject();
-            dataJson.put("filePath", uploadRoot + fileName.toString());
-            long jobId = api.createJob("translateJob", json, userId, 0, "英文翻译工具");
+            dataJson.put("filePath", filePath + fileName.toString());
+            long jobId = api.createJob("translateJob", dataJson, userId, 0, "英文翻译工具");
             json.put("jobId", jobId);
             //json.put("jobId", 14554);
 

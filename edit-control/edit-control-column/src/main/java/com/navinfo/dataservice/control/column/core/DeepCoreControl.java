@@ -576,9 +576,9 @@ public class DeepCoreControl {
 			hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, taskId,0);
 			
 			// 可申请数据的条数
-			int canApply = 100 - hasApply;
+			int canApply = 50 - hasApply;
 			if (canApply == 0) {
-				throw new Exception("该作业员名下已存在100条数据，不可继续申请");
+				throw new Exception("该作业员名下已存在50条数据，不可继续申请");
 			}
 			
 			JSONObject conditions=new JSONObject();
@@ -592,7 +592,6 @@ public class DeepCoreControl {
 			
 			//实际申请到的数据pids
 			List<Integer> applyDataPids = new ArrayList<Integer>();
-			canApply = canApply > 50 ? 50:canApply;//申请数据时数量控制，单次上限50
 			if (pids.size() >= canApply){
 				applyDataPids = pids.subList(0, canApply);
 			}else{
@@ -1078,6 +1077,7 @@ public class DeepCoreControl {
 		// 默认为大陆数据
 		int type = 1;
 		try {
+			
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			
@@ -1095,6 +1095,13 @@ public class DeepCoreControl {
 			
 			IxPoiColumnStatusSelector poiColumnSelector = new IxPoiColumnStatusSelector(conn);
 			
+			int hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, taskId,1);
+			
+			// 可申请数据的条数
+			int canApply = 50 - hasApply;
+			if (canApply == 0) {
+				throw new Exception("该作业员名下已存在50条数据，不可继续申请");
+			}
 			
 			//获取从状态表查询到能够抽取数据的pids
 			List<Integer> pids = poiColumnSelector.getExtractPids(subtask, firstWorkItem, secondWorkItem, type, userId);
@@ -1103,8 +1110,18 @@ public class DeepCoreControl {
 				return 0;
 			}
 			
+			logger.info("库中可申请数据条数:"+pids.size());
+			// 实际申请到的数据pids
+			List<Integer> applyDataPids = new ArrayList<Integer>();
+			if (pids.size() >= canApply) {
+				applyDataPids = pids.subList(0, canApply);
+			} else {
+				// 库里面查询出的数据量小于当前用户可申请的量，即锁定库中查询出的数据
+				applyDataPids = pids;
+			}
+			
 			Timestamp timeStamp = new Timestamp(new Date().getTime());
-			poiColumnSelector.updateExtractColumnStatus(pids,userId, taskId, timeStamp,firstWorkItem, secondWorkItem);
+			poiColumnSelector.updateExtractColumnStatus(applyDataPids,userId, taskId, timeStamp,firstWorkItem, secondWorkItem);
 			
 			
 			return pids.size();

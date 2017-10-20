@@ -19,13 +19,14 @@ public class GdbCmkFaceExporter {
 			Statement stmt, Connection conn, String operateDate, Set<Integer> meshes)
 			throws Exception {
 		// creating a LINESTRING table
+		stmt.execute("DROP TABLE IF EXISTS gdb_cmkFace;");
 		stmt.execute("create table gdb_cmkFace(pid integer primary key)");
 		stmt.execute("select addgeometrycolumn('gdb_cmkFace','geometry',4326,'GEOMETRY','XY')");
 		stmt.execute("select createspatialindex('gdb_cmkFace','geometry')");
 		stmt.execute("alter table gdb_cmkFace add display_style text;");
 		stmt.execute("alter table gdb_cmkFace add display_text text;");
 		stmt.execute("alter table gdb_cmkFace add meshid text;");
-		stmt.execute("alter table gdb_cmkFace add height integer;");
+		stmt.execute("alter table gdb_cmkFace add height REAL;");
 		stmt.execute("alter table gdb_cmkFace add op_date text;");
 		stmt.execute("alter table gdb_cmkFace add op_lifecycle integer;");
 

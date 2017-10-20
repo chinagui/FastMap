@@ -28,14 +28,17 @@ public class FMA0911 extends BasicCheckRule {
 		if (address == null) {
 			return;
 		}
-		if (!address.getHisOpType().equals(OperationType.INSERT)&& !address.getHisOpType().equals(OperationType.UPDATE)) {
+		if (!address.getHisOpType().equals(OperationType.INSERT) && !address.getHisOpType().equals(OperationType.UPDATE)) {
 			return;
 		}
-		if (address.getFullname() == null || address.getFullname().isEmpty()) {
+		String fullname = address.getFullname();
+		if (fullname == null || fullname.isEmpty()) {
 			return;
 		}
 		String mergeAdd = CheckUtil.getMergerAddr(address);
-		if (!mergeAdd.equals(address.getFullname())) {
+		String mergeAddHalf = CheckUtil.strQ2B(mergeAdd);
+		String fullnameHalf = CheckUtil.strQ2B(fullname);
+		if (!mergeAddHalf.equalsIgnoreCase(fullnameHalf)) {
 			String errStr = "地址拆分后对比检查：拆分合并后地址" + mergeAdd + "（" + mergeAdd + "为18个字段合并后地址）与地址全称不一致。";
 			setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(), errStr);
 		}

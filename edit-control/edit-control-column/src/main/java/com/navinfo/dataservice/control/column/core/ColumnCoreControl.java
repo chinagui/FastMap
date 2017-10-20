@@ -96,10 +96,10 @@ public class ColumnCoreControl {
 					
 					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, comSubTaskId,qcFlag);
 					// 可申请数据条数
-					int canApply = 100 - hasApply;
+					int canApply = 50 - hasApply;
 					logger.info("该用户可申请数据条数:"+canApply);
 					if (canApply == 0) {
-						throw new Exception("该作业员名下已存在100条数据，不可继续申请");
+						throw new Exception("该作业员名下已存在50条数据，不可继续申请");
 					}
 
 					// 申请数据
@@ -111,7 +111,6 @@ public class ColumnCoreControl {
 					logger.info("库中可申请数据条数:"+pids.size());
 					// 实际申请到的数据pids
 					List<Integer> applyDataPids = new ArrayList<Integer>();
-					canApply = canApply > 50 ? 50:canApply;//申请数据时数量控制，单次上限50
 					if (pids.size() >= canApply) {
 						applyDataPids = pids.subList(0, canApply);
 					} else {

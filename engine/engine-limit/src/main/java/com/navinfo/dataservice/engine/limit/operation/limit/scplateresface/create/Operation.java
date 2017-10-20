@@ -38,6 +38,7 @@ public class Operation implements IOperation {
 		if (this.command.getGeometryIds()!=null)
 		{
 			line2Face( result,this.command.getGeometryIds());
+			return null;
 		}
 
 		JSONArray arrayrd = this.command.getRdLinks();
@@ -92,7 +93,7 @@ public class Operation implements IOperation {
 
 			RdLinkSelector selector = new RdLinkSelector(regionConn);
 
-			List<RdLink> links = selector.loadByPids(pidList, true);
+			List<IRow> links = selector.loadByIds(pidList, true, false);
 
 			for (int i = 0; i < pidList.size(); i++) {
 
@@ -103,7 +104,8 @@ public class Operation implements IOperation {
 
 				RdLink currentLink = null;
 
-				for (RdLink link : links) {
+				for (IRow row : links) {
+					RdLink link = (RdLink)row;
 					if (link.getPid() == pidList.get(i)) {
 						currentLink = link;
 						break;

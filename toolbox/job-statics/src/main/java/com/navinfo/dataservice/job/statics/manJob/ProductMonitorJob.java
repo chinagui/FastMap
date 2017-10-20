@@ -235,8 +235,8 @@ public class ProductMonitorJob extends AbstractStatJob {
 					cAddPoi += (int) jso.get("poiActualAddNum");
 				}
 			}
-			stat.put("cUpdateRoad", Math.round((cUpdateRoad/1000)));
-			stat.put("cAddRoad", Math.round((cAddRoad/1000)));
+			stat.put("cUpdateRoad", Math.round((cUpdateRoad)));
+			stat.put("cAddRoad", Math.round((cAddRoad)));
 			stat.put("cUpdatePoi", cUpdatePoi);
 			stat.put("cAddPoi", cAddPoi);
 			return stat;

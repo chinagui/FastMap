@@ -9,6 +9,7 @@ import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
 import com.navinfo.dataservice.engine.limit.glm.iface.IProcess;
 import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.glm.iface.Result;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
@@ -19,13 +20,31 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
     private Result result;
     private Connection conn;
 
+    private Connection limitConn = null;
+
+    /**
+     * 获取Limit库连接，仅对夸库删除临时几何数据使用，其他情况慎用
+     * @return
+     * @throws Exception
+     */
+    public Connection getLimitConn() throws Exception {
+
+        if (this.limitConn == null) {
+
+            this.limitConn = DBConnector.getInstance().getLimitConnection();
+            this.limitConn.setAutoCommit(false);
+        }
+
+        return this.limitConn;
+    }
+
     public static Logger log = Logger.getLogger(AbstractProcess.class);
 
     /**
      * @return the conn
      */
     public Connection getConn() {
-        return conn;
+        return this.conn;
     }
 
     public void setCommand(T command) {
@@ -127,7 +146,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
         String msg;
         try {
-            conn.setAutoCommit(false);
+            this.conn.setAutoCommit(false);
 
             this.prepareData();
 
@@ -149,23 +168,27 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
             this.postCheck();
 
-            conn.commit();
+            this.conn.commit();
+
+            if (this.limitConn != null) {
+                this.limitConn.commit();
+            }
 
             System.out.print("操作成功\r\n");
 
         } catch (Exception e) {
 
-            conn.rollback();
+            this.conn.rollback();
+
+            if (this.limitConn != null) {
+                this.limitConn.rollback();
+            }
 
             throw e;
         } finally {
-            try {
-                conn.close();
 
-                System.out.print("结束\r\n");
-            } catch (Exception e) {
-
-            }
+            DBUtils.closeConnection(this.conn);
+            DBUtils.closeConnection(this.limitConn);
         }
 
         return msg;
@@ -212,7 +235,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
     @Override
     public boolean recordData() throws Exception {
 
-        OperatorFactory.recordData(conn, result);
+        OperatorFactory.recordData(this.conn, result);
 
         return true;
     }

@@ -5,6 +5,7 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
@@ -57,11 +58,16 @@ public class Check003 extends baseRule {
                 geometry = GeoTranslator.transform(geometry, GeoTranslator.dPrecisionMap, 5);
                 DatabaseOperator databaseOperator = new DatabaseOperator();
                 if (GeometryTypeName.POINT.equals(geometry.getGeometryType())) {
+
                     checkGscGeometry(row, geometry.getCoordinate(), databaseOperator);
-                } else if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())) {
+
+                } else if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())
+                        && OperType.REPAIR.equals(checkCommand.getOperType())) {
+
                     for (Coordinate coor : geometry.getCoordinates()) {
                         checkGscGeometry(row, coor, databaseOperator);
                     }
+                    
                 }
             }
         }

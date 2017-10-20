@@ -7,6 +7,8 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -31,9 +33,9 @@ public class Operation implements IOperation {
 
     private Connection conn;
 
-    public Operation(Command command, AdAdmin moveAdmin) {
+    public Operation(Command command, Connection conn, AdAdmin moveAdmin) {
         this.command = command;
-
+        this.conn = conn;
         this.moveAdmin = moveAdmin;
     }
 
@@ -74,6 +76,21 @@ public class Operation implements IOperation {
         updateContent.put("geometry", geojson);
 
         updateContent.put("linkPid", command.getLinkPid());
+
+        //RdLink link = (RdLink) new RdLinkSelector(conn).loadById(command.getLinkPid(), false);
+        //
+        //Geometry geometry = GeoTranslator.geojson2Jts(geojson, 1, Constant.BASE_PRECISION);
+        // 计算行政区划代表点与关联线的左右关系
+        //Coordinate c = GeometryUtils.GetNearestPointOnLine(geometry.getCoordinate(),
+        //        GeoTranslator.transform(link.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION));
+        //
+        //JSONObject nearPoint = new JSONObject();
+        //nearPoint.put("type", "Point");
+        //nearPoint.put("coordinates", new double[]{c.x, c.y});
+        //Geometry nearestPointGeo = GeoTranslator.geojson2Jts(nearPoint, Constant.BASE_EXPAND, Constant.BASE_PRECISION);
+        //int side = GeometryUtils.calulatPointSideOflink(
+        //        GeoTranslator.transform(geometry, Constant.BASE_EXPAND, Constant.BASE_PRECISION), link.getGeometry(), nearestPointGeo);
+        //updateContent.put("side", side);
 
         moveAdmin.fillChangeFields(updateContent);
 

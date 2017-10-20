@@ -41,7 +41,7 @@ public class ScPlateresFaceSearch implements ISearch {
 
         String groupId = condition.getString("groupId");
 
-        String sqlStr = "SELECT * FROM SC_PLATERES_FACE WHERE ADMIN_CODE = ? ";
+        String sqlStr = "SELECT t.*, row_number() over(order by GEOMETRY_ID) as row_num FROM SC_PLATERES_FACE t WHERE t.GROUP_ID = ? ";
 
         boolean Paging = (condition.containsKey("pageSize") && condition.containsKey("pageNum"));
 
@@ -54,12 +54,11 @@ public class ScPlateresFaceSearch implements ISearch {
             sql.append(sqlStr);
             sql.append(") SELECT query.*,(SELECT count(1) FROM query) AS TOTAL_ROW_NUM FROM query ");
 
-            sql.append(" WHERE rownum BETWEEN ");
+            sql.append(" WHERE row_num BETWEEN ");
             sql.append((pageNum - 1) * pageSize + 1);
             sql.append(" AND ");
             sql.append((pageNum * pageSize));
-            sql.append(" for update nowait");
-
+           
             sqlStr = sql.toString();
         }
 
@@ -126,12 +125,6 @@ public class ScPlateresFaceSearch implements ISearch {
 
                 Geometry geom = GeoTranslator.struct2Jts(struct);
 
-                JSONObject geojson = GeoTranslator.jts2Geojson(geom);
-
-                JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
-
-                snapshot.setG(jo.getJSONArray("coordinates"));
-
                 JSONObject m = new JSONObject();
 
                 m.put("a", resultSet.getString("GEOMETRY_ID"));
@@ -143,14 +136,27 @@ public class ScPlateresFaceSearch implements ISearch {
                 String geometryType = geom.getGeometryType();
                 m.put("e", geometryType);
 
-                m.put("g", geojson.getJSONArray("coordinates"));
+                m.put("g", GeoTranslator.jts2Geojson(geom).getJSONArray("coordinates"));
 
                 snapshot.setM(m);
 
+                JSONObject geojson = GeoTranslator.jts2Geojson(geom);
+
                 if (geometryType.equals("LineString")) {
+
                     snapshot.setT(1002);
+
+                    JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
+
+                    snapshot.setG(jo.getJSONArray("coordinates"));
+
                 } else if (geometryType.equals("Polygon")) {
+
                     snapshot.setT(1003);
+
+                    JSONObject jo = Geojson.face2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
+
+                    snapshot.setG(jo.getJSONArray("coordinates"));
                 }
 
                 list.add(snapshot);

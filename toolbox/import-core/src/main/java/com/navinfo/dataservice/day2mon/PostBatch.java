@@ -152,12 +152,16 @@ public class PostBatch {
 								poiObj.deleteSubrow(poiFlag);
 							}
 						}
-						IxPoiNameFlag poiFlag = poiObj.createIxPoiNameFlag(nameId);
-						poiFlag.setFlagCode(lastSourceFlag);
+						if(nameId!=0){
+							IxPoiNameFlag poiFlag = poiObj.createIxPoiNameFlag(nameId);
+							poiFlag.setFlagCode(lastSourceFlag);
+						}
 
 					} else {
-						IxPoiNameFlag poiFlag = poiObj.createIxPoiNameFlag(nameId);
-						poiFlag.setFlagCode(sourceFlag);
+						if(nameId!=0){
+							IxPoiNameFlag poiFlag = poiObj.createIxPoiNameFlag(nameId);
+							poiFlag.setFlagCode(sourceFlag);
+						}
 					}
 					// add to operation result;
 					objList.add(obj);

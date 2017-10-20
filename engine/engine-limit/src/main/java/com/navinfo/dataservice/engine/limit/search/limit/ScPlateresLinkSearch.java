@@ -42,7 +42,7 @@ public class ScPlateresLinkSearch implements ISearch {
 
         String groupId = condition.getString("groupId");
 
-        String sqlStr = "SELECT * FROM SC_PLATERES_LINK WHERE ADMIN_CODE = ? ";
+        String sqlStr = "SELECT t.*, row_number() over(order by GEOMETRY_ID) as row_num FROM SC_PLATERES_LINK t WHERE t.GROUP_ID = ? ";
 
         boolean Paging = (condition.containsKey("pageSize") && condition.containsKey("pageNum"));
 
@@ -55,12 +55,11 @@ public class ScPlateresLinkSearch implements ISearch {
             sql.append(sqlStr);
             sql.append(" ) SELECT query.*,(SELECT count(1) FROM query) AS TOTAL_ROW_NUM FROM query ");
 
-            sql.append(" WHERE rownum BETWEEN ");
+            sql.append(" WHERE row_num BETWEEN ");
             sql.append((pageNum - 1) * pageSize + 1);
             sql.append(" AND ");
             sql.append((pageNum * pageSize));
-            sql.append(" for update nowait");
-
+            
             sqlStr = sql.toString();
         }
 
@@ -129,9 +128,6 @@ public class ScPlateresLinkSearch implements ISearch {
 
                 JSONObject geojson = GeoTranslator.jts2Geojson(geom);
 
-                JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
-
-                snapshot.setG(jo.getJSONArray("coordinates"));
 
                 JSONObject m = new JSONObject();
 
@@ -143,11 +139,15 @@ public class ScPlateresLinkSearch implements ISearch {
 
                 m.put("e", geom.getGeometryType());
 
-                m.put("g", geojson.getJSONArray("coordinates"));
+                m.put("g", GeoTranslator.jts2Geojson(geom).getJSONArray("coordinates"));
 
                 snapshot.setM(m);
 
                 snapshot.setT(1001);
+
+                JSONObject jo = Geojson.link2Pixel(geojson, param.getMPX(), param.getMPY(), param.getZ());
+
+                snapshot.setG(jo.getJSONArray("coordinates"));
 
                 list.add(snapshot);
             }

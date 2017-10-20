@@ -15,9 +15,11 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
@@ -48,7 +50,7 @@ public class ImportPlan {
 	public static void main(String[] args) throws SQLException {
 		Connection conn = null;
 		JSONArray programUpdateIDs = new JSONArray();
-		JSONArray taskIds = new JSONArray();
+		List<Integer> taskIds = new ArrayList<>();
 		String filepath = String.valueOf(args[0]);
 		try {
 			JobScriptsInterface.initContext();
@@ -131,11 +133,16 @@ public class ImportPlan {
 	 * @param JSONArray
 	 * 
 	 * */
-	public static void pushTask(JSONArray tasks){
+	public static void pushTask(List<Integer> taskIds){
 		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
 		try {
-			if(tasks.size() > 0){
-				TaskService.getInstance().taskPushMsg(userID, tasks);
+			if(taskIds.size() > 0){
+				JobApi api=(JobApi) ApplicationContextUtil.getBean("jobApi");
+				for(int task:taskIds){
+					JSONObject request=new JSONObject();
+					api.createJob("PushTaskJob", request, 0, task, "任务发布");
+				}
+				//TaskService.getInstance().taskPushMsg(userID, taskIds);
 			}
 		} catch (Exception e) {
 			System.out.println("任务发布失败");

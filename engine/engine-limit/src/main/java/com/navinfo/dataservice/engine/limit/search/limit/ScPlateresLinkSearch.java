@@ -42,7 +42,7 @@ public class ScPlateresLinkSearch implements ISearch {
 
         String groupId = condition.getString("groupId");
 
-        String sqlStr = "SELECT * FROM SC_PLATERES_LINK WHERE ADMIN_CODE = ? ";
+        String sqlStr = "SELECT t.*, row_number() over(order by GEOMETRY_ID) as row_num FROM SC_PLATERES_LINK t WHERE t.GROUP_ID = ? ";
 
         boolean Paging = (condition.containsKey("pageSize") && condition.containsKey("pageNum"));
 
@@ -55,12 +55,11 @@ public class ScPlateresLinkSearch implements ISearch {
             sql.append(sqlStr);
             sql.append(" ) SELECT query.*,(SELECT count(1) FROM query) AS TOTAL_ROW_NUM FROM query ");
 
-            sql.append(" WHERE rownum BETWEEN ");
+            sql.append(" WHERE row_num BETWEEN ");
             sql.append((pageNum - 1) * pageSize + 1);
             sql.append(" AND ");
             sql.append((pageNum * pageSize));
-            sql.append(" for update nowait");
-
+            
             sqlStr = sql.toString();
         }
 

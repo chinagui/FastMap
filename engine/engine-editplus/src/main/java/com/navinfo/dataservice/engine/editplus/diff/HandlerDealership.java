@@ -19,8 +19,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.io.ParseException;
@@ -50,12 +48,18 @@ public class HandlerDealership {
 	 * @return
 	 * @throws Exception
 	 */
-	public static boolean isSameTableAndDb(IxDealershipResult dealershipMR, FastPoi obj) throws Exception {
+	public static boolean isSameTableAndDb(IxDealershipResult dealershipMR, FastPoi obj, Logger log) throws Exception {
 
 		if (dealershipMR == null || obj == null) {
 			return false;
 		}
-
+		log.info("isSameTableAndDb dealership----name:" + dealershipMR.getName() + ",nameShort:" + dealershipMR.getNameShort() + ",kind:"
+				+ dealershipMR.getKindCode() + ",Chain:" + dealershipMR.getChain() + ",address:"
+				+ dealershipMR.getAddress() + ",PostCode:" + dealershipMR.getPostCode() + ",telephone:"
+				+ dealershipMR.getTelephone());
+		log.info("isSameTableAndDb poi----name:" + obj.getName() + ",nameShort:" + obj.getShortName() + ",kind:" + obj.getKindCode()
+				+ ",Chain:" + obj.getChain() + ",address:" + obj.getAddr() + ",PostCode:" + obj.getPostCode()
+				+ ",telephone:" + obj.getTel());
 		boolean isEqual = false;
 		boolean nameFlag = true;
 		boolean nameShortFlag = true;
@@ -100,7 +104,7 @@ public class HandlerDealership {
 
 		// 判断联系方式是否相同
 		String telephone = StringUtil.sortPhone(StringUtil.contactFormat(obj.getTel()));
-		String dealershipTel=StringUtil.sortPhone(StringUtil.contactFormat(dealershipMR.getTelephone()));
+		String dealershipTel = StringUtil.sortPhone(StringUtil.contactFormat(dealershipMR.getTelephone()));
 		if (!dealershipTel.equals(telephone)) {
 			str.append("电话不同；");
 			phoneFlag = false;
@@ -125,10 +129,17 @@ public class HandlerDealership {
 	 * @return
 	 * @throws Exception
 	 */
-	public static boolean isNoChangePoiNature(IxDealershipResult dealershipMR, FastPoi obj) throws Exception {
+	public static boolean isNoChangePoiNature(IxDealershipResult dealershipMR, FastPoi obj,Logger log) throws Exception {
 		if (dealershipMR == null || obj == null) {
 			return false;
 		}
+		log.info("isNoChangePoiNature dealership----name:" + dealershipMR.getPoiName() + ",kind:"
+				+ dealershipMR.getPoiKindCode() + ",Chain:" + dealershipMR.getPoiChain() + ",address:"
+				+ dealershipMR.getPoiAddress() + ",PostCode:" + dealershipMR.getPoiPostCode() + ",telephone:"
+				+ dealershipMR.getPoiTel());
+		log.info("isNoChangePoiNature poi----name:" + obj.getName() + ",kind:" + obj.getKindCode()
+				+ ",Chain:" + obj.getChain() + ",address:" + obj.getAddr() + ",PostCode:" + obj.getPostCode()
+				+ ",telephone:" + obj.getTel());
 
 		boolean isEqual = false;
 		boolean nameFlag = true;
@@ -231,8 +242,10 @@ public class HandlerDealership {
 
 			for (int i = 0; i < diffFinishResultList.size(); i++) {
 				IxDealershipResult dealResult = diffFinishResultList.get(i);
-				updateResultObj(dealResult, dbMap);
-				log.info("resultId:" + dealResult.getResultId() + ",province:" + dealResult.getProvince()+",city:"+dealResult.getCity()+",address:"+dealResult.getAddress()+",cfm_poi_num:"+dealResult.getCfmPoiNum());
+				updateResultObj(dealResult, dbMap,log);
+				log.info("resultId:" + dealResult.getResultId() + ",province:" + dealResult.getProvince() + ",city:"
+						+ dealResult.getCity() + ",address:" + dealResult.getAddress() + ",cfm_poi_num:"
+						+ dealResult.getCfmPoiNum());
 
 				Object[] obj = new Object[] { dealResult.getWorkflowStatus(), dealResult.getIsDeleted(),
 						dealResult.getMatchMethod(), dealResult.getPoiNum1(), dealResult.getPoiNum2(),
@@ -359,7 +372,7 @@ public class HandlerDealership {
 	 * @return
 	 * @throws Exception
 	 */
-	public static IxDealershipResult updateResultObj(IxDealershipResult dealership, Map dbConMap) throws Exception {
+	public static IxDealershipResult updateResultObj(IxDealershipResult dealership, Map dbConMap,Logger log) throws Exception {
 
 		if (dealership.getDealSrcDiff() == 2) {
 			dealership.setIsDeleted(1);
@@ -371,7 +384,6 @@ public class HandlerDealership {
 			dealership.setCfmIsAdopted(1);
 		}
 
-		
 		Connection regionConn = (Connection) dbConMap.get(dealership.getRegionId());
 		FastPoi obj = queryPoiByPoiNum(dealership.getCfmPoiNum(), regionConn);
 
@@ -390,18 +402,17 @@ public class HandlerDealership {
 				dealership.setPoiPostCode(obj.getPostCode());
 				dealership.setPoiXGuide(obj.getxGuide());
 				dealership.setPoiYGuide(obj.getyGuide());
-				
-				if (obj.getGeometry()!=null)
-				{
+
+				if (obj.getGeometry() != null) {
 					JSONArray array = GeoTranslator.jts2JSONArray(obj.getGeometry());
 					dealership.setPoiXDisplay(array.getDouble(0));
 					dealership.setPoiXDisplay(array.getDouble(1));
 				}
-				
+
 			}
 		}
 		if (obj != null) {
-			updateResultGeo(dealership, obj);
+			updateResultGeo(dealership, obj,log);
 		}
 
 		return dealership;
@@ -418,7 +429,7 @@ public class HandlerDealership {
 	 * @throws IOException
 	 * @throws ClientProtocolException
 	 */
-	public static IxDealershipResult updateResultGeo(IxDealershipResult dealership, FastPoi obj)
+	public static IxDealershipResult updateResultGeo(IxDealershipResult dealership, FastPoi obj,Logger log)
 			throws ClientProtocolException, IOException, ParseException, Exception {
 		if (obj == null) {
 			return dealership;
@@ -438,8 +449,11 @@ public class HandlerDealership {
 				if (dealership.getAddress() != null && !"".equals(dealership.getAddress())) {
 					sb.append(dealership.getAddress());
 				}
-				dealership.setGeometry(BaiduGeocoding.geocoder(sb.toString()));
+				String str=sb.toString();
+				log.error(str);
+				dealership.setGeometry(BaiduGeocoding.geocoder(str));
 			} catch (Exception e) {
+				log.error("无法获取geometry:"+e.getMessage());
 				throw new Exception("无法获取geometry");
 			}
 		}

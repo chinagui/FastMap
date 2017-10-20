@@ -510,10 +510,12 @@ public class ExportImportantPoiHis {
 			out.close();
 			
 			System.out.println("export excel success...");
+			log.info("export excel success...");
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("export excel error...");
+			log.error("export excel error...");
 			log.error(e.getMessage());
 		}
 	}
@@ -525,9 +527,12 @@ public class ExportImportantPoiHis {
 			return;
 		}
 		System.out.println("Start...");
+		log.info("Start...");
 		initContext();
 		excute(args[0]);
 		System.out.println("End...");
+		log.info("End...");
+
 	}
 
 	public static void initContext() {

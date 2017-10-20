@@ -703,6 +703,7 @@ public class TaskService {
 			//modify by songhe
 			//修正修改任务时由于缺少项目id无法发布多源子任务的bug
 			bean.setProgramId(oldTask.getProgramId());
+			bean.setBlockId(oldTask.getBlockId());
 			//状态status为开启时，参数workKind与库中workKind是否有变更，若情报矢量或多源由0变为1了，
 			//则需自动创建情报矢量或多源子任务，即subtask里的work_Kind赋对应值
 			if(oldTask.getStatus()==1&&oldTask.getType()==0){

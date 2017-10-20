@@ -42,7 +42,7 @@ public class ScPlateresLinkSearch implements ISearch {
 
         String groupId = condition.getString("groupId");
 
-        String sqlStr = "SELECT t.*, row_number() over(order by GEOMETRY_ID) as row_num FROM SC_PLATERES_LINK t WHERE t.ADMIN_CODE = ? ";
+        String sqlStr = "SELECT t.*, row_number() over(order by GEOMETRY_ID) as row_num FROM SC_PLATERES_LINK t WHERE t.GROUP_ID = ? ";
 
         boolean Paging = (condition.containsKey("pageSize") && condition.containsKey("pageNum"));
 

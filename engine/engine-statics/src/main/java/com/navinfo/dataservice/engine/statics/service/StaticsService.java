@@ -669,7 +669,6 @@ public class StaticsService {
 				JSONArray cityDetail2=reFormCity(cityDetail ,8);
 				task.put("cityDetail",cityDetail2);
 			}
-			queryStandardData(task);
 			log.info("end quickMonitor");
 			return task;
 		} catch (Exception e) {
@@ -677,35 +676,6 @@ public class StaticsService {
 		}
 	}
 	
-	/**
-	 * 快线项目监控配置表中标准值查询
-	 * 
-	 * 
-	 * */
-	public void queryStandardData(Map<String, Object> map) throws Exception{
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-			String sql = "select t.conf_key,t.conf_value from MAN_CONFIG t where t.conf_desc like '快线统计%'";
-			Map<String, Object> config = run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
-				
-				@Override
-				public Map<String, Object> handle(ResultSet rs) throws SQLException {
-					Map<String, Object> configMap = new HashMap<>();
-					while(rs.next()){
-						configMap.put(StringConvertUtils.lineToHump(rs.getString("conf_key")), rs.getObject("conf_value"));
-					}
-					return configMap;
-				}});
-			for(Entry<String, Object> enty : config.entrySet()){
-				map.put(enty.getKey(), enty.getValue());
-			}
-		} catch (Exception e) {
-			throw e;
-		}
-	
-	}
 	
 	/**
 	 * originJson中的key为描述，value为百分比，按照百分比排序，此处将取前top的，其余归为一个百分比

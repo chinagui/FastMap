@@ -304,7 +304,7 @@ public class HandlerDealership {
 			sb.append("         LISTAGG(C.CONTACT, '|') WITHIN GROUP(ORDER BY C.POI_PID) AS TEL");
 			sb.append("    FROM IX_POI_CONTACT C,IX_POI I");
 			sb.append("   WHERE  C.POI_PID = I.PID AND I.POI_NUM=:2 ");
-			sb.append("      AND (C.CONTACT_TYPE IN (1,2,3,4) AND C.CONTACT_DEPART IN (0, 16, 8))");
+			sb.append("      AND C.CONTACT_TYPE IN (1,2,3,4) ");
 			sb.append("     AND C.U_RECORD <> 2");
 			sb.append("   GROUP BY C.POI_PID)");
 			sb.append(" SELECT POI_NUM,");
@@ -320,7 +320,7 @@ public class HandlerDealership {
 			sb.append("       FULLNAME,");
 			sb.append("       TEL");
 			sb.append("  FROM A, B");
-			sb.append(" WHERE A.PID = B.POI_PID");
+			sb.append(" WHERE A.PID = B.POI_PID(+)");
 			pstmt = conn.prepareStatement(sb.toString());
 			pstmt.setString(1, cfmNum);
 			pstmt.setString(2, cfmNum);

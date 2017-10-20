@@ -549,7 +549,7 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 	private static void insertIxSamePoiTable(Connection conn) throws SQLException {
 		System.out.println("开始新增表:IX_SAMEPOI");
 		StringBuilder createAndInsertIxSamePoiTableSql = new StringBuilder();
-		createAndInsertIxSamePoiTableSql.append( " insert into  IX_SAMEPOI  select p.*  from IX_SAMEPOI@DBLINK_TAB p,IX_SAMEPOI_PART s  "
+		createAndInsertIxSamePoiTableSql.append( " insert into  IX_SAMEPOI  select distinct p.*  from IX_SAMEPOI@DBLINK_TAB p,IX_SAMEPOI_PART s  "
 				+ "  where  p.GROUP_ID = s.GROUP_ID ");
 		
 		System.out.println("createAndInsertIxSamePoiTable.toString(): "+createAndInsertIxSamePoiTableSql.toString());

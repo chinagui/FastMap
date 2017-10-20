@@ -3,6 +3,9 @@
 	<type name="createDb" class="com.navinfo.dataservice.job.datahub.CreateDbJob"
 		request="com.navinfo.dataservice.job.datahub.CreateDbJobRequest">
 	</type>
+	<type name="PushTaskJob" 
+		class="com.navinfo.dataservice.job.PushTaskJob"
+		request="com.navinfo.dataservice.job.PushTaskJobRequest" /> 
 	<type name="day2MonthRoadJob"
 		class="com.navinfo.dataservice.impcore.commit.day.road.Day2MonthRoadJob"
 		request="com.navinfo.dataservice.impcore.commit.day.road.Day2MonthRoadJobRequest" />
@@ -195,7 +198,4 @@
           class="com.navinfo.dataservice.row.job.PointAddressReleaseJob"
           request="com.navinfo.dataservice.row.job.PointAddressReleaseJobRequest" >
     </type>
-   <type name="PushTaskJob" 
-		class="com.navinfo.dataservice.job.PushTaskJob"
-		request="com.navinfo.dataservice.job.PushTaskJobRequest" /> 
 	</mapping>

@@ -325,6 +325,7 @@ public class PersonJob extends AbstractStatJob {
 			String startCollectTime = (StringUtils.isBlank(fccJson.get("startCollectTime").toString()) ? df.format(new Date()) : fccJson.get("startCollectTime").toString());
 			String endCollectTime = (StringUtils.isBlank(fccJson.get("endCollectTime").toString()) ? df.format(new Date()) : fccJson.get("endCollectTime").toString());
 			String workTime = "";
+			log.warn("taskId="+taskId+",startCollectTime="+startCollectTime+",endCollectTime="+endCollectTime);
 			try {
 				String reg = "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})";
 				Date begin = df.parse(startCollectTime.replaceAll(reg, "$1-$2-$3 $4:$5:$6"));
@@ -337,7 +338,7 @@ public class PersonJob extends AbstractStatJob {
 				double hour = (double) (between/3600);
 				workTime = String.valueOf(hour);
 			}catch(ParseException e){
-				e.printStackTrace();
+				log.error("taskId="+taskId+",startCollectTime="+startCollectTime+",endCollectTime="+endCollectTime, e);
 			}
 			map.put("effectiveTime", effectiveTime);
 			map.put("startDate", startCollectTime);

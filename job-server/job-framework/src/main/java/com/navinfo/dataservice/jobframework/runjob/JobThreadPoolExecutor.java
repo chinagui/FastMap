@@ -37,8 +37,8 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 
 	private Map<String,Set<String>> jobPool;//key:jobType,value:jobIdentity set
 	private JobThreadPoolExecutor(){
-		super(Integer.parseInt(SystemConfigFactory.getSystemConfig().getValue(POOL_SIZE_KEY,"10"))
-				,Integer.parseInt(SystemConfigFactory.getSystemConfig().getValue(POOL_SIZE_KEY,"10"))
+		super(Integer.parseInt(SystemConfigFactory.getSystemConfig().getValue(POOL_SIZE_KEY,"25"))
+				,Integer.parseInt(SystemConfigFactory.getSystemConfig().getValue(POOL_SIZE_KEY,"25"))
 				,3,TimeUnit.SECONDS,new LinkedBlockingQueue(),new ThreadPoolExecutor.CallerRunsPolicy());
 		jobPool = new ConcurrentHashMap<String,Set<String>>();
 		SystemConfigFactory.getSystemConfig().addObserver(this);

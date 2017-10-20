@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.job;
 
-import java.util.List;
-
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;

@@ -42,6 +42,7 @@ import net.sf.json.JSONObject;
  * @Description: ImportCityBlockByJson.java
  */
 public class InitDataPoi2Tab {
+	private static String currentDate = com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();	
 
 	/**
 	 * @Title: execute
@@ -136,6 +137,10 @@ public class InitDataPoi2Tab {
 					
 					Set<Integer> daylyDbIds = getDaylyDbIdBySubtaskId(subtIds ,subTaskIdStr);
 					if(daylyDbIds != null && daylyDbIds.size() > 0){
+						//每次执行脚本时创建一次poi_task_tab 表(多个任务记在一起)
+						//在中间库中创建  poi_task_tab
+						createTable(conn);
+						
 						//遍历各个日大区库,将大区库中需要导出的数据导入目标大区库
 						for(Integer dDbID : daylyDbIds){
 							//TODO 临时加的
@@ -192,8 +197,8 @@ public class InitDataPoi2Tab {
 		try{
 			//1.创建大区库和中间库的dblink 
 				createMetaDbLink(dataSource, dDbID);
-			//2.1 DBLINK_TAB 在中间库中创建  
-				createTable(conn);
+			/*//2.1 DBLINK_TAB 在中间库中创建  
+				createTable(conn);*/
 			//2.2 在大区库上创建 POI_TASK_TEMP 临时表
 				createTempTable(dDbID);
 			//3.建需要导出的poi 的pid 赋值到 表:POI_TASK_TAB
@@ -389,7 +394,7 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 			sb.append("end;                                                                                                 ");
 			r.execute(conn, sb.toString());
 			
-			String currentDate = com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();	
+			//String currentDate = com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();	
 			String seasonVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
 			String insertFmPoiCutoutSql = " insert into  fm_poi_cutout(gdbversion,pid,poi_num,task_id,subtask_id,fetchdate) "
 					+ "   select '"+seasonVersion+"' gdbversion,p.pid,i.poi_num,p.task_id,p.subtask_id,'"+currentDate+"' fetchdate from poi_task_tab p,ix_poi i where p.pid = i.pid  ";
@@ -422,7 +427,7 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 			sb.append("end;                                                                                                 ");
 			r.execute(conn, sb.toString());
 			
-			String currentDate = com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();	
+			
 			String insertFmPoiCutoutStat = " insert into  fm_poi_cutout_stat(id,task_id,task_poi_num,subtask_id_num,fetchdate) VALUES(fm_poi_cutout_stat_SEQ.NEXTVAL,?,?,?,'"+currentDate+"')  ";
 			System.out.println("insertFmPoiCutoutStat.toString(): "+insertFmPoiCutoutStat.toString());
 			List<Map<String, Object>>  subtaskIdNums = querysubtaskIdNumsByTaskId(conn,taskId);

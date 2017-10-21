@@ -47,7 +47,7 @@ public class ImportPlan {
 
 	SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
-	public static void main(String[] args) throws SQLException {
+	public static void main(String[] args) throws Exception {
 		Connection conn = null;
 		JSONArray programUpdateIDs = new JSONArray();
 		List<Integer> taskIds = new ArrayList<>();
@@ -122,7 +122,9 @@ public class ImportPlan {
 		//发布项目
 		ImportPlan.pushProgram(programUpdateIDs);
 		//发布任务
+		System.out.println("start push task");
 		ImportPlan.pushTask(taskIds);
+		System.out.println("end push task");
 		System.out.println("执行完成");
 		System.exit(0);
 	}
@@ -131,11 +133,13 @@ public class ImportPlan {
 	/**
 	 * 发布任务
 	 * @param JSONArray
+	 * @throws Exception 
 	 * 
 	 * */
-	public static void pushTask(List<Integer> taskIds){
+	public static void pushTask(List<Integer> taskIds) throws Exception{
 		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
 		try {
+			System.out.println("push task num:"+taskIds.size());
 			if(taskIds.size() > 0){
 				JobApi api=(JobApi) ApplicationContextUtil.getBean("jobApi");
 				for(int task:taskIds){
@@ -146,6 +150,7 @@ public class ImportPlan {
 			}
 		} catch (Exception e) {
 			System.out.println("任务发布失败");
+			throw e;
 		}
 	}
 	

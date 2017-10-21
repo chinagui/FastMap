@@ -42,7 +42,9 @@ import net.sf.json.JSONObject;
  * @Description: ImportCityBlockByJson.java
  */
 public class InitDataPoi2Tab {
+	private static String currentDate = com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();	
 
+	
 	/**
 	 * @Title: execute
 	 * @Description: 执行方法
@@ -54,6 +56,7 @@ public class InitDataPoi2Tab {
 	 * @date 2017年10月16日 下午3:27:38 
 	 */
 	public static JSONObject execute(JSONObject request) throws Exception {
+		System.out.println("currentDate0:"+currentDate);
 		JSONObject response = new JSONObject();
 		//中间库连接
 		Connection conn = null; 
@@ -77,6 +80,9 @@ public class InitDataPoi2Tab {
 			conn = dataSource.getConnection();
 			 
 			if(conn != null && data != null && data.size() > 0){
+				//每次执行脚本时创建一次poi_task_tab 表(多个任务记在一起)
+				//在中间库中创建  poi_task_tab
+				createTable(conn);
 				//解析参数
 				for(Object obj : data){
 					JSONObject jObj = (JSONObject) obj;
@@ -136,6 +142,8 @@ public class InitDataPoi2Tab {
 					
 					Set<Integer> daylyDbIds = getDaylyDbIdBySubtaskId(subtIds ,subTaskIdStr);
 					if(daylyDbIds != null && daylyDbIds.size() > 0){
+						
+						
 						//遍历各个日大区库,将大区库中需要导出的数据导入目标大区库
 						for(Integer dDbID : daylyDbIds){
 							//TODO 临时加的
@@ -192,8 +200,8 @@ public class InitDataPoi2Tab {
 		try{
 			//1.创建大区库和中间库的dblink 
 				createMetaDbLink(dataSource, dDbID);
-			//2.1 DBLINK_TAB 在中间库中创建  
-				createTable(conn);
+			/*//2.1 DBLINK_TAB 在中间库中创建  
+				createTable(conn);*/
 			//2.2 在大区库上创建 POI_TASK_TEMP 临时表
 				createTempTable(dDbID);
 			//3.建需要导出的poi 的pid 赋值到 表:POI_TASK_TAB
@@ -250,13 +258,30 @@ public class InitDataPoi2Tab {
 			
 			//7.查询这一组中 最早的开始时间 及最晚的结束时间 //String startDate,String endDate
 				Map<String,String> timeMap =  queryStartTimeAndEndTime(subtIds, subTaskIdStr);
-				
+				String actualStartDate = queryActualDate(subtIds, subTaskIdStr ,1);
+				String actualEndDate = queryActualDate(subtIds, subTaskIdStr ,0);
+				System.out.println("actualStartDate :"+actualStartDate +" ;actualEndDate: "+actualEndDate);
 				String start_date = null;
 				String end_date = null;
 				if(timeMap != null && timeMap.size() > 0){
 					start_date = timeMap.get("start_date");
 					end_date = timeMap.get("end_date");
+					System.out.println("plan_start_date: "+start_date + "  ;plan_end_date: " +end_date);
+					if(actualStartDate != null && StringUtils.isNotEmpty(actualStartDate) ){
+						if( Long.parseLong(actualStartDate) < Long.parseLong(start_date)){
+							start_date = actualStartDate;
+						}
+					}
+					if(actualEndDate != null && StringUtils.isNotEmpty(actualEndDate)){
+						if( Long.parseLong(actualEndDate) > Long.parseLong(end_date)){
+							end_date = actualEndDate;
+						}
+					}
+				}else{
+					start_date = actualStartDate;
+					end_date = actualEndDate;
 				}
+				
 				System.out.println("start_date:"+start_date + "  end_date" +end_date);
 			
 			//8.在大区库上查询查询最后一条编辑履历的人员ID
@@ -289,6 +314,51 @@ public class InitDataPoi2Tab {
 		
 	}
 	
+private static String queryActualDate(Set<Integer> subtIds, String subTaskIdStr,int operateType) throws Exception {
+	Connection conn = null;
+	// select NVL(to_char(min(m.operate_date), 'yyyymmddhh24miss'),'') start_date from MAN_TIMELINE  m WHERE OBJ_TYPE = 'subtask' AND OPERATE_TYPE = 1 and m.obj_id in (246,50)
+	try{
+		conn = DBConnector.getInstance().getManConnection();
+		Clob subtsClob = ConnectionUtil.createClob(conn);
+		String subts = StringUtils.join(subtIds, ",");
+		if(subTaskIdStr != null && StringUtils.isNotEmpty(subTaskIdStr)){
+			if(subts != null && StringUtils.isNotEmpty(subts)){
+				subTaskIdStr+=","+subts;
+			}
+			subtsClob.setString(1, subTaskIdStr);
+		}else{
+			subtsClob.setString(1, subts);
+		}
+		String mmStr = "max";
+		if(operateType == 1){
+			mmStr = "min";
+		}
+		
+		String selectSql = "select NVL(to_char("+mmStr+"(m.operate_date), 'yyyymmddhh24miss'),'') operate_date from MAN_TIMELINE  m WHERE OBJ_TYPE = 'subtask' AND OPERATE_TYPE = "+operateType+" "
+				+ " and m.obj_id  in (select column_value from table(clob_to_table(?))) ";
+		ResultSetHandler<String> rs = new ResultSetHandler<String>() {
+			
+			@Override
+			public  String handle(ResultSet rs) throws SQLException {
+				String result = "";
+				while(rs.next()){
+					result =  rs.getString("operate_date");
+				}
+				return result;
+			}
+		};
+		QueryRunner run = new QueryRunner();
+		String result = run.query(conn,selectSql, rs,subtsClob);
+		return result;
+	}catch(Exception e){
+//		DbUtils.rollback(conn);
+		System.out.println(e.getMessage());
+		throw new Exception("查询queryActualDate 失败，原因为:"+e.getMessage(),e);
+	}finally{
+		DbUtils.commitAndCloseQuietly(conn);
+	}
+	}
+
 private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String subts) throws SQLException {
 		
 		Connection connMan = null;
@@ -388,8 +458,8 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 			sb.append("    end if;                                                                                          ");
 			sb.append("end;                                                                                                 ");
 			r.execute(conn, sb.toString());
-			
-			String currentDate = com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();	
+			System.out.println("currentDate1: "+currentDate);
+			//String currentDate = com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();	
 			String seasonVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
 			String insertFmPoiCutoutSql = " insert into  fm_poi_cutout(gdbversion,pid,poi_num,task_id,subtask_id,fetchdate) "
 					+ "   select '"+seasonVersion+"' gdbversion,p.pid,i.poi_num,p.task_id,p.subtask_id,'"+currentDate+"' fetchdate from poi_task_tab p,ix_poi i where p.pid = i.pid  ";
@@ -422,7 +492,7 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 			sb.append("end;                                                                                                 ");
 			r.execute(conn, sb.toString());
 			
-			String currentDate = com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();	
+			System.out.println("currentDate2: "+currentDate);
 			String insertFmPoiCutoutStat = " insert into  fm_poi_cutout_stat(id,task_id,task_poi_num,subtask_id_num,fetchdate) VALUES(fm_poi_cutout_stat_SEQ.NEXTVAL,?,?,?,'"+currentDate+"')  ";
 			System.out.println("insertFmPoiCutoutStat.toString(): "+insertFmPoiCutoutStat.toString());
 			List<Map<String, Object>>  subtaskIdNums = querysubtaskIdNumsByTaskId(conn,taskId);
@@ -549,8 +619,8 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 	private static void insertIxSamePoiTable(Connection conn) throws SQLException {
 		System.out.println("开始新增表:IX_SAMEPOI");
 		StringBuilder createAndInsertIxSamePoiTableSql = new StringBuilder();
-		createAndInsertIxSamePoiTableSql.append( " insert into  IX_SAMEPOI  select distinct p.*  from IX_SAMEPOI@DBLINK_TAB p,IX_SAMEPOI_PART s  "
-				+ "  where  p.GROUP_ID = s.GROUP_ID ");
+		createAndInsertIxSamePoiTableSql.append( " insert into  IX_SAMEPOI  select distinct p.*  from IX_SAMEPOI@DBLINK_TAB p,IX_SAMEPOI_PART s ,ix_samepoi i    "
+				+ "  where  p.GROUP_ID = s.GROUP_ID  and p.group_id != i.group_id ");
 		
 		System.out.println("createAndInsertIxSamePoiTable.toString(): "+createAndInsertIxSamePoiTableSql.toString());
 		
@@ -775,7 +845,7 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 			System.out.println(e.getMessage());
 			throw new Exception("查询pid 失败，原因为:"+e.getMessage(),e);
 		}finally{
-//			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

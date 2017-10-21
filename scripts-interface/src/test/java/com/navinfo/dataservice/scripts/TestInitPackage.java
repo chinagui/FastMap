@@ -381,11 +381,11 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-//	@Test
+	@Test
 	public void testPoiToTab() throws Exception{
 		JobScriptsInterface.initContext();
 		//HUB_ThnklPMtnF  192.168.4.62
-		String json = "{'db_conf':{'db_ip':'192.168.4.62','db_port':'1521','service_name':'orcl','db_username':'HUB_ThnklPMtnF','db_password':'HUB_ThnklPMtnF'},'data':[{'taskId':109,'subTaskId':'546'},{'taskId':123,'subTaskId':'546'}]}";
+		String json = "{'db_conf':{'db_ip':'192.168.4.62','db_port':'1521','service_name':'orcl','db_username':'HUB_ThnklPMtnF','db_password':'HUB_ThnklPMtnF'},'data':[{'taskId':109,'subTaskId':'546'},{'taskId':123,'subTaskId':'546'},{'taskId':77}]}";
 		JSONObject request1 = JSONObject.fromObject(json);
 //		JSONObject request = new JSONObject();
 //		request.put("sourceDbId", 382);
@@ -402,7 +402,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 	public void testInsertFmPoiCutoutStat() throws Exception{
 		JobScriptsInterface.initContext();
 		//HUB_ThnklPMtnF  192.168.4.62
-		String json = "{'db_conf':{'db_ip':'192.168.4.62','db_port':'1521','service_name':'orcl','db_username':'HUB_ThnklPMtnF','db_password':'HUB_ThnklPMtnF'},'data':[{'taskId':109,'subTaskId':'546'},{'taskId':123,'subTaskId':'546'}]}";
+		String json = "{'db_conf':{'db_ip':'192.168.4.62','db_port':'1521','service_name':'orcl','db_username':'HUB_ThnklPMtnF','db_password':'HUB_ThnklPMtnF'},'data':[{'taskId':109,'subTaskId':'546'},{'taskId':123,'subTaskId':'546'},{'taskId':77}]}";
 		JSONObject request = JSONObject.fromObject(json);
 		JSONObject db_conf = request.getJSONObject("db_conf");
 		String db_ip = db_conf.getString("db_ip");

@@ -27,7 +27,9 @@ import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
@@ -279,7 +281,7 @@ public class PoiTaskTabLogDependent {
 			}else{
 				if(ixPoi.getSubRowByName("children") != null && ixPoi.getSubRowByName("children").size() > 0 ){
 					for(BasicRow childrenBr : ixPoi.getSubRowByName("children")){
-						IxPoiAddress ixpoichildrenBr = (IxPoiAddress) childrenBr;
+						IxPoiChildren ixpoichildrenBr = (IxPoiChildren) childrenBr;
 							if(ixpoichildrenBr.isHisChanged()){
 								logSet.add("改FATHERSON");
 								break;
@@ -331,7 +333,7 @@ public class PoiTaskTabLogDependent {
 			//改FIELD_VERIFIED  IX_POI_FLAG_METHOD
 			if(ixPoi.getSubRowByName("nameTones") != null && ixPoi.getSubRowByName("nameTones").size() > 0 ){
 				for(BasicRow flagMethodBr : ixPoi.getSubRowByName("nameTones")){
-					IxPoiHotel ixpoiflagMethodBr = (IxPoiHotel) flagMethodBr;
+					IxPoiFlagMethod ixpoiflagMethodBr = (IxPoiFlagMethod) flagMethodBr;
 						if(ixpoiflagMethodBr.hisOldValueContains("FIELD_VERIFIED")){
 							logSet.add("改FIELD_VERIFIED");
 							break;

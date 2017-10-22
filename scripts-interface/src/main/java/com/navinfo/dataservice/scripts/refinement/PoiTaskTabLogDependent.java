@@ -19,6 +19,7 @@ import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
@@ -42,6 +43,9 @@ import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 
 public class PoiTaskTabLogDependent {
 
@@ -54,16 +58,22 @@ public class PoiTaskTabLogDependent {
 	static PreparedStatement perstmtInserted = null;
 
 
-	public void refinementLogDependentMain(int dbId) throws Exception{
+	public void poiTaskTabLogDependentMain(Collection<Long> objPids, String start_date,String end_date, Integer dDbID, JSONObject db_conf) throws Exception{
 		Connection conn = null;
 		try{
-			DbInfo dbInfo = DbService.getInstance().getDbById(dbId);
+			String db_ip = db_conf.getString("db_ip");
+			String db_port = db_conf.getString("db_port");
+			String service_name = db_conf.getString("service_name");
+			String db_username = db_conf.getString("db_username");
+			String db_password = db_conf.getString("db_password");
+		
+			//获取中间库的连接	
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@"+db_ip+":"+db_port+"/"+service_name+"", db_username, db_password).getConnection();
 
-			OracleSchema schema = new OracleSchema(
-					DbConnectConfig.createConnectConfig(dbInfo.getConnectParam()));
-			conn = schema.getPoolDataSource().getConnection();
-			createTable(conn);
-			run(conn,null,null,null,0);
+//			createTable(conn);
+			//pd.run(conn,objPids,start_date,end_date,dDbID);
+			run(conn,objPids,start_date,end_date,dDbID);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new ServiceException(e.getMessage());

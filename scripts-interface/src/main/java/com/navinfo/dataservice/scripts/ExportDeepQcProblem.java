@@ -99,7 +99,7 @@ public class ExportDeepQcProblem {
 				
 				convertPidToFid(pidList,monthConn);
 				
-				convertDeepQcProblemListByDate(timeContidion,manConn);
+				deepQcProblemList = convertDeepQcProblemListByDate(timeContidion,manConn);
 				
 			}
 			

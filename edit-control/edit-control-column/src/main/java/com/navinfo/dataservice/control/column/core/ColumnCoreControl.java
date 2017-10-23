@@ -96,10 +96,10 @@ public class ColumnCoreControl {
 					
 					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, comSubTaskId,qcFlag);
 					// 可申请数据条数
-					int canApply = 50 - hasApply;
+					int canApply = 100 - hasApply;
 					logger.info("该用户可申请数据条数:"+canApply);
 					if (canApply == 0) {
-						throw new Exception("该作业员名下已存在50条数据，不可继续申请");
+						throw new Exception("该作业员名下已存在100条数据，不可继续申请");
 					}
 
 					// 申请数据

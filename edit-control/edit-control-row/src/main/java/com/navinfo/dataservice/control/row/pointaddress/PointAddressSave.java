@@ -391,7 +391,7 @@ public class PointAddressSave {
         String meshIds[] = CompGeometryUtil.geo2MeshesWithoutBreak(GeoTranslator.geojson2Jts(geoPoint, 1, 5));
 
         if (meshIds.length > 1) {
-            throw new Exception("不能在图幅线上创建行政区划代表点");
+        	 throw new Exception("不能在图幅线上创建POI");
         }
         if (meshIds.length == 1) {
         	poiData.put("meshId", Integer.parseInt(meshIds[0]));

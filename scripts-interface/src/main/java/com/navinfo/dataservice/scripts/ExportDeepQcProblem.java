@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -92,10 +93,17 @@ public class ExportDeepQcProblem {
 			
 			List<Long> pidList = selectPidListByDate(timeContidion, manConn);
 			
-			convertPidToFid(pidList,monthConn);
+			List<DeepQcProblem>  deepQcProblemList = new ArrayList<>();
 			
-			List<DeepQcProblem>  deepQcProblemList = convertDeepQcProblemListByDate(timeContidion,manConn);
+			if(pidList != null && CollectionUtils.isNotEmpty(pidList)){
+				
+				convertPidToFid(pidList,monthConn);
+				
+				convertDeepQcProblemListByDate(timeContidion,manConn);
+				
+			}
 			
+		
 			ExportExcel<DeepQcProblem> ex = new ExportExcel<DeepQcProblem>();
 
 			String[] headers = { "序号", "当前项目编号", "项目名称", "作业对象", "fid", "作业项目（大分类）",
@@ -179,8 +187,6 @@ public class ExportDeepQcProblem {
 		} catch (Exception e) {
 			DbUtils.rollback(monthConn);
 			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(monthConn);
 		}
 	}
 

@@ -292,8 +292,8 @@ public class InitDataPoi2Tab {
 			
 			//10.为POI_TASK_TAB 表打删除标记,位移标记,新增标记
 				PoiTaskTabLogDependent pd = new PoiTaskTabLogDependent();
-				pd.poiTaskTabLogDependentMain(objPids, start_date, end_date, dDbID,db_conf);
-				//pd.run(conn,objPids,start_date,end_date,dDbID);
+				//pd.poiTaskTabLogDependentMain(objPids, start_date, end_date, dDbID,db_conf);
+				pd.run(conn,objPids,start_date,end_date,dDbID);
 				
 			//11.为中间库的统计表添加数据 :fm_poi_cutout_stat
 				insertFmPoiCutoutStat(conn,taskId);
@@ -736,7 +736,7 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 					perstmtInserted.executeBatch();
 				}
 			}
-			
+			conn.commit();
 		}catch(Exception e){
 			DbUtils.rollback(conn);
 			System.out.println(e.getMessage());

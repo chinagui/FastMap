@@ -14,6 +14,7 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
+import org.geotools.referencing.wkt.Symbols;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -118,14 +119,16 @@ public class PoiTaskTabLogDependent {
 			LogReader logReader = new LogReader(dDbConn);
 			
 			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", null, start_date, end_date,objPids);
-
+			System.out.println("dDbID: "+dDbID);
 			//新增
 			Collection<Long> inserted = pidMap.get(1);
 			if(inserted!=null && inserted.size() > 0){
-				if(perstmtInserted==null){
+				if(perstmtInserted==null || perstmtInserted.isClosed()){
+					System.out.println("perstmtInserted :"+ perstmtInserted);
 					perstmtInserted = conn.prepareStatement(insertedSql);
 				}
-				if(perstmtInserted!=null){
+				System.out.println("perstmtInserted2 :"+ perstmtInserted);
+				if(perstmtInserted!=null && !perstmtInserted.isClosed()){
 					Clob instPidsClob = ConnectionUtil.createClob(conn);
 					instPidsClob.setString(1, StringUtils.join(inserted, ","));
 					perstmtInserted.setClob(1, instPidsClob);
@@ -137,10 +140,13 @@ public class PoiTaskTabLogDependent {
 			//删除
 			Collection<Long> deleted = pidMap.get(2);
 			if(deleted!=null&&!deleted.isEmpty()){
-				if(perstmtDeleted==null){
+				
+				if(perstmtDeleted==null || perstmtDeleted.isClosed()){
+					System.out.println("perstmtDeleted :"+ perstmtDeleted);
 					perstmtDeleted = conn.prepareStatement(deletedSql);
 				}
-				if(perstmtDeleted!=null){
+				System.out.println("perstmtDeleted2 :"+ perstmtDeleted);
+				if(perstmtDeleted!=null && !perstmtDeleted.isClosed()){
 					Clob deletePidsClob = ConnectionUtil.createClob(conn);
 					deletePidsClob.setString(1, StringUtils.join(deleted, ","));
 					perstmtDeleted.setClob(1, deletePidsClob);
@@ -166,9 +172,17 @@ public class PoiTaskTabLogDependent {
 		} 
 		finally{
 			DbUtils.closeQuietly(dDbConn);
-			DbUtils.closeQuietly(perstmtDeleted);
-			DbUtils.closeQuietly(perstmtInserted);
-			DbUtils.closeQuietly(perstmtUpdated);
+			if(perstmtDeleted != null && !perstmtDeleted.isClosed()){
+				DbUtils.closeQuietly(perstmtDeleted);
+			}
+			if(perstmtInserted != null && !perstmtInserted.isClosed()){
+				DbUtils.closeQuietly(perstmtInserted);
+			}
+			if(perstmtUpdated != null && !perstmtUpdated.isClosed()){
+				DbUtils.closeQuietly(perstmtUpdated);
+			}
+//			DbUtils.closeQuietly(perstmtInserted);
+//			DbUtils.closeQuietly(perstmtUpdated);
 		}
 	}
 
@@ -369,7 +383,7 @@ public class PoiTaskTabLogDependent {
 			if(ixPoi.getMainrow().hisOldValueContains("GEOMETRY")){
 				movflag = "T";
 			}
-			if(perstmt==null){
+			if(perstmt==null || perstmt.isClosed()){
 				perstmt = conn.prepareStatement(sql);
 			}
 			

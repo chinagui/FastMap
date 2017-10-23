@@ -176,7 +176,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					// 有pid
 					// 一览表与库是否相同
 					log.info("判断一览表和库是否相同");
-					if (HandlerDealership.isSameTableAndDb(dealResult, poiObj)) {
+					if (HandlerDealership.isSameTableAndDb(dealResult, poiObj,log)) {
 						dealResult.setWorkflowStatus(1); // 无需编辑
 					} else {
 						dealResult.setWorkflowStatus(3); // 需内业录入
@@ -207,13 +207,13 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					// 有pid
 					// 一览表与库是否相同
 					log.info("判断一览表与库是否相同");
-					if (HandlerDealership.isSameTableAndDb(dealResult, poiObj)) {
+					if (HandlerDealership.isSameTableAndDb(dealResult, poiObj,log)) {
 						dealResult.setWorkflowStatus(1); // 无需编辑
 					} else {
 						// 补充实时更新逻辑
 						// 母库POI属性无变更
 						log.info("判断母库POI属性无变更");
-						if (HandlerDealership.isNoChangePoiNature(dealResult, poiObj)) {
+						if (HandlerDealership.isNoChangePoiNature(dealResult, poiObj,log)) {
 							dealResult.setWorkflowStatus(1); // 无需编辑
 						} else {
 							// 是否为一览表品牌
@@ -387,6 +387,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 	public boolean hasValidPoi(IxDealershipResult dealResult, Connection conn) throws Exception {
 		LogReader logRead = new LogReader(conn);
 		int poiState = logRead.getObjectState(HandlerDealership.queryPidByPoiNum(dealResult.getCfmPoiNum(), conn), "IX_POI");
+		log.info("poiState:"+poiState+",MatchMethod:"+dealResult.getMatchMethod());
 		if (1 == dealResult.getMatchMethod() && 2 != poiState) {
 			return true;
 		} else {

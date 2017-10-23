@@ -11,14 +11,14 @@ import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.DAOException;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
+import oracle.jdbc.OracleTypes;
+import oracle.sql.STRUCT;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -179,6 +179,59 @@ public class ZoneFaceSelector extends AbstractSelector {
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
+		}
+		return faces;
+	}
+
+	/**
+	 * 根据传入几何参数查找与之相关联的ZoneFace面</br>
+	 * ADMIN_TYPE类型为:</br>
+	 * KDZone（8）或AOI（9）
+	 *
+	 * @param geometry
+	 * @return
+	 */
+	public List<ZoneFace> load(Geometry geometry) throws Exception{
+		List<ZoneFace> faces = new ArrayList<>();
+		//String sql = "DECLARE" +
+         //       "  i_geo SDO_GEOMETRY:=sdo_geometry('" + GeoTranslator.jts2Wkt(geometry) + "', 8307);" +
+         //       "  o_cur SYS_REFCURSOR;" +
+         //       "BEGIN" +
+         //       "  OPEN o_cur FOR SELECT t1.geometry, t2.region_id FROM zone_face t1, ad_admin t2 WHERE t1.u_record <> 2 AND t2.u_record <> 2 AND t1.region_id = t2.region_id AND (t2.admin_type = 8 OR t2.admin_type = 9) AND sdo_relate(t1.geometry, i_geo, 'mask=anyinteract') = 'TRUE';" +
+         //       "EXCEPTION" +
+         //       "  WHEN OTHERS THEN" +
+         //       "    dbms_output.put_line('无符合条件的数据');" +
+         //       "END;";
+        String sql = "{call load_relate_face(?,?)}";
+		CallableStatement stmt = null;
+		ResultSet resultSet = null;
+		try {
+			stmt = conn.prepareCall(sql);
+			stmt.setObject(1, GeoTranslator.jts2Wkt(geometry));
+            //String innerSql = "SELECT t1.geometry, t2.region_id" +
+             //       "      FROM zone_face t1, ad_admin t2" +
+             //       "     WHERE t1.u_record <> 2" +
+             //       "       AND t2.u_record <> 2" +
+             //       "       AND t1.region_id = t2.region_id" +
+             //       "       AND (t2.admin_type = 8 OR t2.admin_type = 9)" +
+             //       "       AND sdo_relate(t1.geometry, sdo_geometry(''," +
+             //       "                                     8307), 'mask=anyinteract') = 'TRUE';";
+            //stmt.setString(1, innerSql);
+			stmt.registerOutParameter(2, OracleTypes.CURSOR);
+			stmt.executeUpdate();
+
+			resultSet = (ResultSet) stmt.getObject(2);
+			while (resultSet.next()) {
+			    Geometry geo = GeoTranslator.struct2Jts((STRUCT) resultSet.getObject("geometry"));
+                System.out.println(Arrays.toString(geo.getCoordinates()));
+                int region_id = resultSet.getInt("region_id");
+                System.out.println(region_id);
+            }
+		} catch (Exception e) {
+		    throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(stmt);
 		}
 		return faces;
 	}

@@ -14,10 +14,14 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
@@ -33,7 +37,7 @@ import net.sf.json.JSONObject;
  * 
  * */
 public class ImportPlan {
-	
+	private static Logger log = LogManager.getLogger(ImportPlan.class);
 	//默认最早和最晚时间
 	private static final String DEFAULT_DATE_BEGAIN = "9999-12-31 00:00:00";
 	private static final String DEFAULT_DATE_END = "1970-01-01 00:00:00";
@@ -45,83 +49,78 @@ public class ImportPlan {
 
 	SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 	
-	public static void main(String[] args) throws SQLException {
+	public static void main(String[] args) throws Exception {
+		log.info("start import plan");
 		Connection conn = null;
 		JSONArray programUpdateIDs = new JSONArray();
-		JSONArray taskIds = new JSONArray();
+		List<Integer> taskIds = new ArrayList<>();
 		String filepath = String.valueOf(args[0]);
 		try {
 			JobScriptsInterface.initContext();
-//			String filepath = "E:/2.xls";
+//			String filepath = "E:/0929.xls";
 			ImportPlan blockPlan = new ImportPlan();	
 			
 			// 读取Excel表格内容生成对应条数的blockPlan数据
 			List<Map<String, Object>> BlockPlanList = blockPlan.impAddDataExcel(filepath);
-			
+			log.info("create program");
 			//创建项目
-			try{
-				conn = DBConnector.getInstance().getManConnection();
-				List<Map<String,Object>> programList = new ArrayList<>();
-				for(Map<String, Object> programMap : BlockPlanList){
-					//根据block获取对应cityID
-					int blockID = Integer.parseInt(programMap.get("BLOCK_ID").toString());
-					int cityID = blockPlan.getCityId(blockID, conn);
-					//查询对应city下是否已经有项目存在,城市下无项目才创建，否则不创建项目
-					int programCountInCity = blockPlan.programCountInCity(cityID, conn);
-					if(programCountInCity == 0){
-						programMap.put("CITY_ID", cityID);
-						programList.add(programMap);
-					}
+			conn = DBConnector.getInstance().getManConnection();
+			List<Map<String,Object>> programList = new ArrayList<>();
+			for(Map<String, Object> programMap : BlockPlanList){
+				//根据block获取对应cityID
+				int blockID = Integer.parseInt(programMap.get("BLOCK_ID").toString());
+				int cityID = blockPlan.getCityId(blockID, conn);
+				//查询对应city下是否已经有项目存在,城市下无项目才创建，否则不创建项目
+				int programCountInCity = blockPlan.programCountInCity(cityID, conn);
+				if(programCountInCity == 0){
+					programMap.put("CITY_ID", cityID);
+					programList.add(programMap);
 				}
-				//通过cityID对每一个block的数据进行分组
-				Map<String,List<Map<String,Object>>> blockListBycity = blockPlan.groupingBlockListBycity(programList);
-				//创建项目需要的数据处理，各种时间的取值
-				List<Map<String, Object>> programs = blockPlan.conductProgramData(blockListBycity);
-				for(Map<String, Object> programMap:programs){
-					//创建项目
-					int programId = blockPlan.creakProgramByBlockPlan(programMap, conn);
-					programUpdateIDs.add(programId);
-				}
-			}catch(Exception e){
-				e.printStackTrace();
-				DbUtils.rollbackAndCloseQuietly(conn);
-			}finally {
-				DbUtils.commitAndCloseQuietly(conn);
 			}
+			//通过cityID对每一个block的数据进行分组
+			Map<String,List<Map<String,Object>>> blockListBycity = blockPlan.groupingBlockListBycity(programList);
+			//创建项目需要的数据处理，各种时间的取值
+			List<Map<String, Object>> programs = blockPlan.conductProgramData(blockListBycity);
+			for(Map<String, Object> programMap:programs){
+				//创建项目
+				int programId = blockPlan.creakProgramByBlockPlan(programMap, conn);
+				programUpdateIDs.add(programId);
+			}
+			conn.commit();
+			log.info("create task");
 			//创建任务
-			try{
-				conn = DBConnector.getInstance().getManConnection();
-				for(Map<String, Object> map : BlockPlanList){
-					//保存信息到blockPlan表中
-					blockPlan.creatBlockPlan(map, conn);
-					
-					int blockID = Integer.parseInt(map.get("BLOCK_ID").toString());
-					//查询一个block对应city下的有效的program
-					int programID = getprogramIdByBlockID(conn , blockID);
-					map.put("programID", programID);
-					//查询对应block下是否已经有任务存在，该block下没有数据的时候执行创建
-					JSONArray tasks = blockPlan.taskCountInBlock(blockID, conn);
-					if(tasks.size() == 0){
-						blockPlan.getGroupId(map, conn);
-						//创建两个不同类型的任务
-						blockPlan.creatTaskByBlockPlan(map);
-						taskIds.addAll(blockPlan.taskCountInBlock(blockID, conn));
-					}
+			conn = DBConnector.getInstance().getManConnection();
+			for(Map<String, Object> map : BlockPlanList){
+				//保存信息到blockPlan表中
+				blockPlan.creatBlockPlan(map, conn);
+				
+				int blockID = Integer.parseInt(map.get("BLOCK_ID").toString());
+				//查询一个block对应city下的有效的program
+				int programID = getprogramIdByBlockID(conn , blockID);
+				map.put("programID", programID);
+				//查询对应block下是否已经有任务存在，该block下没有数据的时候执行创建
+				JSONArray tasks = blockPlan.taskCountInBlock(blockID, conn);
+				if(tasks.size() == 0){
+					blockPlan.getGroupId(map, conn);
+					//创建两个不同类型的任务
+					blockPlan.creatTaskByBlockPlan(map);
+					taskIds.addAll(blockPlan.taskCountInBlock(blockID, conn));
 				}
-			}catch(Exception e){
-				e.printStackTrace();
-				DbUtils.rollbackAndCloseQuietly(conn);
-			}finally {
-				DbUtils.commitAndCloseQuietly(conn);
 			}
-		}catch (Exception e) {
+		}catch(Exception e){
 			e.printStackTrace();
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		//发布项目
+		log.info("push program");
 		ImportPlan.pushProgram(programUpdateIDs);
 		//发布任务
+		log.info("start push task");
 		ImportPlan.pushTask(taskIds);
-		System.out.println("执行完成");
+		log.info("end push task");
+		log.info("执行完成");
 		System.exit(0);
 	}
 	
@@ -129,16 +128,24 @@ public class ImportPlan {
 	/**
 	 * 发布任务
 	 * @param JSONArray
+	 * @throws Exception 
 	 * 
 	 * */
-	public static void pushTask(JSONArray tasks){
+	public static void pushTask(List<Integer> taskIds) throws Exception{
 		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
 		try {
-			if(tasks.size() > 0){
-				TaskService.getInstance().taskPushMsg(userID, tasks);
+			log.info("push task num:"+taskIds.size());
+			if(taskIds.size() > 0){
+				JobApi api=(JobApi) ApplicationContextUtil.getBean("jobApi");
+				for(int task:taskIds){
+					JSONObject request=new JSONObject();
+					api.createJob("PushTaskJob", request, 0, task, "任务发布");
+				}
+				//TaskService.getInstance().taskPushMsg(userID, taskIds);
 			}
 		} catch (Exception e) {
-			System.out.println("任务发布失败");
+			log.error("任务发布失败",e);
+			throw e;
 		}
 	}
 	
@@ -146,16 +153,18 @@ public class ImportPlan {
 	/**
 	 * 发布项目
 	 * @param JSONArray
+	 * @throws Exception 
 	 * 
 	 * */
-	public static void pushProgram(JSONArray programUpdateIDs){
+	public static void pushProgram(JSONArray programUpdateIDs) throws Exception{
 		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
 		try {
 			if(programUpdateIDs.size() > 0){
 				ProgramService.getInstance().pushMsg(userID, programUpdateIDs);
 			}
 		} catch (Exception e) {
-			System.out.println("项目发布失败");
+			log.error("项目发布失败",e);
+			throw e;
 		}
 	}
 	
@@ -370,6 +379,7 @@ public class ImportPlan {
 		excelHeader.put("LOT", "LOT");
 		excelHeader.put("DESCP", "DESCP");
 		excelHeader.put("IS_PLAN", "IS_PLAN");
+		excelHeader.put("UPLOAD_METHOD", "UPLOAD_METHOD");
 		
 		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
@@ -449,6 +459,7 @@ public class ImportPlan {
 				taskJson.put("lot", 0);
 				//三种type类型分别创建
 				if(i == 0){
+					taskJson.put("uploadMethod", taskDataMap.get("UPLOAD_METHOD"));
 					taskJson.put("type", 0);
 					
 					if(StringUtils.isNotBlank(taskDataMap.get("WORK_KIND").toString())){

@@ -30,12 +30,6 @@ public class EnglishConvert {
      */
     private Param param = new Param();
 
-    /**
-     * 数组下标偏移量（由于汉字后均后跟随空格）
-     */
-    private final static Integer OFFSET = 2;
-
-
     public EnglishConvert() {
     }
 
@@ -125,6 +119,11 @@ public class EnglishConvert {
         if (org.apache.commons.lang.StringUtils.isBlank(sourceText)) {
             return sourceText;
         }
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(param.pinyins)) {
+            if (param.pinyins.size() != sourceText.toCharArray().length) {
+                param.pinyins = new ArrayList<>();
+            }
+        }
 
         String result = sourceText;
         try {
@@ -191,6 +190,8 @@ public class EnglishConvert {
         if (ConvertUtil.hasChineseWord(sourceText)) {
             sourceText = this.convertChineseCharacter(sourceText);
         }
+
+        sourceText = this.connNum(sourceText);
 
         return sourceText;
     }
@@ -585,27 +586,29 @@ public class EnglishConvert {
     private Character[] connChineseCharacter(char[] array) {
         List<Character> characters = new ArrayList<>();
 
-        int index = 0;
-        while (index < array.length) {
-            if (ConvertUtil.isChinese(array[index])) {
-                int count = countChineseCharacter(index, array);
-                int maxIndex = index + count * OFFSET;
-                if (ConvertUtil.isChinese(array[array.length - 1])) {
-                    maxIndex--;
-                }
+        AtomicInteger index = new AtomicInteger(0);
+        while (index.get() < array.length) {
+            if (ConvertUtil.isChinese(array[index.get()])) {
+                int count = countChineseCharacter(index.get(), array);
+                int maxIndex = array.length;
 
                 if (count <= TranslateConstant.MAX_CONNECTION_CHARACTER) {
-                    for (; index < maxIndex && index < array.length; index += OFFSET) {
-                        characters.add(array[index]);
+                    while (index.get() < maxIndex && count > 0) {
+                        if (array[index.get()] != ' ') {
+                            characters.add(array[index.getAndAdd(1)]);
+                            count--;
+                        } else {
+                            index.addAndGet(1);
+                        }
                     }
                     characters.add(' ');
                 } else {
-                    for (; index < maxIndex && index < array.length; index++) {
-                        characters.add(array[index]);
+                    while (index.get() < maxIndex) {
+                        characters.add(array[index.getAndAdd(1)]);
                     }
                 }
             } else {
-                characters.add(array[index++]);
+                characters.add(array[index.getAndAdd(1)]);
             }
         }
 
@@ -689,24 +692,24 @@ public class EnglishConvert {
         char[] characters = sourceText.toCharArray();
         for (int index = 0; index < characters.length; index++) {
             Character current = characters[index];
-            if (index > characters.length - 2) {
-                sb.append(current);
-                if (index + 1 < characters.length) {
-                    sb.append(characters[index + 1]);
-                }
-                break;
+            sb.append(current);
+
+            Character afterOne = null;
+            Character afterTwo = null;
+
+            if (index < characters.length - 1) {
+                afterOne = characters[index + 1];
             }
 
-            Character afterOne = characters[index + 1];
-            Character afterTwo = characters[index + 2];
+            if (index < characters.length - 2) {
+                afterTwo = characters[index + 2];
+            }
 
-            if (TranslateConstant.CHINESE_NUMBER.values().contains(String.valueOf(current))) {
-                sb.append(current);
-                if (' ' == afterOne && TranslateConstant.CHINESE_NUMBER.values().contains(String.valueOf(afterTwo))) {
-                    index++;
-                }
-            } else {
-                sb.append(current);
+
+            if (Character.isDigit(current)
+                    && (null != afterOne && ' ' == afterOne)
+                    && (null != afterTwo && Character.isDigit(afterTwo))) {
+                index++;
             }
         }
 

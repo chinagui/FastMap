@@ -162,21 +162,55 @@ public class TipsTaskFirstCollectScript {
 		}
 	}
 
-	private static Map<Integer,Set<String>> getMidCollectSubTaskIds() {
+//	private static Map<Integer,Set<String>> getMidCollectSubTaskIds() {
+//        Map<Integer,Set<String>> taskMap = new HashMap<>();
+//
+//		java.sql.Connection conn = null;
+//        Statement stmt = null;
+//        ResultSet resultSet = null;
+//        try {
+//			conn = DBConnector.getInstance().getTipsIdxConnection();
+//            stmt = conn.createStatement();
+//            String querySql = "SELECT ID, S_MSUBTASKID FROM TIPS_INDEX WHERE S_MSUBTASKID <> 0";
+//            resultSet = stmt.executeQuery(querySql);
+//            resultSet.setFetchSize(5000);
+//            while(resultSet.next()) {
+//                String rowkey = resultSet.getString("ID");
+//                Integer subTaskId = resultSet.getInt("S_MSUBTASKID");
+//                if(taskMap.containsKey(subTaskId)) {
+//                    Set<String> rowkeySet = taskMap.get(subTaskId);
+//                    rowkeySet.add(rowkey);
+//                }else{
+//                    Set<String> rowkeySet = new HashSet<>();
+//                    rowkeySet.add(rowkey);
+//                    taskMap.put(subTaskId, rowkeySet);
+//                }
+//            }
+//		}catch (Exception e) {
+//            log.error("getMidCollectSubTaskIds erro, " + e.getMessage());
+//			DbUtils.closeQuietly(conn);
+//		}finally {
+//            DbUtils.closeQuietly(resultSet);
+//            DbUtils.closeQuietly(stmt);
+//			DbUtils.closeQuietly(conn);
+//		}
+//		return taskMap;
+//	}
+
+    private static Map<Integer,Set<String>> getCollectSubTaskIds(String querySql, String colName) {
         Map<Integer,Set<String>> taskMap = new HashMap<>();
 
-		java.sql.Connection conn = null;
+        java.sql.Connection conn = null;
         Statement stmt = null;
         ResultSet resultSet = null;
         try {
-			conn = DBConnector.getInstance().getTipsIdxConnection();
+            conn = DBConnector.getInstance().getTipsIdxConnection();
             stmt = conn.createStatement();
-            String querySql = "SELECT ID, S_MSUBTASKID FROM TIPS_INDEX WHERE S_MSUBTASKID <> 0";
             resultSet = stmt.executeQuery(querySql);
             resultSet.setFetchSize(5000);
             while(resultSet.next()) {
                 String rowkey = resultSet.getString("ID");
-                Integer subTaskId = resultSet.getInt("S_MSUBTASKID");
+                Integer subTaskId = resultSet.getInt(colName);
                 if(taskMap.containsKey(subTaskId)) {
                     Set<String> rowkeySet = taskMap.get(subTaskId);
                     rowkeySet.add(rowkey);
@@ -186,16 +220,16 @@ public class TipsTaskFirstCollectScript {
                     taskMap.put(subTaskId, rowkeySet);
                 }
             }
-		}catch (Exception e) {
-            log.error("getMidCollectSubTaskIds erro, " + e.getMessage());
-			DbUtils.closeQuietly(conn);
-		}finally {
+        }catch (Exception e) {
+            log.error(colName + " get CollectSubTaskIds error, " + e.getMessage());
+            DbUtils.closeQuietly(conn);
+        }finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(stmt);
-			DbUtils.closeQuietly(conn);
-		}
-		return taskMap;
-	}
+            DbUtils.closeQuietly(conn);
+        }
+        return taskMap;
+    }
 
 	public static void sync() throws Exception {
 
@@ -203,7 +237,13 @@ public class TipsTaskFirstCollectScript {
 
 		final String tableName = HBaseConstant.tipTab;
 
-		final Map<Integer, Set<String>> taskIdMap = getMidCollectSubTaskIds();
+        String mQuerySql = "SELECT ID, S_MSUBTASKID FROM TIPS_INDEX WHERE S_MSUBTASKID <> 0";
+        String qQuerySql = "SELECT ID, S_QSUBTASKID FROM TIPS_INDEX WHERE S_QSUBTASKID <> 0";
+		final Map<Integer, Set<String>> taskIdMap = getCollectSubTaskIds(mQuerySql, "S_MSUBTASKID");
+        Map<Integer, Set<String>> taskIdQMap = getCollectSubTaskIds(qQuerySql, "S_QSUBTASKID");
+        if(taskIdQMap != null && taskIdQMap.size() > 0) {
+            taskIdMap.putAll(taskIdQMap);
+        }
 		final CountDownLatch latch4Log = new CountDownLatch(taskIdMap.size());
 		poolExecutor.addDoneSignal(latch4Log); // log.debug("开始同步");
 

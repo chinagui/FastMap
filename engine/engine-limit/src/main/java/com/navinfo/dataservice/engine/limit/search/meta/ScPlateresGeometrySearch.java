@@ -45,9 +45,9 @@ public class ScPlateresGeometrySearch implements ISearch {
         int pageNum = condition.getInt("pageNum");
 
         sql.append("WITH query AS (");
-        sql.append(" SELECT * FROM SC_PLATERES_GEOMETRY WHERE GROUP_ID = '" + groupId + "')");
+        sql.append(" SELECT t.*,row_number() over(order by GEOMETRY_ID) as row_num FROM SC_PLATERES_GEOMETRY t WHERE t.GROUP_ID = '" + groupId + "')");
         sql.append(" SELECT query.*,(SELECT COUNT(1) FROM query) AS TOTAL_ROW_NUM FROM query WHERE");
-        sql.append(" rownum BETWEEN " + ((pageSize - 1) * pageNum + 1) + " AND " + (pageSize * pageNum) + " FOR UPDATE NOWAIT");
+        sql.append(" row_num BETWEEN " + ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize));
 
         PreparedStatement pstmt = null;
         int total = 0;
@@ -64,6 +64,8 @@ public class ScPlateresGeometrySearch implements ISearch {
                 ScPlateresGeometry geometry = new ScPlateresGeometry();
 
                 ReflectionAttrUtils.executeResultSet(geometry, resultSet);
+                
+                total = resultSet.getInt("TOTAL_ROW_NUM");
 
                 rows.add(geometry);
             }

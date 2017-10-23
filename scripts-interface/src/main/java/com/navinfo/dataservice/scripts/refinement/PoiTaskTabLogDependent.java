@@ -14,11 +14,13 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
+import org.geotools.referencing.wkt.Symbols;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
@@ -27,7 +29,9 @@ import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlagMethod;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
@@ -39,6 +43,9 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 
 public class PoiTaskTabLogDependent {
@@ -52,16 +59,22 @@ public class PoiTaskTabLogDependent {
 	static PreparedStatement perstmtInserted = null;
 
 
-	public void refinementLogDependentMain(int dbId) throws Exception{
+	public void poiTaskTabLogDependentMain(Collection<Long> objPids, String start_date,String end_date, Integer dDbID, JSONObject db_conf) throws Exception{
 		Connection conn = null;
 		try{
-			DbInfo dbInfo = DbService.getInstance().getDbById(dbId);
+			String db_ip = db_conf.getString("db_ip");
+			String db_port = db_conf.getString("db_port");
+			String service_name = db_conf.getString("service_name");
+			String db_username = db_conf.getString("db_username");
+			String db_password = db_conf.getString("db_password");
+		
+			//获取中间库的连接	
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@"+db_ip+":"+db_port+"/"+service_name+"", db_username, db_password).getConnection();
 
-			OracleSchema schema = new OracleSchema(
-					DbConnectConfig.createConnectConfig(dbInfo.getConnectParam()));
-			conn = schema.getPoolDataSource().getConnection();
-			createTable(conn);
-			run(conn,null,null,null,0);
+//			createTable(conn);
+			//pd.run(conn,objPids,start_date,end_date,dDbID);
+			run(conn,objPids,start_date,end_date,dDbID);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new ServiceException(e.getMessage());
@@ -106,14 +119,16 @@ public class PoiTaskTabLogDependent {
 			LogReader logReader = new LogReader(dDbConn);
 			
 			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", null, start_date, end_date,objPids);
-
+			System.out.println("dDbID: "+dDbID);
 			//新增
 			Collection<Long> inserted = pidMap.get(1);
 			if(inserted!=null && inserted.size() > 0){
-				if(perstmtInserted==null){
+				if(perstmtInserted==null || perstmtInserted.isClosed()){
+					System.out.println("perstmtInserted :"+ perstmtInserted);
 					perstmtInserted = conn.prepareStatement(insertedSql);
 				}
-				if(perstmtInserted!=null){
+				System.out.println("perstmtInserted2 :"+ perstmtInserted);
+				if(perstmtInserted!=null && !perstmtInserted.isClosed()){
 					Clob instPidsClob = ConnectionUtil.createClob(conn);
 					instPidsClob.setString(1, StringUtils.join(inserted, ","));
 					perstmtInserted.setClob(1, instPidsClob);
@@ -125,10 +140,13 @@ public class PoiTaskTabLogDependent {
 			//删除
 			Collection<Long> deleted = pidMap.get(2);
 			if(deleted!=null&&!deleted.isEmpty()){
-				if(perstmtDeleted==null){
+				
+				if(perstmtDeleted==null || perstmtDeleted.isClosed()){
+					System.out.println("perstmtDeleted :"+ perstmtDeleted);
 					perstmtDeleted = conn.prepareStatement(deletedSql);
 				}
-				if(perstmtDeleted!=null){
+				System.out.println("perstmtDeleted2 :"+ perstmtDeleted);
+				if(perstmtDeleted!=null && !perstmtDeleted.isClosed()){
 					Clob deletePidsClob = ConnectionUtil.createClob(conn);
 					deletePidsClob.setString(1, StringUtils.join(deleted, ","));
 					perstmtDeleted.setClob(1, deletePidsClob);
@@ -154,9 +172,17 @@ public class PoiTaskTabLogDependent {
 		} 
 		finally{
 			DbUtils.closeQuietly(dDbConn);
-			DbUtils.closeQuietly(perstmtDeleted);
-			DbUtils.closeQuietly(perstmtInserted);
-			DbUtils.closeQuietly(perstmtUpdated);
+			if(perstmtDeleted != null && !perstmtDeleted.isClosed()){
+				DbUtils.closeQuietly(perstmtDeleted);
+			}
+			if(perstmtInserted != null && !perstmtInserted.isClosed()){
+				DbUtils.closeQuietly(perstmtInserted);
+			}
+			if(perstmtUpdated != null && !perstmtUpdated.isClosed()){
+				DbUtils.closeQuietly(perstmtUpdated);
+			}
+//			DbUtils.closeQuietly(perstmtInserted);
+//			DbUtils.closeQuietly(perstmtUpdated);
 		}
 	}
 
@@ -279,7 +305,7 @@ public class PoiTaskTabLogDependent {
 			}else{
 				if(ixPoi.getSubRowByName("children") != null && ixPoi.getSubRowByName("children").size() > 0 ){
 					for(BasicRow childrenBr : ixPoi.getSubRowByName("children")){
-						IxPoiAddress ixpoichildrenBr = (IxPoiAddress) childrenBr;
+						IxPoiChildren ixpoichildrenBr = (IxPoiChildren) childrenBr;
 							if(ixpoichildrenBr.isHisChanged()){
 								logSet.add("改FATHERSON");
 								break;
@@ -331,7 +357,7 @@ public class PoiTaskTabLogDependent {
 			//改FIELD_VERIFIED  IX_POI_FLAG_METHOD
 			if(ixPoi.getSubRowByName("nameTones") != null && ixPoi.getSubRowByName("nameTones").size() > 0 ){
 				for(BasicRow flagMethodBr : ixPoi.getSubRowByName("nameTones")){
-					IxPoiHotel ixpoiflagMethodBr = (IxPoiHotel) flagMethodBr;
+					IxPoiFlagMethod ixpoiflagMethodBr = (IxPoiFlagMethod) flagMethodBr;
 						if(ixpoiflagMethodBr.hisOldValueContains("FIELD_VERIFIED")){
 							logSet.add("改FIELD_VERIFIED");
 							break;
@@ -357,7 +383,7 @@ public class PoiTaskTabLogDependent {
 			if(ixPoi.getMainrow().hisOldValueContains("GEOMETRY")){
 				movflag = "T";
 			}
-			if(perstmt==null){
+			if(perstmt==null || perstmt.isClosed()){
 				perstmt = conn.prepareStatement(sql);
 			}
 			

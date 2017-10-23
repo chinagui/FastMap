@@ -71,7 +71,7 @@ public class ScPlateresInfoSearch  {
 
         StringBuilder sqlstr = new StringBuilder();
 
-        sqlstr.append("SELECT * FROM SC_PLATERES_INFO WHERE ADMIN_CODE in ");
+        sqlstr.append("SELECT t.*, row_number() over(order by INFO_INTEL_ID) as row_num FROM SC_PLATERES_INFO t WHERE t.ADMIN_CODE in ");
                
         Map<String,String> adminCodeAndName = getBeyondDirstrict(adminCode);
         
@@ -85,7 +85,7 @@ public class ScPlateresInfoSearch  {
         
         StringBuilder sql = new StringBuilder();
         sql.append("WITH query AS (" + sqlstr + ") SELECT query.*,(SELECT count(1) FROM query) AS TOTAL_ROW_NUM FROM query");
-        sql.append(" WHERE rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " for update nowait");
+        sql.append(" WHERE row_num BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize));
 
         PreparedStatement pstmt = null;
 
@@ -205,7 +205,7 @@ public class ScPlateresInfoSearch  {
             String infoCode = obj.getString("infoCode");
 
             if (infoCode != null && !infoCode.isEmpty()) {
-                sql.append(" AND INFO_CODE = ");
+                sql.append(" AND t.INFO_CODE = ");
                 sql.append("'" + infoCode + "'");
             }
         }
@@ -214,7 +214,7 @@ public class ScPlateresInfoSearch  {
         	String infoIntelId = obj.getString("infoIntelId");
         	
         	if(infoIntelId != null && !infoIntelId.isEmpty()){
-        		sql.append(" AND INFO_INTEL_ID = ");
+        		sql.append(" AND t.INFO_INTEL_ID = ");
         		sql.append("'" + infoIntelId + "'");
         	}
         }
@@ -223,7 +223,7 @@ public class ScPlateresInfoSearch  {
             String startTime = obj.getString("startTime");
 
             if (startTime != null && !startTime.isEmpty()) {
-                sql.append(" AND NEWS_TIME >= ");
+                sql.append(" AND t.NEWS_TIME >= ");
                 sql.append("'" + startTime + "'");
             }
         }
@@ -232,7 +232,7 @@ public class ScPlateresInfoSearch  {
             String endTime = obj.getString("endTime");
 
             if (endTime != null && !endTime.isEmpty()) {
-                sql.append(" AND NEWS_TIME <= ");
+                sql.append(" AND t.NEWS_TIME <= ");
                 sql.append("'" + endTime + "'");
             }
         }
@@ -241,7 +241,7 @@ public class ScPlateresInfoSearch  {
             JSONArray complete = obj.getJSONArray("complete");
 
 			if (complete != null && complete.size() != 0) {
-				sql.append(" AND COMPLETE IN (");
+				sql.append(" AND t.COMPLETE IN (");
 				sql.append(complete.toString().replace("[", "").replace("]", "")+ ")");
 			}
         }
@@ -250,7 +250,7 @@ public class ScPlateresInfoSearch  {
 			JSONArray condition = obj.getJSONArray("condition");
 
 			if (condition != null && condition.size() != 0) {
-				sql.append(" AND CONDITION IN (");
+				sql.append(" AND t.CONDITION IN (");
 
 				for (int i = 0; i < condition.size(); i++) {
 					if (i > 0) {

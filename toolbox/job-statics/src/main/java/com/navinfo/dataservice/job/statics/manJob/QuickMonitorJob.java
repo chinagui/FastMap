@@ -25,9 +25,12 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.navicommons.database.QueryRunner;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -63,9 +66,9 @@ public class QuickMonitorJob extends AbstractStatJob {
 			
 			JSONObject result = new JSONObject();
 			
-			log.debug("quick_monitor---"+JSONObject.fromObject(result).toString());
+			//log.debug("quick_monitor---"+JSONObject.fromObject(result).toString());
 			log.debug("快线监控统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
-			System.out.println(JSONObject.fromObject(result).toString());
+			//System.out.println(JSONObject.fromObject(result).toString());
 			result.put("quick_monitor", stats);
 			//System.out.println(result.toString());
 			return result.toString();
@@ -202,7 +205,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			queryProgram11.put("type", 4);
 			Map<String,Integer> statMap = getStatDataInMongo(md, "program", queryProgram11);
 			quickMonitorMap.put("roadPlanTotal",statMap.get("roadPlanTotal"));
-			quickMonitorMap.put("roadActualTotal",Math.floor(statMap.get("roadActualTotal")/1000));
+			quickMonitorMap.put("roadActualTotal",Math.floor(statMap.get("roadActualTotal")));
 			quickMonitorMap.put("poiPlanTotal",statMap.get("poiPlanTotal"));
 			quickMonitorMap.put("poiActualTotal",statMap.get("poiActualTotal"));
 			
@@ -212,10 +215,24 @@ public class QuickMonitorJob extends AbstractStatJob {
 				tipsPlanTotal = Integer.parseInt(tipPlanTotalStr);
 			}
 			quickMonitorMap.put("tipsPlanTotal", tipsPlanTotal);
+			//modiby by songhe
+			//添加统计标准六个字段
+			String collectStandard = manApi.queryConfValueByConfKey("collect_standard");
+			String dayStandard = manApi.queryConfValueByConfKey("day_standard");
+			String produceStandard = manApi.queryConfValueByConfKey("produce_standard");
+			String fastStandard = manApi.queryConfValueByConfKey("fast_standard");
+			String commonStandard = manApi.queryConfValueByConfKey("common_standard");
+			String poiStandard = manApi.queryConfValueByConfKey("poi_standard");
+			quickMonitorMap.put("collectStandard", collectStandard);
+			quickMonitorMap.put("dayStandard", dayStandard);
+			quickMonitorMap.put("produceStandard", produceStandard);
+			quickMonitorMap.put("fastStandard", fastStandard);
+			quickMonitorMap.put("commonStandard", commonStandard);
+			quickMonitorMap.put("poiStandard", poiStandard);
 			
 			quickMonitorMap.put("collectTipsUploadNum", statMap.get("collectTipsUploadNum"));
 			
-			quickMonitorMap.put("dayEditTipsFinishNum", statMap.get("dayEditTipsFinishNum"));
+			quickMonitorMap.put("dayEditTipsFinishNum", queryDayEditTipsFinishNum());
 			
 			BasicDBObject queryProgram12 = new BasicDBObject();
 			queryProgram12.put("timestamp", timestamp);
@@ -284,6 +301,33 @@ public class QuickMonitorJob extends AbstractStatJob {
 			
 	 }
 	
+
+	private int queryDayEditTipsFinishNum() {
+		String sql = "SELECT COUNT(1) NUM"
+				+ "  FROM TIPS_INDEX I"
+				+ " WHERE I.S_QTASKID != 0"
+				+ "   AND I.T_TIPSTATUS = 2"
+				+ "   AND I.T_DEDITSTATUS = 2"
+				+ "   AND I.STAGE IN (1, 2, 6, 7)";//快线日编完成tips个数		
+		Connection conn = null;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		int programNum = 0;
+		try {
+			conn=DBConnector.getInstance().getTipsIdxConnection();
+			pstmt = conn.prepareStatement(sql);				
+			rs = pstmt.executeQuery();				
+			while(rs.next()){
+				programNum = rs.getInt("num");
+			}				
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			DbUtils.closeQuietly(conn, pstmt, rs);
+		}
+		return programNum;
+	}
 
 	private Map<String,Integer> getOverdueResonMap(int taskType) throws SQLException {
 		//select t.overdue_reason,count(t.overdue_reason) from task t,program p where t.program_id = p.program_id  and t.type = 0 and p.type = 4 group by t.overdue_reason;
@@ -736,7 +780,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			int poiActualTotal = 0;
 			
 			int collectTipsUploadNum = 0;
-			int dayEditTipsFinishNum = 0;
+			//int dayEditTipsFinishNum = 0;
 			//处理数据
 			while(iterator.hasNext()){
 				//获取统计数据
@@ -757,9 +801,9 @@ public class QuickMonitorJob extends AbstractStatJob {
 				if(jso.containsKey("collectTipsUploadNum")){
 					collectTipsUploadNum += jso.getInt("collectTipsUploadNum");
 				}
-				if(jso.containsKey("dayEditTipsFinishNum")){
-					dayEditTipsFinishNum += jso.getInt("dayEditTipsFinishNum");
-				}
+//				if(jso.containsKey("dayEditTipsFinishNum")){
+//					dayEditTipsFinishNum += jso.getInt("dayEditTipsFinishNum");
+//				}
 				
 			}
 			stat.put("roadPlanTotal", roadPlanTotal);
@@ -767,10 +811,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			stat.put("poiPlanTotal",poiPlanTotal );
 			stat.put("poiActualTotal", poiActualTotal);
 			stat.put("collectTipsUploadNum", collectTipsUploadNum);
-			stat.put("dayEditTipsFinishNum", dayEditTipsFinishNum);
-
-			
-			
+//			stat.put("dayEditTipsFinishNum", dayEditTipsFinishNum);
 			return stat;
 		} catch (Exception e) {
 			log.error("查询mongo "+collName+" 中统计数据报错"+e.getMessage());

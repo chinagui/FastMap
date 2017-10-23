@@ -1,0 +1,11 @@
+﻿1. fm_man/***.sql
+	功能：***
+	目标库：fm_man
+	author：XX
+
+
+2017/10/12
+1. modifyLength/initLimitLineInfoDB.sh
+   功能：扩展限行限号库INFO表字段长度
+   目标库：限行限号库（测试环境与开发环境命名不同）
+   author：冯海霞

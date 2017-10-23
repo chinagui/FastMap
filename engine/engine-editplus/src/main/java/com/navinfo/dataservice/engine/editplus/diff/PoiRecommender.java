@@ -376,7 +376,7 @@ public class PoiRecommender {
 			sb.append("       FULLNAME,");
 			sb.append("       TEL");
 			sb.append("  FROM A, B");
-			sb.append(" WHERE A.PID = B.POI_PID");
+			sb.append(" WHERE A.PID = B.POI_PID(+)");
 
 			log.info(sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
@@ -389,6 +389,7 @@ public class PoiRecommender {
 
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
+				log.info("pid:" + resultSet.getInt("PID"));
 				FastPoi fastPoi = new FastPoi();
 				fastPoi.setAddr(resultSet.getString("FULLNAME") != null ? resultSet.getString("FULLNAME") : "");
 				fastPoi.setChain(resultSet.getString("CHAIN") != null ? resultSet.getString("CHAIN") : "");
@@ -410,7 +411,6 @@ public class PoiRecommender {
 				JSONArray array = GeoTranslator.jts2JSONArray(geometryPoi);
 				fastPoi.setX(array.getDouble(0));
 				fastPoi.setY(array.getDouble(1));
-				log.info("pid:" + resultSet.getInt("PID"));
 				int adminCode = new AdFaceSelector(conn).getAminIdByGeometry(geometryPoi);
 				String adminCodeStr = String.valueOf(adminCode);
 				log.info("adminCodeStr:" + adminCodeStr);

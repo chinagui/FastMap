@@ -7,9 +7,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -36,7 +38,7 @@ import net.sf.json.JSONObject;
 
 /**
  * 项目统计
- * @ClassName TaskJob
+ * @ClassName ProgramJob
  * @author songhe
  * @date 2017年9月4日
  * 
@@ -53,6 +55,7 @@ public class ProgramJob extends AbstractStatJob {
 
 	@Override
 	public String stat() throws JobException {
+		Connection conn = null;
 		try {
 			long t = System.currentTimeMillis();
 			//获取统计时间
@@ -63,7 +66,9 @@ public class ProgramJob extends AbstractStatJob {
 			manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			//orical查询所有的任务
 			//List<Map<String, Object>> programs = manApi.queryProgramStat();
-			List<Map<String, Object>> programs =queryProgramStat();
+			conn = DBConnector.getInstance().getManConnection();
+			List<Map<String, Object>> programs = queryProgramStat(conn);
+			Map<String, Object>  programsJobRealation = queryProgramJobData(conn);
 			//查询MAN_TIMELINE表获取相应的数据
 			String objName = "program";
 			Map<Integer, Map<String, Object>> manTimeline = manApi.queryManTimelineByObjName(objName, 0);
@@ -73,7 +78,7 @@ public class ProgramJob extends AbstractStatJob {
 			Map<Integer, Object> programFromMongo = getTaskStatData(timestamp);
 
 			//项目统计数据
-			List<Map<String, Object>> programStatList = convertProgramData(programFromMongo, programFromOrical);
+			List<Map<String, Object>> programStatList = convertProgramData(programFromMongo, programFromOrical, programsJobRealation);
 			JSONObject result = new JSONObject();
 			result.put("program", programStatList);
 
@@ -85,6 +90,8 @@ public class ProgramJob extends AbstractStatJob {
 		} catch (Exception e) {
 			log.error("项目统计:"+e.getMessage(), e);
 			throw new JobException("项目统计:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -641,14 +648,18 @@ public class ProgramJob extends AbstractStatJob {
 	 * @throws Exception 
 	 */
 	@SuppressWarnings("unchecked")
-	private List<Map<String, Object>> convertProgramData(Map<Integer, Object> programFromMongo, Map<Integer, Object> programFromOrical) throws Exception {
+	private List<Map<String, Object>> convertProgramData(Map<Integer, Object> programFromMongo, Map<Integer, Object> programFromOrical, Map<String, Object>  programsJobRealation) throws Exception {
 		try {
 			//处理从orical和mongo中查询出的项目数据
 			List<Map<String, Object>> result = new ArrayList<>();
+			Set<Integer> day2Months = (Set<Integer>) programsJobRealation.get("day2Month");
+			Set<Integer> tips2Marks = (Set<Integer>) programsJobRealation.get("tips2Mark");
 			for(Entry<Integer, Object> oricalProram : programFromOrical.entrySet()){
 				Map<String, Object> programMap = (Map<String, Object>) oricalProram.getValue();
 				//统计项
 				int programId = oricalProram.getKey();
+				int isDay2Month = day2Months.contains(programId) ? 1 : 0;
+				int isTips2Mark = tips2Marks.contains(programId) ? 1 : 0;
 				int cityId = (int) programMap.get("cityId");
 				int inforId = (int) programMap.get("inforId");
 				int type = (int) programMap.get("type");
@@ -696,8 +707,6 @@ public class ProgramJob extends AbstractStatJob {
 				double link17AllLen = 0d;
 				int roadPlanOut = 0;
 				int dayEditTipsFinishNum = 0;
-				int isDay2Month = 0;
-				int isTips2Mark = 0;
 				String collectAcutalStartDate = "";
 				String collectAcutalEndDate = "";
 				String dayAcutalStartDate = "";
@@ -714,7 +723,7 @@ public class ProgramJob extends AbstractStatJob {
 				if(programFromMongo.containsKey(programId)){
 					Map<String, Object> programMongo = (Map<String, Object>) programFromMongo.get(programId);
 					if(type==1){
-						roadPlanTotal = Float.valueOf(programMongo.get("roadPlanTotal").toString());}
+					roadPlanTotal = Float.valueOf(programMongo.get("roadPlanTotal").toString());}
 					roadActualTotal = Double.valueOf(programMongo.get("roadActualTotal").toString());
 					collectLinkUpdateTotal = Double.valueOf(programMongo.get("collectLinkUpdateTotal").toString());
 					poiPlanTotal = Integer.parseInt(programMongo.get("poiPlanTotal").toString());
@@ -725,8 +734,13 @@ public class ProgramJob extends AbstractStatJob {
 					link17AllLen = Double.valueOf(programMongo.get("link17AllLen").toString());
 					roadPlanOut = Integer.parseInt(programMongo.get("roadPlanOut").toString());
 					dayEditTipsFinishNum = Integer.parseInt(programMongo.get("dayEditTipsFinishNum").toString());
-					isDay2Month = Integer.parseInt(programMongo.get("day2MonthNum").toString()) > 0 ? 1 : 0;
-					isTips2Mark = Integer.parseInt(programMongo.get("tips2MarkNum").toString()) > 0 ? 1 : 0;
+					if(isDay2Month == 0){
+						isDay2Month = Integer.parseInt(programMongo.get("day2MonthNum").toString()) > 0 ? 1 : 0;
+					}
+					if(isTips2Mark == 0){
+						isTips2Mark = Integer.parseInt(programMongo.get("tips2MarkNum").toString()) > 0 ? 1 : 0;
+					}
+					
 					collectAcutalStartDate = programMongo.get("collectAcutalStartDate").toString();
 					collectAcutalEndDate = programMongo.get("collectAcutalEndDate").toString();
 					dayAcutalStartDate = programMongo.get("dayAcutalStartDate").toString();
@@ -852,8 +866,7 @@ public class ProgramJob extends AbstractStatJob {
 	 * @throws Exception 
 	 * 
 	 * */
-	public List<Map<String, Object>> queryProgramStat() throws Exception{
-		Connection conn = null;
+	public List<Map<String, Object>> queryProgramStat(Connection conn) throws Exception{
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
@@ -894,9 +907,23 @@ public class ProgramJob extends AbstractStatJob {
 						program.put("isAdopted", rs.getInt("is_adopted"));
 						String adminName = rs.getString("admin_name");
 						String inforCity = "";
-						if(adminName != null){
-							inforCity = adminName.substring(adminName.indexOf("|")+1, adminName.length());
+						
+						if(StringUtils.isNotBlank(adminName)){
+							char c = '|';
+							int num = 0;
+							char[] chars = adminName.toCharArray();
+							for(int i = 0; i < chars.length; i++){
+							    if(c == chars[i]){
+							       num++;
+							    }
+							}
+							if(num == 2){
+								inforCity = adminName.substring(adminName.indexOf("|")+1, adminName.lastIndexOf("|"));
+							}else{
+								inforCity = adminName.replace("|", "");
+							}
 						}
+						
 						program.put("inforCity", inforCity);
 						program.put("denyReason", rs.getString("deny_reason"));
 						program.put("planStatus", rs.getInt("plan_status"));
@@ -915,9 +942,134 @@ public class ProgramJob extends AbstractStatJob {
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 查询项目下的日落月和tips2Mark的信息
+	 * @param Connection
+	 * @throws Exception 
+	 * 
+	 * */
+	public Map<String, Object> queryProgramJobData(Connection conn) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select jr.item_id, j.type from JOB_RELATION jr, JOB j where jr.job_id = j.job_id and j.type in (1,2) and j.status = 2 and jr.item_type = 1";
+			
+			log.info("queryProgramJobData sql :" + sql);
+
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> result = new HashMap<>();
+					Set<Integer> day2Month = new HashSet<>();
+					Set<Integer> tips2Mark = new HashSet<>();
+					while(rs.next()){
+						if(rs.getInt("type") == 1){
+							tips2Mark.add(rs.getInt("item_id"));
+						}else{
+							day2Month.add(rs.getInt("item_id"));
+						}
+					}
+					result.put("day2Month", day2Month);
+					result.put("tips2Mark", tips2Mark);
+					return result;
+				}
+			};
+			Map<String, Object> program = run.query(conn, sql, rsHandler);
+			Map<String, Object> task = queryTaskJobData(conn);
+			Map<String, Object> subtask = querySubtaskJobData(conn);
+			Set<Integer> day2Months = (Set<Integer>)program.get("day2Month");
+			Set<Integer> tips2Marks = (Set<Integer>)program.get("tips2Mark");
+			day2Months.addAll((Set<Integer>)task.get("day2Month"));
+			day2Months.addAll((Set<Integer>)subtask.get("day2Month"));
+			tips2Marks.addAll((Set<Integer>)task.get("tips2Mark"));
+			tips2Marks.addAll((Set<Integer>)subtask.get("tips2Mark"));
+			program.put("day2Month", day2Months);
+			program.put("tips2Mark", tips2Marks);
+			return program;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 查询项目下的任务日落月和tips2Mark的信息
+	 * @param Connection
+	 * @throws Exception 
+	 * 
+	 * */
+	public Map<String, Object> queryTaskJobData(Connection conn) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select p.program_id, j.type from JOB_RELATION jr, JOB j, task t, program p "
+					+ "where p.program_id = t.program_id and t.task_id = jr.item_id and jr.job_id = j.job_id "
+					+ "and j.type in (1,2) and j.status = 2 and jr.item_type = 2";
+			
+			log.info("queryTaskJobData sql :" + sql);
+
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> result = new HashMap<>();
+					Set<Integer> day2Month = new HashSet<>();
+					Set<Integer> tips2Mark = new HashSet<>();
+					while(rs.next()){
+						if(rs.getInt("type") == 1){
+							tips2Mark.add(rs.getInt("program_id"));
+						}else{
+							day2Month.add(rs.getInt("program_id"));
+						}
+					}
+					result.put("day2Month", day2Month);
+					result.put("tips2Mark", tips2Mark);
+					return result;
+				}
+			};
+			return run.query(conn, sql, rsHandler);	
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 查询项目下的子任务日落月和tips2Mark的信息
+	 * @param Connection
+	 * @throws Exception 
+	 * 
+	 * */
+	public Map<String, Object> querySubtaskJobData(Connection conn) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select p.program_id, j.type from JOB_RELATION jr, JOB j, program p, task t, subtask s"
+					+ " where jr.item_id = s.subtask_id and s.task_id = t.task_id and t.program_id = p.program_id "
+					+ "and jr.job_id = j.job_id and j.type in (1,2) and j.status = 2 and jr.item_type = 3";
+			
+			log.info("querySubtaskJobData sql :" + sql);
+
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> result = new HashMap<>();
+					Set<Integer> day2Month = new HashSet<>();
+					Set<Integer> tips2Mark = new HashSet<>();
+					while(rs.next()){
+						if(rs.getInt("type") == 1){
+							tips2Mark.add(rs.getInt("program_id"));
+						}else{
+							day2Month.add(rs.getInt("program_id"));
+						}
+					}
+					result.put("day2Month", day2Month);
+					result.put("tips2Mark", tips2Mark);
+					return result;
+				}
+			};
+			return run.query(conn, sql, rsHandler);	
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
 	
 }

@@ -224,7 +224,7 @@ public class PaDownloadOperation {
 				guide.put("latitude", pa.getyGuide());
 				jsonObj.put("guide", guide);
 			}
-			
+			jsonObj.put("memoire", pa.getMemoire());
 			jsonObj.put("attachments", new ArrayList<Object>());
 			
 			

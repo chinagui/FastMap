@@ -166,9 +166,20 @@ public class ExportImportantPoiHis {
 				if (!flg) {
 					continue;
 				}
-
-				String fid = row.getCell(0).getStringCellValue();
-				String name = row.getCell(1).getStringCellValue();
+				System.out.println("===== excel file row : " + i);
+				Cell cell0 = row.getCell(0);
+				String fid = "";
+				int cellType = cell0.getCellType();
+				if(cellType == Cell.CELL_TYPE_STRING){
+					fid = cell0.getStringCellValue();
+				}else{
+					System.out.println("===== excel row:" + i + " type error, is not string");
+					log.info("===== excel row:" + i + " type error, is not string");
+					throw new Exception(" excel row:" + i + " type error, is not string");
+				}
+				Cell cell1 = row.getCell(1);
+				cell1.setCellType(Cell.CELL_TYPE_STRING);
+				String name = cell1.getStringCellValue();
 				if (StringUtils.isEmpty(fid) || StringUtils.isEmpty(name)) {
 					System.out.println("row: " + i + " is null,fid: " + fid + ",name:" + name);
 					continue;
@@ -211,7 +222,8 @@ public class ExportImportantPoiHis {
 	}
 
 	private static List<ImportantPoiHis> getRegionDataHis(Set<String> regionFid) throws Exception {
-		List<ImportantPoiHis> data = new ArrayList<>();
+		Map<String, ImportantPoiHis> data = new HashMap<>();
+		List<ImportantPoiHis> allData = new ArrayList<>();
 
 		try {
 			for (Entry<Integer, Connection> entry : regionConnMap.entrySet()) {
@@ -255,12 +267,22 @@ public class ExportImportantPoiHis {
 						tmpFidObjMap.put(fid, importantPoi);
 					}
 				}
-
-				data.addAll(tmpFidObjMap.values());
-				if (data.size() == regionFid.size()) {
-					return data;
-				}
+				
+				data.putAll(tmpFidObjMap);
 			}
+			// data为查出有履历的数据,与excel差分,将没有履历的数据存进返回值allData
+			Set<String> hasHisFid = data.keySet();
+			// 差分出没有履历的fid
+			regionFid.removeAll(hasHisFid);
+			for(String fid: regionFid){
+				String poiName = fidNameMap.get(fid);
+				ImportantPoiHis e = new ImportantPoiHis(fid, poiName, "", "", "");
+				allData.add(e);
+			}
+			
+			allData.addAll(data.values());
+			
+			
 		} catch (Exception e) {
 			System.out.println("search data from regionConn error....");
 			e.printStackTrace();
@@ -273,8 +295,7 @@ public class ExportImportantPoiHis {
 				DbUtils.commitAndCloseQuietly(value);
 			}
 		}
-		
-		return data;
+		return allData;
 	}
 
 	public static Map<String, ImportantPoiHis> getFidObjMap(Connection conn, List<Clob> clobs, String fidString,
@@ -359,7 +380,7 @@ public class ExportImportantPoiHis {
 				Integer lifeCycle = rs.getInt("OP_TP");
 				String updateTime = rs.getString("UPDATETIME");
 				String userName = "";
-				if (allUserNameMap.containsKey(userId) && 0 != userId) {
+				if (allUserNameMap.containsKey(userId)) {
 					userName = allUserNameMap.get(userId) + userId.toString();
 				} else {
 					userName = userId.toString();
@@ -489,10 +510,13 @@ public class ExportImportantPoiHis {
 			out.close();
 			
 			System.out.println("export excel success...");
+			log.info("export excel success...");
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("export excel error...");
+			log.error("export excel error...");
+			log.error(e.getMessage());
 		}
 	}
 
@@ -503,9 +527,12 @@ public class ExportImportantPoiHis {
 			return;
 		}
 		System.out.println("Start...");
+		log.info("Start...");
 		initContext();
 		excute(args[0]);
 		System.out.println("End...");
+		log.info("End...");
+
 	}
 
 	public static void initContext() {

@@ -381,7 +381,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	@Test
+//	@Test
 	public void testPoiToTab() throws Exception{
 		JobScriptsInterface.initContext();
 		//HUB_ThnklPMtnF  192.168.4.62
@@ -422,10 +422,35 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 //		insertFmPoiCutout(conn);
 		
 		//12.2 根据 taskid 及 subtaskId 去man 库查询相关数据
-		insertFmPoiCutoutFromMan(conn,123,"546");
+//		insertFmPoiCutoutFromMan(conn,123,"546");
+		
+		insertIxPoiParentTable(conn);
 		
 		System.out.println("Over.");
 		System.exit(0);
+	}
+	
+	//**************************
+	
+	private static void insertIxPoiParentTable(Connection conn) throws SQLException {
+		System.out.println("开始新增表:ix_poi_parent");
+		StringBuilder createAndInsertIxPoiParentTableSql = new StringBuilder();
+		createAndInsertIxPoiParentTableSql.append( " insert into  ix_poi_parent  select distinct p.*  from ix_poi_parent@DBLINK_TAB p,ix_poi_children s ,ix_poi_parent i    "
+				+ "  where  p.GROUP_ID = s.GROUP_ID  and p.group_id != i.group_id ");
+		
+		System.out.println("createAndInsertIxPoiParentTableSql.toString(): "+createAndInsertIxPoiParentTableSql.toString());
+		
+		try {
+			QueryRunner r = new QueryRunner();
+			
+			r.update(conn, createAndInsertIxPoiParentTableSql.toString());
+			conn.commit();
+			System.out.println("新增表:ix_poi_parent 完毕.");
+		} catch (SQLException e) {
+			conn.rollback();
+			e.printStackTrace();
+		}
+		
 	}
 	
 	//**************************

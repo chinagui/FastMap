@@ -247,7 +247,8 @@ public class InitDataPoi2Tab {
 				insertTable(conn,taskId,"IX_POI_CONTACT","POI_PID");
 				insertTable(conn,taskId,"IX_POI_ADDRESS","POI_PID");
 				insertTable(conn,taskId,"IX_POI_CHILDREN","CHILD_POI_PID");
-				insertTable(conn,taskId,"IX_POI_PARENT","PARENT_POI_PID ");
+				//insertTable(conn,taskId,"IX_POI_PARENT","PARENT_POI_PID ");
+				insertIxPoiParentTable(conn);
 				insertTable(conn,taskId,"IX_POI_RESTAURANT","POI_PID");
 				insertTable(conn,taskId,"IX_POI_PARKING","POI_PID");
 				insertTable(conn,taskId,"IX_POI_HOTEL","POI_PID");
@@ -620,17 +621,37 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 	private static void insertIxSamePoiTable(Connection conn) throws SQLException {
 		System.out.println("开始新增表:IX_SAMEPOI");
 		StringBuilder createAndInsertIxSamePoiTableSql = new StringBuilder();
-		createAndInsertIxSamePoiTableSql.append( " insert into  IX_SAMEPOI  select distinct p.*  from IX_SAMEPOI@DBLINK_TAB p,IX_SAMEPOI_PART s ,ix_samepoi i    "
-				+ "  where  p.GROUP_ID = s.GROUP_ID  and p.group_id != i.group_id ");
+		createAndInsertIxSamePoiTableSql.append( " insert into  IX_SAMEPOI  select distinct p.*  from IX_SAMEPOI@DBLINK_TAB p,IX_SAMEPOI_PART s     "
+				+ "  where  p.GROUP_ID = s.GROUP_ID  and ( p.group_id not in (select i.group_id from ix_samepoi i ))");
 		
 		System.out.println("createAndInsertIxSamePoiTable.toString(): "+createAndInsertIxSamePoiTableSql.toString());
 		
 		try {
 			QueryRunner r = new QueryRunner();
 			
-			r.update(conn, createAndInsertIxSamePoiTableSql.toString());
+			int a = r.update(conn, createAndInsertIxSamePoiTableSql.toString());
 			conn.commit();
-			System.out.println("新增表:IX_SAMEPOI 完毕.");
+			System.out.println("新增表:IX_SAMEPOI 完毕. "+ a);
+		} catch (SQLException e) {
+			conn.rollback();
+			e.printStackTrace();
+		}
+		
+	}
+	private static void insertIxPoiParentTable(Connection conn) throws SQLException {
+		System.out.println("开始新增表:ix_poi_parent");
+		StringBuilder createAndInsertIxPoiParentTableSql = new StringBuilder();
+		createAndInsertIxPoiParentTableSql.append( " insert into  ix_poi_parent  select distinct p.*  from ix_poi_parent@DBLINK_TAB p,ix_poi_children s     "
+				+ "  where  p.GROUP_ID = s.GROUP_ID  and ( p.group_id not in (select i.group_id from ix_poi_parent i )) ");
+		
+		System.out.println("createAndInsertIxPoiParentTableSql.toString(): "+createAndInsertIxPoiParentTableSql.toString());
+		
+		try {
+			QueryRunner r = new QueryRunner();
+			
+			int a = r.update(conn, createAndInsertIxPoiParentTableSql.toString());
+			conn.commit();
+			System.out.println("新增表:ix_poi_parent 完毕. "+ a);
 		} catch (SQLException e) {
 			conn.rollback();
 			e.printStackTrace();

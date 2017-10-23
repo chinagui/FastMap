@@ -215,6 +215,20 @@ public class QuickMonitorJob extends AbstractStatJob {
 				tipsPlanTotal = Integer.parseInt(tipPlanTotalStr);
 			}
 			quickMonitorMap.put("tipsPlanTotal", tipsPlanTotal);
+			//modiby by songhe
+			//添加统计标准六个字段
+			String collectStandard = manApi.queryConfValueByConfKey("collect_standard");
+			String dayStandard = manApi.queryConfValueByConfKey("day_standard");
+			String produceStandard = manApi.queryConfValueByConfKey("produce_standard");
+			String fastStandard = manApi.queryConfValueByConfKey("fast_standard");
+			String commonStandard = manApi.queryConfValueByConfKey("common_standard");
+			String poiStandard = manApi.queryConfValueByConfKey("poi_standard");
+			quickMonitorMap.put("collectStandard", collectStandard);
+			quickMonitorMap.put("dayStandard", dayStandard);
+			quickMonitorMap.put("produceStandard", produceStandard);
+			quickMonitorMap.put("fastStandard", fastStandard);
+			quickMonitorMap.put("commonStandard", commonStandard);
+			quickMonitorMap.put("poiStandard", poiStandard);
 			
 			quickMonitorMap.put("collectTipsUploadNum", statMap.get("collectTipsUploadNum"));
 			

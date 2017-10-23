@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.bson.Document;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -40,6 +42,7 @@ import net.sf.json.JSONObject;
  * @Description TODO
  */
 public class ExportStatFromMongo {
+	private static Logger log = LogManager.getLogger(ExportStatFromMongo.class);
 
 	public static void initContext() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
@@ -60,7 +63,9 @@ public class ExportStatFromMongo {
 			System.out.println("fileName: "+fileName);
 			//查询mongo库
 			List<Map<String, Object>> statData = getStatData(startTime,endTime,collectionName);
+			log.info("export stat num:"+statData.size());
 			//导出统计数据到Excel
+			//若数据量超过,则分sheet页放
 			exportExcelPoi(path,fileName,statData);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -94,6 +99,7 @@ public class ExportStatFromMongo {
 			colorMap.put("blue", 255);
 			//处理写入的数据
 			List<List<Object>> statList = new ArrayList<List<Object>>();
+			int i=1;
 			for (Map<String, Object> dataMap : statData) {
 				List<Object> list = new ArrayList<Object>();
 				for(String key : headers){
@@ -104,9 +110,17 @@ public class ExportStatFromMongo {
 						list.add("");
 					}
 				}
+				if(statList.size()>65530){
+					ex.createSheetForList("fm_stat_data_"+i, workbook, headers, statList, out, null, colorMap, null, null);
+					i++;
+					statList = new ArrayList<List<Object>>();
+				}
 				statList.add(list);
 			}
-			ex.createSheetForList("fm_stat_data", workbook, headers, statList, out, null, colorMap, null, null);
+			//若数据量超过最大量65536，则拆分不同sheet
+			if(statList.size()!=0){
+				ex.createSheetForList("fm_stat_data_"+i, workbook, headers, statList, out, null, colorMap, null, null);
+			}
 
 			workbook.write(out);
 			out.close();
@@ -138,6 +152,7 @@ public class ExportStatFromMongo {
 		try {
 			//处理时间
 			String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHH0000");
+			log.info("timestamp:"+timestamp);
 			//获取上一次的统计时间
 			MongoDao mongoDao = new MongoDao(dbName);
 			List<Map<String,Object>> stat = new ArrayList<Map<String,Object>>();
@@ -216,28 +231,26 @@ public class ExportStatFromMongo {
 				//查询最新的数据
 				if("0".equals(startTime) && "0".equals(endTime)){
 					String lastTime = timestamp;
-					for(int i=0;i<72;i++){
-						BasicDBObject filter = new BasicDBObject();
-						filter.append("timestamp", lastTime);
-						
-						FindIterable<Document> findIterable = mongoDao.find(collectionName, filter);
-						MongoCursor<Document> iterator = findIterable.iterator();
-						boolean flag = false;
-						//处理数据
-						while(iterator.hasNext()){
-							//获取统计数据
-							JSONObject json = JSONObject.fromObject(iterator.next());
-							Map<String,Object> mapData = json;
-							mapData.remove("_id");
-							stat.add(mapData);
-							flag = true;
-						}
-						//是否查到数据
-						if(flag){
-							break;
-						}else{
-							lastTime = DateUtils.addSeconds(lastTime,-60*60);
-						}
+					FindIterable<Document> findIterable = mongoDao.find(collectionName, null).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
+					MongoCursor<Document> iterator = findIterable.iterator();
+					//最近一次的统计时间戳
+					while(iterator.hasNext()){
+						//获取统计数据
+						JSONObject jso = JSONObject.fromObject(iterator.next());
+						lastTime=String.valueOf(jso.get("timestamp"));
+					}
+					log.info("最新的统计日期："+lastTime);
+					BasicDBObject filter = new BasicDBObject();
+					filter.append("timestamp", lastTime);
+					findIterable = mongoDao.find(collectionName, filter);
+					iterator = findIterable.iterator();
+					//处理数据
+					while(iterator.hasNext()){
+						//获取统计数据
+						JSONObject json = JSONObject.fromObject(iterator.next());
+						Map<String,Object> mapData = json;
+						mapData.remove("_id");
+						stat.add(mapData);
 					}
 				}
 				//查询时间段内的数据
@@ -282,7 +295,7 @@ public class ExportStatFromMongo {
 		}
 		//0-路径,1-表名,2-开始时间(没有startTime的字段赋值"0"),3-结束时间(没有endTime的字段赋值"0")
 		execute(args[0],args[1],args[2],args[3]);
-		//execute("D:/temp","person","0","0");
+		//execute("D:/temp","block_notask ","20170801000000","20171001000000");
 		System.out.println("Over.");
 		System.exit(0);
 	}

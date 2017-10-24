@@ -167,6 +167,8 @@ public class MetaController extends BaseController {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             String word = jsonReq.getString("word");
+            
+            String newWord = word;
 
             String adminId = null;
             if(jsonReq.containsKey("adminId")){
@@ -179,6 +181,24 @@ public class MetaController extends BaseController {
             String result = py.pyPolyphoneConvert(word, adminId);
             String voiceStr = py.voiceConvert(word, null, adminId, null);
 
+            //特殊处理  以G、S、Y、X、C、Z开头的词(分歧编辑中)
+            int flag = jsonReq.containsKey("flag")?jsonReq.getInt("flag"):0;
+            int code_type = jsonReq.containsKey("code_type")?jsonReq.getInt("code_type"):0;
+            if(flag == 1 ){
+            	logger.info("word : "+word+";voiceStr : "+voiceStr+";flag: "+flag+" ; code_type: "+code_type);
+            	if( code_type == 5 || code_type == 6 || 
+                		code_type == 7 || code_type == 8 || code_type == 9){
+            		newWord = py.wordConvert(word, adminId);
+                	logger.info("newWord : "+newWord);
+                	voiceStr = py.voiceConvert(newWord, null, adminId, null);
+                	logger.info("newWord voiceStr : "+voiceStr);
+            	}else if(code_type == 4 || code_type == 10){
+            		logger.info("voiceStr: "+voiceStr);
+            		voiceStr = voiceStr.replace("gaosugonglu", "");
+                	logger.info("new voiceStr : "+voiceStr);
+            	}
+            }
+            
             if (result != null) {
                 JSONObject json = new JSONObject();
 

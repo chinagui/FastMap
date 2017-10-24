@@ -62,12 +62,15 @@ public class FMZY20238 extends BasicCheckRule {
 		if (charMap.containsKey("SYMBOL_F")) {
 			charList.addAll(charMap.get("SYMBOL_F"));
 		}
+		if (charMap.containsKey("GBK_SYMBOL_F")) {
+			charList.addAll(charMap.get("GBK_SYMBOL_F"));
+		}
 
 		for (IxPoiCarrental poiCarrental : carrentals) {
 			String address = poiCarrental.getAddress();
 
 			if (StringUtils.isEmpty(address)) {
-				continue;
+				setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),"汽车租赁地址描述为空");
 			}
 
 			String illegalChar = "";

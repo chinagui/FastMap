@@ -90,8 +90,11 @@ public class Process extends AbstractProcess<Command> {
 		return false;
 	}
 
+	private Check check = new Check();
 	@Override
 	public String exeOperation() throws Exception {
+		check.checkIntersectFace(this.getConn(), this.getCommand());
+		
 		return new Operation(this.getCommand(), updateNode, this.getConn())
 				.run(this.getResult());
 	}

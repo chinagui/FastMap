@@ -11,8 +11,8 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
  * @date 2017年8月4日 下午8:43:33
  * @Description TODO
  */
-public class TaskJobRequest extends AbstractStatJobRequest {
-
+public class MediumTaskJobRequest extends AbstractStatJobRequest {
+	private int programType;
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		// TODO Auto-generated method stub
@@ -22,13 +22,13 @@ public class TaskJobRequest extends AbstractStatJobRequest {
 	@Override
 	public String getJobType() {
 		// TODO Auto-generated method stub
-		return "taskStat";
+		return "mediumTaskStat";
 	}
 
 	@Override
 	public String getJobTypeName() {
 		// TODO Auto-generated method stub
-		return "任务数据统计";
+		return "中线任务数据统计";
 	}
 
 	@Override
@@ -41,6 +41,14 @@ public class TaskJobRequest extends AbstractStatJobRequest {
 	public void validate() throws JobException {
 		// TODO Auto-generated method stub
 
+	}
+
+	public int getProgramType() {
+		return programType;
+	}
+
+	public void setProgramType(int programType) {
+		this.programType = programType;
 	}
 
 }

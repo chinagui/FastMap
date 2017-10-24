@@ -37,7 +37,7 @@ import net.sf.json.JSONObject;
  * @date 2017年8月4日 下午8:42:39
  * @Description TODO
  */
-public class TaskJob extends AbstractStatJob {
+public class QuickTaskJob extends AbstractStatJob {
 
 	private static final String task = "task";
 	private static final String subtask = "subtask";
@@ -56,7 +56,7 @@ public class TaskJob extends AbstractStatJob {
 	
 	protected ManApi manApi = null;
 	
-	public TaskJob(JobInfo jobInfo) {
+	public QuickTaskJob(JobInfo jobInfo) {
 		super(jobInfo);
 		// TODO Auto-generated constructor stub
 	}
@@ -65,210 +65,11 @@ public class TaskJob extends AbstractStatJob {
 	public String stat() throws JobException {
 		try {
 			//获取统计时间
-			TaskJobRequest statReq = (TaskJobRequest)request;
+			QuickTaskJobRequest statReq = (QuickTaskJobRequest)request;
 			log.info("start stat "+statReq.getJobType());
-			String timestamp = statReq.getTimestamp();
-			long t = System.currentTimeMillis();
-			//任务统计数据
-			List<Map<String, Object>> taskStatList = new ArrayList<Map<String, Object>>();
-			//已关闭任务id(不需要统计)
-			Set<Integer> taskIdClose = new HashSet<Integer>();
-			
-			manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
-			//查询所有的任务
-			log.info("查询所有的任务");
-			List<Task> taskAll = manApi.queryTaskAll();
-			//查询所有任务的项目类型
-			log.info("查询所有任务的项目类型");
-			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
-			//所有已经分配子任务的任务id集合
-			log.info("所有已经分配子任务的任务id集合");
-			Set<Integer> taskIdsHasSubtask = manApi.queryTasksHasSubtask();
-			
-			//modify by songhe 2017/9/04
-			//查询task对应的tips转aumark数量
-			log.info("查询task对应的tips转aumark数量");
-			Map<Integer, Integer> tips2MarkMap = manApi.getTips2MarkNumByTaskId();
-			//查询mongo库中已统计的数据(状态为关闭)
-			log.info("查询mongo库中已统计的数据(状态为关闭)");
-			ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
-			String value=api.queryConfValueByConfKey(ManConstant.inheritStatic);
-			Map<Integer, Map<String, Object>> taskStatDataClose =new HashMap<>();
-			//没有值，或者为true
-			if(value==null||value.equals("true")){
-				log.info("继承关闭任务的统计内容");
-				taskStatDataClose = getTaskStatData(timestamp);
-			}
-			if(taskStatDataClose.size() > 0){
-				taskStatList.addAll(taskStatDataClose.values());
-				taskIdClose.addAll(taskStatDataClose.keySet());
-			}
-			//处理从mongo库中获取的统计项
-			//处理需要统计的task
-			log.info("查询任务对应grid,以及筛选出需要统计的任务。已有的关闭任务不需要重复统计");
-			List<Task> taskList = new ArrayList<Task>();
-			for (Task task : taskAll) {
-				int status = task.getStatus();
-				int taskId = task.getTaskId();
-//				int programId=task.getProgramId();
-//				if(programId!=1785){
-//					continue;
-//				}
-				//任务开启
-				if(status == 1){
-					//查询grids
-					Map<Integer, Integer> gridIds = manApi.queryGridIdsByTaskId(taskId);
-					task.setGridIds(gridIds);
-					//设置项目类型
-					int programType = 0;
-					if(programTypes.containsKey(taskId)){
-						programType = programTypes.get(taskId);
-					}
-					task.setProgramType(programType);
-					taskList.add(task);
-				}
-				//任务关闭
-				if(status == 0){
-					if(!taskIdClose.contains(taskId)){
-						//查询grids
-						Map<Integer, Integer> gridIds = manApi.queryGridIdsByTaskId(taskId);
-						task.setGridIds(gridIds);
-						//设置项目类型
-						int programType = 0;
-						if(programTypes.containsKey(taskId)){
-							programType = programTypes.get(taskId);
-						}
-						task.setProgramType(programType);
-						taskList.add(task);
-					}
-				}
-			}
-			//查询MAN_TIMELINE表获取相应的数据
-			String objName = "task";
-			log.info("查询MAN_TIMELINE表获取相应的数据");
-			Map<Integer, Map<String, Object>> manTimeline = manApi.queryManTimelineByObjName(objName,0);
-			log.info("查询mongo中task_grid_tips相应的统计数据");
-			Map<Integer, Map<String, Object>> taskTipsStatData = getTaskTipsStatData(timestamp);
-			log.info("查询mongo中fcc相应的统计数据");
-			Map<Integer, Map<String, Object>> taskFccStatData = getTaskFccStatData(timestamp);
-			log.info("查询mongo中task_day_poi相应的统计数据");
-			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
-			log.info("查询mongo中grid_task_tips相应的统计数据");
-			Map<Integer, Map<Integer, Map<String, Integer>>> gridTaskTipsStatData = getGridTaskTipsStatData(timestamp);
-			log.info("查询mongo中grid_notask_tips相应的统计数据");
-			Map<Integer, Map<String, Integer>> gridNotaskTipsStatData = getGridNotaskTipsStatData(timestamp);
-			log.info("查询mongo中poi月编相应的统计数据");
-			Map<Integer, Map<String, Integer>> monthPoiStatData = getMonthPoiStatData(timestamp);
-			log.info("查询mongo中grid_day_poi相应的统计数据");
-			Map<Integer, Map<String, Integer>> gridDayPoiStatData = getGridDayPoiStatData(timestamp);
-			log.info("查询mongo中task_day_plan相应的统计数据");
-			Map<Integer, Map<String, Object>> taskDayPlanStatData = getTaskDayPlanStatData(timestamp);
-			log.info("查询mongo中subtask_tips相应的统计数据");
-			Map<Integer, Map<String, Object>> subTipsStatData = getSubTipsStatData(timestamp);
-			log.info("查询mongo中subtask_day_poi相应的统计数据");
-			Map<Integer, Map<String, Object>> subDayPoiStatData = getSubDayPoiStatData(timestamp);
-			log.info("查询mongo中子任务的统计数据");
-			Map<Integer, Map<String, Object>> subtaskStatData = getSubtaskStatData(timestamp);
-			log.info("查询日编任务对应的采集任务集合");
-			Map<Integer, Set<Integer>> referCTaskSet = OracleDao.getCollectTaskIdByDayTask();
-			log.info("查询任务对应的子任务集合");
-			Map<Integer, Set<Subtask>> referSubtaskSet = OracleDao.getSubtaskByTaskId();
-			log.info("统计信息汇总计算");
-			//统计任务数据
-			for(Task task : taskList){
-				int taskId = task.getTaskId();
-
-				Set<Integer> collectTasks = new HashSet<>();
-				if(referCTaskSet.containsKey(taskId)){
-					collectTasks=referCTaskSet.get(taskId);
-				}
-
-				//处理对应任务的tis2aumark数量
-				if(tips2MarkMap.containsKey(taskId)){
-					task.setTips2MarkNum(tips2MarkMap.get(taskId));
-				}else{
-					task.setTips2MarkNum(0);
-				}
-				//获取子任务id
-				Set<Subtask> subtaskSet = new HashSet<>();
-				if(referSubtaskSet.containsKey(taskId)){
-					subtaskSet=referSubtaskSet.get(taskId);
-				}
-				Set<Integer> subtaskIds=new HashSet<>();
-				for(Subtask s:subtaskSet){
-					subtaskIds.add(s.getSubtaskId());
-				}
-
-				//判断是否包含子任务
-				if(taskIdsHasSubtask.contains(taskId)){
-					task.setIsAssign(1);
-				}
-				//处理grid_task_tips相应的统计数据 key:统计描述，value：统计值
-				Map<String, Integer> gridTaskTipsStat =new HashMap<>();
-				if(task.getType()==1){
-					gridTaskTipsStat = handleGridTaskTipsStatData(task, collectTasks,gridTaskTipsStatData);
-				}
-				//处理grid_notask_tips相应的统计数据
-				Map<String, Integer> gridNotaskTipsStat=new HashMap<>();
-				if(task.getType()==1){
-					gridNotaskTipsStat= handleGridNotaskTipsStatData(task, gridNotaskTipsStatData);
-				}
-				//处理poi月编相应的统计数据
-				Map<String, Integer> MonthPoiStat = handleMonthPoiStatData(task, monthPoiStatData);
-				//处理grid_day_poi相应的统计数据
-				Map<String, Integer> gridDayPoiStat = handleGridDayPoiStatData(task, gridDayPoiStatData);
-				//处理subtask_tips相应的统计数据
-				Map<String, Integer> subTipsStat = handleSubTipsStatData(task, subtaskSet, subTipsStatData);
-				//处理subtask_day_poi相应的统计数据
-				Map<String, Integer> subDayPoiStat = handleSubDayPoiStatData(task, subtaskSet, subDayPoiStatData);
-				
-				//处理子任务相应的统计数据获取实际开始时间
-				List<String> subActualStartTimeList = handleSubtaskStatData(task, subtaskStatData, subtaskIds);
-				//处理子任务中已关闭的区域粗编子任务个数和所有区域粗编子任务个数
-				Map<String, Integer> subtaskAreaData = handleSubtaskArea(task, subtaskSet);
-				
-				//处理mongo库中的查询数据
-				Map<String,Object> dataMap = new HashMap<String,Object>();
-				if(taskTipsStatData.containsKey(taskId)){
-					dataMap.putAll(taskTipsStatData.get(taskId));
-				}
-				if(dayPoiStatData.containsKey(taskId)){
-					dataMap.putAll(dayPoiStatData.get(taskId));
-				}
-				if(taskDayPlanStatData.containsKey(taskId)){
-					dataMap.putAll(taskDayPlanStatData.get(taskId));
-				}
-				Map<String, Object> fccData = new HashMap<>();
-				if(taskFccStatData.containsKey(taskId)){
-					fccData=taskFccStatData.get(taskId);
-				}
-				
-				dataMap.putAll(gridTaskTipsStat);
-				dataMap.putAll(gridNotaskTipsStat);
-				dataMap.putAll(MonthPoiStat);
-				dataMap.putAll(gridDayPoiStat);
-				dataMap.putAll(subTipsStat);
-				dataMap.putAll(subDayPoiStat);
-				
-				dataMap.putAll(subtaskAreaData);
-				//处理实际结束时间
-				Map<String, Object> taskManTimeline = null;
-				if(manTimeline.containsKey(taskId)){
-					taskManTimeline = manTimeline.get(taskId);
-				}
-				//处理具体数据
-				Map<String, Object> taskMap = getTaskStat(task,taskManTimeline,dataMap,subActualStartTimeList,fccData);
-
-
-				taskStatList.add(taskMap);
-			}
-			//处理数据
-			JSONObject result = new JSONObject();
-			result.put("task",taskStatList);
-
+			TaskJobUtil util=new TaskJobUtil();
+			JSONObject result = util.stat(statReq.getTimestamp(), statReq.getProgramType());
 			log.info("end stat "+statReq.getJobType());
-			log.debug("所有任务数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
-			
 			return result.toString();
 			
 		} catch (Exception e) {

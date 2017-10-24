@@ -13,8 +13,12 @@
 		<job name="poiDayStat"/>
 		<job name="tipsStat"/>
 	</group>
-	<group name="taskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.TaskStatStarter">
+	<group name="mediumTaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.TaskStatStarter">
 		<job name="fccJob"/>
+		<job name="subtaskStat"/>
+		<job name="dayPlanStat"/>
+	</group>
+	<group name="quickTaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.TaskStatStarter">
 		<job name="subtaskStat"/>
 		<job name="dayPlanStat"/>
 	</group>

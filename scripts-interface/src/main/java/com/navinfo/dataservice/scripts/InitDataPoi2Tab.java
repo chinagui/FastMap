@@ -62,9 +62,11 @@ public class InitDataPoi2Tab {
 		Connection conn = null; 
 		DataSource dataSource = null;
 		JSONArray errorLogs = null;
+		JSONArray successLogs = null;
 		
 		try { 
 			errorLogs = new JSONArray();
+			successLogs = new JSONArray();
 			
 			JSONObject db_conf = request.getJSONObject("db_conf");
 			String db_ip = db_conf.getString("db_ip");
@@ -152,6 +154,11 @@ public class InitDataPoi2Tab {
 							}*/
 							moveDataToTargetDB(dataSource,conn,dDbID,taskId,subtIds,subTaskIdStr,db_conf);
 						}
+						JSONObject successLog = new JSONObject();
+						successLog.put("taskId", taskId);
+						successLog.put("subTaskId", subTaskIdStr);
+						successLog.put("successMsg", "执行成功.");
+						successLogs.add(successLog);
 					}else{
 						JSONObject errorLog = new JSONObject();
 						errorLog.put("taskId", taskId);
@@ -168,7 +175,7 @@ public class InitDataPoi2Tab {
 				conn.commit();
 //				response.put("region_" + key + "_man_rows", "success");
 			response.put("errorLogs", errorLogs);
-			response.put("msg", "执行成功");
+			response.put("successLogs", successLogs);
 			System.out.println("response:   "+response.toString());
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -306,7 +313,6 @@ public class InitDataPoi2Tab {
 				
 				//12.2 根据 taskid 及 subtaskId 去man 库查询相关数据
 				insertFmPoiCutoutFromMan(conn,taskId,subts);
-				
 		} catch (Exception e) {
 			DbUtils.rollback(conn);
 			System.out.println(e.getMessage());

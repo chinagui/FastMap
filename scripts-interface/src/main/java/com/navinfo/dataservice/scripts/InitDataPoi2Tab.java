@@ -169,6 +169,7 @@ public class InitDataPoi2Tab {
 //				response.put("region_" + key + "_man_rows", "success");
 			response.put("errorLogs", errorLogs);
 			response.put("msg", "执行成功");
+			System.out.println("response:   "+response.toString());
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			response.put("errorLogs", errorLogs);
@@ -933,7 +934,7 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 		sb.append("  moveflag VARCHAR2(1) default 'F' not null,");
 		sb.append("  addflag  VARCHAR2(1) default 'F' not null,");
 		sb.append("  OPERATOR VARCHAR2(50), ");
-		sb.append("  log     VARCHAR2(50) ");
+		sb.append("  log     VARCHAR2(254) ");
 		sb.append(")      ");
 		r.execute(conn, sb.toString());
 	}

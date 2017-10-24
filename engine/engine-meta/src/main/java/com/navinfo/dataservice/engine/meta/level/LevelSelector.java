@@ -81,24 +81,31 @@ public class LevelSelector {
                 int rating = resultSet.getInt("rating");
                 String chain = resultSet.getString("chain");
                 
-                if ("200200".equals(kindCode) && StringUtils.isNotEmpty(name)){
-                	// poi.name包含“自行车租赁点”(港澳数据name包含“自行車租賃點”)则POI.level=C
-            		if (name.contains("自行车租赁点") || name.contains("自行車租賃點")){
-        		    	result.put("values", "C");
-        		    	result.put("defaultVal", "C");
+                if ("200200".equals(kindCode)){
+                	if(StringUtils.isNotEmpty(chainCode)){
+        				result.put("values", "B1");
+        		    	result.put("defaultVal", "B1");
         		    	return result;
-            		}
-            		//poi.name不包含“自行车租赁点”(港澳数据name不包含“自行車租賃點”)则POI.level= sc_point_code2level.old_poi_level
-            		if (!name.contains("自行车租赁点") && !name.contains("自行車租賃點")){
-            			if (StringUtils.isNotEmpty(poi_level) && StringUtils.isNotEmpty(old_level) && old_level.contains(poi_level)){
-            		    	result.put("values", old_level);
-            		    	result.put("defaultVal", poi_level);
-            		    	return result;
-            			} else{
-            		    	result.put("values", old_level);
-            		    	result.put("defaultVal", new_level);
-            		    	return result;
-            			}
+                	}
+                	if(StringUtils.isNotEmpty(name)){
+	                	// poi.name包含“自行车租赁点”(港澳数据name包含“自行車租賃點”)则POI.level=C
+	            		if (name.contains("自行车租赁点") || name.contains("自行車租賃點")){
+	        		    	result.put("values", "C");
+	        		    	result.put("defaultVal", "C");
+	        		    	return result;
+	            		}
+	            		//poi.name不包含“自行车租赁点”(港澳数据name不包含“自行車租賃點”)则POI.level= sc_point_code2level.old_poi_level
+	            		if (!name.contains("自行车租赁点") && !name.contains("自行車租賃點")){
+	            			if (StringUtils.isNotEmpty(poi_level) && StringUtils.isNotEmpty(old_level) && old_level.contains(poi_level)){
+	            				result.put("values", old_level);
+	            		    	result.put("defaultVal", poi_level);
+	            		    	return result;
+	            			} else{
+            					result.put("values", old_level);
+            					result.put("defaultVal", new_level);
+            					return result;
+	            			}
+	            		}
             		}
                 }
                 

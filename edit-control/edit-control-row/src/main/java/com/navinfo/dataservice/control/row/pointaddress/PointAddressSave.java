@@ -391,7 +391,7 @@ public class PointAddressSave {
         String meshIds[] = CompGeometryUtil.geo2MeshesWithoutBreak(GeoTranslator.geojson2Jts(geoPoint, 1, 5));
 
         if (meshIds.length > 1) {
-        	 throw new Exception("不能在图幅线上创建POI");
+        	 throw new Exception("不能在图幅线上创建点门牌");
         }
         if (meshIds.length == 1) {
         	poiData.put("meshId", Integer.parseInt(meshIds[0]));

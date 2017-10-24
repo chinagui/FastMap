@@ -162,7 +162,7 @@ public class PoiTaskTabLogDependent {
 				perstmtUpdated = generate(conn,dDbConn,OperationType.UPDATE,updated,updatedSql,perstmtUpdated);
 			}
 			
-			if(perstmtUpdated!=null){
+			if(perstmtUpdated!=null && !perstmtUpdated.isClosed()){
 				perstmtUpdated.executeBatch();
 				conn.commit();
 			}

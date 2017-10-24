@@ -80,7 +80,6 @@ public class Operation {
 					oldRegionId = regionId;
 					conn = DBConnector.getInstance().getConnectionById(regionId);
 				}
-				
 				if (!gridDate.getString("date").isEmpty()) {
 					IxPointaddressSelector paSelector = new IxPointaddressSelector(conn);
 					JSONObject ret = paSelector.downloadCheck(gridDate);
@@ -93,6 +92,7 @@ public class Operation {
 				}
 					
 			}
+			System.out.println("retList: "+retList.toString());
 			return retList;
 		} catch (Exception e) {
 			throw e;

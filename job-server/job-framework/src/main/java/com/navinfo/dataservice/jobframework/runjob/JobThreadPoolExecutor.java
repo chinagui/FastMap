@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.jobframework.runjob;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -59,6 +60,17 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 		return count;
 	}
 	public boolean isTotalFull(){
+		log.info("******Current active jobs in the thread pool(pool max size:"+this.getCorePoolSize()+")******");
+		for(Entry<String,Set<String>> entry:jobPool.entrySet()){
+			Set<String> subjobs = entry.getValue();
+			if(subjobs!=null&&subjobs.size()>0){
+				log.info("--"+entry.getKey());
+				for(String j:subjobs){
+					log.info("----"+j);
+				}
+			}
+		}
+		log.info("******end******");
 		return this.getTotalCount()>=this.getCorePoolSize();
 	}
 	public Map<String ,Set<String>> getJobAll(){

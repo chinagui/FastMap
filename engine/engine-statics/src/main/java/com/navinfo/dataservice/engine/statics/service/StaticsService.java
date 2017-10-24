@@ -673,6 +673,7 @@ public class StaticsService {
 		}
 	}
 	
+	
 	/**
 	 * originJson中的key为描述，value为百分比，按照百分比排序，此处将取前top的，其余归为一个百分比
 	 * 例如top=4。返回：{“原因1”：2，“原因2”：3, “原因3”：3, “原因4”：3, “other”：3}

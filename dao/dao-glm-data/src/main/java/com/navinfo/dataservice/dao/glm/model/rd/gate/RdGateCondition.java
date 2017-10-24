@@ -173,8 +173,8 @@ public class RdGateCondition implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 
-//		JSONObject json = JSONObject.fromObject(this);
-		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this);
+		//JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
 		
 		if (objLevel == ObjLevel.HISTORY) {
 			json.remove("status");

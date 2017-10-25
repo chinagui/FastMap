@@ -50,14 +50,14 @@ public class IxPointaddressSelector extends AbstractSelector {
 		String gridId = gridDate.getString("grid");
 		String  increDownLoadDate = gridDate.getString("date");
 		LogReader logReader = new LogReader(conn);
-		Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POINTADDRESS","IX_POINTADDRESS", gridId, increDownLoadDate);
+		Map<Integer,Collection<Long>> paiStatus = logReader.getUpdatedObj("IX_POINTADDRESS","IX_POINTADDRESS", gridId, increDownLoadDate);
 		JSONObject ret = new JSONObject();
 		ret.put("gridId", gridId);
-		ret.put("flag", getChangedPoiCount(poiStatus)?1:0);
+		ret.put("flag", getChangedPaiCount(paiStatus)?1:0);
 		return ret;
 	}
 
-	private boolean getChangedPoiCount(Map<Integer, Collection<Long>> paStatus) {
+	private boolean getChangedPaiCount(Map<Integer, Collection<Long>> paStatus) {
 		for(Collection<Long> c:paStatus.values()){
 			if(c != null && c.size() > 0){
 				return true;

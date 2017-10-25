@@ -60,6 +60,8 @@ public class Process extends AbstractProcess<Command> {
 
     }
 
+    Check check = new Check();
+    
     @Override
     public boolean prepareData() throws Exception {
         this.lockZoneNode();
@@ -72,6 +74,7 @@ public class Process extends AbstractProcess<Command> {
 
     @Override
     public String exeOperation() throws Exception {
+    	check.checkIntersectFace(this.getConn(), this.getCommand());
         return new Operation(this.getCommand(), this.getConn()).run(this.getResult());
 
     }

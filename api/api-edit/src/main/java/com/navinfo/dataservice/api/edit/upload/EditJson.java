@@ -54,11 +54,13 @@ public class EditJson {
 			Map<Long,JSONObject> adFaceUpdateMap = new HashMap<Long,JSONObject>();
 			Map<Long,JSONObject> adLinkUpdateMap = new HashMap<Long,JSONObject>();
 			Map<Long,JSONObject> adNodeUpdateMap = new HashMap<Long,JSONObject>();
+			Map<Long,JSONObject> ixPointAddressUpdateMap = new HashMap<Long,JSONObject>();
 			Map<Long,JSONObject> ixPoiDeleteMap = new HashMap<Long,JSONObject>();
 			Map<Long,JSONObject> ixHamletDeleteMap = new HashMap<Long,JSONObject>();
 			Map<Long,JSONObject> adFaceDeleteMap = new HashMap<Long,JSONObject>();
 			Map<Long,JSONObject> adLinkDeleteMap = new HashMap<Long,JSONObject>();
 			Map<Long,JSONObject> adNodeDeleteMap = new HashMap<Long,JSONObject>();
+			Map<Long,JSONObject> ixPointAddressDeleteMap = new HashMap<Long,JSONObject>();
 			for (int i = 0; i < jsa.size(); i++) {
 				JSONObject jo = jsa.getJSONObject(i);
 				if("INSERT".equals(jo.getString("command"))){
@@ -77,6 +79,8 @@ public class EditJson {
 						adLinkUpdateMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
 					}else if("ADNODE".equals(type)){
 						adNodeUpdateMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
+					}else if("IXPOINTADDRESS".equals(type)){
+						ixPointAddressUpdateMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
 					}
 				}else if("DELETE".equals(jo.getString("command"))){
 					String type = jo.getString("type");
@@ -90,6 +94,8 @@ public class EditJson {
 						adLinkDeleteMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
 					}else if("ADNODE".equals(type)){
 						adNodeDeleteMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
+					}else if("IXPOINTADDRESS".equals(type)){
+						ixPointAddressDeleteMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
 					}
 				}
 			}
@@ -98,11 +104,14 @@ public class EditJson {
 			updateJsons.put("ADFACE",adFaceUpdateMap);
 			updateJsons.put("ADLINK",adLinkUpdateMap);
 			updateJsons.put("ADNODE",adNodeUpdateMap);
+			updateJsons.put("IXPOINTADDRESS",ixPointAddressUpdateMap);
 			deleteJsons.put("IXPOI",ixPoiDeleteMap);
 			deleteJsons.put("IXHAMLET",ixHamletDeleteMap);
 			deleteJsons.put("ADFACE",adFaceDeleteMap);
 			deleteJsons.put("ADLINK",adLinkDeleteMap);
 			deleteJsons.put("ADNODE",adNodeDeleteMap);
+			deleteJsons.put("IXPOINTADDRESS",ixPointAddressDeleteMap);
+
 		}
 	}
 

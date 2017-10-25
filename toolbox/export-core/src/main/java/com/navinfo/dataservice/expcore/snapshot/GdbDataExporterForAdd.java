@@ -101,7 +101,7 @@ public class GdbDataExporterForAdd {
 			if(sqliteConn != null){
 				DbUtils.rollbackAndCloseQuietly(sqliteConn);
 			}
-			System.err.println("导出gdb 数据报错:"+e.getMessage());	
+			System.err.println("导出gdb 数据报错:"+e);	
 		}finally {
 			if(stmt != null ){
 				DbUtils.closeQuietly(stmt);

@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
+
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
+
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
@@ -45,7 +48,7 @@ public class GdbLuFaceExporter {
 					+ " l.mesh_id,l.kind from lu_face l  where "
 					+ "  l.kind in (0,1,2,3,4,5,6,7,11,24,30,31,32,33,34,35,36,37,38,39,40) "
 					+ "  and l.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) " ;
-			Clob clob = conn.createClob();
+			Clob clob = ConnectionUtil.createClob(conn);
 			clob.setString(1, StringUtils.join(meshes, ","));
 
 			stmt2 = conn.prepareStatement(sql);

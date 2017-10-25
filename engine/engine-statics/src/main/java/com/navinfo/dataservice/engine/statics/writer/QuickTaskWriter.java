@@ -2,11 +2,15 @@ package com.navinfo.dataservice.engine.statics.writer;
 
 import java.sql.Connection;
 import java.sql.Timestamp;
+import java.util.Iterator;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
@@ -19,7 +23,7 @@ import net.sf.json.JSONObject;
  * @date 2017年8月4日 下午8:46:58
  * @Description TODO
  */
-public class TaskWriter extends DefaultWriter {
+public class QuickTaskWriter extends DefaultWriter {
 	
 	public void write2Other(String timestamp,JSONObject messageJSON) throws Exception {
 		Connection conn=null;
@@ -83,7 +87,7 @@ public class TaskWriter extends DefaultWriter {
 					valueList[i] = value;
 				}
 				
-				String dropSql="truncate table FM_STAT_OVERVIEW_TASK";
+				String dropSql="delete from FM_STAT_OVERVIEW_TASK o where exists (select 1 from task t where t.task_id=o.task_id and o.block_id=0)";
 				String insertSql="INSERT INTO FM_STAT_OVERVIEW_TASK (TASK_ID,PROGRESS,PERCENT,STATUS,"
 						+ "DIFF_DATE,POI_PLAN_TOTAL,ROAD_PLAN_TOTAL,TYPE,PLAN_DATE,"
 						+ "ACTUAL_START_DATE,ACTUAL_END_DATE,NOTASKDATA_POI_NUM,NOTASKDATA_TIPS_NUM,"
@@ -101,5 +105,44 @@ public class TaskWriter extends DefaultWriter {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 统计结果mongo结果库初始化
+	 * 1.判断是否有collection，如果没有就自动创建，并建立默认索引，有特殊索引需求，单独继承该类
+	 * 2.删除时间点相同的重复统计数据
+	 * @param collectionName
+	 */
+	public void initMongoDb(String collectionName,String timestamp,JSONObject identifyJson) {
+		log.info("init mongo "+collectionName);
+		MongoDao mdao = new MongoDao(dbName);
+		MongoDatabase md = mdao.getDatabase();
+		// 初始化 col_name_grid
+		Iterator<String> iter_grid = md.listCollectionNames().iterator();
+		boolean flag_grid = true;
+		while (iter_grid.hasNext()) {
+			if (iter_grid.next().equalsIgnoreCase(collectionName)) {
+				flag_grid = false;
+				break;
+			}
+		}
+
+		if (flag_grid) {
+			md.createCollection(collectionName);
+			md.getCollection(collectionName).createIndex(
+					new BasicDBObject("timestamp", 1));
+			md.getCollection(collectionName).createIndex(
+					new BasicDBObject("programType", 1));
+			createMongoSelfIndex(md, collectionName);
+			log.info("-- -- create mongo collection " + collectionName + " ok");
+			log.info("-- -- create mongo index on " + collectionName + "(timestamp,workDay) ok");
+		}
+		
+		// 删除时间点相同的重复统计数据
+		log.info("删除时间点相同的重复统计数据 mongo "+collectionName+",identifyJson="+identifyJson);
+		BasicDBObject query = new BasicDBObject();
+		query.putAll(identifyJson);
+		query.put("programType", 4);
+		mdao.deleteMany(collectionName, query);
 	}
 }

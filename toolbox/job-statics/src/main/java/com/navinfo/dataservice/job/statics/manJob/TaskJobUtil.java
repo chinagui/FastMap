@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.job.statics.manJob;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -10,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -20,18 +25,23 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.ManConstant;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
-import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * 任务统计
@@ -71,7 +81,7 @@ public class TaskJobUtil{
 			manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			//查询所有的任务
 			log.info("查询所有的任务");
-			List<Task> taskAll = manApi.queryTaskAll();
+			List<Task> taskAll = queryTaskAll();
 			//查询所有任务的项目类型
 			log.info("查询所有任务的项目类型");
 			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
@@ -104,7 +114,10 @@ public class TaskJobUtil{
 			for (Task task : taskAll) {
 				int status = task.getStatus();
 				int taskId = task.getTaskId();
-				int myProgramType = 0;
+				if(status == 0&&taskIdClose.contains(taskId)){continue;}
+				//非开启关闭任务不统计
+				if(status!=0&&status!=1){continue;}
+				int myProgramType = 0;				
 				if(programTypes.containsKey(taskId)){
 					myProgramType = programTypes.get(taskId);
 				}
@@ -113,26 +126,23 @@ public class TaskJobUtil{
 					continue;
 				}
 				task.setProgramType(myProgramType);
+				
 //				int programId=task.getProgramId();
 //				if(programId!=1785){
 //					continue;
 //				}
 				//任务开启
-				if(status == 1){
-					//查询grids
-					Map<Integer, Integer> gridIds = manApi.queryGridIdsByTaskId(taskId);
-					task.setGridIds(gridIds);
-					taskList.add(task);
-				}
-				//任务关闭
-				if(status == 0){
-					if(!taskIdClose.contains(taskId)){
-						//查询grids
-						Map<Integer, Integer> gridIds = manApi.queryGridIdsByTaskId(taskId);
-						task.setGridIds(gridIds);						
-						taskList.add(task);
+				Map<Integer, Integer> gridIds=new HashMap<>();
+				try{
+					Set<String> gridIdSet = CompGeometryUtil.geo2GridsWithoutBreak(GeoTranslator.geojson2Jts(task.getGeometry()));
+					for(String grid:gridIdSet){
+						gridIds.put(Integer.valueOf(grid), 1);
 					}
+				}catch (Exception e) {
+					gridIds = manApi.queryGridIdsByTaskId(taskId);
 				}
+				task.setGridIds(gridIds);
+				taskList.add(task);
 			}
 			//查询MAN_TIMELINE表获取相应的数据
 			String objName = "task";
@@ -1520,6 +1530,67 @@ public class TaskJobUtil{
 		return startTime;
 	}
 	
-	
+	public List<Task> queryTaskAll() throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT *"
+					+ "  FROM TASK";
+					//+ " WHERE LATEST = 1";
+					//+ "   AND STATUS IN (0, 1)";
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>(){
+				public List<Task> handle(ResultSet rs) throws SQLException {
+					List<Task> list = new ArrayList<Task>();
+					while(rs.next()){
+						Task map = new Task();
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+						map.setBlockId(rs.getInt("BLOCK_ID"));
+						map.setTaskId(rs.getInt("TASK_ID"));
+						map.setProgramId(rs.getInt("PROGRAM_ID"));
+						map.setGroupId(rs.getInt("GROUP_ID"));
+						map.setPoiPlanTotal((rs.getInt("POI_PLAN_TOTAL")));
+						map.setRoadPlanTotal((rs.getInt("ROAD_PLAN_TOTAL")));
+//						map.setCityId(rs.getInt("CITY_ID"));
+						map.setWorkKind(rs.getString("WORK_KIND"));
+						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+						map.setStatus(rs.getInt("STATUS"));
+//						map.setTaskName(rs.getString("NAME"));
+//						map.setTaskDescp(rs.getString("DESCP"));
+						map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+						map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+//						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
+//						map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
+						map.setLatest(rs.getInt("LATEST"));
+//						map.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));
+//						map.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
+						map.setType(rs.getInt("TYPE"));
+						map.setLot(rs.getInt("LOT"));
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							map.setGeometry(GeoTranslator.jts2Geojson(GeoTranslator.struct2Jts(struct)));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						//map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
+						//map.setCityName(rs.getString("CITY_NAME"));
+						//map.setCreateUserName(rs.getString("USER_REAL_NAME"));
+						//map.setMonthEditGroupName(rs.getString("GROUP_NAME"));
+						list.add(map);
+					}
+					return list;
+				}
+	    	}		;
+	    	return run.query( conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 }

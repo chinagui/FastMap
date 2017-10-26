@@ -176,13 +176,10 @@ public class ExportStatFromMongo {
 					FindIterable<Document> findIterable = mongoDao.find(collectionName, null).projection(new Document("_id",0)).sort(new BasicDBObject("workDay",1));
 					MongoCursor<Document> iterator = findIterable.iterator();
 					//处理数据
-					while(iterator.hasNext()){
+					if(iterator.hasNext()){
 						//获取统计数据
 						JSONObject jso = JSONObject.fromObject(iterator.next());
 						lastTimestamp=String.valueOf(jso.get("workDay"));
-						if(StringUtils.isNotEmpty(lastTimestamp)&&!lastTimestamp.equals("0")){
-							break;
-						}
 					}
 				}
 				if(StringUtils.isNotEmpty(endTime) && !"0".equals(endTime)){
@@ -191,13 +188,10 @@ public class ExportStatFromMongo {
 					FindIterable<Document> findIterable = mongoDao.find(collectionName, null).projection(new Document("_id",0)).sort(new BasicDBObject("workDay",-1));
 					MongoCursor<Document> iterator = findIterable.iterator();
 					//处理数据
-					while(iterator.hasNext()){
+					if(iterator.hasNext()){
 						//获取统计数据
 						JSONObject jso = JSONObject.fromObject(iterator.next());
 						timestamp=String.valueOf(jso.get("workDay"));
-						if(StringUtils.isNotEmpty(lastTimestamp)&&!lastTimestamp.equals("0")){
-							break;
-						}
 					}
 				}
 				
@@ -234,7 +228,7 @@ public class ExportStatFromMongo {
 				FindIterable<Document> findIterable = mongoDao.find(collectionName, filter).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
 				MongoCursor<Document> iterator = findIterable.iterator();
 				//最近一次的统计时间戳
-				while(iterator.hasNext()){
+				if(iterator.hasNext()){
 					//获取统计数据
 					JSONObject jso = JSONObject.fromObject(iterator.next());
 					lastTime=String.valueOf(jso.get("timestamp"));
@@ -260,7 +254,7 @@ public class ExportStatFromMongo {
 				findIterable = mongoDao.find(collectionName, filter).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
 				iterator = findIterable.iterator();
 				//最近一次的统计时间戳
-				while(iterator.hasNext()){
+				if(iterator.hasNext()){
 					//获取统计数据
 					JSONObject jso = JSONObject.fromObject(iterator.next());
 					lastTime=String.valueOf(jso.get("timestamp"));
@@ -286,7 +280,7 @@ public class ExportStatFromMongo {
 					FindIterable<Document> findIterable = mongoDao.find(collectionName, null).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
 					MongoCursor<Document> iterator = findIterable.iterator();
 					//最近一次的统计时间戳
-					while(iterator.hasNext()){
+					if(iterator.hasNext()){
 						//获取统计数据
 						JSONObject jso = JSONObject.fromObject(iterator.next());
 						lastTime=String.valueOf(jso.get("timestamp"));

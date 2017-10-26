@@ -1792,5 +1792,45 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	}
 
 	
+	/**
+	 * 判断子任务范围内是否有未提交的数据
+	 * @param subtask
+	 * @return
+	 * @throws Exception
+	 */
+	public int getSubTaskStatics(Subtask subtask) throws Exception{ 
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("select distinct s.pid ");
+			sb.append("  from poi_column_status s, ix_poi p");
+			sb.append("  where s.work_item_id != 'FM-YW-20-017'");
+			sb.append("    and s.pid = p.pid");
+			sb.append("    and s.second_work_status <> 3");
+			sb.append("    and sdo_within_distance(p.geometry,");
+			sb.append("                            sdo_geometry(:1, 8307),");
+			sb.append("                            'mask=anyinteract') = 'TRUE'");
+			
+			logger.info(sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			Clob geoClob = ConnectionUtil.createClob(conn);
+			geoClob.setString(1, subtask.getGeometry());
+			pstmt.setClob(1, geoClob);
+			
+			rs = pstmt.executeQuery();
+			if(rs.next()){
+				return 1;
+			}
+			return 0;
+		}catch (Exception e){
+			throw e;
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
 	
 }

@@ -1,5 +1,21 @@
 package com.navinfo.dataservice.web.metadata.controller;
 
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
+import org.apache.uima.pear.util.FileUtil;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -9,7 +25,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
@@ -42,25 +58,8 @@ import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 import com.navinfo.navicommons.exception.ServiceException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.log4j.Logger;
-import org.apache.uima.pear.util.FileUtil;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Controller
 public class MetaController extends BaseController {
@@ -167,6 +166,8 @@ public class MetaController extends BaseController {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             String word = jsonReq.getString("word");
+            
+            String newWord = word;
 
             String adminId = null;
             if(jsonReq.containsKey("adminId")){
@@ -179,6 +180,23 @@ public class MetaController extends BaseController {
             String result = py.pyPolyphoneConvert(word, adminId);
             String voiceStr = py.voiceConvert(word, null, adminId, null);
 
+            //特殊处理  以G、S、Y、X、C、Z开头的词(分歧编辑中)
+            int flag = jsonReq.containsKey("flag")?jsonReq.getInt("flag"):0;
+            int code_type = jsonReq.containsKey("code_type")?jsonReq.getInt("code_type"):0;
+            if(flag == 1 ){
+            	logger.info("word : "+word+";voiceStr : "+voiceStr+";flag: "+flag+" ; code_type: "+code_type);
+            	if( code_type == 5 || code_type == 6 || 
+                		code_type == 7 || code_type == 8 || code_type == 9){
+            		newWord = py.wordConvert(word, adminId);
+                	logger.info("newWord : "+newWord);
+                	voiceStr = py.voiceConvert(newWord, null, adminId, null);
+                	logger.info("newWord voiceStr : "+voiceStr);
+            	}
+            		logger.info("voiceStr: "+voiceStr);
+            		voiceStr = voiceStr.replace("gaosugonglu", "");
+                	logger.info("new voiceStr : "+voiceStr);
+            }
+            
             if (result != null) {
                 JSONObject json = new JSONObject();
 
@@ -1000,7 +1018,11 @@ public class MetaController extends BaseController {
     public ModelAndView webSave(HttpServletRequest request)
             throws ServletException, IOException {
         String parameter = request.getParameter("parameter");
+        long userId = 0;
         try {
+        	AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			userId = tokenObj.getUserId();
+			
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             JSONObject data = jsonReq.getJSONObject("data");
@@ -1014,7 +1036,7 @@ public class MetaController extends BaseController {
 
             RdNameImportor importor = new RdNameImportor();
 
-            JSONObject result = importor.importRdNameFromWeb(data, subtaskId);
+            JSONObject result = importor.importRdNameFromWeb(data, subtaskId,userId);
 
             return new ModelAndView("jsonView", success(result));
         } catch (Exception e) {

@@ -390,4 +390,37 @@ public class ColumnController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	
+	
+	/**
+	 * 月编子任务统计接口,关闭月编子任务判断使用(查询改子任务范围内,是否有未提交的数据)
+	 * @param request
+	 * @return 1有数据-不可关闭;0无数据-可关闭
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/column/querySubtaskStatics")
+	public ModelAndView getSubTaskStatics(HttpServletRequest request) throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		logger.info("start getSubTaskStatics");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			logger.debug("parameter="+jsonReq);
+			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
+			ColumnCoreControl columnControl = new ColumnCoreControl();
+			
+			int result = columnControl.getSubTaskStatics(subtaskId);
+			logger.info("end getSubTaskStatics");
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 }

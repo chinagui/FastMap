@@ -389,8 +389,8 @@ public class PoiTaskTabLogDependent {
 			
 			perstmt.setString(1,movflag);
 			if(logSet.size() > 0){
-				System.out.println("log: "+StringUtils.join(logSet.toArray(),"|"));
-				perstmt.setString(2,StringUtils.join(logSet.toArray(),"|"));
+				System.out.println("log: "+StringUtils.join(logSet.toArray(),"|")+"|");
+				perstmt.setString(2,StringUtils.join(logSet.toArray(),"|")+"|");
 			}else{
 				perstmt.setString(2,null);
 			}

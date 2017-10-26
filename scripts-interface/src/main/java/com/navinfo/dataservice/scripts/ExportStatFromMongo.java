@@ -334,14 +334,14 @@ public class ExportStatFromMongo {
 	
 	public static void main(String[] args) throws Exception {
 		initContext();
-//		System.out.println("args.length:" + args.length);
-//		if (args == null || args.length != 4) {
-//			System.out.println("ERROR:need args:路径,表名,开始时间,结束时间");
-//			return;
-//		}
+		System.out.println("args.length:" + args.length);
+		if (args == null || args.length != 4) {
+			System.out.println("ERROR:need args:路径,表名,开始时间,结束时间");
+			return;
+		}
 		//0-路径,1-表名,2-开始时间(没有startTime的字段赋值"0"),3-结束时间(没有endTime的字段赋值"0")
-		//execute(args[0],args[1],args[2],args[3]);
-		execute("D:/temp","task","20170801000000","20171001000000");
+		execute(args[0],args[1],args[2],args[3]);
+		//execute("D:/temp","task","20170801000000","20171001000000");
 		System.out.println("Over.");
 		System.exit(0);
 	}

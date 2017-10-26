@@ -15,8 +15,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.jobframework.service.JobService;
-
+import com.navinfo.dataservice.jobframework.service.JobApiImpl;
 import net.sf.json.JSONObject;
 
 /**
@@ -129,7 +128,8 @@ public class RowChargeService {
 	 * @throws Exception 
 	 */
 	protected boolean isRunning(String jobType) throws Exception{
-		Map<String, Object> jobDetail = JobService.getInstance().getJobByTask(0,Long.valueOf(0),jobType);
+		JobApi jobApi = new JobApiImpl();
+		Map<String, Object> jobDetail = jobApi.getJobIsRunning(jobType);
 		if(jobDetail==null||jobDetail.size()==0){return false;}
 		int status=(int) jobDetail.get("status");
 		int jobId = (int) jobDetail.get("jobId");

@@ -191,11 +191,10 @@ public class MetaController extends BaseController {
                 	logger.info("newWord : "+newWord);
                 	voiceStr = py.voiceConvert(newWord, null, adminId, null);
                 	logger.info("newWord voiceStr : "+voiceStr);
-            	}else if(code_type == 4 || code_type == 10){
+            	}
             		logger.info("voiceStr: "+voiceStr);
             		voiceStr = voiceStr.replace("gaosugonglu", "");
                 	logger.info("new voiceStr : "+voiceStr);
-            	}
             }
             
             if (result != null) {

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.jobframework.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -100,6 +101,16 @@ public class JobApiImpl implements JobApi{
 	public Integer getJobByUserAndSubTask(long userId, long subtaskId,String jobType) throws Exception {
 		return JobService.getInstance().getJobByUserAndSubTask(userId,subtaskId,jobType);
 		
+	}
+	
+	/**
+	 * 判断是否有正在执行的job
+	 * @author Han Shaoming
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String,Object> getJobIsRunning(String jobType) throws Exception{
+		return JobService.getInstance().getJobByTask(0,Long.valueOf(0),jobType);
 	}
 	
 }

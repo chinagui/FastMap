@@ -87,7 +87,7 @@ public class MediumTaskWriter extends DefaultWriter {
 					valueList[i] = value;
 				}
 				
-				String dropSql="delete from FM_STAT_OVERVIEW_TASK o where exists (select 1 from task t where t.task_id=o.task_id and o.block_id!=0)";
+				String dropSql="delete from FM_STAT_OVERVIEW_TASK o where exists (select 1 from task t where t.task_id=o.task_id and t.block_id!=0)";
 				String insertSql="INSERT INTO FM_STAT_OVERVIEW_TASK (TASK_ID,PROGRESS,PERCENT,STATUS,"
 						+ "DIFF_DATE,POI_PLAN_TOTAL,ROAD_PLAN_TOTAL,TYPE,PLAN_DATE,"
 						+ "ACTUAL_START_DATE,ACTUAL_END_DATE,NOTASKDATA_POI_NUM,NOTASKDATA_TIPS_NUM,"

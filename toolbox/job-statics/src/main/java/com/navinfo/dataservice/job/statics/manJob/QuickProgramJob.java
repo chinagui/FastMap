@@ -24,7 +24,7 @@ public class QuickProgramJob extends AbstractStatJob {
 			//获取统计时间
 			QuickProgramJobRequest statReq = (QuickProgramJobRequest)request;
 			log.info("start stat "+statReq.getJobType());
-			TaskJobUtil util=new TaskJobUtil();
+			ProgramJobUtils util=new ProgramJobUtils();
 			JSONObject result = util.stat(statReq.getTimestamp(), statReq.getType());
 			log.info("end stat "+statReq.getJobType());
 			return result.toString();

@@ -382,6 +382,13 @@ public class HBaseController {
 				if(seasonVersion!=null&&seasonVersion.equals(attrJson.getString("a_version"))){
 					photoMap.put("version", 1);}
 				else{photoMap.put("version", 0);}
+				
+				// 增加返回照片的上传时间
+				String uploadDate = "";
+				if(attrJson != null && attrJson.containsKey("a_uploadDate")){
+					uploadDate = attrJson.getString("a_uploadDate");
+				}
+				photoMap.put("uploadDate", uploadDate);
 				photos.add(photoMap);
 			}
 		}catch (Exception e) {

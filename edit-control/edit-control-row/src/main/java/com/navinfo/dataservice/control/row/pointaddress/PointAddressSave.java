@@ -251,7 +251,7 @@ public class PointAddressSave {
 	public boolean isFreshVerified(long pid,Connection conn) throws Exception {
 		String fd_lst=null;
 
-		String sql = "SELECT de.fd_lst FROM LOG_DETAIL de WHERE de.OB_PID= :1 AND de.OB_NM='IX_POINTADDRESS'  AND de.FD_LST IS NOT NULL ";
+		String sql = "SELECT de.fd_lst,de.op_tp FROM LOG_DETAIL de WHERE de.OB_PID= :1 AND de.OB_NM='IX_POINTADDRESS'";
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -260,13 +260,18 @@ public class PointAddressSave {
 			pstmt.setLong(1, pid);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
+				  if(resultSet.getInt(2)==1){//新增的履历不为鲜度验证
+					  return false;
+				  }
 				  fd_lst=resultSet.getString("fd_lst");
-				  String[] arrFd = fd_lst.replace("[", "").replace("]", "").split(",");
-				  for(int j= 0 ; j<arrFd.length;j++){
-		            	if (!"\"MEMO\"".equals(arrFd[j])){
-		            		return false;
-		            	}
-				  }  
+				  if(org.apache.commons.lang.StringUtils.isNotBlank(fd_lst)){
+					  String[] arrFd = fd_lst.replace("[", "").replace("]", "").split(",");
+					  for(int j= 0 ; j<arrFd.length;j++){
+			            	if (!"\"MEMO\"".equals(arrFd[j])){
+			            		return false;
+			            	}
+					  }  
+				  }
 			}
 			return true;
 		} catch (Exception e) {

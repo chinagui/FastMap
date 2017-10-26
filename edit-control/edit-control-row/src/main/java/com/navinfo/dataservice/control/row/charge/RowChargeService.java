@@ -2,6 +2,8 @@ package com.navinfo.dataservice.control.row.charge;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 
@@ -13,6 +15,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.jobframework.service.JobService;
 
 import net.sf.json.JSONObject;
 
@@ -88,10 +91,10 @@ public class RowChargeService {
 		if(type==1){
 			String jobType = "fm2ChargePhotoInit";
 			//判断是否有未执行完的导入任务
-//			boolean running = isRunning(jobType);
-//			if(running){
-//				return "有正在执行的job任务("+jobType+"),请稍后再试";
-//			}
+			boolean running = isRunning(jobType);
+			if(running){
+				return "有正在执行的job任务("+jobType+"),本次导出照片的初始化包的任务不执行";
+			}
 			//创建初始化job任务
 			JSONObject job = new JSONObject();
 			job.put("dbIds", dbIdList);
@@ -102,10 +105,10 @@ public class RowChargeService {
 		}else if(type==2){
 			String jobType = "fm2ChargePhotoAdd";
 			//判断是否有未执行完的导入任务
-//			boolean running = isRunning(jobType);
-//			if(running){
-//				return "有正在执行的job任务("+jobType+"),请稍后再试";
-//			}
+			boolean running = isRunning(jobType);
+			if(running){
+				return "有正在执行的job任务("+jobType+"),本次导出照片的增量包的任务不执行";
+			}
 			//创建增量job任务
 			JSONObject job = new JSONObject();
 			job.put("dbIds", dbIdList);
@@ -125,16 +128,16 @@ public class RowChargeService {
 	 * @return
 	 * @throws Exception 
 	 */
-//	protected boolean isRunning(String jobType) throws Exception{
-//		Map<String, Object> jobDetail = JobService.getInstance().getJobByTask(0,Long.valueOf(0),jobType);
-//		if(jobDetail==null||jobDetail.size()==0){return false;}
-//		int status=(int) jobDetail.get("status");
-//		int jobId = (int) jobDetail.get("jobId");
-//		if(status==3||status==4){
-//			return false;
-//		}
-//		log.info("有正在执行的"+jobType+"任务jobId("+jobId+"),本次照片导出任务不执行");
-//		return true;
-//	};
+	protected boolean isRunning(String jobType) throws Exception{
+		Map<String, Object> jobDetail = JobService.getInstance().getJobByTask(0,Long.valueOf(0),jobType);
+		if(jobDetail==null||jobDetail.size()==0){return false;}
+		int status=(int) jobDetail.get("status");
+		int jobId = (int) jobDetail.get("jobId");
+		if(status==3||status==4){
+			return false;
+		}
+		log.info("有正在执行的"+jobType+"任务jobId("+jobId+"),本次照片导出任务不执行");
+		return true;
+	};
 	
 }

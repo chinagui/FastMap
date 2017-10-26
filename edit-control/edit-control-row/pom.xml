@@ -98,5 +98,9 @@
      	<groupId>com.navinfo.dataservice</groupId>
      	<artifactId>dao-photo</artifactId>
      </dependency>
+     <dependency>
+     	<groupId>com.navinfo.dataservice</groupId>
+     	<artifactId>job-framework</artifactId>
+     </dependency>
   </dependencies>
 </project>

@@ -289,7 +289,12 @@ public class LevelSelector {
                 code2levelMap.put("chain", chain);
                 code2levelList.add(code2levelMap);
 			}
-			//(6) 如果POI.KIND_CODE=200200且官方原始名称包含“自行车租赁点”(港澳官方原始名称包含“自行車租賃點”)则POI.level=C；
+			
+            //(5) 如果poi.chain有值且poi.level<>A则poi.level= B1；    
+            if (StringUtils.isNotEmpty(chainCode)&&!"A".equals(level)){
+		    	return "B1";
+			}
+            //(6) 如果POI.KIND_CODE=200200且官方原始名称包含“自行车租赁点”(港澳官方原始名称包含“自行車租賃點”)则POI.level=C；
 		    //如果官方原始名称不包含“自行车租赁点”(港澳官方原始名称不包含“自行車租賃點”)则POI.level= sc_point_code2level.new_poi_level；    
             if ("200200".equals(kindCode) && StringUtils.isNotEmpty(name)){
             	// poi.name包含“自行车租赁点”(港澳数据name包含“自行車租賃點”)则POI.level=C
@@ -301,10 +306,7 @@ public class LevelSelector {
         			return code2levelList.get(0).get("newLevel");
         		}
             }
-            //(5) 如果poi.chain有值且poi.level<>A则poi.level= B1；    
-            if (StringUtils.isNotEmpty(chainCode)&&!"A".equals(level)){
-		    	return "B1";
-			}
+            
             //(4) 如果POI.KIND_CODE=sc_point_code2level.kind_code且sc_point_code2level.category=3，
             //且sc_point_code2level.rating=ix_poi_hotel.rating，则poi.level= sc_point_code2level.new_poi_level； 
             for(Map<String, String> code2levelMap:code2levelList){

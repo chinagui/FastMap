@@ -227,6 +227,56 @@ public class ExportStatFromMongo {
 						stat.add(jso);
 					}
 				}
+			}else if("task".equals(collectionName)){//查询最新数据
+				//中线
+				BasicDBObject filter = new BasicDBObject("programType", 1);
+				String lastTime = timestamp;
+				FindIterable<Document> findIterable = mongoDao.find(collectionName, filter).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
+				MongoCursor<Document> iterator = findIterable.iterator();
+				//最近一次的统计时间戳
+				while(iterator.hasNext()){
+					//获取统计数据
+					JSONObject jso = JSONObject.fromObject(iterator.next());
+					lastTime=String.valueOf(jso.get("timestamp"));
+				}
+				log.info("中线最新的统计日期："+lastTime);
+				filter = new BasicDBObject();
+				filter.append("timestamp", lastTime);
+				findIterable = mongoDao.find(collectionName, filter);
+				iterator = findIterable.iterator();
+				//处理数据
+				while(iterator.hasNext()){
+					//获取统计数据
+					JSONObject json = JSONObject.fromObject(iterator.next());
+					Map<String,Object> mapData = json;
+					mapData.remove("_id");
+					stat.add(mapData);
+				}
+				
+				//快线
+				filter = new BasicDBObject("programType",4);
+				lastTime = timestamp;
+				findIterable = mongoDao.find(collectionName, filter).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
+				iterator = findIterable.iterator();
+				//最近一次的统计时间戳
+				while(iterator.hasNext()){
+					//获取统计数据
+					JSONObject jso = JSONObject.fromObject(iterator.next());
+					lastTime=String.valueOf(jso.get("timestamp"));
+				}
+				log.info("快线最新的统计日期："+lastTime);
+				filter = new BasicDBObject();
+				filter.append("timestamp", lastTime);
+				findIterable = mongoDao.find(collectionName, filter);
+				iterator = findIterable.iterator();
+				//处理数据
+				while(iterator.hasNext()){
+					//获取统计数据
+					JSONObject json = JSONObject.fromObject(iterator.next());
+					Map<String,Object> mapData = json;
+					mapData.remove("_id");
+					stat.add(mapData);
+				}
 			}else{
 				//查询最新的数据
 				if("0".equals(startTime) && "0".equals(endTime)){

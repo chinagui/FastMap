@@ -138,9 +138,13 @@
 		  class="com.navinfo.dataservice.check.job.DayLogCheckImportJob"
 		  request="com.navinfo.dataservice.check.job.DayLogCheckImportJobRequest">
 	</type>
-	<type name="taskStat"
-		  class="com.navinfo.dataservice.job.statics.manJob.TaskJob"
-		  request="com.navinfo.dataservice.job.statics.manJob.TaskJobRequest" >
+	<type name="mediumTaskStat"
+		  class="com.navinfo.dataservice.job.statics.manJob.MediumTaskJob"
+		  request="com.navinfo.dataservice.job.statics.manJob.MediumTaskJobRequest" >
+	</type>
+	<type name="quickTaskStat"
+		  class="com.navinfo.dataservice.job.statics.manJob.QuickTaskJob"
+		  request="com.navinfo.dataservice.job.statics.manJob.QuickTaskJobRequest" >
 	</type>
 	<type name="tipsStat"
 		  class="com.navinfo.dataservice.job.statics.manJob.TipsJob"
@@ -170,9 +174,13 @@
           class="com.navinfo.dataservice.job.statics.manJob.CityJob"
           request="com.navinfo.dataservice.job.statics.manJob.CityJobRequest" >
     </type>
-    <type name="programStat"
-          class="com.navinfo.dataservice.job.statics.manJob.ProgramJob"
-          request="com.navinfo.dataservice.job.statics.manJob.ProgramJobRequest" >
+    <type name="quickProgramStat"
+          class="com.navinfo.dataservice.job.statics.manJob.QuickProgramJob"
+          request="com.navinfo.dataservice.job.statics.manJob.QuickProgramJobRequest" >
+    </type>
+    <type name="mediumProgramStat"
+          class="com.navinfo.dataservice.job.statics.manJob.MediumProgramJob"
+          request="com.navinfo.dataservice.job.statics.manJob.MediumProgramJobRequest" >
     </type>
     <type name="quickMonitorStat"
           class="com.navinfo.dataservice.job.statics.manJob.QuickMonitorJob"

@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.plus.selector.custom;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -25,6 +29,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.SingleBatchSelRsHandler;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
 /**
  * 
@@ -111,4 +116,86 @@ public class IxPointaddressSelector {
 		}
 		return objs;
 	}
+	
+	public static Map<Long,Long> getParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		try{
+			Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, StringUtils.join(pidList, ","));
+			
+			String sql = "SELECT DISTINCT IPP.PARENT_PA_PID,IPC.CHILD_PA_PID"
+					+ " FROM IX_POINTADDRESS_PARENT IPP,IX_POINTADDRESS_CHILDREN IPC"
+					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPP.U_RECORD != 2"
+					+ " AND IPC.U_RECORD != 2"
+					+ " AND IPC.CHILD_PA_PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+			
+			ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {
+				public Map<Long,Long> handle(ResultSet rs) throws SQLException {
+					Map<Long,Long> result = new HashMap<Long,Long>();
+					while (rs.next()) {
+						long parentPid = rs.getLong("PARENT_PA_PID");
+						long childPid = rs.getLong("CHILD_PA_PID");
+						result.put(childPid, parentPid);
+					}
+					return result;
+				}
+			};
+			
+			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler,clob);
+			return childPidParentPid;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
+	
+	/**
+	 * 查询多个父的子poiPid
+	 * @param conn
+	 * @param pidList
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static Map<Long,List<Long>> getChildrenPidsByParentPidList(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,List<Long>> childPids = new HashMap<Long,List<Long>>();
+		if(pidList.isEmpty()){
+			return childPids;
+		}
+		try{
+			ResultSetHandler<Map<Long,List<Long>>> rsHandler = new ResultSetHandler<Map<Long,List<Long>>>() {
+				public Map<Long,List<Long>> handle(ResultSet rs) throws SQLException {
+					Map<Long,List<Long>> result = new HashMap<Long,List<Long>>();
+					while (rs.next()) {
+						List<Long> childList = new ArrayList<Long>();
+						if (result.containsKey(rs.getLong("PARENT_PA_PID"))) {
+							childList = result.get(rs.getLong("PARENT_PA_PID"));
+						} 
+						childList.add(rs.getLong("CHILD_PA_PID"));
+						result.put(rs.getLong("PARENT_PA_PID"), childList);
+					}
+					return result;
+				}
+			};
+			String sql = "SELECT DISTINCT IPC.CHILD_PA_PID,IPP.PARENT_PA_PID"
+					+ " FROM IX_POINTADDRESS_PARENT IPP,IX_POINTADDRESS_CHILDREN IPC"
+					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPC.U_RECORD <>2 AND IPP.U_RECORD <>2 "
+					+ " AND IPP.PARENT_PA_PID IN ";
+			if (pidList.size()>100) {
+				sql +=  "(SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?))) ";
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pidList, ","));
+				return new QueryRunner().query(conn, sql, rsHandler,clob);
+			} else {
+				sql += " (" + StringUtils.join(pidList.toArray(),",") + ")";
+				return new QueryRunner().query(conn,sql, rsHandler);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
 }

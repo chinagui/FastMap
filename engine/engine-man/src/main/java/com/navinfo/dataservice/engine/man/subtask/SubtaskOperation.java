@@ -732,7 +732,7 @@ public class SubtaskOperation {
 			}
 						
 			sb.append("select fs.finished_poi, fs.total_poi, fs.wait_work_poi,t.lot, st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
-					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id,st.work_kind");
+					+ "st.TYPE,st.STATUS,st.task_id,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality,p.type program_type,st.exe_user_id,st.work_kind");
 			sb.append(" from subtask st,task t,region r,program p,FM_STAT_OVERVIEW_SUBTASK fs ");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
@@ -785,6 +785,7 @@ public class SubtaskOperation {
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+						subtask.put("taskId", rs.getInt("TASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
 

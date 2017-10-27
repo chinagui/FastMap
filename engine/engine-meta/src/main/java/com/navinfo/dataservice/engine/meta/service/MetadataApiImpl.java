@@ -58,6 +58,7 @@ import com.navinfo.dataservice.engine.meta.scPointMinganList.ScPointMinganList;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointNominganList.ScPointNominganList;
 import com.navinfo.dataservice.engine.meta.scPointPoiCodeNew.ScPointPoiCodeNew;
+import com.navinfo.dataservice.engine.meta.scPointPointAddrck.ScPointPointAddrck;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
@@ -1115,6 +1116,16 @@ public class MetadataApiImpl implements MetadataApi {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	@Override
+	public List<String> getPointAddrck(int type) throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointPointAddrck.getInstance().getPointAddrck(type);
+	}
+	@Override
+	public List<String> getPointAddrck(int type, String hmFlag) throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointPointAddrck.getInstance().getPointAddrck(type, hmFlag);
 	}
 
 }

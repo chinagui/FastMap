@@ -3,8 +3,10 @@ package com.navinfo.dataservice.control.row.pointaddress;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -321,7 +323,10 @@ public class PointAddressSave {
 	 */
 	public boolean isFreshVerified(long pid,Connection conn) throws Exception {
 		String fd_lst=null;
-
+		List<String> filterFdList = new ArrayList<String>();
+		filterFdList.add("\"MEMO\"");
+		filterFdList.add("\"DATA_VERSION\"");
+		
 		String sql = "SELECT de.fd_lst,de.op_tp FROM LOG_DETAIL de WHERE de.OB_PID= :1 AND de.OB_NM='IX_POINTADDRESS'";
 		
 		PreparedStatement pstmt = null;
@@ -338,7 +343,7 @@ public class PointAddressSave {
 				  if(org.apache.commons.lang.StringUtils.isNotBlank(fd_lst)){
 					  String[] arrFd = fd_lst.replace("[", "").replace("]", "").split(",");
 					  for(int j= 0 ; j<arrFd.length;j++){
-			            	if (!"\"MEMO\"".equals(arrFd[j])){
+			            	if (!filterFdList.contains(arrFd[j])){
 			            		return false;
 			            	}
 					  }  

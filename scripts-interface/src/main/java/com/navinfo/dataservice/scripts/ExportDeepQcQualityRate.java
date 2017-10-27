@@ -202,7 +202,7 @@ public class ExportDeepQcQualityRate {
 			
 			rs = pstmt.executeQuery();
 			
-			DeepQcQualityRate deepQcQualityRate = null;
+			DeepQcQualityRate deepQcQualityRate = new DeepQcQualityRate();
 			while (rs.next()) {
 				int worker = rs.getInt(1);
 				if(!deepQcQualityRateMap.containsKey(worker)) {

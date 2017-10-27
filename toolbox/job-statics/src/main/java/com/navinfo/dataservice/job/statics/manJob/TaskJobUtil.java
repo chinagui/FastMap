@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.job.statics.manJob;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -9,6 +12,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 import org.bson.Document;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.mongodb.BasicDBObject;
@@ -18,17 +25,23 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.ManConstant;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
-import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * 任务统计
@@ -37,8 +50,8 @@ import net.sf.json.JSONObject;
  * @date 2017年8月4日 下午8:42:39
  * @Description TODO
  */
-public class TaskJob extends AbstractStatJob {
-
+public class TaskJobUtil{
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	private static final String task = "task";
 	private static final String subtask = "subtask";
 	private static final String grid_task_tips = "grid_task_tips";
@@ -56,19 +69,10 @@ public class TaskJob extends AbstractStatJob {
 	
 	protected ManApi manApi = null;
 	
-	public TaskJob(JobInfo jobInfo) {
-		super(jobInfo);
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public String stat() throws JobException {
+	public JSONObject stat(String timestamp,int programType) throws JobException {
 		try {
 			//获取统计时间
-			TaskJobRequest statReq = (TaskJobRequest)request;
-			log.info("start stat "+statReq.getJobType());
-			String timestamp = statReq.getTimestamp();
-			long t = System.currentTimeMillis();
+			log.info("start stat taskJobUtil: timestamp:"+timestamp+",programType:"+programType);
 			//任务统计数据
 			List<Map<String, Object>> taskStatList = new ArrayList<Map<String, Object>>();
 			//已关闭任务id(不需要统计)
@@ -77,7 +81,7 @@ public class TaskJob extends AbstractStatJob {
 			manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			//查询所有的任务
 			log.info("查询所有的任务");
-			List<Task> taskAll = manApi.queryTaskAll();
+			List<Task> taskAll = queryTaskAll();
 			//查询所有任务的项目类型
 			log.info("查询所有任务的项目类型");
 			Map<Integer, Integer> programTypes = manApi.queryProgramTypes();
@@ -97,7 +101,7 @@ public class TaskJob extends AbstractStatJob {
 			//没有值，或者为true
 			if(value==null||value.equals("true")){
 				log.info("继承关闭任务的统计内容");
-				taskStatDataClose = getTaskStatData(timestamp);
+				taskStatDataClose = getTaskStatData(timestamp,programType);
 			}
 			if(taskStatDataClose.size() > 0){
 				taskStatList.addAll(taskStatDataClose.values());
@@ -110,38 +114,35 @@ public class TaskJob extends AbstractStatJob {
 			for (Task task : taskAll) {
 				int status = task.getStatus();
 				int taskId = task.getTaskId();
+				if(status == 0&&taskIdClose.contains(taskId)){continue;}
+				//非开启关闭任务不统计
+				if(status!=0&&status!=1){continue;}
+				int myProgramType = 0;				
+				if(programTypes.containsKey(taskId)){
+					myProgramType = programTypes.get(taskId);
+				}
+				//快线中线任务统计分开，若programType=1则，只统计中线任务；programType=4则，只统计快线任务
+				if(myProgramType!=programType){
+					continue;
+				}
+				task.setProgramType(myProgramType);
+				
 //				int programId=task.getProgramId();
 //				if(programId!=1785){
 //					continue;
 //				}
 				//任务开启
-				if(status == 1){
-					//查询grids
-					Map<Integer, Integer> gridIds = manApi.queryGridIdsByTaskId(taskId);
-					task.setGridIds(gridIds);
-					//设置项目类型
-					int programType = 0;
-					if(programTypes.containsKey(taskId)){
-						programType = programTypes.get(taskId);
+				Map<Integer, Integer> gridIds=new HashMap<>();
+				try{
+					Set<String> gridIdSet = CompGeometryUtil.geo2GridsWithoutBreak(GeoTranslator.geojson2Jts(task.getGeometry()));
+					for(String grid:gridIdSet){
+						gridIds.put(Integer.valueOf(grid), 1);
 					}
-					task.setProgramType(programType);
-					taskList.add(task);
+				}catch (Exception e) {
+					gridIds = manApi.queryGridIdsByTaskId(taskId);
 				}
-				//任务关闭
-				if(status == 0){
-					if(!taskIdClose.contains(taskId)){
-						//查询grids
-						Map<Integer, Integer> gridIds = manApi.queryGridIdsByTaskId(taskId);
-						task.setGridIds(gridIds);
-						//设置项目类型
-						int programType = 0;
-						if(programTypes.containsKey(taskId)){
-							programType = programTypes.get(taskId);
-						}
-						task.setProgramType(programType);
-						taskList.add(task);
-					}
-				}
+				task.setGridIds(gridIds);
+				taskList.add(task);
 			}
 			//查询MAN_TIMELINE表获取相应的数据
 			String objName = "task";
@@ -150,7 +151,10 @@ public class TaskJob extends AbstractStatJob {
 			log.info("查询mongo中task_grid_tips相应的统计数据");
 			Map<Integer, Map<String, Object>> taskTipsStatData = getTaskTipsStatData(timestamp);
 			log.info("查询mongo中fcc相应的统计数据");
-			Map<Integer, Map<String, Object>> taskFccStatData = getTaskFccStatData(timestamp);
+			Map<Integer, Map<String, Object>> taskFccStatData =new HashMap<Integer,Map<String,Object>>();
+			if(programType==1){
+				taskFccStatData = getTaskFccStatData(timestamp);
+			}
 			log.info("查询mongo中task_day_poi相应的统计数据");
 			Map<Integer, Map<String, Object>> dayPoiStatData = getDayPoiStatData(timestamp);
 			log.info("查询mongo中grid_task_tips相应的统计数据");
@@ -266,10 +270,8 @@ public class TaskJob extends AbstractStatJob {
 			JSONObject result = new JSONObject();
 			result.put("task",taskStatList);
 
-			log.info("end stat "+statReq.getJobType());
-			log.debug("所有任务数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
-			
-			return result.toString();
+			log.info("end stat taskJobUtil: timestamp:"+timestamp+",programType:"+programType);			
+			return result;
 			
 		} catch (Exception e) {
 			log.error("任务统计:"+e.getMessage(), e);
@@ -283,13 +285,13 @@ public class TaskJob extends AbstractStatJob {
 	 * @throws ServiceException 
 	 */
 	@SuppressWarnings("unchecked")
-	public Map<Integer,Map<String,Object>> getTaskStatData(String timestamp) throws Exception{
+	public Map<Integer,Map<String,Object>> getTaskStatData(String timestamp,int programType) throws Exception{
 		try {
 			//获取上一次的统计时间
 			//String lastTime = DateUtils.addSeconds(timestamp,-60*60);
 			MongoDao mongoDao = new MongoDao(dbName);
-			//BasicDBObject filter = new BasicDBObject("timestamp", lastTime);
-			FindIterable<Document> findIterable = mongoDao.find(task, null).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
+			BasicDBObject filter = new BasicDBObject("programType", programType);
+			FindIterable<Document> findIterable = mongoDao.find(task, filter).projection(new Document("_id",0)).sort(new BasicDBObject("timestamp",-1));
 			MongoCursor<Document> iterator = findIterable.iterator();
 			Map<Integer,Map<String,Object>> stat = new HashMap<Integer,Map<String,Object>>();
 			String timestampLast="";
@@ -1528,6 +1530,67 @@ public class TaskJob extends AbstractStatJob {
 		return startTime;
 	}
 	
-	
+	public List<Task> queryTaskAll() throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT *"
+					+ "  FROM TASK";
+					//+ " WHERE LATEST = 1";
+					//+ "   AND STATUS IN (0, 1)";
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>(){
+				public List<Task> handle(ResultSet rs) throws SQLException {
+					List<Task> list = new ArrayList<Task>();
+					while(rs.next()){
+						Task map = new Task();
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+						map.setBlockId(rs.getInt("BLOCK_ID"));
+						map.setTaskId(rs.getInt("TASK_ID"));
+						map.setProgramId(rs.getInt("PROGRAM_ID"));
+						map.setGroupId(rs.getInt("GROUP_ID"));
+						map.setPoiPlanTotal((rs.getInt("POI_PLAN_TOTAL")));
+						map.setRoadPlanTotal((rs.getInt("ROAD_PLAN_TOTAL")));
+//						map.setCityId(rs.getInt("CITY_ID"));
+						map.setWorkKind(rs.getString("WORK_KIND"));
+						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+						map.setStatus(rs.getInt("STATUS"));
+//						map.setTaskName(rs.getString("NAME"));
+//						map.setTaskDescp(rs.getString("DESCP"));
+						map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+						map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+//						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
+//						map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
+						map.setLatest(rs.getInt("LATEST"));
+//						map.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));
+//						map.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
+						map.setType(rs.getInt("TYPE"));
+						map.setLot(rs.getInt("LOT"));
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							map.setGeometry(GeoTranslator.jts2Geojson(GeoTranslator.struct2Jts(struct)));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						//map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
+						//map.setCityName(rs.getString("CITY_NAME"));
+						//map.setCreateUserName(rs.getString("USER_REAL_NAME"));
+						//map.setMonthEditGroupName(rs.getString("GROUP_NAME"));
+						list.add(map);
+					}
+					return list;
+				}
+	    	}		;
+	    	return run.query( conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 }

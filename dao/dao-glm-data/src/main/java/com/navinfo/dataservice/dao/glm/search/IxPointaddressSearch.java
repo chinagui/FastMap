@@ -195,7 +195,7 @@ public class IxPointaddressSearch implements ISearch {
 		JSONObject json=new JSONObject();
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT I.PID, I.IDCODE, I.X_GUIDE, I.Y_GUIDE, I.GEOMETRY, I.GUIDE_LINK_PID, I.ROW_ID,I.DPR_NAME,");
-		sb.append("I.DP_NAME,I.MEMOIRE,I.MEMO,I.U_RECORD, ");
+		sb.append("I.DP_NAME,I.MEMOIRE,I.MEMO,I.U_RECORD,I.GUIDE_LINK_SIDE, ");
 		sb.append("P.STATUS,P.FRESH_VERIFIED,P.RAW_FIELDS FROM IX_POINTADDRESS I,POINTADDRESS_EDIT_STATUS P WHERE I.PID=P.PID AND I.PID="+pid);
 		PreparedStatement pstmt = null;
 
@@ -223,6 +223,9 @@ public class IxPointaddressSearch implements ISearch {
 				json.put("memoire", resultSet.getString("MEMOIRE"));
 				json.put("memo", resultSet.getString("MEMO"));
 				json.put("uRecord", resultSet.getInt("U_RECORD"));
+				
+				json.put("guideLinkSide", resultSet.getInt("GUIDE_LINK_SIDE"));
+				
 				json.put("verifiedFlag", resultSet.getInt("FRESH_VERIFIED"));
 				json.put("status", resultSet.getInt("STATUS"));
 				json.put("rawFields", resultSet.getInt("RAW_FIELDS"));

@@ -69,12 +69,15 @@ public class IxPointAddressObj extends AbstractIxObj {
 	 * @date 2017年10月9日 下午4:55:21 
 	 */
 	public boolean isFreshFlag() {
+		log.info("计算鲜度验证");
 		IxPointaddress ixPa = (IxPointaddress) this.mainrow;
+		log.info("ixPa.getOpType(): "+ixPa.getOpType());
 		if (!(ixPa.getOpType().equals(OperationType.UPDATE)))
 			return false;
 		Map<String, Object> ixPaOldValues = ixPa.getOldValues();
 		if (ixPaOldValues != null) {
 			for (String key : ixPaOldValues.keySet()) {
+				log.info(ixPa.getPid() +"oldvalues key:"+key);
 				if (key.equals(IxPointaddress.DPR_NAME) 
 						|| key.equals(IxPointaddress.DP_NAME)
 						|| key.equals(IxPointaddress.LINK_PID) 

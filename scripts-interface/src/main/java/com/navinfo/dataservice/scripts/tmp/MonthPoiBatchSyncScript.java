@@ -15,7 +15,9 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.scripts.JobScriptsInterface;
 import com.navinfo.dataservice.scripts.ToolScriptsInterface;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -37,181 +39,198 @@ public class MonthPoiBatchSyncScript {
 
     private static Logger log = Logger.getLogger(MonthPoiBatchSyncScript.class);
 
-    public JSONObject run(JSONObject json) throws Exception{
+    public JSONObject run(JSONObject json) throws Exception {
         log.info(" start MonthPoiBatchSyncJob");
         //MonthPoiBatchSyncJobRequest myRequest = (MonthPoiBatchSyncJobRequest) request;
         //ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
         //int taskId = myRequest.getTaskId();
         //long userId = myRequest.getUserId();
-        Connection conn = null;
-        try {
-            log.info("获取任务对应的参数");
-            //Subtask subtask = apiService.queryBySubtaskId(taskId);
-            //log.info("params:taskId=" + taskId);
-            //int dbId = subtask.getDbId();
-            //log.info("dbId = " + dbId);
-            conn = DBConnector.getInstance().getMkConnection();
-            LogReader logReader = new LogReader(conn);
-            Collection<String> grids = new HashSet<>();
 
-            String meshStr = json.getString("meshes");
-            if (StringUtils.isEmpty(meshStr)) {
-                return new JSONObject();
+        String meshStr = json.getString("meshes");
+        if (StringUtils.isEmpty(meshStr)) {
+            return new JSONObject();
+        }
+
+        List<Integer> meshes = new ArrayList<>();
+        for (String mesh : meshStr.split(",")) {
+            meshes.add(Integer.valueOf(mesh));
+        }
+        List<List<Integer>> partitions = ListUtils.partition(meshes, 50);
+
+        List<Integer> successMesh = new ArrayList<>();
+        List<Integer> failureMesh = new ArrayList<>();
+
+        for (List<Integer> partition : partitions) {
+            Connection conn = null;
+            try {
+                log.info("获取任务对应的参数");
+                //Subtask subtask = apiService.queryBySubtaskId(taskId);
+                //log.info("params:taskId=" + taskId);
+                //int dbId = subtask.getDbId();
+                //log.info("dbId = " + dbId);
+                conn = DBConnector.getInstance().getMkConnection();
+                LogReader logReader = new LogReader(conn);
+
+                execute(conn, logReader, partition);
+                successMesh.addAll(partition);
+                //log.info("关闭任务");
+                //apiService.closeSubtask(taskId, userId);
+            } catch(Exception e){
+                failureMesh.addAll(partition);
+                log.error("MonthPoiBatchSyncJob错误", e);
+                DbUtils.rollbackAndCloseQuietly(conn);
+                throw new Exception(e);
+            } finally{
+                DbUtils.commitAndCloseQuietly(conn);
+            }
+        }
+        JSONObject result = new JSONObject();
+        result.put("successMesh", JSONArray.fromObject(successMesh).toString());
+        result.put("failureMesh", JSONArray.fromObject(failureMesh).toString());
+
+        return result;
+    }
+
+    private void execute(Connection conn, LogReader logReader, List<Integer> meshes) throws Exception {
+        Collection<String> grids = new HashSet<>();
+
+        for (int grid : meshs2grids(meshes)) {
+            grids.add(String.valueOf(grid));
+        }
+
+        log.info("grids=" + grids);
+        log.info("获取任务范围内新增修改的poi信息");
+        Map<Integer, Collection<Long>> map = logReader.getUpdatedObj(
+                "IX_POI", "IX_POI", grids, null);
+        Collection<Long> pids = new ArrayList<Long>();
+        //Collection<Long> addPids = map.get(1);
+        Collection<Long> updatePids = map.get(3);
+        //log.info("新增 poi 信息=" + addPids);
+        log.info("修改poi 信息=" + updatePids);
+        //if (addPids != null && addPids.size() > 0) {
+        //    pids.addAll(addPids);
+        //}
+        if (updatePids != null && updatePids.size() > 0) {
+            pids.addAll(updatePids);
+        }
+        if (pids.size() > 0) {
+            // 获取poi对象信息
+            Set<String> tabNames = new HashSet<String>();
+            tabNames.add("IX_POI_NAME");
+            Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,
+                    ObjectName.IX_POI, tabNames, false, pids, true, true);
+            Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByColEditStatus(conn, pids);
+            log.info(" 加载poi信息以及对应子表信息");
+
+            // 将poi对象与履历合并起来
+            if (!objs.isEmpty()) {
+                ObjHisLogParser.parse(objs, logs);
             }
 
-            List<Integer> meshes = new ArrayList<>();
-            for (String mesh : meshStr.split(",")) {
-                meshes.add(Integer.valueOf(mesh));
-            }
+            Collection<Long> chiNamePids = new ArrayList<Long>();
 
-            for (int grid : meshs2grids(meshes)) {
-                grids.add(String.valueOf(grid));
-            }
+            Collection<Long> chtNamePids = new ArrayList<Long>();
 
-            log.info("grids=" + grids);
-            log.info("获取任务范围内新增修改的poi信息");
-            Map<Integer, Collection<Long>> map = logReader.getUpdatedObj(
-                    "IX_POI", "IX_POI", grids, null);
-            Collection<Long> pids = new ArrayList<Long>();
-            Collection<Long> addPids = map.get(1);
-            Collection<Long> updatePids = map.get(3);
-            log.info("新增 poi 信息=" + addPids);
-            log.info("修改poi 信息=" + updatePids);
-            if (addPids != null && addPids.size() > 0) {
-                pids.addAll(addPids);
-            }
-            if (updatePids != null && updatePids.size() > 0) {
-                pids.addAll(updatePids);
-            }
-            if (pids.size() > 0) {
-                // 获取poi对象信息
-                Set<String> tabNames = new HashSet<String>();
-                tabNames.add("IX_POI_NAME");
-                Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,
-                        ObjectName.IX_POI, tabNames, false, pids, true, true);
-                Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByColEditStatus(conn, pids);
-                log.info(" 加载poi信息以及对应子表信息");
+            Collection<Long> originEngNamePids = new ArrayList<Long>();
 
-                // 将poi对象与履历合并起来
-                if (!objs.isEmpty()) {
-                    ObjHisLogParser.parse(objs, logs);
+            Collection<Long> OfficeStandardEngNamePids = new ArrayList<Long>();
+
+            Collection<Long> originPotNamePids = new ArrayList<Long>();
+
+            Collection<Long> standardPotNamePids = new ArrayList<Long>();
+            for (long pid : objs.keySet()) {
+                BasicObj obj = objs.get(pid);
+                IxPoiObj poiObj = (IxPoiObj) obj;
+                if (poiObj.getOfficeStandardCHIName() != null) {
+                    IxPoiName poiName = poiObj.getOfficeStandardCHIName();
+                    if (poiName.getHisOpType() == OperationType.UPDATE
+                            || poiName.getHisOpType() == OperationType.INSERT) {
+                        chiNamePids.add(pid);
+                    }
+
+                } else {
+                    if (obj.isDelOfficeStandardCHIName()) {
+                        chiNamePids.add(pid);
+                    }
                 }
 
-                Collection<Long> chiNamePids = new ArrayList<Long>();
-
-                Collection<Long> chtNamePids = new ArrayList<Long>();
-
-                Collection<Long> originEngNamePids = new ArrayList<Long>();
-
-                Collection<Long> OfficeStandardEngNamePids = new ArrayList<Long>();
-
-                Collection<Long> originPotNamePids = new ArrayList<Long>();
-
-                Collection<Long> standardPotNamePids = new ArrayList<Long>();
-                for (long pid : objs.keySet()) {
-                    BasicObj obj = objs.get(pid);
-                    IxPoiObj poiObj = (IxPoiObj) obj;
-                    if (poiObj.getOfficeStandardCHIName() != null) {
-                        IxPoiName poiName = poiObj.getOfficeStandardCHIName();
-                        if (poiName.getHisOpType() == OperationType.UPDATE
-                                || poiName.getHisOpType() == OperationType.INSERT) {
-                            chiNamePids.add(pid);
-                        }
-
-                    } else {
-                        if (obj.isDelOfficeStandardCHIName()) {
-                            chiNamePids.add(pid);
-                        }
+                if (poiObj.getOfficeStandardCHTName() != null) {
+                    IxPoiName poiName = poiObj.getOfficeStandardCHTName();
+                    if (poiName.getHisOpType() == OperationType.UPDATE
+                            || poiName.getHisOpType() == OperationType.INSERT) {
+                        chtNamePids.add(pid);
                     }
 
-                    if (poiObj.getOfficeStandardCHTName() != null) {
-                        IxPoiName poiName = poiObj.getOfficeStandardCHTName();
-                        if (poiName.getHisOpType() == OperationType.UPDATE
-                                || poiName.getHisOpType() == OperationType.INSERT) {
-                            chtNamePids.add(pid);
-                        }
-
-                    } else {
-                        if (obj.isDelOfficeStandardCHTName()) {
-                            chtNamePids.add(pid);
-                        }
+                } else {
+                    if (obj.isDelOfficeStandardCHTName()) {
+                        chtNamePids.add(pid);
                     }
-                    if (poiObj.getOfficeOriginEngName() != null) {
-                        IxPoiName poiName = poiObj.getOfficeOriginEngName();
-                        if (poiName.getHisOpType() == OperationType.UPDATE
-                                || poiName.getHisOpType() == OperationType.INSERT) {
-                            originEngNamePids.add(pid);
-                        }
-
-                    } else {
-                        if (obj.isDelOfficeOriginEngName()) {
-                            originEngNamePids.add(pid);
-                        }
+                }
+                if (poiObj.getOfficeOriginEngName() != null) {
+                    IxPoiName poiName = poiObj.getOfficeOriginEngName();
+                    if (poiName.getHisOpType() == OperationType.UPDATE
+                            || poiName.getHisOpType() == OperationType.INSERT) {
+                        originEngNamePids.add(pid);
                     }
-                    if (poiObj.getOfficeStandardEngName() != null) {
-                        IxPoiName poiName = poiObj.getOfficeStandardEngName();
-                        if (poiName.getHisOpType() == OperationType.UPDATE
-                                || poiName.getHisOpType() == OperationType.INSERT) {
-                            OfficeStandardEngNamePids.add(pid);
-                        }
 
-                    } else {
-                        if (obj.isDelOfficeStandardEngName()) {
-                            OfficeStandardEngNamePids.add(pid);
-                        }
-
+                } else {
+                    if (obj.isDelOfficeOriginEngName()) {
+                        originEngNamePids.add(pid);
                     }
-                    if (poiObj.getOfficeOriginPOTName() != null) {
-                        IxPoiName poiName = poiObj.getOfficeOriginPOTName();
-                        if (poiName.getHisOpType() == OperationType.UPDATE
-                                || poiName.getHisOpType() == OperationType.INSERT) {
-                            originPotNamePids.add(pid);
-                        }
-
-                    } else {
-                        if (obj.isDelOfficeOriginPotName()) {
-                            originPotNamePids.add(pid);
-                        }
+                }
+                if (poiObj.getOfficeStandardEngName() != null) {
+                    IxPoiName poiName = poiObj.getOfficeStandardEngName();
+                    if (poiName.getHisOpType() == OperationType.UPDATE
+                            || poiName.getHisOpType() == OperationType.INSERT) {
+                        OfficeStandardEngNamePids.add(pid);
                     }
-                    if (poiObj.getOfficeStandardPOTName() != null) {
-                        IxPoiName poiName = poiObj.getOfficeStandardPOTName();
-                        if (poiName.getHisOpType() == OperationType.UPDATE
-                                || poiName.getHisOpType() == OperationType.INSERT) {
-                            standardPotNamePids.add(pid);
-                        }
 
+                } else {
+                    if (obj.isDelOfficeStandardEngName()) {
+                        OfficeStandardEngNamePids.add(pid);
                     }
-                    if (obj.isDelOfficeStandardPotName()) {
+
+                }
+                if (poiObj.getOfficeOriginPOTName() != null) {
+                    IxPoiName poiName = poiObj.getOfficeOriginPOTName();
+                    if (poiName.getHisOpType() == OperationType.UPDATE
+                            || poiName.getHisOpType() == OperationType.INSERT) {
+                        originPotNamePids.add(pid);
+                    }
+
+                } else {
+                    if (obj.isDelOfficeOriginPotName()) {
+                        originPotNamePids.add(pid);
+                    }
+                }
+                if (poiObj.getOfficeStandardPOTName() != null) {
+                    IxPoiName poiName = poiObj.getOfficeStandardPOTName();
+                    if (poiName.getHisOpType() == OperationType.UPDATE
+                            || poiName.getHisOpType() == OperationType.INSERT) {
                         standardPotNamePids.add(pid);
                     }
 
                 }
+                if (obj.isDelOfficeStandardPotName()) {
+                    standardPotNamePids.add(pid);
+                }
 
-                log.info("批 FieldState");
-                this.updateBatchPoi(chiNamePids,
-                        this.getUpadeFieldStateForSql("改标准化简体中文"), conn);
-                this.updateBatchPoi(chtNamePids,
-                        this.getUpadeFieldStateForSql("改标准化繁体中文"), conn);
-                this.updateBatchPoi(originEngNamePids,
-                        this.getUpadeFieldStateForSql("改官方名原始英文"), conn);
-                this.updateBatchPoi(OfficeStandardEngNamePids,
-                        this.getUpadeFieldStateForSql("改官方名标准化英文"), conn);
-                this.updateBatchPoi(originPotNamePids,
-                        this.getUpadeFieldStateForSql("改官方名原始葡萄文"), conn);
-                this.updateBatchPoi(standardPotNamePids,
-                        this.getUpadeFieldStateForSql("改官方名标准化葡萄文"), conn);
             }
-            //log.info("关闭任务");
-            //apiService.closeSubtask(taskId, userId);
-        } catch (Exception e) {
-            log.error("MonthPoiBatchSyncJob错误", e);
-            DbUtils.rollbackAndCloseQuietly(conn);
-            throw new Exception(e);
-        } finally {
-            DbUtils.commitAndCloseQuietly(conn);
-        }
 
-        return new JSONObject();
+            log.info("批 FieldState");
+            this.updateBatchPoi(chiNamePids,
+                    this.getUpadeFieldStateForSql("改标准化简体中文"), conn);
+            this.updateBatchPoi(chtNamePids,
+                    this.getUpadeFieldStateForSql("改标准化繁体中文"), conn);
+            this.updateBatchPoi(originEngNamePids,
+                    this.getUpadeFieldStateForSql("改官方名原始英文"), conn);
+            this.updateBatchPoi(OfficeStandardEngNamePids,
+                    this.getUpadeFieldStateForSql("改官方名标准化英文"), conn);
+            this.updateBatchPoi(originPotNamePids,
+                    this.getUpadeFieldStateForSql("改官方名原始葡萄文"), conn);
+            this.updateBatchPoi(standardPotNamePids,
+                    this.getUpadeFieldStateForSql("改官方名标准化葡萄文"), conn);
+        }
     }
 
     private String getUpadeFieldStateForSql(String strValue) {

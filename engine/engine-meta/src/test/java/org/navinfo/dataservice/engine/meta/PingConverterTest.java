@@ -54,7 +54,7 @@ public class PingConverterTest {
 
 	}
 	
-	@Test
+//	@Test
 	public void testpyvConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
@@ -121,6 +121,25 @@ public class PingConverterTest {
 		String res = py.pyPolyphoneConvert("思维差心°", null);
 
 		System.out.println(res);
+		//Shang Hai Nong Tang
+		//带行政区划号后  Shang Hai Long Tang
+
+	}
+	
+//	@Test
+	public void testpyPolyphoneConvertFq() throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+//		String res = py.pyConvert("上海弄堂", "310000", null);
+//		String word = "Ｓ１３３";
+		String word = "Ｚ１３３";
+		word = py.wordConvert(word, null);
+		System.out.println(word);
+		
+		 String[] result = py.pyVoiceConvert(word, null, null, null);
+		
+
+		System.out.println(word);
 		//Shang Hai Nong Tang
 		//带行政区划号后  Shang Hai Long Tang
 

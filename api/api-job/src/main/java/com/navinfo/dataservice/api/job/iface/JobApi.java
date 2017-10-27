@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.api.job.iface;
 
 import java.util.List;
+import java.util.Map;
+
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import net.sf.json.JSONObject;
 
@@ -21,4 +23,12 @@ public interface JobApi {
 	JobInfo getLatestJobByDescp(String descp)throws Exception;
 	JobInfo getJobByDescp(String descp)throws Exception;
 	Integer getJobByUserAndSubTask(long userId, long subtaskId,String jobType)throws Exception;
+	
+	/**
+	 * 判断是否有正在执行的job
+	 * @author Han Shaoming
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String,Object> getJobIsRunning(String jobType) throws Exception;
 }

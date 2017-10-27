@@ -73,7 +73,7 @@ public class NoTaskJob extends AbstractStatJob {
 			}
 
 			Map<String, Object> notaskData = new HashMap<>();
-			notaskData.put("block_notask ", blockStat);
+			notaskData.put("block_notask", blockStat);
 			notaskData.put("city_notask", cityStat);
 			//log.info("result:" + notaskData);
 			

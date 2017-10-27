@@ -785,6 +785,7 @@ public class SubtaskOperation {
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+						subtask.put("taskId", rs.getInt("TASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
 

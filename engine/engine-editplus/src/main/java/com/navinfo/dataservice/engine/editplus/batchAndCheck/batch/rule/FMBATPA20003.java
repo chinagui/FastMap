@@ -56,10 +56,9 @@ public class FMBATPA20003 extends BasicBatchRule {
 				continue;
 			}
 			IxPointaddress ixPonitaddress = (IxPointaddress) obj.getMainrow();
-			if(true){
-			//			if (ixPonitaddress.getHisOpType().equals(OperationType.INSERT)
-//					|| (ixPonitaddress.getHisOpType().equals(OperationType.UPDATE)
-//							&& ixPonitaddress.hisOldValueContains(IxPointaddress.DP_NAME))) {
+			if (ixPonitaddress.getHisOpType().equals(OperationType.INSERT)
+					|| (ixPonitaddress.getHisOpType().equals(OperationType.UPDATE)
+							&& ixPonitaddress.hisOldValueContains(IxPointaddress.DP_NAME))) {
 				String dpName = ixPonitaddress.getDpName() == null ? "" : ixPonitaddress.getDpName();
 				for (String keyWord : pointAddrckType7) {
 					if(dpName.contains(keyWord) && !dpName.endsWith(keyWord)){

@@ -201,6 +201,59 @@ public class IxPointAddressObj extends AbstractIxObj {
 		}
 		return ixPointaddressParent;
 	}
+	
+	public IxPointaddressName getCHName(){
+		List<IxPointaddressName> names = getIxPointaddressNames();
+		if(names == null || names.isEmpty()){
+			return null;
+		}
+		for(IxPointaddressName name : names){
+			if("CHI".equals(name.getLangCode()) || "CHT".equals(name.getLangCode())){
+				return name;
+			}
+		}
+		return null;
+	}
+	
+	public IxPointaddressName getCHIName(){
+		List<IxPointaddressName> names = getIxPointaddressNames();
+		if(names == null || names.isEmpty()){
+			return null;
+		}
+		for(IxPointaddressName name : names){
+			if("CHI".equals(name.getLangCode())){
+				return name;
+			}
+		}
+		return null;
+	}
+	
+	
+	public IxPointaddressName getCHTName(){
+		List<IxPointaddressName> names = getIxPointaddressNames();
+		if(names == null || names.isEmpty()){
+			return null;
+		}
+		for(IxPointaddressName name : names){
+			if("CHT".equals(name.getLangCode())){
+				return name;
+			}
+		}
+		return null;
+	}
+	
+	public IxPointaddressName getENGName(){
+		List<IxPointaddressName> names = getIxPointaddressNames();
+		if(names == null || names.isEmpty()){
+			return null;
+		}
+		for(IxPointaddressName name : names){
+			if("ENG".equals(name.getLangCode())){
+				return name;
+			}
+		}
+		return null;
+	}
 
 	public static final String IX_POINTADDRESS = "IX_POINTADDRESS";
 	public static final String IX_POINTADDRESS_NAME = "IX_POINTADDRESS_NAME";

@@ -1,0 +1,20 @@
+﻿1. fm_man/***.sql
+	功能：***
+	目标库：fm_man
+	author：XX
+
+
+2017/10/20
+1.fm_regiondb_month/update_fm_regiondb_month.sh
+	功能:充电桩设备生产商与出厂编号数据修改(临时脚本)
+	脚本:update_fm_charge.sql
+	脚本说明:参数两个,参数一:备份待修改数据的表名;参数二:存在修改数据的临时表
+	示例:SQL> start C:\Users\Administrator\Desktop\update_fm_charge.sql TEMP_PLOT_20171014 TEMP_CHARGE_20171013
+
+
+
+
+
+
+
+

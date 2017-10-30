@@ -269,13 +269,14 @@ public class RdNameImportor {
 	 * @Description: 增加参数 subtaskId
 	 * @param params
 	 * @param subtaskId
+	 * @param userId 
 	 * @return
 	 * @throws Exception  JSONObject
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月14日 下午6:14:57 
 	 */
-	public JSONObject importRdNameFromWeb(JSONObject params, int subtaskId) throws Exception {
+	public JSONObject importRdNameFromWeb(JSONObject params, int subtaskId, long userId) throws Exception {
 		JSONObject result = new JSONObject();
 		
 		Connection conn = null;
@@ -285,7 +286,10 @@ public class RdNameImportor {
 			
 			RdNameSelector selector = new RdNameSelector(conn);
 			
+			String currentDate = com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();	
 			RdName rdName = Json2Obj(params);
+			rdName.setuFields("{\"userId\":"+userId+",\"u_date\":\""+currentDate+"\"}");
+			log.info("{\"userId\":"+userId+",\"u_date\":\""+currentDate+"\"}");
 			log.debug("rdName:"+rdName);
 			// 判断是否存在重复name
 			JSONObject rdNameExists = selector.checkRdNameExists(rdName);

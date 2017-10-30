@@ -3,26 +3,6 @@
 	目标库：fm_man
 	author：XX
 
-2017/10/19
-1. fm_sys/translate_table_create.sql
-	功能：SYS库创建翻译工具记录表
-	目标库：fm_sys
-	author：张云涛
-
-2. fmlimitline_init_new/initLimitLineInfoDB.sh
-   功能：生成限行限号情报库
-   目标库：限行限号库（测试环境与开发环境命名不同）
-   author：冯海霞
-
-2017/10/20
-1.fm_regiondb_month/update_fm_regiondb_month.sh
-	功能:充电桩设备生产商与出厂编号数据修改(临时脚本)
-	脚本:update_fm_charge.sql
-	脚本说明:参数两个,参数一:备份待修改数据的表名;参数二:存在修改数据的临时表
-	示例:SQL> start C:\Users\Administrator\Desktop\update_fm_charge.sql TEMP_PLOT_20171014 TEMP_CHARGE_20171013
-
-
-
 
 
 

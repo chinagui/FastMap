@@ -92,10 +92,13 @@ public class Process extends AbstractProcess<Command> {
 
 		return msg;
 	}
+	
+	private Check check = new Check();
 
 	@Override
 	public String exeOperation() throws Exception {
-
+		check.checkIntersectFace(getConn(), getCommand());
+		
 		RdGscOperateUtils.checkIsMoveGscNodePoint(this.getCommand().getLinks(),
 				this.getConn(), updateNode);
 		return new Operation(this.getCommand(), updateNode, this.getConn())

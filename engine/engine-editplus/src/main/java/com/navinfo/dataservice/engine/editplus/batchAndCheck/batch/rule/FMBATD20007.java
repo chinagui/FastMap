@@ -67,9 +67,13 @@ public class FMBATD20007 extends BasicBatchRule {
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
 		log.info("FMBATD20007 start loadReferDatas ---");
 		
+		log.info("FMBATD20007 start getScPointMinganNameList  ---");
 		scPointMinganNameList = getScPointMinganNameList();
+		log.info("FMBATD20007 end getScPointMinganNameList  ---");
 		
+		log.info("FMBATD20007 start scSensitiveWordsType4KindList  ---");
 		scSensitiveWordsType4KindList = getScSensitiveWordsType4KindList();
+		log.info("FMBATD20007 end scSensitiveWordsType4KindList  ---");
 		
 		log.info("FMBATD20007 start scSensitiveWordsMap  ---");
 		scSensitiveWordsMap	= metadataApi.scSensitiveWordsMap();
@@ -112,41 +116,51 @@ public class FMBATD20007 extends BasicBatchRule {
 				
 				IxPoiFlag ixPoiFlag = getFlagCode(poiObj);
 				
+				log.info("FMBATD20007 start suitContidion1 pid---" +poi.getPid());
 				if(suitContidion1(name)){
 					if(ixPoiFlag == null){
 						addIxPoiFlag(poiObj);
+						log.info("FMBATD20007 end suitContidion1 pid---" +poi.getPid());
 					}else{
 						return;
 					}
 				}
 				
+				log.info("FMBATD20007 start suitContidion2 pid---" +poi.getPid());
 				if(suitContidion2(pid,name)){
 					if(ixPoiFlag != null){
 						ixPoiFlag.setOpType(OperationType.DELETE);
+						log.info("FMBATD20007 end suitContidion2 pid---" +poi.getPid());
 					}else{
 						return;
 					}
 				}
 				
+				log.info("FMBATD20007 start suitContidion3 pid---" +poi.getPid());
 				if(suitContidion3(kindCode)){
 					if(ixPoiFlag != null){
 						ixPoiFlag.setOpType(OperationType.DELETE);
+						log.info("FMBATD20007 end suitContidion3 pid---" +poi.getPid());
 					}else{
 						return;
 					}
 				}
 				
+				log.info("FMBATD20007 start suitContidion4 pid---" +poi.getPid());
 				if(suitContidion4(name,kindCode,adminCode)){
 					if(ixPoiFlag != null){
 						ixPoiFlag.setOpType(OperationType.DELETE);
+						log.info("FMBATD20007 end suitContidion4 pid---" +poi.getPid());
 					}else{
 						return;
 					}
 				}
 				
+				log.info("FMBATD20007 start suitContidion5 pid---" +poi.getPid());
 				if(suitContidion5(name, kindCode,adminCode)){
 					if(ixPoiFlag == null){
 						addIxPoiFlag(poiObj);
+						log.info("FMBATD20007 end suitContidion5 pid---" +poi.getPid());
 					}else{
 						return;
 					}
@@ -322,6 +336,7 @@ public class FMBATD20007 extends BasicBatchRule {
 		} finally {
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(pstmt);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		
 	}
@@ -389,11 +404,14 @@ public class FMBATD20007 extends BasicBatchRule {
 			
 			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
+			
 			rs = pstmt.executeQuery();
 			
 			while(rs.next()){
+				log.info("FMBATD20007 addScPointMinganNameList  name---"+rs.getString(1));
 				scPointMinganNameList.add(rs.getString(1));
 			}
+			
 			
 		} catch (Exception e) {
 			DbUtils.rollback(conn);
@@ -401,6 +419,7 @@ public class FMBATD20007 extends BasicBatchRule {
 		} finally {
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(pstmt);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return scPointMinganNameList;
 	}
@@ -420,8 +439,9 @@ public class FMBATD20007 extends BasicBatchRule {
 			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
-			
+		
 			while(rs.next()){
+				log.info("FMBATD20007 add scSensitiveWordsType4KindList  kindCode---"+rs.getString(1));
 				scSensitiveWordsType4KindList.add(rs.getString(1));
 			}
 			
@@ -431,6 +451,7 @@ public class FMBATD20007 extends BasicBatchRule {
 		} finally {
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(pstmt);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return scSensitiveWordsType4KindList;
 	}

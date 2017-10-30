@@ -12,7 +12,7 @@ import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiDetail;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 
@@ -20,7 +20,7 @@ import net.sf.json.JSONObject;
 
 /**
  * 检查条件： 非删除（根据履历判断删除） 检查原则：
- * 当CONTACT_TYPE=11，必须满足“区号-电话”标准，区号应包含在《sc_point_adminarea》表中“AREACODE”列中，
+ * 单个传真（IX_POI_DETAIL.FAX，多个传真以“|”分隔）必须满足“区号-电话”标准，区号应包含在《sc_point_adminarea》表中“AREACODE”列中，
  * 同时长度不能超过对应“‘PHONENUM_LEN’值+1”（以POI的行政区划号关联sc_point_adminarea表ADMINAREACODE）。
  * 
  * Log：传真区号或位数错误，正确区号为**，位数应为**。
@@ -36,22 +36,23 @@ public class FMZY20237 extends BasicCheckRule {
 		if (poi.getHisOpType().equals(OperationType.DELETE)) {
 			return;
 		}
-		List<IxPoiContact> contacts = poiObj.getIxPoiContacts();
+		List<IxPoiDetail> details = poiObj.getIxPoiDetails();
 
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		for (IxPoiContact contact : contacts) {
-			if (contact.getContactType() == 11) {
-				String number = contact.getContact();
-				if (number == null) {
-					continue;
-				}
-				if (number.contains("-")) {
+		// 通过poi的regionId获取adminCode
+		int regionId = (int) poi.getRegionId();
+		String adminCode = getAdminCodeByRegionId(regionId);
+		JSONObject adminCodeObj = metaApi.searchByAdminCode(adminCode);
+		JSONObject telObj = adminCodeObj.getJSONObject(adminCode);
+		for (IxPoiDetail detail : details) {
+			String number = detail.getFax();
+			if (number == null) {
+				continue;
+			}
+			String[] numbers=number.split("\\|");
+			for (String oneNumber : numbers) {
+				if (oneNumber.contains("-")) {
 					String[] tel = number.split("-");
-					int regionId = (int) poi.getRegionId();
-					// 通过poi的regionId获取adminCode
-					String adminCode = getAdminCodeByRegionId(regionId);
-					JSONObject adminCodeObj = metaApi.searchByAdminCode(adminCode);
-					JSONObject telObj = adminCodeObj.getJSONObject(adminCode);
 					String rightAreaCode = telObj.getString("code");
 					int rightLen = telObj.getInt("telLength");
 					// poi的 areaCode 和 telLen
@@ -105,6 +106,13 @@ public class FMZY20237 extends BasicCheckRule {
 		}
 		
 		return Integer.toString(adminCode);
+	}
+	
+	public static void main(String[] args) throws Exception {
+		String number = "029-2837467|010-298328382";
+		String[] numbers=number.split("\\|");
+		
+
 	}
 
 }

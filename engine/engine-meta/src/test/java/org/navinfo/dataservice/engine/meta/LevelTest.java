@@ -29,7 +29,7 @@ public class LevelTest {
         	
 
             
-            String parameter = "{\"dbId\":19,\"pid\":4656744,\"poi_num\":\"0010110510LW502182\",\"kindCode\":\"130403\",\"chainCode\":null,\"name\":\"报刊亭\",\"rating\":0,\"level\":\"C\"}";
+            String parameter = "{\"dbId\":13,\"pid\":3529,\"poi_num\":\"0010060903LK101042\",\"kindCode\":\"200200\",\"chainCode\":\"\",\"name\":\"自租点\",\"rating\":0,\"level\":\"B4\"}";
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             conn = DBConnector.getInstance().getMetaConnection();

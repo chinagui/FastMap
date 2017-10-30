@@ -11,9 +11,11 @@ public class WriterFactory {
 	//day_planjob
 	private static final String day_plan_job = "dayPlanStat";
 	//任务统计job
-	private static final String task_job = "taskStat";
+	private static final String quick_task_job = "quickTaskStat";
+	private static final String medium_task_job = "mediumTaskStat";
 	//项目统计job
-	private static final String program_job = "programStat";	
+	private static final String quick_program_job = "quickProgramStat";
+	private static final String medium_program_job = "mediumProgramStat";
 	//城市统计job
 	private static final String city_job = "cityJob";
 	//快线统计job
@@ -30,10 +32,14 @@ public class WriterFactory {
 			return new SubtaskWriter();
 		}else if(day_plan_job.equals(jobType)){
 			return new DayPlanWriter();
-		}else if(task_job.equals(jobType)){
-			return new TaskWriter();
-		}else if(program_job.equals(jobType)){
-			return new ProgramWriter();
+		}else if(quick_task_job.equals(jobType)){
+			return new QuickTaskWriter();
+		}else if(medium_task_job.equals(jobType)){
+			return new MediumMonitorWriter();
+		}else if(quick_program_job.equals(jobType)){
+			return new QuickProgramWriter();
+		}else if(medium_program_job.equals(jobType)){
+			return new MediumMonitorWriter();
 		}else if(city_job.equals(jobType)){
 			return new CityWriter();
 		}else if(quick_job.equals(jobType)){

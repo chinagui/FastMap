@@ -17,7 +17,7 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 /**
  * 检查条件： 非删除（根据履历判断删除） 检查原则：（简介字段：IX_POI_DETAIL.BRIEF_DESC）
  * 1.简介中不能含有非法字符（遍历简介的值，如果值不在TY_CHARACTER_EGALCHAR_EXT.EXTENTION_TYPE in
- * (“GBK”,“ENG_F_U”,“ENG_F_L”,“DIGIT_F”,“SYMBOL_F”)对应的“CHARACTER”范围内）
+ * (“GBK”,“ENG_F_U”,“ENG_F_L”,“DIGIT_F”,“SYMBOL_F”,"GBK_SYMBOL_F")对应的“CHARACTER”范围内）
  * 2.简介不超过127个字符 
  * 3.必须为全角 
  * 4.不能存在空格
@@ -54,6 +54,9 @@ public class FMMDP001 extends BasicCheckRule {
 		}
 		if (charMap.containsKey("SYMBOL_F")) {
 			charList.addAll(charMap.get("SYMBOL_F"));
+		}
+		if (charMap.containsKey("GBK_SYMBOL_F")) {
+			charList.addAll(charMap.get("GBK_SYMBOL_F"));
 		}
 		List<IxPoiDetail> poiDetails = poiObj.getIxPoiDetails();
 		for (IxPoiDetail poiDetail : poiDetails) {

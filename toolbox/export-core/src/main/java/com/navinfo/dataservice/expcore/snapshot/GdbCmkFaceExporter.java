@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
+
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
+
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
@@ -46,7 +49,7 @@ public class GdbCmkFaceExporter {
 					+ "  from CMG_BUILDFACE  a ,CMG_BUILDING_POI b   where a.building_pid = b.building_pid(+)  "
 					+ " and  a.data_source = 4 "
 					+ " and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) " ;
-			Clob clob = conn.createClob();
+			Clob clob = ConnectionUtil.createClob(conn);
 			clob.setString(1, StringUtils.join(meshes, ","));
 
 			stmt2 = conn.prepareStatement(sql);

@@ -20,8 +20,8 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 /**
  * 检查条件： 非删除（根据履历判断删除） 检查原则：（开放时间字段：IX_POI_PARKING.OPEN_TIME）
  * 1.不能含有非法字符（如果值不在TY_CHARACTER_EGALCHAR_EXT.EXTENTION_TYPE in
- * (“GBK”,“ENG_F_U”,“ENG_F_L”,“DIGIT_F”,“SYMBOL_F”)对应的“CHARACTER”范围内）
- * 2.找出字段中时间段（一组或多组，时间段为“起始时间：终止时间”的样式(起始/终止时间可能是**:**，也可能是*:**)；
+ * (“GBK”,“ENG_F_U”,“ENG_F_L”,“DIGIT_F”,“SYMBOL_F”,“GBK_SYMBOL_F”)对应的“CHARACTER”范围内）
+ * 2.找出字段中时间段（一组或多组，时间段为“起始时间：终止时间”的样式(起始/终止时间是**:**，即小时和分钟必须是两位)；
  * 以"-"分隔起始和终止时间，参考右侧数据情况），要求，起始时间不能为24：00，终止时间不能为00:00或0:00 3.字段应该是全角
  * 
  * log1：**是非法字符 Log2：营业时间开始时间或结束时间错误 Log3: 营业时间存在半角字符
@@ -66,6 +66,9 @@ public class FMZY20152 extends BasicCheckRule {
 		if (charMap.containsKey("SYMBOL_F")) {
 			charList.addAll(charMap.get("SYMBOL_F"));
 		}
+		if (charMap.containsKey("GBK_SYMBOL_F")) {
+			charList.addAll(charMap.get("GBK_SYMBOL_F"));
+		}
 
 		for (IxPoiParking parking : parkings) {
 			String openTiime = parking.getOpenTiime();
@@ -100,6 +103,12 @@ public class FMZY20152 extends BasicCheckRule {
 					time = matcher.group(0);
 					String[] timeArray = time.split("-");
 					if(timeArray.length == 2){
+						if((StringUtils.isNotEmpty(timeArray[0]) && timeArray[0].length()!=5)||
+								(StringUtils.isNotEmpty(timeArray[1]) && timeArray[1].length()!=5)){
+							setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
+									"营业时间开始时间或结束时间错误");
+							break;
+						}
 						if(StringUtils.isNotEmpty(timeArray[0]) && "24:00".equals(timeArray[0])){
 							setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 									"营业时间开始时间或结束时间错误");

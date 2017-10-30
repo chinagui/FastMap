@@ -48,8 +48,11 @@ public class Process extends AbstractProcess<Command> {
         return super.prepareData();
     }
 
+    private Check check = new Check();
+    
     @Override
     public String exeOperation() throws Exception {
+    	check.checkIntersectFace(getConn(), getCommand());
         return new Operation(getCommand(), getConn()).run(getResult());
     }
 }

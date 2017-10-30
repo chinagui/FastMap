@@ -96,10 +96,10 @@ public class ColumnCoreControl {
 					
 					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, comSubTaskId,qcFlag);
 					// 可申请数据条数
-					int canApply = 50 - hasApply;
+					int canApply = 100 - hasApply;
 					logger.info("该用户可申请数据条数:"+canApply);
 					if (canApply == 0) {
-						throw new Exception("该作业员名下已存在50条数据，不可继续申请");
+						throw new Exception("该作业员名下已存在100条数据，不可继续申请");
 					}
 
 					// 申请数据
@@ -718,6 +718,39 @@ public class ColumnCoreControl {
 		}
 	}
 	
+	
+	/**
+	 * 月编子任务统计接口,关闭月编子任务判断使用(查询改子任务范围内,是否有未提交的数据)
+	 * @param subtaskId
+	 * @return
+	 * @throws Exception
+	 */
+	public int getSubTaskStatics(int subtaskId) throws Exception {
+		Connection conn = null;
+		try {
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			logger.info("获取subtask,subtaskId:"+subtaskId);
+			
+			int dbId = subtask.getDbId();
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
+			
+			int result = selector.getSubTaskStatics(subtask);
+			
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 	
 }

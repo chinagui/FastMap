@@ -3,8 +3,12 @@ package com.navinfo.dataservice.control.row.pointaddress;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
@@ -80,53 +84,86 @@ public class PointAddressSave {
             int subtaskId = json.getInt("subtaskId");
             
             conn = DBConnector.getInstance().getConnectionById(dbId);
-            JSONObject poiData = json.getJSONObject("data");
-
-            OperType operType = Enum.valueOf(OperType.class,
-					json.getString("command"));
-
+            
             ObjType type = Enum.valueOf(ObjType.class,
-					json.getString("type"));
+            		json.getString("type"));
 
             if(!type.equals(ObjType.IXPOINTADDRESS)){
             	return result;
             }
+
+            OperType operType = Enum.valueOf(OperType.class,
+					json.getString("command"));
+
+            if(operType == OperType.BATCHMOVE){
+            	Set<Long> pids = new HashSet<>();
+            	JSONArray pois = json.getJSONArray("data");
+            	JSONArray jsons = new JSONArray();
+            	for(int i = 0;i < pois.size(); i++){
+            		JSONObject tmp = new JSONObject();
+            		JSONObject data = pois.getJSONObject(i);
+            		calcGeometryAndMesh(data, conn);
+            		// 其他字段
+            		pids.add(data.getLong("pid"));
+            		tmp.put("objId", data.get("pid"));
+            		tmp.put("data", data);
+            		tmp.put("command", "UPDATE");
+            		tmp.put("type", ObjType.IXPOINTADDRESS);
+            		jsons.add(tmp);
+            	}
+            	
+	            calcSubtaskId(subtaskId);
+            	
+	            IxPointAddressObjImportor importor = new IxPointAddressObjImportor(conn,null);
+	 			EditJson editJson = new EditJson();
+	 			editJson.addJsonPoi(jsons);
+	 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
+	 			importor.operate(command);
+	 			importor.setSubtaskId(subtaskId);
+	 			importor.persistChangeLog(OperationSegment.SG_ROW, userId);
+	 			
+	 			batchMoveOperate(pids, subtaskId, conn, result);
+            	
+            }else{
+
+            	JSONObject poiData = json.getJSONObject("data");
            
-			if(poiData.containsKey("longitude") && poiData.containsKey("latitude")){
-				calcGeometryAndMesh(poiData, conn);
-			}
-			
-			 if(operType == OperType.CREATE){
-			 	String date = StringUtils.getCurrentTime();
-	            String userIdStr = Long.toString(userId);
-	            String idcode = org.apache.commons.lang.StringUtils.leftPad(userIdStr.concat(date), 20, "0");
-	            poiData.put("idcode",idcode);
-	         }
-            
-            json.put("data", poiData);
-            
-            calcSubtaskId(subtaskId);
-            
-            if(operType == OperType.CREATE){
-            	json.put("command", "INSERT");
-            }
-            
-            IxPointAddressObjImportor importor = new IxPointAddressObjImportor(conn,null);
- 			EditJson editJson = new EditJson();
- 			editJson.addJsonPoi(json);
- 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
- 			importor.operate(command);
- 			importor.setSubtaskId(subtaskId);
- 			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
- 			OperationResult operationResult = importor.getResult();
-        	long pid = 0L;
-        	if(operType == OperType.CREATE){
-        		pid = operationResult.getAllObjs().get(0).getMainrow().getObjPid();
-            }else if(operType == OperType.UPDATE || operType == OperType.DELETE ){
-        		pid = json.getInt("objId");
-            }
-        	
- 			afterOperate(operType, pid,subtaskId, conn, result);//新增或修改之后的操作
+				if(poiData.containsKey("longitude") && poiData.containsKey("latitude")){
+					calcGeometryAndMesh(poiData, conn);
+				}
+				
+				 if(operType == OperType.CREATE){
+				 	String date = StringUtils.getCurrentTime();
+		            String userIdStr = Long.toString(userId);
+		            String idcode = org.apache.commons.lang.StringUtils.leftPad(userIdStr.concat(date), 20, "0");
+		            poiData.put("idcode",idcode);
+		         }
+	            
+	            json.put("data", poiData);
+	            
+	            calcSubtaskId(subtaskId);
+	            
+	            if(operType == OperType.CREATE){
+	            	json.put("command", "INSERT");
+	            }
+	            
+	            IxPointAddressObjImportor importor = new IxPointAddressObjImportor(conn,null);
+	 			EditJson editJson = new EditJson();
+	 			editJson.addJsonPoi(json);
+	 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
+	 			importor.operate(command);
+	 			importor.setSubtaskId(subtaskId);
+	 			importor.persistChangeLog(OperationSegment.SG_ROW, userId);
+	 			OperationResult operationResult = importor.getResult();
+	        	long pid = 0L;
+	        	if(operType == OperType.CREATE){
+	        		pid = operationResult.getAllObjs().get(0).getMainrow().getObjPid();
+	            }else if(operType == OperType.UPDATE || operType == OperType.DELETE ){
+	        		pid = json.getInt("objId");
+	            }
+	        	
+	 			afterOperate(operType, pid,subtaskId, conn, result);//新增或修改之后的操作
+ 			}
         	
             return result;
         } catch (DataNotChangeException e) {
@@ -242,6 +279,42 @@ public class PointAddressSave {
 	}
 	
 	/**
+	 * 批量移动维护状态表
+	 * @throws Exception 
+	 */
+	public void batchMoveOperate(Set<Long> pids,int subtaskId,Connection conn,JSONObject result) throws Exception{
+		JSONArray logArray = new JSONArray();
+
+		for(long pid : pids){
+	    	boolean isFreshVerified = isFreshVerified(pid, conn);
+	    	Map<String,Integer> resultMap = getStatusAndExistsSubtask(pid,conn);
+	    	int persistSubtaskId = resultMap.get("subtaskId");
+	    	int persistStatus = resultMap.get("status");
+			if(persistStatus == 3 && persistSubtaskId != 0) {//表示该点门牌已提交且存在任务
+				updateDayEditStatus(pid, isFreshVerified, conn,true);
+			}else if(persistStatus == 0 && persistSubtaskId == 0){//原库中点
+				updateDayEditStatus(pid, isFreshVerified, conn,true);
+			}else{
+				if(persistSubtaskId == subtaskId){//表示当前该点门牌任务和库中相同
+					updateDayEditStatus(pid, isFreshVerified, conn,false);
+				}
+			}
+				
+	    	JSONObject logObject = new JSONObject();
+	    	logObject.put("type", "IXPOINTADDRESS");
+	    	logObject.put("pid", pid);
+	    	logObject.put("childPid", "");
+	    	logObject.put("op", "修改");
+	    	logArray.add(logObject);
+		}
+    	result.put("log", logArray);
+    	result.put("check", new JSONArray());
+    	result.put("pid", "");
+			
+	}
+	
+	
+	/**
 	 * 查询对象是否鲜度认证
 	 * 
 	 * @param objPid
@@ -250,7 +323,10 @@ public class PointAddressSave {
 	 */
 	public boolean isFreshVerified(long pid,Connection conn) throws Exception {
 		String fd_lst=null;
-
+		List<String> filterFdList = new ArrayList<String>();
+		filterFdList.add("\"MEMO\"");
+		filterFdList.add("\"DATA_VERSION\"");
+		
 		String sql = "SELECT de.fd_lst,de.op_tp FROM LOG_DETAIL de WHERE de.OB_PID= :1 AND de.OB_NM='IX_POINTADDRESS'";
 		
 		PreparedStatement pstmt = null;
@@ -267,7 +343,7 @@ public class PointAddressSave {
 				  if(org.apache.commons.lang.StringUtils.isNotBlank(fd_lst)){
 					  String[] arrFd = fd_lst.replace("[", "").replace("]", "").split(",");
 					  for(int j= 0 ; j<arrFd.length;j++){
-			            	if (!"\"MEMO\"".equals(arrFd[j])){
+			            	if (!filterFdList.contains(arrFd[j])){
 			            		return false;
 			            	}
 					  }  

@@ -60,7 +60,7 @@ public class GLM55109 extends BasicCheckRule {
 	 * @throws Exception
 	 */
 	public List<Integer> getFormOfWayByLinkPid(Long linkPid) throws Exception{
-		String sql = "select form_of_way from rd_link_form where link_pid = "+linkPid;
+		String sql = "select form_of_way from rd_link_form where u_record <> 2 and link_pid = "+linkPid;
     	
     	PreparedStatement pstmt = null;
 		

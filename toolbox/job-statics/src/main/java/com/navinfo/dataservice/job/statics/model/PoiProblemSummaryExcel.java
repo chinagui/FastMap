@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.scripts.model;
+package com.navinfo.dataservice.job.statics.model;
 
 import java.util.Date;
 import java.util.List;

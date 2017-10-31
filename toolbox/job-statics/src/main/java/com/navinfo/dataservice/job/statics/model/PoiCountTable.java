@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.scripts.model;
+package com.navinfo.dataservice.job.statics.model;
 
 import java.util.List;
 import java.util.Map;
@@ -20,35 +20,35 @@ import net.sf.json.JSONObject;
  * @date: 2017年10月24日
  */
 public class PoiCountTable implements IObj{
-	private String fid;
-	private String level;
-	private String poiName;
-	private String meshId;
-	private String category;
-	private String nameSiteCount;
-	private String positionSiteCount;
-	private String categorySiteCount;
-	private String addressSiteCount;
-	private String photeSiteCount;
-	private String sideSiteCount;
-	private String fatherSonSiteCount;
-	private String deepSiteCount;
-	private String labelSiteCount;
-	private String resturantSiteCount;
-	private String linkSiteCount;
-	private String postcodeSiteCount;
-	private String levelSiteCount;
-	private String collectorUserid;
-	private String collectorTime;
-	private String inputUserid;
-	private String inputTime;
-	private String qcUserid;
-	private String qcTime;
-	private String qcSubTaskid;
-	private String vision;
-	private String memo;
-	private String type;
-	private String memoUserid;
+	private String fid = "null";
+	private String level = "null";
+	private String poiName = "null";
+	private String meshId = "null";
+	private String category = "null";
+	private String nameSiteCount = "null";
+	private String positionSiteCount = "null";
+	private String categorySiteCount = "null";
+	private String addressSiteCount = "null";
+	private String photeSiteCount = "null";
+	private String sideSiteCount = "null";
+	private String fatherSonSiteCount = "null";
+	private String deepSiteCount = "null";
+	private String labelSiteCount = "null";
+	private String resturantSiteCount = "null";
+	private String linkSiteCount = "null";
+	private String postcodeSiteCount = "null";
+	private String levelSiteCount = "null";
+	private String collectorUserid = "null";
+	private String collectorTime = "null";
+	private String inputUserid = "null";
+	private String inputTime = "null";
+	private String qcUserid = "null";
+	private String qcTime = "null";
+	private String qcSubTaskid = "null";
+	private String vision = "null";
+	private String memo = "null";
+	private String type = "null";
+	private String memoUserid = "null";
 
 	public PoiCountTable() {
 	}

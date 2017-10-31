@@ -46,12 +46,11 @@ public class FMDPA008 extends BasicCheckRule {
 				Set<String> fts = new HashSet<>();
 				Set<String> jts = new HashSet<>();
 
-				for (char c : dprName.toCharArray()) {
-					String str = String.valueOf(c);
-					if (ftMap.containsKey(str)) {
+				for (String str: ftMap.keySet()){
+					if (dprName.contains(str)){
 						JSONObject data = ftMap.get(str);
 						Object convert = data.get("convert");
-						if (convert.equals(0)) {
+						if (convert.equals(0)){
 							String jt = data.getString("jt");
 							fts.add(str);
 							jts.add(jt);

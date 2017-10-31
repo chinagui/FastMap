@@ -63,7 +63,7 @@ public class FMYW20218 extends BasicCheckRule {
 			if (webSite == null) {
 				return;
 			}
-			if (!webSite.startsWith("http://")||!webSite.startsWith("https://")) {
+			if (!webSite.startsWith("http://")&&!webSite.startsWith("https://")) {
 				this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 						"网址信息格式错误，网址不是以”http://”或“https://开头");
 			}

@@ -185,14 +185,11 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				subtask.setWorkKind(3);				
 			}if(task.getSubWorkKind(4)==1){
 				subtask.setWorkKind(4);	
-				String adminCode = TaskService.getInstance().selectAdminCode(conn,task.getProgramId());
 				//* 快线：情报名称_发布时间_作业员_子任务ID
 				// * 中线：任务名称_作业组
-				if(adminCode != null && !"".equals(adminCode)){
-					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(conn,adminCode, 5);
-					if(userGroup!=null){
-						subtask.setExeGroupId(userGroup.getGroupId());
-					}
+				UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 5);
+				if(userGroup!=null){
+					subtask.setExeGroupId(userGroup.getGroupId());
 				}
 			}else if(task.getSubWorkKind(1)==1){
 				subtask.setWorkKind(1);	

@@ -924,13 +924,7 @@ public class SubtaskService {
 					result.put("qualityPlanEndDate",DateUtils.format(subtaskQuality.getPlanEndDate(), DateUtils.DATE_YMD));
 					result.put("qualityTaskStatus",subtaskQuality.getStatus());
 					
-					int qualityMethod=subtaskQuality.getQualityMethod();
-					JSONArray qualityMethodArray=new JSONArray();
-					if(qualityMethod==3){
-						qualityMethodArray.add(1);
-						qualityMethodArray.add(2);
-					}else if(qualityMethod!=0){qualityMethodArray.add(qualityMethod);}
-					result.put("qualityMethod", qualityMethodArray);
+					result.put("qualityMethod", subtaskQuality.getQualityMethod());
 					
 					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn,subtaskQuality.getExeUserId());
 					if(userInfo!=null){

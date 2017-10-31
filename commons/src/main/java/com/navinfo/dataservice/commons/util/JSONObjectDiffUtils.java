@@ -31,7 +31,7 @@ public class JSONObjectDiffUtils {
 	 * JSONArray中还能包含Integer,Long,Float,Double,Boolean,String,JSONObject,不能直接再包含数组，类似[[],[]]否则无法差分，
 	 * @param tar
 	 * @param ref
-	 * @return tar和ref是否相同，true相同，false不同
+	 * @return tar和ref是否相同，true不相同，false相同
 	 */
 	@SuppressWarnings("unchecked")
 	public static boolean diff(Object tar,Object ref)throws Exception{

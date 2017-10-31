@@ -2,23 +2,20 @@ package com.navinfo.dataservice.engine.editplus.operation.imp;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
-
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
+import com.navinfo.dataservice.commons.util.JSONObjectDiffUtils;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -47,7 +44,6 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 
@@ -194,7 +190,7 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 							//修改POI，库中已删除的，作为新增处理,重新赋值fid和pid
 							log.info("fid:"+fid+"在库中已删除，修改数据作为新增处理,重新赋值fid和pid");
 							poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
-							setPoiAttr(poiObj,entry.getValue());
+							setPoiAttr(poiObj,entry.getValue(),false);
 							addFlag = true;
 						}else{
 							log.info("fid:"+fid+"在库中存在，作为修改处理");
@@ -222,7 +218,10 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 						}else{
 							JSONObject refJso = tarJso.getJSONObject("orgInfo");
 							//字段级差分
-							
+							Collection<String> diffFirstLevel = JSONObjectDiffUtils.diffFirstLevel(tarJso, refJso, poiFilterFields);
+							if(diffFirstLevel != null && diffFirstLevel.size() >0){
+								changeFields.addAll(diffFirstLevel);
+							}
 							//特殊处理indoor字段
 							Object indoorJso = tarJso.get("indoor");
 							Object indoorJsoRef = refJso.get("indoor");
@@ -237,6 +236,16 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 									changeFields.add("indoor");
 								}
 							}
+							//差分电话
+							Map<Integer, List<JSONObject>> diffContacts = diffContacts(tarJso.get("contacts"), refJso.get("contacts"));
+							if(diffContacts != null && diffContacts.size() >0){
+								contactsMap.putAll(diffContacts);
+							}
+							//差分照片
+							List<JSONObject> diffPhotos = diffPhotos(tarJso.get("attachments"), refJso.get("attachments"));
+							if(diffPhotos != null && diffPhotos.size()>0){
+								addPhotos.addAll(diffPhotos);
+							}
 						}
 						
 						setPoiAttrByDiff(poiObj,entry.getValue(),changeFields,contactsMap,addPhotos);
@@ -244,7 +253,7 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 						//库中未找到数据，处理为新增
 						log.info("fid:"+fid+"在库中未找到，作为新增处理");
 						poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
-						setPoiAttr(poiObj,entry.getValue());
+						setPoiAttr(poiObj,entry.getValue(),true);
 						addFlag = true;
 					}
 					//******存储 photo 属性值 ******
@@ -328,7 +337,7 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 	
 	
 
-	public void setPoiAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
+	public void setPoiAttr(IxPoiObj poiObj,JSONObject jo,boolean updateFidFlag)throws Exception{
 		//to-do
 		//table IX_POI
 		IxPoi ixPoi = (IxPoi)poiObj.getMainrow();
@@ -384,7 +393,9 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 			setAddressAndAttr(poiObj,addr);
 		}
 		//fid
-		ixPoi.setPoiNum(jo.getString("fid"));
+		if(updateFidFlag){
+			ixPoi.setPoiNum(jo.getString("fid"));
+		}
 		//season version
 		ixPoi.setDataVersion(version);
 		//t_operateDate
@@ -785,8 +796,8 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 							String rowId = jso.getString("rowId").toUpperCase();
 							IxPoiContact ixPoiContact = poiObj.createIxPoiContact();
 							ixPoiContact.setRowId(rowId);
-							setContactAttrByDiff(ixPoiContact,jso,3, priorityMax);
 							priorityMax += 1;
+							setContactAttrByDiff(ixPoiContact,jso,3, priorityMax);
 						}
 					}
 				}
@@ -1258,47 +1269,128 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 		return photo;
 	}
 	
+	
 	/**
-	 * 差分二级记录为JSONObject的对象
+	 * 差分电话数据
 	 * @author Han Shaoming
-	 * @param newJso
-	 * @param oldJso
-	 * @param filterFields
+	 * @param target
+	 * @param refer
 	 * @return
-	 * tar和ref是否相同，true不相同，false相同
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	private Boolean DiffSubField(Object target,Object refer) throws Exception{
-		//开始差分
-		if(target instanceof JSONNull){
-			if(refer instanceof JSONNull){
-				return false;
+	private Map<Integer,List<JSONObject>> diffContacts(Object target,Object refer) throws Exception{
+		Map<Integer,List<JSONObject>> contactsMap = new HashMap<Integer,List<JSONObject>>();
+		List<JSONObject> addList = new ArrayList<JSONObject>();
+		List<JSONObject> updateList = new ArrayList<JSONObject>();
+		List<JSONObject> deleteList = new ArrayList<JSONObject>();
+		//全部为新增
+		if((JSONUtils.isNull(refer)||((JSONArray)refer).size()==0)&& !JSONUtils.isNull(target) && ((JSONArray)target).size()>0){
+			JSONArray jsa = (JSONArray) target;
+			for (Object object : jsa) {
+				JSONObject jso = (JSONObject)object;
+				addList.add(jso);
 			}
-			if(refer.equals("")){
-				return false;
+		}
+		//全为删除
+		if((JSONUtils.isNull(target)|| ((JSONArray)target).size()==0)&& !JSONUtils.isNull(refer) && ((JSONArray)refer).size()>0){
+			JSONArray jsa = (JSONArray) refer;
+			for (Object object : jsa) {
+				JSONObject jso = (JSONObject)object;
+				deleteList.add(jso);
 			}
-			if((refer instanceof JSONObject)&&(((JSONObject)refer).keySet().size()==0)){
-				return false;
+		}
+		if(!JSONUtils.isNull(target)&&((JSONArray)target).size()>0 && !JSONUtils.isNull(refer)&&((JSONArray)refer).size()>0){
+			//转map
+			Map<String,JSONObject> targetMap = new HashMap<String,JSONObject>();
+			JSONArray targetJsa = (JSONArray) target;
+			for(Object so:targetJsa){
+				JSONObject j = (JSONObject)so;
+				targetMap.put(j.getString("rowId").toUpperCase(), j);
 			}
-			if((refer instanceof JSONArray)&&((JSONArray)refer).size()==0){
-				return false;
+			Map<String,JSONObject> referMap = new HashMap<String,JSONObject>();
+			JSONArray referJsa = (JSONArray) refer;
+			for(Object so:referJsa){
+				JSONObject j = (JSONObject)so;
+				referMap.put(j.getString("rowId").toUpperCase(), j);
 			}
-			return true;
-		}else if(target instanceof JSONObject){
-			JSONObject tarJo = (JSONObject) target;
-			if(refer instanceof JSONNull){
-				if(tarJo.keySet().size()==0){
-					return false;
-				}else{
-					return true;
+			//差分数据
+			for(String key : targetMap.keySet()){
+				//新增
+				if(!referMap.containsKey(key)){
+					addList.add(targetMap.get(key));
+				}
+				//判断修改
+				if(referMap.containsKey(key)){
+					JSONObject targetJso = targetMap.get(key);
+					JSONObject referJso = referMap.get(key);
+					if(JSONObjectDiffUtils.diff(targetJso.get("number"), referJso.get("number"))){
+						updateList.add(targetJso);
+					}else if(JSONObjectDiffUtils.diff(targetJso.get("type"), referJso.get("type"))){
+						updateList.add(targetJso);					
+					}else if(JSONObjectDiffUtils.diff(targetJso.get("priority"), referJso.get("priority"))){
+						updateList.add(targetJso);
+					}else if(JSONObjectDiffUtils.diff(targetJso.get("linkman"), referJso.get("linkman"))){
+						updateList.add(targetJso);
+					}
+					//删除包含的数据
+					referMap.remove(key);
+				}
+			}
+			//删除
+			if(referMap.size() > 0){
+				deleteList.addAll(referMap.values());
+			}
+		}
+		contactsMap.put(3, addList);
+		contactsMap.put(2, updateList);
+		contactsMap.put(1, deleteList);
+		return contactsMap;
+	}
+	
+	/**
+	 * 差分照片数据
+	 * @author Han Shaoming
+	 * @param target
+	 * @param refer
+	 * @return
+	 * @throws Exception
+	 */
+	private List<JSONObject> diffPhotos(Object target,Object refer) throws Exception{
+		List<JSONObject> addList = new ArrayList<JSONObject>();
+		//全部为新增
+		if((JSONUtils.isNull(refer)||((JSONArray)refer).size()==0)&& !JSONUtils.isNull(target) && ((JSONArray)target).size()>0){
+			JSONArray jsa = (JSONArray) target;
+			for (Object object : jsa) {
+				JSONObject jso = (JSONObject)object;
+				addList.add(jso);
+			}
+		}
+		if(!JSONUtils.isNull(target)&&((JSONArray)target).size()>0 && !JSONUtils.isNull(refer)&&((JSONArray)refer).size()>0){
+			//转map
+			Map<String,JSONObject> targetMap = new HashMap<String,JSONObject>();
+			JSONArray targetJsa = (JSONArray) target;
+			for(Object so:targetJsa){
+				JSONObject j = (JSONObject)so;
+				targetMap.put(j.getString("id"), j);
+			}
+			Map<String,JSONObject> referMap = new HashMap<String,JSONObject>();
+			JSONArray referJsa = (JSONArray) refer;
+			for(Object so:referJsa){
+				JSONObject j = (JSONObject)so;
+				referMap.put(j.getString("id"), j);
+			}
+			//差分数据
+			for(String key : targetMap.keySet()){
+				//新增
+				if(!referMap.containsKey(key)){
+					addList.add(targetMap.get(key));
 				}
 			}
 		}
-		return false;
-	} 
+		return addList;
+	}
 	
-	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 
 //			JSONObject obj = JSONObject.fromObject("{\"key1\":\"\",\"key2\":null,\"key3\":[]}");
 //			JSONArray ja = new JSONArray();
@@ -1338,7 +1430,56 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 //					list1.remove(s);
 //				}
 //			}
-		
+//		String jso1 = "{'fid':'00365520171019134255','name':'加油站','pid':0,'meshid':0,'kindCode':'230215',"
+//				+ "'guide':{'latitude':39.73235,'linkPid':212986,'longitude':116.4115},'address':'东磁村','postCode':'258863',"
+//				+ "'level':'B1','open24H':2,'parentFid':'','relateChildren':[],'contacts':[{'linkman':'','number':'010-25668566',"
+//				+ "'priority':1,'type':1,'rowId':'60CAF952E3DD4244A1D340E3EFC2FE95'},{'linkman':'','number':'18966586696',"
+//				+ "'priority':2,'type':2,'rowId':'41633FDA055040A6B02B7EDFFD32CF71'}],'foodtypes':{'avgCost':0,'creditCards':'1|2',"
+//				+ "'foodtype':'3002|2002','openHour':'07:00-20:00','parking':3,'rowId':'F0A6D52CF2DE41A0AFA967A6511946A5'},"
+//				+ "'parkings':null,'hotel':null,'sportsVenues':'','chargingStation':null,'chargingPole':[{'acdc':0,"
+//				+ "'availableState':'4','count':1,'current':'','factoryNum':'','floor':2,'groupId':1,'locationType':0,"
+//				+ "'manufacturer':'','mode':0,'openType':'1','parkingNum':'','payment':'4','plotNum':'','plugNum':1,'plugType':'9',"
+//				+ "'power':'','prices':'','productNum':'无型号','voltage':'','rowId':'28AA7E07EA44417AA5EB23A1F7696112'}],"
+//				+ "'gasStation':{'egType':'E92|E97','fuelType':'0|1|2|6','mgType':'M10|M50','oilType':'90',"
+//				+ "'openHour':'０６：００－２０：００','payment':'2','service':'2|5','servicePro':'',"
+//				+ "'rowId':'CD32ADC73A0C40D19FD0B87EBA5CEB08'},'indoor':{'floor':'','type':0},"
+//				+ "'attachments':[{'content':'B26384E0D3E74EB596AD10F794F6B0F1.jpg','extContent':null,"
+//				+ "'id':'B26384E0D3E74EB596AD10F794F6B0F1','tag':3,'type':1},{'content':'F70E5EB76245498C9FF55CE6B0F10878.jpg',"
+//				+ "'extContent':null,'id':'F70E5EB76245498C9FF55CE6B0F10878','tag':2,'type':1},"
+//				+ "{'content':'1B9527CCE45D480BA35F41F3E78F1394.jpg','extContent':null,'id':'1B9527CCE45D480BA35F41F3E78F1394',"
+//				+ "'tag':3,'type':1},{'content':'CA84F08B39A84AA4BB57E87D50D9F272.jpg',"
+//				+ "'extContent':null,'id':'CA84F08B39A84AA4BB57E87D50D9F272','tag':3,'type':1}],'chain':'2007','rawFields':'2|4|5',"
+//				+ "'t_lifecycle':3,'geometry':'POINT (116.41131 39.73234)','vipFlag':'','t_operateDate':'20171019134410',"
+//				+ "'truck':2,'sameFid':'','orgInfo':null,'sourceName':'Android'}";
+//		
+//		String jsoRef = "{'fid':'00365520171019134255','name':'加油站','pid':0,'meshid':0,'kindCode':'230215',"
+//				+ "'guide':{'latitude':39.73235,'linkPid':212986,'longitude':116.4115},'address':'东磁村','postCode':'258863',"
+//				+ "'level':'B1','open24H':2,'parentFid':'','relateChildren':[],'contacts':[{'linkman':'','number':'010-25668566',"
+//				+ "'priority':1,'type':1,'rowId':'60CAF952E3DD4244A1D340E3EFC2FE95'},{'linkman':'','number':'18966586696',"
+//				+ "'priority':2,'type':2,'rowId':'41633FDA055040A6B02B7EDFFD32CF71'}],'foodtypes':{'avgCost':0,'creditCards':'1|2',"
+//				+ "'foodtype':'3002|2002','openHour':'07:00-20:00','parking':3,'rowId':'F0A6D52CF2DE41A0AFA967A6511946A5'},"
+//				+ "'parkings':null,'hotel':null,'sportsVenues':'','chargingStation':null,'chargingPole':[{'acdc':0,"
+//				+ "'availableState':'4','count':1,'current':'','factoryNum':'','floor':1,'groupId':1,'locationType':0,"
+//				+ "'manufacturer':'','mode':0,'openType':'1','parkingNum':'','payment':'4','plotNum':'','plugNum':1,'plugType':'9',"
+//				+ "'power':'','prices':'','productNum':'无型号','voltage':'','rowId':'28AA7E07EA44417AA5EB23A1F7696112'}],"
+//				+ "'gasStation':{'egType':'E92|E97','fuelType':'1|0|2|6','mgType':'M10|M50','oilType':'90',"
+//				+ "'openHour':'０６：００－２０：００','payment':'2','service':'2|5','servicePro':'',"
+//				+ "'rowId':'CD32ADC73A0C40D19FD0B87EBA5CEB08'},'indoor':{'floor':'1','type':0},"
+//				+ "'attachments':[{'content':'B26384E0D3E74EB596AD10F794F6B0F1.jpg','extContent':null,"
+//				+ "'id':'B26384E0D3E74EB596AD10F794F6B0F1','tag':3,'type':1},{'content':'F70E5EB76245498C9FF55CE6B0F10878.jpg',"
+//				+ "'extContent':null,'id':'F70E5EB76245498C9FF55CE6B0F10878','tag':2,'type':1},"
+//				+ "{'content':'1B9527CCE45D480BA35F41F3E78F1394.jpg','extContent':null,'id':'1B9527CCE45D480BA35F41F3E78F1394',"
+//				+ "'tag':3,'type':1},{'content':'CA84F08B39A84AA4BB57E87D50D9F272.jpg',"
+//				+ "'extContent':null,'id':'CA84F08B39A84AA4BB57E87D50D9F272','tag':3,'type':1}],'chain':'2007','rawFields':'2|4|5',"
+//				+ "'t_lifecycle':2,'geometry':'POINT (116.41131 39.73234)','vipFlag':'','t_operateDate':'20171019134410',"
+//				+ "'truck':2,'sameFid':'','orgInfo':null,'sourceName':'Android'}";
+//		
+//		JSONObject tar = JSONObject.fromObject(jso1);
+//		JSONObject ref = JSONObject.fromObject(jsoRef);
+//		Map<Integer, List<JSONObject>> diffContacts = diffContacts(tar.get("contacts"),ref.get("contacts"));
+//		System.out.println(diffContacts.toString());
+//		List<JSONObject> diffPhotos = diffPhotos(tar.get("attachments"), ref.get("attachments"));
+//		System.out.println(diffPhotos.toString());
 		Map<String,String> map = new HashMap<String,String>();
 		map.put("AA", "AA123");
 		Set<String> maoKey = map.keySet();

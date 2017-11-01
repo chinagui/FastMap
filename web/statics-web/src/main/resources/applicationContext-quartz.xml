@@ -136,7 +136,7 @@
     <bean id="exportQualityPoiReport_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="exportQualityPoiReport_detail" />
-        <property name="cronExpression" value="0 0/3 * * * ?" />
+        <property name="cronExpression" value="0 0 1 * * ?" />
     </bean>
     
     <bean id="dayProduceStat_Trigger"

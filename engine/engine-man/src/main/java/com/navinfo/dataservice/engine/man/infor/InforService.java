@@ -67,36 +67,30 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			infor.setPublishDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("publishDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
 			infor.setNewsDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("newsDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
 			
-			Timestamp date1=infor.getExpectDate();
-			String d2=DateUtils.dateToString(new Date(), DateUtils.DATE_WITH_SPLIT_YMD);
-			Timestamp date2=new Timestamp(DateUtils.stringToLong(d2, DateUtils.DATE_WITH_SPLIT_YMD));
+			int sourceCode =  dataJson.getInt("sourceCode");
+			int featureKind = dataJson.getInt("featureKind");
+			int inforStage = dataJson.getInt("inforStage");
 			
-		    long diff = date2.getTime() - date1.getTime();
-		    long days = diff / (1000 * 60 * 60 * 24);			
-
-		    //modify by songhe 2017/09/20   13迭代method字段赋值原则变更
-			if(days == -21){
-				infor.setMethod("预采集");
-			}else if(days >= -6){
-				infor.setMethod("正式采集");
-			}
-			int sourceCode = 0;
-			int featureKind = 0;
-			int inforStage = 0;
-			if(dataJson.containsKey("sourceCode")){
-				sourceCode = dataJson.getInt("sourceCode");
-			}
-			if(dataJson.containsKey("featureKind")){
-				featureKind = dataJson.getInt("featureKind");
-			}
-			if(dataJson.containsKey("inforStage")){
-				inforStage = dataJson.getInt("inforStage");
-			}
 			if(sourceCode == 1 && featureKind == 2 && inforStage == 2){
 				infor.setMethod("矢量制作");
-			}
-			if(sourceCode == 3){
+			}else if (sourceCode == 1 && featureKind == 1 && inforStage == 2) {
+				infor.setMethod("多源制作");
+			}else if (sourceCode == 2||sourceCode == 3) {
 				infor.setMethod("正式采集");
+			}else{
+				Timestamp date1=infor.getExpectDate();
+				String d2=DateUtils.dateToString(new Date(), DateUtils.DATE_WITH_SPLIT_YMD);
+				Timestamp date2=new Timestamp(DateUtils.stringToLong(d2, DateUtils.DATE_WITH_SPLIT_YMD));
+				
+			    long diff = date2.getTime() - date1.getTime();
+			    long days = diff / (1000 * 60 * 60 * 24);			
+
+			    //modify by songhe 2017/09/20   13迭代method字段赋值原则变更
+				if(days == -21){
+					infor.setMethod("预采集");
+				}else{
+					infor.setMethod("正式采集");
+				}
 			}
 			
 			/*

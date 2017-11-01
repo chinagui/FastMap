@@ -184,14 +184,14 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 						//处理未修改
 						poiObj = (IxPoiObj)objs.get(fid);
 						if(poiObj.opType().equals(OperationType.PRE_DELETED)){
-//							log.info("fid:"+fid+"在库中已删除");
-//							errLogs.add(new ErrorLog(fid,3,"poi在库中已删除"));
-//							continue;
+							log.info("fid:"+fid+"在库中已删除");
+							errLogs.add(new ErrorLog(fid,3,"poi在库中已删除"));
+							continue;
 							//修改POI，库中已删除的，作为新增处理,重新赋值fid和pid
-							log.info("fid:"+fid+"在库中已删除，修改数据作为新增处理,重新赋值fid和pid");
-							poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
-							setPoiAttr(poiObj,entry.getValue(),false);
-							addFlag = true;
+//							log.info("fid:"+fid+"在库中已删除，修改数据作为新增处理,重新赋值fid和pid");
+//							poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
+//							setPoiAttr(poiObj,entry.getValue(),false);
+//							addFlag = true;
 						}else{
 							log.info("fid:"+fid+"在库中存在，作为修改处理");
 							//差分过滤的字段

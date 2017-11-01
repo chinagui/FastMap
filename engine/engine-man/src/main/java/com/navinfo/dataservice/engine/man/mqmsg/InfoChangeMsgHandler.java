@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.engine.man.mqmsg;
 
-import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -9,17 +9,17 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -27,28 +27,21 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
-import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.log.ManLogOperation;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -84,13 +77,18 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			conn = DBConnector.getInstance().getManConnection();
 			//新增情报
 			JSONObject dataJson = JSONObject.fromObject(message);
+			dataJson.remove("data");
+			dataJson.remove("bSourceId");
 			Infor infor = InforService.getInstance().create(dataJson, 0);
 			int sourceCode=infor.getSourceCode();
 			//"情报对应方式”字段不为空时，自动创建项目、任务、子任务
 			if(sourceCode==2||(sourceCode!=2&&infor.getMethod()!=null)){
 				generateManAccount(conn,infor);
 			}
-			
+			log.info("一级poi类型的情报，需要创建任务并调用异步job");
+			if("多源制作".equals(infor.getMethod())){
+				importPoiData(conn,infor.getInforId(),message);
+			}
 			//发送消息
 			taskPushMsg(conn, dataJson.getString("inforName"), 0,infor.getInforId());	
 			
@@ -110,7 +108,43 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			DbUtils.closeQuietly(conn);				
 		}
 	}
-	
+	/**
+	 * 一级poi数据型情报,仅包含一条poi，查询对应的任务，子任务，dbid，并创建job
+	 * @param conn
+	 * @param inforId
+	 * @param message
+	 * @throws Exception 
+	 */
+	private void importPoiData(Connection conn, int inforId, String message) throws Exception {
+		log.info("query task,subtask,dbId");
+		String sql="SELECT T.TASK_ID, S.SUBTASK_ID, R.DAILY_DB_ID"
+				+ "  FROM PROGRAM P, TASK T, SUBTASK S, REGION R"
+				+ " WHERE P.PROGRAM_ID = T.PROGRAM_ID"
+				+ "   AND T.TASK_ID = S.TASK_ID"
+				+ "   AND T.REGION_ID = R.REGION_ID"
+				+ "   AND P.INFOR_ID = "+inforId;
+		QueryRunner runner=new QueryRunner();
+		JSONObject returnJson=runner.query(conn,sql,new ResultSetHandler<JSONObject>(){
+
+			@Override
+			public JSONObject handle(ResultSet rs) throws SQLException {
+				JSONObject returnJson=new JSONObject();
+				if(rs.next()){					
+					returnJson.put("dbId",rs.getInt("DAILY_DB_ID"));
+					returnJson.put("taskId",rs.getInt("TASK_ID"));
+					returnJson.put("subtaskId",rs.getInt("SUBTASK_ID"));
+				}
+				return returnJson;
+			}});
+		JSONObject dataJson = JSONObject.fromObject(message);
+		returnJson.put("data", dataJson.get("data"));
+		returnJson.put("bSourceId", dataJson.get("bSourceId"));
+		JobApi api=(JobApi) ApplicationContextUtil.getBean("jobApi");
+		log.info("create job infoPoiMultiSrc2FmDay");
+		api.createJob("infoPoiMultiSrc2FmDay", returnJson, 0, 
+				Long.valueOf(String.valueOf(returnJson.getInt("taskId"))), "一级poi情报入日库");
+	}
+
 	/**
 	 * @param conn
 	 * @param infor
@@ -178,11 +212,19 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		JSONArray subtaskIds=new JSONArray();
 		for(Task task:collectTaskList){
 			Subtask subtask = new Subtask();
-			subtask.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate()));
+			//subtask.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate()));
 			subtask.setType(2);
 			subtask.setStage(0);
 			if(task.getSubWorkKind(3)==1){
 				subtask.setWorkKind(3);				
+			}if(task.getSubWorkKind(4)==1){
+				subtask.setWorkKind(4);	
+				//* 快线：情报名称_发布时间_作业员_子任务ID
+				// * 中线：任务名称_作业组
+				UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 5);
+				if(userGroup!=null){
+					subtask.setExeGroupId(userGroup.getGroupId());
+				}
 			}else if(task.getSubWorkKind(1)==1){
 				subtask.setWorkKind(1);	
 				subtask.setDescp("外业自采集情报");
@@ -208,6 +250,9 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			}
 			int subtaskId=SubtaskService.getInstance().createSubtaskWithSubtaskId(conn,subtask);
 			if(subtask.getExeUserId()!=0){
+				subtaskIds.add(subtaskId);
+			}
+			if(subtask.getExeGroupId()!=0){
 				subtaskIds.add(subtaskId);
 			}
 		}

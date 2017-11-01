@@ -41,6 +41,7 @@ import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiImportorCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiImportorForField;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiPcRelationImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiPcRelationImportorCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiSpRelationImportor;
@@ -139,7 +140,8 @@ public class UploadManager {
 			conn=DBConnector.getInstance().getConnectionById(dbId);
 			CollectorPoiImportorCommand cmd = new CollectorPoiImportorCommand(dbId,uPois);
 			cmd.setUserId(userId);
-			CollectorPoiImportor imp = new CollectorPoiImportor(conn,null);
+//			CollectorPoiImportor imp = new CollectorPoiImportor(conn,null);
+			CollectorPoiImportorForField imp = new CollectorPoiImportorForField(conn,null);
 			imp.setSubtaskId(stkId);
 			imp.operate(cmd,photoMap,userId);
 			

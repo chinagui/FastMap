@@ -6,12 +6,13 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 
 /**
  * 
- * @ClassName TaskJobRequest
- * @author Han Shaoming
- * @date 2017年8月4日 下午8:43:33
- * @Description TODO
+ * @ClassName ProgramJobRequest
+ * @author songhe
+ * @date 2017年9月4日
+ * 
  */
-public class TaskJobRequest extends AbstractStatJobRequest {
+public class MediumProgramJobRequest extends AbstractStatJobRequest {
+	private int type;
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
@@ -22,25 +23,32 @@ public class TaskJobRequest extends AbstractStatJobRequest {
 	@Override
 	public String getJobType() {
 		// TODO Auto-generated method stub
-		return "taskStat";
+		return "mediumProgramStat";
 	}
 
 	@Override
 	public String getJobTypeName() {
 		// TODO Auto-generated method stub
-		return "任务数据统计";
+		return "中线项目数据统计";
 	}
 
 	@Override
 	protected int myStepCount() throws JobException {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public void validate() throws JobException {
-		// TODO Auto-generated method stub
 
+	}
+
+	public int getType() {
+		// TODO Auto-generated method stub
+		return this.type;
+	}
+
+	public void setType(int Type) {
+		this.type = Type;
 	}
 
 }

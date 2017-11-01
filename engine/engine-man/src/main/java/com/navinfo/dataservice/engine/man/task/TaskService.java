@@ -1266,10 +1266,10 @@ public class TaskService {
 					for(Object i:progress){
 						int tmp=(int) i;						
 						if(tmp==1){
-							progressListTmp.add("TASK_LIST.PROGRESS=1");
+							progressListTmp.add("(TASK_LIST.status=1 and TASK_LIST.DIFF_DATE >= 0)");
 						}
 						if(tmp==2){
-							progressListTmp.add("TASK_LIST.DIFF_DATE > 0");
+							progressListTmp.add("(TASK_LIST.status=0 and TASK_LIST.DIFF_DATE > 0)");
 						}
 						if(tmp==3){
 							progressListTmp.add("TASK_LIST.DIFF_DATE < 0");

@@ -432,21 +432,21 @@ public class PoiDownloadOperation {
 					foodtype.put("foodtype", restaurant.getFoodType());
 				}
 				
-				if (restaurant.getCreditCard() == null) {
-					foodtype.put("creditCards", "");
-				} else {
-					foodtype.put("creditCards", restaurant.getCreditCard());
-				}
+//				if (restaurant.getCreditCard() == null) {
+//					foodtype.put("creditCards", "");
+//				} else {
+//					foodtype.put("creditCards", restaurant.getCreditCard());
+//				}
 				
-				foodtype.put("parking", restaurant.getParking());
+//				foodtype.put("parking", restaurant.getParking());
 				
-				if (restaurant.getOpenHour() == null) {
-					foodtype.put("openHour", "");
-				} else {
-					foodtype.put("openHour", restaurant.getOpenHour());
-				}
+//				if (restaurant.getOpenHour() == null) {
+//					foodtype.put("openHour", "");
+//				} else {
+//					foodtype.put("openHour", restaurant.getOpenHour());
+//				}
 				
-				foodtype.put("avgCost", restaurant.getAvgCost());
+//				foodtype.put("avgCost", restaurant.getAvgCost());
 				foodtype.put("rowId", restaurant.getRowId());
 				jsonObj.put("foodtypes", foodtype);
 			} else {
@@ -500,22 +500,22 @@ public class PoiDownloadOperation {
 					parkings.put("buildingType", parking.getParkingType());
 				}
 				
-				parkings.put("resHigh", parking.getResHigh());
-				parkings.put("resWidth", parking.getResWidth());
-				parkings.put("resWeigh", parking.getResWeigh());
-				parkings.put("certificate", parking.getCertificate());
-				parkings.put("vehicle", parking.getVehicle());
+//				parkings.put("resHigh", parking.getResHigh());
+//				parkings.put("resWidth", parking.getResWidth());
+//				parkings.put("resWeigh", parking.getResWeigh());
+//				parkings.put("certificate", parking.getCertificate());
+//				parkings.put("vehicle", parking.getVehicle());
 				
-				if (parking.getHaveSpecialplace() == null) {
-					parkings.put("haveSpecialPlace", "");
-				} else {
-					parkings.put("haveSpecialPlace", parking.getHaveSpecialplace());
-				}
+//				if (parking.getHaveSpecialplace() == null) {
+//					parkings.put("haveSpecialPlace", "");
+//				} else {
+//					parkings.put("haveSpecialPlace", parking.getHaveSpecialplace());
+//				}
 				
-				parkings.put("womenNum", parking.getWomenNum());
-				parkings.put("handicapNum", parking.getHandicapNum());
-				parkings.put("miniNum", parking.getMiniNum());
-				parkings.put("vipNum", parking.getVipNum());
+//				parkings.put("womenNum", parking.getWomenNum());
+//				parkings.put("handicapNum", parking.getHandicapNum());
+//				parkings.put("miniNum", parking.getMiniNum());
+//				parkings.put("vipNum", parking.getVipNum());
 				parkings.put("rowId", parking.getRowId());
 				jsonObj.put("parkings", parkings);
 			} else {
@@ -528,59 +528,59 @@ public class PoiDownloadOperation {
 				JSONObject hotelObj = new JSONObject();
 				hotelObj.put("rating", hotel.getRating());
 				
-				if (hotel.getCreditCard() == null) {
-					hotelObj.put("creditCards", "");
-				} else {
-					hotelObj.put("creditCards", hotel.getCreditCard());
-				}
+//				if (hotel.getCreditCard() == null) {
+//					hotelObj.put("creditCards", "");
+//				} else {
+//					hotelObj.put("creditCards", hotel.getCreditCard());
+//				}
 				
-				if (hotel.getLongDescription() == null) {
-					hotelObj.put("description", "");
-				} else {
-					hotelObj.put("description", hotel.getLongDescription());
-				}
+//				if (hotel.getLongDescription() == null) {
+//					hotelObj.put("description", "");
+//				} else {
+//					hotelObj.put("description", hotel.getLongDescription());
+//				}
 				
-				if (hotel.getCheckinTime() == null) {
-					hotelObj.put("checkInTime", "");
-				} else {
-					hotelObj.put("checkInTime", hotel.getCheckinTime());
-				}
+//				if (hotel.getCheckinTime() == null) {
+//					hotelObj.put("checkInTime", "");
+//				} else {
+//					hotelObj.put("checkInTime", hotel.getCheckinTime());
+//				}
 				
-				if (hotel.getCheckoutTime() == null) {
-					hotelObj.put("checkOutTime", "");
-				} else {
-					hotelObj.put("checkOutTime", hotel.getCheckoutTime());
-				}
+//				if (hotel.getCheckoutTime() == null) {
+//					hotelObj.put("checkOutTime", "");
+//				} else {
+//					hotelObj.put("checkOutTime", hotel.getCheckoutTime());
+//				}
 				
-				hotelObj.put("roomCount", hotel.getRoomCount());
+//				hotelObj.put("roomCount", hotel.getRoomCount());
 				
-				if (hotel.getRoomType() == null) {
-					hotelObj.put("roomType", "");
-				} else {
-					hotelObj.put("roomType", hotel.getRoomType());
-				}
+//				if (hotel.getRoomType() == null) {
+//					hotelObj.put("roomType", "");
+//				} else {
+//					hotelObj.put("roomType", hotel.getRoomType());
+//				}
 				
-				if (hotel.getRoomPrice() == null) {
-					hotelObj.put("roomPrice", "");
-				} else {
-					hotelObj.put("roomPrice", hotel.getRoomPrice());
-				}
+//				if (hotel.getRoomPrice() == null) {
+//					hotelObj.put("roomPrice", "");
+//				} else {
+//					hotelObj.put("roomPrice", hotel.getRoomPrice());
+//				}
 				
-				hotelObj.put("breakfast", hotel.getBreakfast());
+//				hotelObj.put("breakfast", hotel.getBreakfast());
 				
-				if (hotel.getService() == null) {
-					hotelObj.put("service", "");
-				} else {
-					hotelObj.put("service", hotel.getService());
-				}
+//				if (hotel.getService() == null) {
+//					hotelObj.put("service", "");
+//				} else {
+//					hotelObj.put("service", hotel.getService());
+//				}
 				
-				hotelObj.put("parking", hotel.getParking());
+//				hotelObj.put("parking", hotel.getParking());
 				
-				if (hotel.getOpenHour() == null) {
-					hotelObj.put("openHour", "");
-				} else {
-					hotelObj.put("openHour", hotel.getOpenHour());
-				}
+//				if (hotel.getOpenHour() == null) {
+//					hotelObj.put("openHour", "");
+//				} else {
+//					hotelObj.put("openHour", hotel.getOpenHour());
+//				}
 				
 				hotelObj.put("rowId", hotel.getRowId());
 				jsonObj.put("hotel", hotelObj);
@@ -596,7 +596,7 @@ public class PoiDownloadOperation {
 				chargingStationObj.put("changeBrands", chargingStation.getChangeBrands());
 				chargingStationObj.put("changeOpenType", chargingStation.getChangeOpenType());
 				chargingStationObj.put("servicePro", chargingStation.getServiceProv());
-				chargingStationObj.put("chargingNum", chargingStation.getChargingNum());
+//				chargingStationObj.put("chargingNum", chargingStation.getChargingNum());
 				chargingStationObj.put("openHour", chargingStation.getOpenHour());
 				chargingStationObj.put("parkingFees", chargingStation.getParkingFees());
 				chargingStationObj.put("parkingInfo", chargingStation.getParkingInfo());
@@ -613,14 +613,14 @@ public class PoiDownloadOperation {
 				for (IRow charging:chargingPole) {
 					IxPoiChargingPlot ixPoiChargingplot = (IxPoiChargingPlot) charging;
 					JSONObject chargingPoleObj = new JSONObject();
-					chargingPoleObj.put("groupId", ixPoiChargingplot.getGroupId());
+//					chargingPoleObj.put("groupId", ixPoiChargingplot.getGroupId());
 					chargingPoleObj.put("acdc", ixPoiChargingplot.getAcdc());
 					chargingPoleObj.put("plugType", ixPoiChargingplot.getPlugType());
 					chargingPoleObj.put("power", ixPoiChargingplot.getPower());
 					chargingPoleObj.put("voltage", ixPoiChargingplot.getVoltage());
 					chargingPoleObj.put("current", ixPoiChargingplot.getCurrent());
 					chargingPoleObj.put("mode", ixPoiChargingplot.getMode());
-					chargingPoleObj.put("count", ixPoiChargingplot.getCount());
+//					chargingPoleObj.put("count", ixPoiChargingplot.getCount());
 					chargingPoleObj.put("plugNum", ixPoiChargingplot.getPlugNum());
 					chargingPoleObj.put("prices", ixPoiChargingplot.getPrices());
 					chargingPoleObj.put("openType", ixPoiChargingplot.getOpenType());

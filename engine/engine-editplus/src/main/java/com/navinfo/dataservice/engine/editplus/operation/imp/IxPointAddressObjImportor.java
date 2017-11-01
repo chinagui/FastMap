@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,13 +16,18 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressChildren;
+import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddressParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPointAddressObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPointaddressSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -244,6 +250,59 @@ public class IxPointAddressObjImportor extends AbstractOperation{
 					}else{
 						//该对象逻辑删除
 						obj.deleteObj();
+						
+						Long pid = obj.objPid();
+						Set<Long> pidList=new HashSet<Long>();
+						pidList.add(pid);
+						
+						tabNames = new HashSet<>();
+						tabNames.add("IX_POINTADDRESS_PARENT");
+						tabNames.add("IX_POINTADDRESS_CHILDREN");
+						
+						
+						Map<Long,Long> childParentMap = IxPointaddressSelector.getParentPidsByChildrenPids(conn, pidList);
+						if(childParentMap !=null && !childParentMap.isEmpty() && pidList.size() > 0){//为子，需查询父下面所有子，如果多个子，则只删除自己的子，如果父和子是一对一，则删除父且自己的子。
+							
+							
+							Long parentPid = childParentMap.get(pid);
+							
+							Set<Long> parentSet = new HashSet<>();
+							parentSet.add(parentPid);
+							
+							Map<Long, List<Long>> parentMap = IxPointaddressSelector.getChildrenPidsByParentPidList(conn, parentSet);
+							
+							if(parentMap!=null&&!parentMap.isEmpty()){
+								for (List<Long> children : parentMap.values()) {
+									Map<Long, BasicObj> parentObjs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,false,parentSet,true,true);
+									
+									BasicObj parentObj = parentObjs.get(parentPid);
+									if(parentObj != null){
+										IxPointAddressObj pointAddressObj = (IxPointAddressObj)parentObj;
+										List<IxPointaddressChildren> ixPoiaddressChildrens= pointAddressObj.getIxPointaddressChildrens();
+										for (IxPointaddressChildren ixPointaddressChildren : ixPoiaddressChildrens) {
+											if(ixPointaddressChildren != null && ixPointaddressChildren.getChildPaPid() == pid){
+												ixPointaddressChildren.setOpType(OperationType.DELETE);
+												objList.add(pointAddressObj);
+											}
+										}
+										
+										if(children.size() == 1){
+											List<IxPointaddressParent> ixPoiaddressParents= pointAddressObj.getIxPointaddressParents();
+											if (ixPoiaddressParents != null && ixPoiaddressParents.size()>0) {
+												IxPointaddressParent parent = ixPoiaddressParents.get(0);
+												parent.setOpType(OperationType.DELETE);
+												objList.add(pointAddressObj);
+											}
+										}
+									}
+									
+								}
+								
+							}
+							
+						}
+						
+						
 						objList.add(obj);
 					}
 				} catch (Exception e) {
@@ -556,7 +615,6 @@ public class IxPointAddressObjImportor extends AbstractOperation{
 		return objType;
 	}
 	
-	
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
@@ -598,4 +656,6 @@ public class IxPointAddressObjImportor extends AbstractOperation{
 		}
 		return field;
 	}
+	
+	
 }

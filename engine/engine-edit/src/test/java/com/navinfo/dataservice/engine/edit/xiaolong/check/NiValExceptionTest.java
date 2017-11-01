@@ -30,9 +30,11 @@ public class NiValExceptionTest extends InitApplication {
 		initContext();
 	}
 	
-//	@Test
+	@Test
 	public void testGLM01455() throws Exception{
-		String parameter="{\"command\":\"UPDATE\",\"dbId\":84,\"type\":\"RDLINK\",\"objId\":502000037,\"data\":{\"forms\":[{\"linkPid\":502000037,\"formOfWay\":36,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"}],\"rowId\":\"AE884CC4C8614A00B7E3B20A065A27D3\",\"pid\":502000037,\"objStatus\":\"UPDATE\"}}";
+		//String parameter="{\"command\":\"UPDATE\",\"dbId\":84,\"type\":\"RDLINK\",\"objId\":502000037,\"data\":{\"forms\":[{\"linkPid\":502000037,\"formOfWay\":36,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"}],\"rowId\":\"AE884CC4C8614A00B7E3B20A065A27D3\",\"pid\":502000037,\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"command\":\"MOVE\",\"type\":\"ZONENODE\",\"objId\":407000041,\"data\":{\"longitude\":115.89215755462646,\"latitude\":40.27495417910794},\"dbId\":13,\"subtaskId\":834}";
+		
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

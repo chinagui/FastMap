@@ -756,6 +756,18 @@ values ('239', 'poi_deep', 'deepCarrental', 'FM-M-DP-011', 2, 1);
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
 values ('240', 'poi_deep', 'deepCarrental', 'FM-M-DP-013', 2, 1);
 
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('257', 'poi_deep', 'deepDetail', 'FM-M-DP-015', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('258', 'poi_deep', 'deepDetail', 'FM-M-DP-016', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('259', 'poi_deep', 'deepDetail', 'FM-M-DP-017', 2, 1);
+
+insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, CHECK_FLAG, TYPE)
+values ('260', 'poi_deep', 'deepParking', 'FM-M-DP-018', 2, 1);
+
 COMMIT;
 
 insert into poi_column_op_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, SAVE_EXEBATCH, SAVE_BATCHRULES, SAVE_EXECHECK, SAVE_CKRULES, SAVE_EXECLASSIFY, SAVE_CLASSIFYRULES, SUBMIT_EXEBATCH, SUBMIT_BATCHRULES, SUBMIT_EXECHECK, SUBMIT_CKRULES, SUBMIT_EXECLASSIFY, SUBMIT_CLASSIFYRULES, TYPE, FIRST_SUBMIT_EXEBATCH, FIRST_SUBMIT_BATCHRULES, FIRST_SUBMIT_EXECHECK, FIRST_SUBMIT_CKRULES, FIRST_SUBMIT_EXECLASSIFY, FIRST_SUBMIT_CLASSIFYRULES)

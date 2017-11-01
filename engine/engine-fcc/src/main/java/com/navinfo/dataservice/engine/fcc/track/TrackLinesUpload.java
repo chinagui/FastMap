@@ -72,10 +72,17 @@ public class TrackLinesUpload extends TrackUpload{
         put.addColumn("attribute".getBytes(), "a_geometry".getBytes(),
                 json.getString("geometry").getBytes());
         //20170927新增
+        //20171024 modified by liya .增加非空判断，为了兼容17win.应为17冬程序不包含这两个字段
         put.addColumn("attribute".getBytes(), "a_src".getBytes(),
                 "1".getBytes());
-        put.addColumn("attribute".getBytes(), "a_plateNum".getBytes(),
-                json.getString("plateNum").getBytes());
+        if(json.containsKey("plateNum")){
+        	put.addColumn("attribute".getBytes(), "a_plateNum".getBytes(),
+                    json.getString("plateNum").getBytes());
+        }else{
+        	put.addColumn("attribute".getBytes(), "a_plateNum".getBytes(),
+                    "".getBytes());
+        }
+        
         return put;
     }
 

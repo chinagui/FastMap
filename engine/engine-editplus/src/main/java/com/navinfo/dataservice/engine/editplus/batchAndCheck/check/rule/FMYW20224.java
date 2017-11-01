@@ -53,7 +53,7 @@ public class FMYW20224 extends BasicCheckRule {
 					String subStr = String.valueOf(nameSubStr);
 					if(!map.get("GBK").contains(subStr)&&!map.get("ENG_F_U").contains(subStr)
 							&&!map.get("ENG_F_L").contains(subStr)&&!map.get("DIGIT_F").contains(subStr)
-							&&!map.get("SYMBOL_F").contains(subStr)){
+							&&!map.get("SYMBOL_F").contains(subStr)&&!map.get("GBK_SYMBOL_F").contains(subStr)){
 						errorList.add(subStr);
 					}
 				}
@@ -61,14 +61,7 @@ public class FMYW20224 extends BasicCheckRule {
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "停车场收费信息存在非法字符“"
 							+errorList.toString().replace("[", "").replace("]", "")+"”");
 				}
-				//2.包含  半小时、半小時、0.5小时、0.5H，大型车、大型車、小型车、小型車、空格等字样内容时报出
-				if (tollDes.contains("半小时") || tollDes.contains("半小時") || tollDes.contains("０．５小时")
-						|| tollDes.contains("０．５Ｈ") || tollDes.contains("大型车") || tollDes.contains("大型車")
-						|| tollDes.contains("小型车") || tollDes.contains("小型車") || tollDes.contains("　")) {
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), 
-							"收费信息内容不满足格式，存在半小时、0.5小时、0.5H，大型车、小型车、空格");
-				}
-				//3.包含  年、月字样，并且收费标准（poi.parkings.tollStd)不包含0或1的报出
+				//2.包含  年、月字样，并且收费标准（poi.parkings.tollStd)不包含0或1的报出
 				String tollStd = ixPoiParking.getTollStd();
 				boolean tollFlag = false;
 				if (tollDes.contains("年")) {
@@ -84,21 +77,14 @@ public class FMYW20224 extends BasicCheckRule {
 				if(tollFlag){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"收费信息与收费标准矛盾");
 				}
-				//4.收费信息超过127个字符报出
+				//3.收费信息超过127个字符报出
 				if (tollDes.length() > 127) {
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"收费信息超长");
 				}
-				//5.存在非全角的内容报出
+				//4.存在非全角的内容报出
 				String newTollDes = CheckUtil.strB2Q(tollDes);
 				if (!newTollDes.equals(tollDes)) {
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"收费信息存在半角字符");
-				}
-				//6.收费信息包含“：00”，营业时间（parkings.openTime）为空
-				if (tollDes.contains("：００")) {
-					String openTime = ixPoiParking.getOpenTiime();
-					if (StringUtils.isEmpty(openTime)) {
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"收费信息包含“：00”，营业时间为空");
-					}
 				}
 			}
 		}

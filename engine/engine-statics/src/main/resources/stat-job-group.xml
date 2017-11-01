@@ -13,8 +13,12 @@
 		<job name="poiDayStat"/>
 		<job name="tipsStat"/>
 	</group>
-	<group name="taskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.TaskStatStarter">
+	<group name="mediumTaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.MediumTaskStatStarter">
 		<job name="fccJob"/>
+		<job name="subtaskStat"/>
+		<job name="dayPlanStat"/>
+	</group>
+	<group name="quickTaskStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.QuickTaskStatStarter">
 		<job name="subtaskStat"/>
 		<job name="dayPlanStat"/>
 	</group>
@@ -27,19 +31,20 @@
 	</group>
 	<group name="cityJob" starter="com.navinfo.dataservice.engine.statics.launcher.starter.CityStatStarter">
 		<job name="noTaskJob"/>
-		<job name="programStat"/>
+		<job name="mediumProgramStat"/>
 	</group>
-	<group name="programStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.ProgramStatStarter">
-		<job name="taskStat"/>
+	<group name="quickProgramStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.QuickProgramStatStarter">
+		<job name="quickTaskStat"/>
+	</group>
+	<group name="mediumProgramStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.MediumProgramStatStarter">
+		<job name="mediumTaskStat"/>
 	</group>
 	<group name="quickMonitorStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.QuickMonitorStatStarter">
-		<job name="programStat"/>
-		<job name="taskStat"/>
+		<job name="quickProgramStat"/>
+		<job name="quickTaskStat"/>
 	</group> 	
 	<group name="mediumMonitorStat" starter="com.navinfo.dataservice.engine.statics.launcher.starter.MediumMonitorStatStarter">
-		<job name="programStat"/>
-		<job name="taskStat"/>
-	</group> 
-	
-	
+		<job name="mediumProgramStat"/>
+		<job name="mediumTaskStat"/>
+	</group> 	
 </mapping>

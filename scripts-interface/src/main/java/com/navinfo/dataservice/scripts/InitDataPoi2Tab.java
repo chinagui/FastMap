@@ -62,9 +62,11 @@ public class InitDataPoi2Tab {
 		Connection conn = null; 
 		DataSource dataSource = null;
 		JSONArray errorLogs = null;
+		JSONArray successLogs = null;
 		
 		try { 
 			errorLogs = new JSONArray();
+			successLogs = new JSONArray();
 			
 			JSONObject db_conf = request.getJSONObject("db_conf");
 			String db_ip = db_conf.getString("db_ip");
@@ -142,16 +144,47 @@ public class InitDataPoi2Tab {
 					
 					Set<Integer> daylyDbIds = getDaylyDbIdBySubtaskId(subtIds ,subTaskIdStr);
 					if(daylyDbIds != null && daylyDbIds.size() > 0){
-						
-						
+						//查询这一组中 最早的开始时间 及最晚的结束时间
+						Map<String,String> timeMap =  queryStartTimeAndEndTime(subtIds, subTaskIdStr);
+						String actualStartDate = queryActualDate(subtIds, subTaskIdStr ,1);
+						String actualEndDate = queryActualDate(subtIds, subTaskIdStr ,0);
+						System.out.println("actualStartDate :"+actualStartDate +" ;actualEndDate: "+actualEndDate);
+						String start_date = null;
+						String end_date = null;
+						if(timeMap != null && timeMap.size() > 0){
+							start_date = timeMap.get("start_date");
+							end_date = timeMap.get("end_date");
+							System.out.println("plan_start_date: "+start_date + "  ;plan_end_date: " +end_date);
+							if(actualStartDate != null && StringUtils.isNotEmpty(actualStartDate) ){
+								if( Long.parseLong(actualStartDate) < Long.parseLong(start_date)){
+									start_date = actualStartDate;
+								}
+							}
+							if(actualEndDate != null && StringUtils.isNotEmpty(actualEndDate)){
+								if( Long.parseLong(actualEndDate) > Long.parseLong(end_date)){
+									end_date = actualEndDate;
+								}
+							}
+						}else{
+							start_date = actualStartDate;
+							end_date = actualEndDate;
+						}
+						System.out.println("start_date:"+start_date + "  end_date" +end_date);
 						//遍历各个日大区库,将大区库中需要导出的数据导入目标大区库
 						for(Integer dDbID : daylyDbIds){
 							//TODO 临时加的
 							/*if(dDbID != 13){
 								continue;
 							}*/
-							moveDataToTargetDB(dataSource,conn,dDbID,taskId,subtIds,subTaskIdStr,db_conf);
+							moveDataToTargetDB(dataSource,conn,dDbID,taskId,subtIds,subTaskIdStr,db_conf,start_date,end_date);
 						}
+						JSONObject successLog = new JSONObject();
+						successLog.put("taskId", taskId);
+						successLog.put("subTaskId", subTaskIdStr);
+						successLog.put("start_date", start_date);
+						successLog.put("end_date", end_date);
+						successLog.put("successMsg", "执行成功.");
+						successLogs.add(successLog);
 					}else{
 						JSONObject errorLog = new JSONObject();
 						errorLog.put("taskId", taskId);
@@ -168,7 +201,8 @@ public class InitDataPoi2Tab {
 				conn.commit();
 //				response.put("region_" + key + "_man_rows", "success");
 			response.put("errorLogs", errorLogs);
-			response.put("msg", "执行成功");
+			response.put("successLogs", successLogs);
+			System.out.println("response:   "+response.toString());
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			response.put("errorLogs", errorLogs);
@@ -191,12 +225,14 @@ public class InitDataPoi2Tab {
 	 * @param subtIds
 	 * @param subTaskIdStr  void
 	 * @param db_conf 
+	 * @param end_date 
+	 * @param start_date 
 	 * @throws Exception 
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年10月12日 上午11:10:01 
 	 */
-	private static void moveDataToTargetDB(DataSource dataSource, Connection conn, Integer dDbID, int taskId, Set<Integer> subtIds, String subTaskIdStr, JSONObject db_conf) throws Exception {
+	private static void moveDataToTargetDB(DataSource dataSource, Connection conn, Integer dDbID, int taskId, Set<Integer> subtIds, String subTaskIdStr, JSONObject db_conf, String start_date, String end_date) throws Exception {
 		try{
 			//1.创建大区库和中间库的dblink 
 				createMetaDbLink(dataSource, dDbID);
@@ -258,7 +294,7 @@ public class InitDataPoi2Tab {
 			
 			
 			//7.查询这一组中 最早的开始时间 及最晚的结束时间 //String startDate,String endDate
-				Map<String,String> timeMap =  queryStartTimeAndEndTime(subtIds, subTaskIdStr);
+				/*Map<String,String> timeMap =  queryStartTimeAndEndTime(subtIds, subTaskIdStr);
 				String actualStartDate = queryActualDate(subtIds, subTaskIdStr ,1);
 				String actualEndDate = queryActualDate(subtIds, subTaskIdStr ,0);
 				System.out.println("actualStartDate :"+actualStartDate +" ;actualEndDate: "+actualEndDate);
@@ -281,7 +317,7 @@ public class InitDataPoi2Tab {
 				}else{
 					start_date = actualStartDate;
 					end_date = actualEndDate;
-				}
+				}*/
 				
 				System.out.println("start_date:"+start_date + "  end_date" +end_date);
 			
@@ -305,7 +341,6 @@ public class InitDataPoi2Tab {
 				
 				//12.2 根据 taskid 及 subtaskId 去man 库查询相关数据
 				insertFmPoiCutoutFromMan(conn,taskId,subts);
-				
 		} catch (Exception e) {
 			DbUtils.rollback(conn);
 			System.out.println(e.getMessage());
@@ -933,7 +968,7 @@ private static void insertFmPoiCutoutFromMan(Connection conn, int taskId, String
 		sb.append("  moveflag VARCHAR2(1) default 'F' not null,");
 		sb.append("  addflag  VARCHAR2(1) default 'F' not null,");
 		sb.append("  OPERATOR VARCHAR2(50), ");
-		sb.append("  log     VARCHAR2(50) ");
+		sb.append("  log     VARCHAR2(254) ");
 		sb.append(")      ");
 		r.execute(conn, sb.toString());
 	}

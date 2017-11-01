@@ -16,20 +16,20 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
-import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
-import com.navinfo.dataservice.job.statics.AbstractStatJob;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -43,31 +43,25 @@ import net.sf.json.JSONObject;
  * @date 2017年9月4日
  * 
  */
-public class ProgramJob extends AbstractStatJob {
+public class ProgramJobUtils{
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 
 	private static final String dbName = SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
 	
 	protected ManApi manApi = null;
-	
-	public ProgramJob(JobInfo jobInfo) {
-		super(jobInfo);
-	}
 
-	@Override
-	public String stat() throws JobException {
+	public JSONObject stat(String timestamp,int programType) throws JobException {
 		Connection conn = null;
 		try {
-			long t = System.currentTimeMillis();
 			//获取统计时间
-			ProgramJobRequest statReq = (ProgramJobRequest)request;
-			log.info("start stat "+statReq.getJobType());
-			String timestamp = statReq.getTimestamp();
+			log.info("start stat programJobUtil: timestamp:"+timestamp+",programType:"+programType);
 			
 			manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 			//orical查询所有的任务
 			//List<Map<String, Object>> programs = manApi.queryProgramStat();
 			conn = DBConnector.getInstance().getManConnection();
-			List<Map<String, Object>> programs = queryProgramStat(conn);
+			
+			List<Map<String, Object>> programs = queryProgramStat(conn,programType);
 			Map<String, Object>  programsJobRealation = queryProgramJobData(conn);
 			//查询MAN_TIMELINE表获取相应的数据
 			String objName = "program";
@@ -82,10 +76,9 @@ public class ProgramJob extends AbstractStatJob {
 			JSONObject result = new JSONObject();
 			result.put("program", programStatList);
 
-			log.info("end stat "+statReq.getJobType());
-			log.debug("所有项目数据统计完毕。用时："+((System.currentTimeMillis()-t)/1000)+"s.");
+			log.info("start stat programJobUtil: timestamp:"+timestamp+",programType:"+programType);
 			
-			return result.toString();
+			return result;
 			
 		} catch (Exception e) {
 			log.error("项目统计:"+e.getMessage(), e);
@@ -863,10 +856,11 @@ public class ProgramJob extends AbstractStatJob {
 	
 	/**
 	 * 查询项目下的统计信息
+	 * @param programType 
 	 * @throws Exception 
 	 * 
 	 * */
-	public List<Map<String, Object>> queryProgramStat(Connection conn) throws Exception{
+	public List<Map<String, Object>> queryProgramStat(Connection conn, int programType) throws Exception{
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
@@ -877,7 +871,7 @@ public class ProgramJob extends AbstractStatJob {
 			sb.append(" p.produce_status, ft.diff_date, t.produce_plan_end_date, ft.type tasktype, tk.overdue_reason, b.plan_status,");
 			sb.append("  i.insert_time, i.expect_date, tk.create_date taskcreatdate, t.create_date programcreatdate, t.name programname,i.road_length");
 			sb.append(" from PROGRAM t, PRODUCE p, FM_STAT_OVERVIEW_TASK ft, INFOR i, CITY c, TASK tk, BLOCK b");
-			sb.append(" where t.program_id = p.program_id(+) and t.program_id = ft.program_id(+)");
+			sb.append(" where t.program_id = p.program_id(+) and t.program_id = ft.program_id(+) and t.type="+programType);
 			sb.append(" and t.city_id = c.city_id(+) and t.infor_id = i.infor_id(+) and ft.task_id = tk.task_id(+) and tk.block_id = b.block_id(+)");
 			
 			log.info("queryProgramStat sql :" + sb.toString());

@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.commons.dbutils.DbUtils;
 import org.bson.Document;
+import org.omg.CORBA.NVList;
+
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
@@ -223,12 +226,12 @@ public class QuickMonitorJob extends AbstractStatJob {
 			String fastStandard = manApi.queryConfValueByConfKey("fast_standard");
 			String commonStandard = manApi.queryConfValueByConfKey("common_standard");
 			String poiStandard = manApi.queryConfValueByConfKey("poi_standard");
-			quickMonitorMap.put("collectStandard", collectStandard);
-			quickMonitorMap.put("dayStandard", dayStandard);
-			quickMonitorMap.put("produceStandard", produceStandard);
-			quickMonitorMap.put("fastStandard", fastStandard);
-			quickMonitorMap.put("commonStandard", commonStandard);
-			quickMonitorMap.put("poiStandard", poiStandard);
+			quickMonitorMap.put("collectStandard", (StringUtils.isEmpty(collectStandard))?0:Integer.valueOf(collectStandard));
+			quickMonitorMap.put("dayStandard", (StringUtils.isEmpty(dayStandard))?0:Integer.valueOf(dayStandard));
+			quickMonitorMap.put("produceStandard", (StringUtils.isEmpty(produceStandard))?0:Integer.valueOf(produceStandard));
+			quickMonitorMap.put("fastStandard", (StringUtils.isEmpty(fastStandard))?0:Integer.valueOf(fastStandard));
+			quickMonitorMap.put("commonStandard",(StringUtils.isEmpty(commonStandard))?0:Integer.valueOf(commonStandard) );
+			quickMonitorMap.put("poiStandard", (StringUtils.isEmpty(poiStandard))?0:Integer.valueOf(poiStandard));
 			
 			quickMonitorMap.put("collectTipsUploadNum", statMap.get("collectTipsUploadNum"));
 			

@@ -51,6 +51,10 @@ public class Operation implements IOperation {
 		
 		int rdseq = 0;
 		
+		if(arrayrd == null && arrayad == null && geo == null){
+			throw new Exception("没有要素选中，请确定需要复制的要素");
+		}
+		
 		if (arrayrd != null && arrayrd.size() != 0) {
 			rdseq = seq = arrayrd.size();
 

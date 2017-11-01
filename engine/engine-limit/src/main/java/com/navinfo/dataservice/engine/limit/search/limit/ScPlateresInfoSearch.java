@@ -159,7 +159,7 @@ public class ScPlateresInfoSearch  {
 				String cityCode = adminCode.substring(0, 4);
 
 				sql.append(
-						"select a.ADMIN_ID,b.NAME FROM AD_ADMIN a,AD_ADMIN_NAME b where a.REGION_ID = b.REGION_ID and b.LANG_CODE='CHI' AND b.NAME_CLASS = 1 and a.ADMIN_TYPE = 4 and a.ADMIN_ID between :1 and :2");
+						"select a.ADMIN_ID,b.NAME FROM AD_ADMIN a,AD_ADMIN_NAME b where a.REGION_ID = b.REGION_ID and b.LANG_CODE='CHI' AND b.NAME_CLASS = 1 and a.ADMIN_TYPE < 5 and a.ADMIN_ID between :1 and :2");
 
 				pstmt = mkconn.prepareStatement(sql.toString());
 

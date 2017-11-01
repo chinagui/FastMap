@@ -2427,12 +2427,15 @@ public class TipsSelector {
 		org.apache.hadoop.hbase.client.Connection hbaseConn = null;
 		Table htab = null;
 		Set<Integer> meshSet = new HashSet<>();
+        String errorRowkey = "";
 		try {
 			List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskSet, taskType);// TaskType.PROGRAM_TYPE_M);
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+
 			for (JSONObject snapshot : snapshots) {
 				String rowkey = snapshot.getString("id");
+                errorRowkey = rowkey;
 				// 当前geometery
 				JSONObject gLocation = JSONObject.fromObject(snapshot.getString("g_location"));
 				Geometry curGeo = GeoTranslator.geojson2Jts(gLocation);
@@ -2460,7 +2463,7 @@ public class TipsSelector {
 				}
 			}
 		} catch (Exception e) {
-			throw new Exception("获取Tips图幅失败: " + e.getMessage());
+			throw new Exception("获取Tips图幅失败" + errorRowkey + ": " + e.getMessage());
 		}
 		return meshSet;
 	}

@@ -99,7 +99,7 @@ public class PersonDayJob extends AbstractStatJob {
 			identifyJson.put("workDay", statReq.getWorkDay());
 			statReq.setIdentifyJson(identifyJson);
 			statReq.setIdentify("timestamp:"+statReq.getTimestamp()+",workDay:"+statReq.getWorkDay());
-			log.info("stats:" + JSONObject.fromObject(result).toString());
+//			log.info("stats:" + JSONObject.fromObject(result).toString());
 			return JSONObject.fromObject(result).toString();
 			
 		}catch(Exception e) {

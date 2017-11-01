@@ -5298,11 +5298,11 @@ public class TaskService {
 						task.put("createDate", DateUtils.format(rs.getTimestamp("CREATE_DATE"), DateUtils.DATE_DEFAULT_FORMAT));
 						task.put("type", rs.getInt("type"));
 						int programId = rs.getInt("PROGRAM_ID");
-						String cityName = "";
+						String provinceName = "";
 						if(province.containsKey(programId)){
-							cityName = province.get(programId);
+							provinceName = province.get(programId);
 						}
-						task.put("province", cityName);
+						task.put("province", provinceName);
 						result.add(task);
 					}
 					return result;
@@ -5328,14 +5328,14 @@ public class TaskService {
 	 * */
 	public Map<Integer, String> queryCityNameByProgram(Connection conn) throws Exception{
 		try{
-			String	sqlForCity = "SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID "
-					+ "UNION ALL SELECT P.PROGRAM_ID, C.CITY_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID ";
+			String	sqlForCity = "SELECT P.PROGRAM_ID, C.PROVINCE_NAME FROM CITY C, PROGRAM P WHERE P.CITY_ID = C.CITY_ID "
+					+ "UNION ALL SELECT P.PROGRAM_ID, C.PROVINCE_NAME FROM CITY C, INFOR IO, PROGRAM P WHERE P.INFOR_ID = IO.INFOR_ID AND IO.ADMIN_CODE = C.ADMIN_ID ";
 			ResultSetHandler<Map<Integer, String>> rs = new ResultSetHandler<Map<Integer, String>>() {
 				@Override
 				public Map<Integer, String> handle(ResultSet rs) throws SQLException {
 					Map<Integer, String> province = new HashMap<>();
 					while(rs.next()){
-						province.put(rs.getInt("PROGRAM_ID"), rs.getString("CITY_NAME"));
+						province.put(rs.getInt("PROGRAM_ID"), rs.getString("PROVINCE_NAME"));
 					}	
 					return province;
 				}	

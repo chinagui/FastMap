@@ -3,10 +3,7 @@ package com.navinfo.dataservice.engine.limit.search.gdb;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -53,22 +50,20 @@ public class RdLinkSearch {
 			
 			resultSet = pstmt.executeQuery();
 			
-			Map<String,List<Integer>> classify = new HashMap<>();  
-			
+			TreeMap<String,List<Integer>> classify = new TreeMap<>();
+
 			while (resultSet.next()) {
-				
+
 				int pid = resultSet.getInt("pid");
-				
-				String nameout = resultSet.getString("name");
-				
-				if(classify.containsKey(nameout)){
-					classify.get(nameout).add(pid);
-				}else{
-					List<Integer> pids = new ArrayList<>();
-					pids.add(pid);
-					classify.put(nameout, pids);
+
+				String nameout = resultSet.getString("ADMIN_ID");
+				 nameout +="_"+ resultSet.getString("name");
+				nameout += "_" + resultSet.getString("NAME_GROUPID");
+
+				if (!classify.containsKey(nameout)) {
+					classify.put(nameout, new ArrayList<Integer>());
 				}
-				
+				classify.get(nameout).add(pid);
 			}
 
 			JSONObject result = componetQueryResult(classify);
@@ -84,7 +79,7 @@ public class RdLinkSearch {
         }
 	}
 	
-	private JSONObject componetQueryResult(Map<String, List<Integer>> classify) throws Exception {
+	private JSONObject componetQueryResult(TreeMap<String, List<Integer>> classify) throws Exception {
 		JSONArray array = new JSONArray();
 
 		JSONObject result = new JSONObject();
@@ -155,41 +150,58 @@ public class RdLinkSearch {
 	}
 
 	private void componentSql(StringBuilder sql, JSONArray names) {
-		sql.append("with tmp1 as ( select lang_code,name_groupid,name from rd_name where");
+		sql.append("with tmp1 as ( select lang_code,name_groupid,name,ADMIN_ID from rd_name where");
 
 		for (int i = 0; i < names.size(); i++) {
 			if (i > 0) {
-				sql.append(" or");
+				sql.append(" or ");
 			}
-			sql.append(" name like '%" + names.getString(i) + "%'");
+			sql.append(" name like '%");
+			sql.append(names.getString(i));
+			sql.append("%'");
 		}
 
 		sql.append(" and u_record != 2),");
 
-		sql.append(
-				" tmp2 AS (SELECT /*+ index(r1)*/ rln.link_pid pid, tmp1.name FROM rd_link_name rln,tmp1,rd_link rl WHERE rln.name_class=1 AND rln.link_pid = rl.link_pid and tmp1.name_groupid = rln.name_groupId AND rln.u_record !=2 )");
-
-		sql.append(
-				" select * from tmp2 for update nowait");
+		sql.append(" TMP2 AS");
+		sql.append(" (SELECT /*+ index(r1)*/");
+		sql.append(" RLN.LINK_PID PID, TMP1.NAME, RLN.NAME_GROUPID,TMP1.ADMIN_ID");
+		sql.append(" FROM RD_LINK_NAME RLN, TMP1, RD_LINK RL");
+		sql.append(" WHERE RLN.LINK_PID = RL.LINK_PID");
+		sql.append(" AND TMP1.NAME_GROUPID = RLN.NAME_GROUPID");
+		sql.append(" AND RLN.U_RECORD != 2");
+		sql.append(" AND RL.U_RECORD != 2)");
+		sql.append(" SELECT * FROM TMP2");
 	}
 	
 	private void componentSqlForAccurate(StringBuilder sql,JSONArray names){
-		sql.append("with tmp1 as ( select lang_code,name_groupid,name from rd_name where name in (");
+		sql.append("with tmp1 as ( select lang_code,name_groupid,ADMIN_ID,name from rd_name where name in (");
 
 		for (int i = 0; i < names.size(); i++) {
 			if (i > 0) {
 				sql.append(", ");
 			}
-			sql.append("'" + names.getString(i) + "'");
+			sql.append("'" );
+			sql.append( names.getString(i) );
+			sql.append( "'");
 		}
 
-		sql.append(") and u_record != 2),");
+		sql.append(" ) and u_record != 2),");
 
-		sql.append(
-				" tmp2 AS (SELECT /*+ index(r1)*/ rln.link_pid pid, tmp1.name FROM rd_link_name rln,tmp1,rd_link rl WHERE rln.name_class=1 AND rln.link_pid = rl.link_pid and tmp1.name_groupid = rln.name_groupId AND rln.u_record !=2 )");
 
-		sql.append(
-				" select * from tmp2 for update nowait");
+		sql.append(" TMP2 AS");
+		sql.append(" (SELECT /*+ index(r1)*/");
+		sql.append(" RLN.LINK_PID PID, TMP1.NAME, RLN.NAME_GROUPID,TMP1.ADMIN_ID");
+		sql.append(" FROM RD_LINK_NAME RLN, TMP1, RD_LINK RL");
+		sql.append(" WHERE RLN.LINK_PID = RL.LINK_PID");
+		sql.append(" AND TMP1.NAME_GROUPID = RLN.NAME_GROUPID");
+		sql.append(" AND RLN.U_RECORD != 2");
+		sql.append(" AND RL.U_RECORD != 2)");
+		sql.append(" SELECT * FROM TMP2");
+
+
+
+
 	}
 	
 	public JSONObject searchDataByPid(JSONObject condition) throws Exception {
@@ -215,7 +227,7 @@ public class RdLinkSearch {
 
 			resultSet = pstmt.executeQuery();
 
-			Map<String, List<Integer>> classify = new HashMap<>();
+			TreeMap<String, List<Integer>> classify = new TreeMap<>();
 
 			while (resultSet.next()) {
 				int linkPid = resultSet.getInt("pid");

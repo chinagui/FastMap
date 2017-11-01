@@ -19,17 +19,22 @@ public class Process extends AbstractProcess<Command> {
 	public boolean prepareData() throws Exception {
 
 		ScPlateresRdlinkSearch search = new ScPlateresRdlinkSearch(this.getConn());
-		List<ScPlateresRdLink> links = new ArrayList<>();
 
-		if (this.getCommand().getLinkpids() != null && this.getCommand().getLinkpids().size() != 0) {
-			links.addAll(search.loadByIds(this.getCommand().getLinkpids()));
+		List<ScPlateresRdLink> rdlinks = new ArrayList<>();
+
+		for (Integer linkPid : this.getCommand().getMapping().keySet()) {
+
+			List<ScPlateresRdLink> links = search.loadByLinkPId(linkPid);
+
+			for (ScPlateresRdLink link : links) {
+
+				this.getCommand().getMapping().get(linkPid).contains(link.getGeometryId());
+
+				rdlinks.add(link);
+			}
 		}
 
-		if (this.getCommand().getGeometryIds() != null && this.getCommand().getGeometryIds().size() != 0) {
-			links = search.loadByGeometryIds(this.getCommand().getGeometryIds());
-		}
-
-		this.getCommand().setRdLinks(links);
+		this.getCommand().setLinks(rdlinks);
 		return true;
 	}
 

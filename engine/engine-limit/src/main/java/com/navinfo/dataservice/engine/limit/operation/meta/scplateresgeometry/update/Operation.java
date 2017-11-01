@@ -21,20 +21,41 @@ public class Operation implements IOperation {
     }
 
     private void updateGroup(Result result) throws Exception {
+
         JSONObject content = command.getContent();
 
-        ScPlateresGeometry geometry = command.getGeometry();
+        //批量写入boundaryLink
+        if (command.getGeometrys() != null) {
 
-        if (content.containsKey("objStatus") && ObjStatus.UPDATE.toString().equals(
-                content.getString("objStatus"))) {
+            for (ScPlateresGeometry geometry : command.getGeometrys()) {
 
-            boolean isChanged = geometry.fillChangeFields(content);
+                if (geometry.getBoundaryLink().equals(command.getBoundaryLink())) {
+                    continue;
+                }
+                geometry.changedFields().put("boundaryLink", command.getBoundaryLink());
 
-            if (isChanged) {
                 result.insertObject(geometry, ObjStatus.UPDATE, geometry.getGeometryId());
-            }
 
+                result.setPrimaryId(geometry.getGeometryId());
+
+            }
+        } else {
+
+
+            ScPlateresGeometry geometry = command.getGeometry();
+
+            if (content.containsKey("objStatus") && ObjStatus.UPDATE.toString().equals(
+                    content.getString("objStatus"))) {
+
+                boolean isChanged = geometry.fillChangeFields(content);
+
+                if (isChanged) {
+                    result.insertObject(geometry, ObjStatus.UPDATE, geometry.getGeometryId());
+                }
+
+            }
+            result.setPrimaryId(geometry.getGeometryId());
         }
-        result.setPrimaryId(geometry.getGeometryId());
-    }
+
+}
 }

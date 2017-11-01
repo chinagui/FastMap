@@ -2054,6 +2054,8 @@ public class ProgramService {
 						t.setWorkKind("1|0|0|0");
 					}else if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
 						t.setWorkKind("0|0|1|0");
+					}else if(t.getType()==0&&"多源制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
+						t.setWorkKind("0|0|0|1");
 					}else if(t.getType()==0){
 						t.setWorkKind("1|0|0|0");
 					}
@@ -2064,7 +2066,7 @@ public class ProgramService {
 					 *     2.其它：根据INFOR表情报“情报省份城市”字段，参考<行政与作业组配置表>，取作业组赋值
 					 */
 					int groupType = 0;
-					if(t.getType()==0 && !"矢量制作".equals(infor.getMethod())){
+					if(t.getType()==0 && !"矢量制作".equals(infor.getMethod())&&!"多源制作".equals(infor.getMethod())){
 						groupType = 1;
 					}else if(t.getType()==1){
 						groupType = 2;

@@ -48,7 +48,7 @@ public class UrbanBatchUtils extends BaseBatchUtils {
             link.setUrban(IS_NOT_URBAN);
         }
         // 将link几何缩小100000倍，根据link几何查找与之相关的BUA面
-        Geometry linkGeometry = null == geometry ? shrink(link.getGeometry()) : shrink(geometry);
+        Geometry linkGeometry = null == geometry ? transform(link.getGeometry()) : transform(geometry);
         // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
         if (linkGeometry.getCoordinates().length > 200)
             return;
@@ -63,10 +63,10 @@ public class UrbanBatchUtils extends BaseBatchUtils {
         // 取出与link关联的唯一面几何
         Geometry faceGeometry = null;
         if (1 == faces.size()) {
-            faceGeometry = shrink(faces.get(0).getGeometry());
+            faceGeometry = transform(faces.get(0).getGeometry());
         } else {
             for (LuFace face : faces) {
-                faceGeometry = shrink(face.getGeometry());
+                faceGeometry = transform(face.getGeometry());
                 Geometry intersection = linkGeometry.intersection(faceGeometry);
                 if (!GeometryTypeName.POINT.equals(intersection.getGeometryType())) {
                     break;
@@ -167,7 +167,7 @@ public class UrbanBatchUtils extends BaseBatchUtils {
         // 修形面时,新几何内link的Urban赋1
         links = selector.loadLinkByFaceGeo(geometry, true);
         for (RdLink link : links) {
-            Geometry linkGeometry = shrink(link.getGeometry());
+            Geometry linkGeometry = transform(link.getGeometry());
             // 判断link是否完全包含于该面
             if (GeoRelationUtils.Interior(linkGeometry, geometry)) {
                 if (link.getUrban() != IS_URBAN) {

@@ -178,11 +178,19 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		JSONArray subtaskIds=new JSONArray();
 		for(Task task:collectTaskList){
 			Subtask subtask = new Subtask();
-			subtask.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate()));
+			//subtask.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate()));
 			subtask.setType(2);
 			subtask.setStage(0);
 			if(task.getSubWorkKind(3)==1){
 				subtask.setWorkKind(3);				
+			}if(task.getSubWorkKind(4)==1){
+				subtask.setWorkKind(4);	
+				//* 快线：情报名称_发布时间_作业员_子任务ID
+				// * 中线：任务名称_作业组
+				UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 5);
+				if(userGroup!=null){
+					subtask.setExeGroupId(userGroup.getGroupId());
+				}
 			}else if(task.getSubWorkKind(1)==1){
 				subtask.setWorkKind(1);	
 				subtask.setDescp("外业自采集情报");
@@ -208,6 +216,9 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			}
 			int subtaskId=SubtaskService.getInstance().createSubtaskWithSubtaskId(conn,subtask);
 			if(subtask.getExeUserId()!=0){
+				subtaskIds.add(subtaskId);
+			}
+			if(subtask.getExeGroupId()!=0){
 				subtaskIds.add(subtaskId);
 			}
 		}

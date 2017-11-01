@@ -162,23 +162,11 @@ public class SubtaskService {
 				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(gridIdMap.keySet()));
 				dataJson.put("geometry",wkt);
 			}
-			
-			if(dataJson.containsKey("qualityMethod") && dataJson.getJSONArray("qualityMethod").size() == 0){
-				dataJson.remove("qualityMethod");
-			}
+
 			int qualityMethod=0;//质检方式仅作用于质检子任务
 			if(dataJson.containsKey("qualityMethod")){
-				JSONArray qualityMethodArr = dataJson.getJSONArray("qualityMethod");
+				qualityMethod = dataJson.getInt("qualityMethod");
 				dataJson.discard("qualityMethod");
-				if(qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
-					qualityMethod=3;
-				}
-				if(qualityMethodArr.contains(1)&&!qualityMethodArr.contains(2)){
-					qualityMethod=1;
-				}
-				if(!qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
-					qualityMethod=2;
-				}
 			}
 			
 			//创建质检子任务
@@ -402,23 +390,11 @@ public class SubtaskService {
 			}
 			
 			//modify by songhe
-			//这里添加了一个质检方式上传的为空的判断，上传了这个字段，但是内容为空的时候直接不处理
-			if(dataJson.containsKey("qualityMethod") && dataJson.getJSONArray("qualityMethod").size() == 0){
-				dataJson.remove("qualityMethod");
-			}
+			//这里添加了一个质检方式上传的为空的判断，上传了这个字段，但是内容为空的时候直接不处
 			int qualityMethod=0;//质检方式仅作用于质检子任务
 			if(dataJson.containsKey("qualityMethod")){
-				JSONArray qualityMethodArr = dataJson.getJSONArray("qualityMethod");
+				qualityMethod = dataJson.getInt("qualityMethod");
 				dataJson.discard("qualityMethod");
-				if(qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
-					qualityMethod=3;
-				}
-				if(qualityMethodArr.contains(1)&&!qualityMethodArr.contains(2)){
-					qualityMethod=1;
-				}
-				if(!qualityMethodArr.contains(1)&&qualityMethodArr.contains(2)){
-					qualityMethod=2;
-				}
 			}
 			
 			int qualitySubtaskId = 0;//质检子任务id
@@ -948,13 +924,7 @@ public class SubtaskService {
 					result.put("qualityPlanEndDate",DateUtils.format(subtaskQuality.getPlanEndDate(), DateUtils.DATE_YMD));
 					result.put("qualityTaskStatus",subtaskQuality.getStatus());
 					
-					int qualityMethod=subtaskQuality.getQualityMethod();
-					JSONArray qualityMethodArray=new JSONArray();
-					if(qualityMethod==3){
-						qualityMethodArray.add(1);
-						qualityMethodArray.add(2);
-					}else if(qualityMethod!=0){qualityMethodArray.add(qualityMethod);}
-					result.put("qualityMethod", qualityMethodArray);
+					result.put("qualityMethod", subtaskQuality.getQualityMethod());
 					
 					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn,subtaskQuality.getExeUserId());
 					if(userInfo!=null){

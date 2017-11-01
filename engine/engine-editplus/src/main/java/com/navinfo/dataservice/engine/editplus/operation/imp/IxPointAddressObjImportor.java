@@ -44,7 +44,6 @@ import net.sf.json.JSONObject;
  */
 public class IxPointAddressObjImportor extends AbstractOperation{
 	protected Map<String,String> errLog = new HashMap<String,String>();
-	protected List<PointAddressRelation> parentPid = new ArrayList<PointAddressRelation>();
 	protected long dbId;
 	public long getDbId() {
 		return dbId;
@@ -614,10 +613,6 @@ public class IxPointAddressObjImportor extends AbstractOperation{
 			throw new Exception("未找到相应的主表类型");
 		}
 		return objType;
-	}
-	
-	public List<PointAddressRelation> getParentPid() {
-		return parentPid;
 	}
 	
 	@Override

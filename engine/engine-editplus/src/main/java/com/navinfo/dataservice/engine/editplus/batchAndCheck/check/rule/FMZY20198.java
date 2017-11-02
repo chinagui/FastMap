@@ -73,6 +73,9 @@ public class FMZY20198 extends BasicCheckRule {
 		if (charMap.containsKey("SYMBOL_F")) {
 			charList.addAll(charMap.get("SYMBOL_F"));
 		}
+		if (charMap.containsKey("GBK_SYMBOL_F")) {
+			charList.addAll(charMap.get("GBK_SYMBOL_F"));
+		}
 
 		for (IxPoiCarrental poiCarrental : carrentals) {
 			String openHour = poiCarrental.getOpenHour();

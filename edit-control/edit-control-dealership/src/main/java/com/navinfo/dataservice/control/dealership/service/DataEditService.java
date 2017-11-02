@@ -1557,7 +1557,7 @@ public class DataEditService {
 		sb.append(" MERGE INTO poi_edit_status t1 ");
 		sb.append(" USING (SELECT p.pid FROM ix_poi p,poi_edit_status pe  WHERE p.pid = pe.pid(+) AND p.POI_NUM = :1) T2 ");
 		sb.append(" ON (t1.pid = t2.pid ) ");
-		sb.append(" WHEN MATCHED THEN  UPDATE SET STATUS = 3 WHERE STATUS  = 0 ");
+		sb.append(" WHEN MATCHED THEN  UPDATE SET STATUS = 3 , SUBMIT_DATE = SYSDATE WHERE STATUS  = 0 ");
 		sb.append(" WHEN NOT MATCHED THEN INSERT (pid,status) VALUES(t2.pid,3)");
 		
 		PreparedStatement pstmt = null;

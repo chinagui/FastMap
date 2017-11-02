@@ -69,7 +69,7 @@ public class DownloadPhotoFromHbase {
 	        // mesh范围
 	        String meshIds = props.getProperty("meshIds");
 	        
-	        // s_sourcetype取值范围，1401代表方向看板，1406代表实景图
+	        // s_sourcetype取值范围，1401代表方向看板，1406代表实景图，1402代表实景看板
 	        String input_s_sourcetype = props.getProperty("input_s_sourcetype");
 	        
 	        	        
@@ -240,6 +240,7 @@ public class DownloadPhotoFromHbase {
 			//SIGNBOARD：方向看板
 			tpPath="SIGNBOARD";				
 		}
+				
 		
 		if("1406".equals(s_sourcetype)){
 			Integer integer = (Integer)deep.get("tp");
@@ -256,6 +257,11 @@ public class DownloadPhotoFromHbase {
 				tpPath="REALIMAGE3";
 			}
 			
+		}
+		
+		if ("1402".equals(s_sourcetype)) {
+			//SIGNASREAL：实景看板
+			tpPath="SIGNASREAL";				
 		}
 		
 		

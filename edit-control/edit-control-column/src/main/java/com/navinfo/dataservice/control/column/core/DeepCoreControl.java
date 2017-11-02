@@ -397,20 +397,27 @@ public class DeepCoreControl {
             int subtaskId = json.getInt("subtaskId");
             String secondWorkItem = json.getString("secondWorkItem");
 
+            logger.info("start poi deep release");
             
         	int isQuality=0;
 
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			isQuality=subtask.getIsQuality();
 			
+			logger.info("subtask Id  = "+subtask.getSubtaskId()+" , isQuality = " +isQuality);
+			
             conn = DBConnector.getInstance().getConnectionById(dbId);  
 			
     		//获取后检查需要执行规则列表
 			List<String> checkList=getCheckRuleList(conn,secondWorkItem);
+			
+			logger.info("need checkList  = "+checkList);
             
 			// 查询可提交数据
             IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 			pidList = ixPoiColumnStatusSelector.getpidsForRelease(subtaskId,2,userId, secondWorkItem);
+			
+			logger.info("can realese pidList  = "+pidList);
 			
 			//调用清理检查结果方法
 			cleanExByCkRule(dbId, pidList, checkList, "IX_POI");
@@ -441,10 +448,15 @@ public class DeepCoreControl {
 			}
 			
 			operationResult.putAll(objList);
+			
+			
+			logger.info("start exe check command ");
 			CheckCommand checkCommand=new CheckCommand();
 			checkCommand.setRuleIdList(checkList);
 			Check check=new Check(conn,operationResult);
 			check.operate(checkCommand);
+			
+			logger.info("end exe check command ");
 			
 			// pidList替换为无检查错误的pidList
 			Map<String, Map<Long, Set<String>>> errorMap = check.getErrorPidMap();
@@ -462,6 +474,7 @@ public class DeepCoreControl {
 			}
 			
 			sucReleaseTotal = pidList.size();
+			logger.info("success release total =  "+sucReleaseTotal);
 			
 			// 修改poi_deep_status表作业项状态
 			updateDeepStatus(pidList, conn, 1,secondWorkItem,isQuality);
@@ -517,6 +530,8 @@ public class DeepCoreControl {
 			sb.append(condition);
 			
 			pstmt = conn.prepareStatement(sb.toString());
+			
+			logger.info("flag = "+flag+" update deep status sql "+sb.toString());
 			
 			pstmt.executeUpdate();
 			
@@ -1573,28 +1588,7 @@ public class DeepCoreControl {
 			if (resultSet.next()) {
 				MapCurContact.put(resultSet.getString("ROW_ID"), resultSet.getString("CONTACT"));
 			}
-		//先判断是否有常规作业员履历，有则取最后一条newValue
-//		String existWorkHisSql=" SELECT NEWVALUE  FROM (SELECT LD.NEW  NEWVALUE FROM LOG_ACTION LA,  "
-//		           +" LOG_OPERATION LO, LOG_DETAIL LD WHERE LD.OB_PID =:1  AND LD.OB_NM='IX_POI' AND LD.OP_TP IN (1,3) AND instr(LD.FD_LST,:2)>0  AND LA.ACT_ID = LO.ACT_ID  "
-//		           +" AND LO.OP_ID = LD.OP_ID AND LA.STK_ID = :3 AND LA.US_ID = :4 AND LD.TB_NM=:5"
-//		           +" AND LA.OP_CMD = 'IXPOIDEEPSAVE' ORDER BY LO.OP_DT DESC) WHERE ROWNUM = 1 ";
-//		pstmt = regionConn.prepareStatement(existWorkHisSql);
-//		
-//		pstmt.setLong(1, pid);
-//		pstmt.setString(2, "CONTACT");
-//		pstmt.setInt(3, subtaskId);
-//		pstmt.setLong(4, userId);
-//		pstmt.setString(5, "IX_POI_CONTACT");
-//		resultSet = pstmt.executeQuery();
-//		if (resultSet.next()) {
-//			JSONObject jo = JSONObject.fromObject(resultSet
-//					.getString("NEWVALUE"));
-//			if (JSONUtils.isNull(jo.get("CONTACT"))) {
-//				propertyOldValue = "";
-//			} else {
-//				propertyOldValue = jo.getString("CONTACT");
-//			}
-//		}
+		
 		//取质检履历，如履历为新增1，从传真数组中去掉，为删除2则添加到传真数组中，为修改3则取old值覆盖传真数组中对应rowId数据
 			String existQcHisSql=" SELECT LD.TB_ROW_ID, LD.OLD OLDVALUE,LD.OP_TP FROM LOG_ACTION LA,  "
 			           +" LOG_OPERATION LO, LOG_DETAIL LD WHERE LD.OB_PID =:1  AND LD.OB_NM='IX_POI' AND LD.TB_NM='IX_POI_CONTACT' AND LA.ACT_ID = LO.ACT_ID  "
@@ -1795,10 +1789,10 @@ public List queryDetailOpenTime(Connection regionConn,long pid,Integer subtaskId
 					String propertyOldValue=null;
 					String strProperty=(String) propertyList.get(i);
 					if ("deepDetail".equals(secondWorkItem)){
-						if("FAX".equals(strProperty)){
-						mapOldValue.put("fax",queryDetailFax(regionConn,pid,subtaskId,qualitySubtaskId,userId,qcUserId));
-						continue;
-						}
+//						if("FAX".equals(strProperty)){
+//						mapOldValue.put("fax",queryDetailFax(regionConn,pid,subtaskId,qualitySubtaskId,userId,qcUserId));
+//						continue;
+//						}
 						if("OPEN_TIME".equals(strProperty)){
 							mapOldValue.put("openTime",queryDetailOpenTime(regionConn,pid,subtaskId,qualitySubtaskId,userId,qcUserId));
 							continue;

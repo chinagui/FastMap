@@ -170,7 +170,9 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			sb.append(" AND PC.TYPE = 1 ");
 			sb.append(" AND PC.CHECK_FLAG IN (1, 3) ");
 			sb.append(" AND PS.WORK_ITEM_ID = PC.WORK_ITEM_ID ");
-			sb.append(" AND PC.FIRST_WORK_ITEM ='"+firstWorkItem+"') ");
+			sb.append(" AND PC.FIRST_WORK_ITEM ='"+firstWorkItem+"'");
+			sb.append(" AND PS.WORK_ITEM_ID != 'FM-YW-20-017') ");// 英文名称申请时，WORK_ITEM_ID为FM-YW-20-017的数据不作业，不参与申请
+			
 		}
 
 		PreparedStatement pstmt = null;
@@ -1791,6 +1793,46 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 		
 	}
 
+	
+	/**
+	 * 判断子任务范围内是否有未提交的数据
+	 * @param subtask
+	 * @return
+	 * @throws Exception
+	 */
+	public int getSubTaskStatics(Subtask subtask) throws Exception{ 
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("select distinct s.pid ");
+			sb.append("  from poi_column_status s, ix_poi p");
+			sb.append("  where s.work_item_id != 'FM-YW-20-017'");
+			sb.append("    and s.pid = p.pid");
+			sb.append("    and s.second_work_status <> 3");
+			sb.append("    and sdo_within_distance(p.geometry,");
+			sb.append("                            sdo_geometry(:1, 8307),");
+			sb.append("                            'mask=anyinteract') = 'TRUE'");
+			
+			logger.info(sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			Clob geoClob = ConnectionUtil.createClob(conn);
+			geoClob.setString(1, subtask.getGeometry());
+			pstmt.setClob(1, geoClob);
+			
+			rs = pstmt.executeQuery();
+			if(rs.next()){
+				return 1;
+			}
+			return 0;
+		}catch (Exception e){
+			throw e;
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 	
 	
 }

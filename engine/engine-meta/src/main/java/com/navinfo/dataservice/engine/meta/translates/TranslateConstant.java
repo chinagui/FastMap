@@ -52,81 +52,93 @@ public class TranslateConstant {
 
     static final Integer PRIORITY = 5;
 
-    static final Map<String, String> CHINESE_NUMBER = new HashMap() {{
-       put("零", "0");
-       put("一", "1");
-       put("二", "2");
-       put("三", "3");
-       put("四", "4");
-       put("五", "5");
-       put("六", "6");
-       put("七", "7");
-       put("八", "8");
-       put("九", "9");
-    }};
+    static final Map<String, String> CHINESE_NUMBER = new HashMap<>();
+
+    static {
+        CHINESE_NUMBER.put("零", "0");
+        CHINESE_NUMBER.put("一", "1");
+        CHINESE_NUMBER.put("二", "2");
+        CHINESE_NUMBER.put("三", "3");
+        CHINESE_NUMBER.put("四", "4");
+        CHINESE_NUMBER.put("五", "5");
+        CHINESE_NUMBER.put("六", "6");
+        CHINESE_NUMBER.put("七", "7");
+        CHINESE_NUMBER.put("八", "8");
+        CHINESE_NUMBER.put("九", "9");
+    };
 
     /**
      * 方位词
      */
-    static final Map<String, String> POSITION_WORD = new HashMap() {{
-        put("东", "East ");
-        put("西", "West ");
-        put("南", "South ");
-        put("北", "North ");
-        put("中", "Middle ");
-    }};
+    static final Map<String, String> POSITION_WORD = new HashMap<>();
+
+    static {
+        POSITION_WORD.put("东", "East ");
+        POSITION_WORD.put("西", "West ");
+        POSITION_WORD.put("南", "South ");
+        POSITION_WORD.put("北", "North ");
+        POSITION_WORD.put("中", "Middle ");
+    };
 
     /**
      * 特殊结尾词
      */
-    static final Map<String, String> END_KEY_WORD = new HashMap() {{
-        put("收费站", "Toll Gate ");
-        put("收费点", "Toll Gate ");
-        put("收费处", "Toll Gate ");
-        put("岗", "Post ");
-        put("口", "Intersection ");
-        put("桥", "Brg ");
-        put("岛", "Island ");
-        put("宫", "Temple ");
-        put("庙", "Temple ");
-        put("寺", "Temple ");
-        put("祠", "Temple ");
-        put("墓", "Tomb ");
-        put("塔", "Tower ");
-        put("林", "Wood ");
-        put("苑", "Court ");
-        put("陵", "Mausoleum ");
-        put("峰", "Peak ");
-        put("井", "Well ");
-    }};
+    static final Map<String, String> END_KEY_WORD = new HashMap<>();
+
+    static  {
+        END_KEY_WORD.put("收费站", "Toll Gate ");
+        END_KEY_WORD.put("收费点", "Toll Gate ");
+        END_KEY_WORD.put("收费处", "Toll Gate ");
+        END_KEY_WORD.put("岗", "Post ");
+        END_KEY_WORD.put("口", "Intersection ");
+        END_KEY_WORD.put("桥", "Brg ");
+        END_KEY_WORD.put("岛", "Island ");
+        END_KEY_WORD.put("宫", "Temple ");
+        END_KEY_WORD.put("庙", "Temple ");
+        END_KEY_WORD.put("寺", "Temple ");
+        END_KEY_WORD.put("祠", "Temple ");
+        END_KEY_WORD.put("墓", "Tomb ");
+        END_KEY_WORD.put("塔", "Tower ");
+        END_KEY_WORD.put("林", "Wood ");
+        END_KEY_WORD.put("苑", "Court ");
+        END_KEY_WORD.put("陵", "Mausoleum ");
+        END_KEY_WORD.put("峰", "Peak ");
+        END_KEY_WORD.put("井", "Well ");
+
+        END_KEY_WORD.put("线", "Line ");
+    };
 
 
     /**
      * 自定义特殊转换规则
      * 使用指定字符替换$$
      */
-    static final Map<String, String> SYMBOL_WORD = new HashMap() {{
-        put("国道", "G$$");
-        put("省道", "S$$");
-        put("县道", "X$$");
+    static final Map<String, String> SYMBOL_WORD = new HashMap<>();
+
+    static {{
+        SYMBOL_WORD.put("国道", "G$$");
+        SYMBOL_WORD.put("省道", "S$$");
+        SYMBOL_WORD.put("县道", "X$$");
     }};
 
     /**
      * 罗马字符对应阿拉伯数字
      */
-    static final Map<String, String> ROMA_NUMBER = new HashMap() {{
-        put("Ⅰ", "1");
-        put("Ⅱ", "2");
-        put("Ⅲ", "3");
-        put("Ⅳ", "4");
-        put("Ⅴ", "5");
-        put("Ⅵ", "6");
-        put("Ⅶ", "7");
-        put("Ⅷ", "8");
-        put("Ⅸ", "9");
-        put("Ⅹ", "10");
-        put("Ⅺ", "11");
-        put("Ⅻ", "12");
+    static final Map<String, String> ROMA_NUMBER = new HashMap<>();
+
+    static {{
+        ROMA_NUMBER.put("Ⅰ", "1");
+        ROMA_NUMBER.put("Ⅱ", "2");
+        ROMA_NUMBER.put("Ⅲ", "3");
+        ROMA_NUMBER.put("Ⅳ", "4");
+        ROMA_NUMBER.put("Ⅴ", "5");
+        ROMA_NUMBER.put("Ⅵ", "6");
+        ROMA_NUMBER.put("Ⅶ", "7");
+        ROMA_NUMBER.put("Ⅷ", "8");
+        ROMA_NUMBER.put("Ⅸ", "9");
+        ROMA_NUMBER.put("Ⅹ", "10");
+        ROMA_NUMBER.put("Ⅺ", "11");
+        ROMA_NUMBER.put("Ⅻ", "12");
     }};
 
 }

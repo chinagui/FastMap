@@ -82,13 +82,13 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			Map<Integer, Collection<Long>> map = logReader.getUpdatedObj(
 					"IX_POI", "IX_POI", grids, null);
 			Collection<Long> pids = new ArrayList<Long>();
-			Collection<Long> addPids = map.get(1);
+			//Collection<Long> addPids = map.get(1);
 			Collection<Long> updatePids = map.get(3);
-			log.info("新增 poi 信息=" + addPids);
+			//log.info("新增 poi 信息=" + addPids);
 			log.info("修改poi 信息=" + updatePids);
-			if (addPids != null && addPids.size() > 0) {
-				pids.addAll(addPids);
-			}
+			//if (addPids != null && addPids.size() > 0) {
+			//	pids.addAll(addPids);
+			//}
 			if (updatePids != null && updatePids.size() > 0) {
 				pids.addAll(updatePids);
 			}

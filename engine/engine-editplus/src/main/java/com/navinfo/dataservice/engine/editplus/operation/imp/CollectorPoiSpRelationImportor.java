@@ -82,7 +82,7 @@ public class CollectorPoiSpRelationImportor extends AbstractOperation {
 			log.info("无同一关系数据需要导入。");
 			return;
 		}
-		Map<String,Long> fidPidMap = IxPoiSelector.getPidByFids(conn,allFids);
+		Map<String,Long> fidPidMap = IxPoiSelector.getPidByFidsIncludeDelData(conn,allFids);
 		//加载库中数据
 		ExistUtils util = new ExistUtils(fidPidMap);
 		util.loadData();

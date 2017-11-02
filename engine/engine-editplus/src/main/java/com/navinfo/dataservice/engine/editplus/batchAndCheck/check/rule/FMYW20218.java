@@ -18,15 +18,15 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
  * 检查条件：
  * 非删除（根据履历判断删除）
  * 检查原则：（网址：IX_POI_DETAIL.WEB_SITE）（只针对有值得检查）
- * 1.网址信息以http://开头
+ * 1.网址信息以http://或“https://”开头
  * 2.网址信息不能存在空格，tab符，回车符
- * 3.网址信息不能为http://x/x格式
+ * 3.网址信息不能为http://x/x或“https://x/x"格式
  * 4.网址信息不以“\”结尾
  * 5.网址中不能含有汉字
  * 6.网址中不能含有非法字符（遍历website的值，如果值不在TY_CHARACTER_EGALCHAR_EXT.EXTENTION_TYPE in 
  * (“ENG_H_U”,“ENG_H_L”,“DIGIT_H”,“SYMBOL_H”)对应的“CHARACTER”范围内）
  * log：
- * 1.网址信息格式错误，网址不是以”http://”开头
+ * 1.网址信息格式错误，网址不是以”http://”或“https://”开头
  * 2.网址信息格式错误，网址中存在Tab符、回车符或者空格
  * 3.网址信息格式错误，网址中存在多余的“/”
  * 4.网址信息格式错误，网址以“\”结尾
@@ -63,17 +63,24 @@ public class FMYW20218 extends BasicCheckRule {
 			if (webSite == null) {
 				return;
 			}
-			if (!webSite.startsWith("http://")) {
+			if (!webSite.startsWith("http://")&&!webSite.startsWith("https://")) {
 				this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
-						"网址信息格式错误，网址不是以”http://”开头");
+						"网址信息格式错误，网址不是以”http://”或“https://开头");
 			}
 			if (webSite.indexOf(" ") >= 0 || webSite.indexOf("	") >= 0 || webSite.indexOf("\n") >= 0) {
 				this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 						"网址信息格式错误，网址中存在Tab符、回车符或者空格");
 			}
-			int webindex = webSite.indexOf("http://");
-			if (webindex>=0) {
-				if (webSite.substring(webindex+7).indexOf("/") >= 0) {
+			int webindex0 = webSite.indexOf("http://");
+			if (webindex0>=0) {
+				if (webSite.substring(webindex0+7).indexOf("/") >= 0) {
+					this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
+							"网址信息格式错误，网址中存在多余的“/”");
+				}
+			}
+			int webindex1 = webSite.indexOf("https://");
+			if (webindex1>=0) {
+				if (webSite.substring(webindex1+8).indexOf("/") >= 0) {
 					this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 							"网址信息格式错误，网址中存在多余的“/”");
 				}

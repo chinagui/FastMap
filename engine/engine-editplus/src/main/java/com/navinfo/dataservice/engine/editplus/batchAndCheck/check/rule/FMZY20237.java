@@ -52,7 +52,7 @@ public class FMZY20237 extends BasicCheckRule {
 			String[] numbers=number.split("\\|");
 			for (String oneNumber : numbers) {
 				if (oneNumber.contains("-")) {
-					String[] tel = number.split("-");
+					String[] tel = oneNumber.split("-");
 					String rightAreaCode = telObj.getString("code");
 					int rightLen = telObj.getInt("telLength");
 					// poi的 areaCode 和 telLen

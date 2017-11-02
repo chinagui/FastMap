@@ -28,5 +28,7 @@ CREATE SEQUENCE USER_INFO_SEQ START WITH 1 MAXVALUE 9999999999;
 alter table SC_PLATERES_LINK add (LINK_PID number(10));
 alter table SC_PLATERES_FACE add (LINK_PID number(10));
 alter table SC_PLATERES_FACE add (LINK_TYPE VARCHAR2(20));
+
+INSERT INTO User_Info VALUES (USER_INFO_SEQ.NEXTVAL,'admin','admin','admin','','') ;
   
 exit;

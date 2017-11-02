@@ -194,21 +194,21 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 //							addFlag = true;
 						}else{
 							log.info("fid:"+fid+"在库中存在，作为修改处理");
-							//差分过滤的字段
-							List<String> poiFilterFields = new ArrayList<String>();
-							poiFilterFields.add("pid");
-							poiFilterFields.add("fid");
-							poiFilterFields.add("rawFields");
-							poiFilterFields.add("t_lifecycle");
-							poiFilterFields.add("sourceName");
-							poiFilterFields.add("parentFid");
-							poiFilterFields.add("sameFid");
-							poiFilterFields.add("orgInfo");
-							poiFilterFields.add("attachments");
-							poiFilterFields.add("contacts");
-							poiFilterFields.add("childFid");
-							//需要单独处理
-							poiFilterFields.add("indoor");
+//							//差分过滤的字段
+//							List<String> poiFilterFields = new ArrayList<String>();
+//							poiFilterFields.add("pid");
+//							poiFilterFields.add("fid");
+//							poiFilterFields.add("rawFields");
+//							poiFilterFields.add("t_lifecycle");
+//							poiFilterFields.add("sourceName");
+//							poiFilterFields.add("parentFid");
+//							poiFilterFields.add("sameFid");
+//							poiFilterFields.add("orgInfo");
+//							poiFilterFields.add("attachments");
+//							poiFilterFields.add("contacts");
+//							poiFilterFields.add("childFid");
+//							//需要单独处理
+//							poiFilterFields.add("indoor");
 							
 							JSONObject tarJso = entry.getValue();
 							Object orgInfoJso = tarJso.get("orgInfo");
@@ -216,24 +216,29 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 								log.info("fid:"+fid+"上传的数据中orgInfo为null,判断为没有修改");
 							}else{
 								JSONObject refJso = tarJso.getJSONObject("orgInfo");
-								//字段级差分
-								Collection<String> diffFirstLevel = JSONObjectDiffUtils.diffFirstLevel(tarJso, refJso, poiFilterFields);
-								if(diffFirstLevel != null && diffFirstLevel.size() >0){
-									changeFields.addAll(diffFirstLevel);
-								}
-								//特殊处理indoor字段
-								Object indoorJso = tarJso.get("indoor");
-								Object indoorJsoRef = refJso.get("indoor");
-								if((JSONUtils.isNull(indoorJso)&&!JSONUtils.isNull(indoorJsoRef))||
-										(!JSONUtils.isNull(indoorJso)&&JSONUtils.isNull(indoorJsoRef))){
-									changeFields.add("indoor");
-								}
-								if(!JSONUtils.isNull(indoorJso)&&!JSONUtils.isNull(indoorJsoRef)){
-									JSONObject indoor = (JSONObject) indoorJso;
-									JSONObject indoorOld = (JSONObject) indoorJsoRef;
-									if(indoor.getInt("type") != indoorOld.getInt("type")){
-										changeFields.add("indoor");
-									}
+//								//字段级差分
+//								Collection<String> diffFirstLevel = JSONObjectDiffUtils.diffFirstLevel(tarJso, refJso, poiFilterFields);
+//								if(diffFirstLevel != null && diffFirstLevel.size() >0){
+//									changeFields.addAll(diffFirstLevel);
+//								}
+//								//特殊处理indoor字段
+//								Object indoorJso = tarJso.get("indoor");
+//								Object indoorJsoRef = refJso.get("indoor");
+//								if((JSONUtils.isNull(indoorJso)&&!JSONUtils.isNull(indoorJsoRef))||
+//										(!JSONUtils.isNull(indoorJso)&&JSONUtils.isNull(indoorJsoRef))){
+//									changeFields.add("indoor");
+//								}
+//								if(!JSONUtils.isNull(indoorJso)&&!JSONUtils.isNull(indoorJsoRef)){
+//									JSONObject indoor = (JSONObject) indoorJso;
+//									JSONObject indoorOld = (JSONObject) indoorJsoRef;
+//									if(indoor.getInt("type") != indoorOld.getInt("type")){
+//										changeFields.add("indoor");
+//									}
+//								}
+								//字段差分
+								List<String> diffPoiFields = diffPoiFields(tarJso, refJso);
+								if(diffPoiFields != null && diffPoiFields.size()>0){
+									changeFields.addAll(diffPoiFields);
 								}
 								//差分电话
 								Map<Integer, List<JSONObject>> diffContacts = diffContacts(tarJso.get("contacts"), refJso.get("contacts"));
@@ -534,14 +539,12 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 			ixPoi.setOpen24h(jo.getInt("open24H"));
 		}
 		// meshid非0时原值转出；为0时根据几何计算；
-		if(changeFields != null && changeFields.contains("meshid")){
-			int meshId = jo.getInt("meshid");
-			if (meshId == 0) {
-				String[] meshIds = MeshUtils.point2Meshes(geometry.getCoordinate().x, geometry.getCoordinate().y);
-				meshId = Integer.parseInt(meshIds[0]);
-			}
-			ixPoi.setMeshId(meshId);
+		int meshId = jo.getInt("meshid");
+		if (meshId == 0) {
+			String[] meshIds = MeshUtils.point2Meshes(geometry.getCoordinate().x, geometry.getCoordinate().y);
+			meshId = Integer.parseInt(meshIds[0]);
 		}
+		ixPoi.setMeshId(meshId);
 		//postCode,默认空字符串
 		if(changeFields != null && changeFields.contains("postCode")){
 			ixPoi.setPostCode(jo.getString("postCode"));
@@ -563,9 +566,7 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 			}
 		}
 		//t_operateDate
-		if(changeFields != null && changeFields.contains("t_operateDate")){
-			ixPoi.setCollectTime(jo.getString("t_operateDate"));
-		}
+		ixPoi.setCollectTime(jo.getString("t_operateDate"));
 		//level
 		if(changeFields != null && changeFields.contains("level")){
 			ixPoi.setLevel(jo.getString("level"));
@@ -1389,6 +1390,59 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 		}
 		return addList;
 	}
+	
+	/**
+	 * poi数据一级字段差分
+	 * @author Han Shaoming
+	 * @param target
+	 * @param refer
+	 * @return
+	 * @throws Exception 
+	 */
+	private List<String> diffPoiFields(JSONObject tarJso,JSONObject refJso) throws Exception{
+		List<String> changePoiFields = new ArrayList<String>();
+		//差分过滤的字段
+		List<String> poiFilterFields = new ArrayList<String>();
+		poiFilterFields.add("pid");
+		poiFilterFields.add("fid");
+		poiFilterFields.add("rawFields");
+		poiFilterFields.add("t_lifecycle");
+		poiFilterFields.add("sourceName");
+		poiFilterFields.add("parentFid");
+		poiFilterFields.add("sameFid");
+		poiFilterFields.add("orgInfo");
+		poiFilterFields.add("attachments");
+		poiFilterFields.add("contacts");
+		poiFilterFields.add("childFid");
+		poiFilterFields.add("meshid");
+		poiFilterFields.add("t_operateDate");
+		//需要单独处理
+		poiFilterFields.add("indoor");
+		//字段级差分
+		Collection<String> diffFirstLevel = JSONObjectDiffUtils.diffFirstLevel(tarJso, refJso, poiFilterFields);
+		if(diffFirstLevel != null && diffFirstLevel.size() >0){
+			changePoiFields.addAll(diffFirstLevel);
+		}
+		//特殊处理indoor字段
+		Object indoorJso = tarJso.get("indoor");
+		Object indoorJsoRef = refJso.get("indoor");
+		if((JSONUtils.isNull(indoorJso)&&!JSONUtils.isNull(indoorJsoRef))||
+				(!JSONUtils.isNull(indoorJso)&&JSONUtils.isNull(indoorJsoRef))){
+			changePoiFields.add("indoor");
+		}
+		if(!JSONUtils.isNull(indoorJso)&&!JSONUtils.isNull(indoorJsoRef)){
+			JSONObject indoor = (JSONObject) indoorJso;
+			JSONObject indoorOld = (JSONObject) indoorJsoRef;
+			if(indoor.getInt("type") != indoorOld.getInt("type")){
+				changePoiFields.add("indoor");
+			}
+		}
+		
+		
+		
+		return changePoiFields;
+	}
+	
 	
 	public static void main(String[] args) throws Exception {
 

@@ -124,7 +124,7 @@ public class PidApply {
 				number += seq[0];
 			}
 
-			newGeometryId = geometryId.substring(0, length - 6) + "_"+ String.format("%06d", number);
+			newGeometryId = geometryId.substring(0, length - 6) + String.format("%06d", number);
 		}
 
 		return newGeometryId;

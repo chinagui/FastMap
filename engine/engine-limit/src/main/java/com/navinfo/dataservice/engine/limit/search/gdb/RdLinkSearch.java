@@ -56,9 +56,7 @@ public class RdLinkSearch {
 
 				int pid = resultSet.getInt("pid");
 
-				String nameout = resultSet.getString("ADMIN_ID");
-				 nameout +="_"+ resultSet.getString("name");
-				nameout += "_" + resultSet.getString("NAME_GROUPID");
+				String nameout =resultSet.getString("name");
 
 				if (!classify.containsKey(nameout)) {
 					classify.put(nameout, new ArrayList<Integer>());

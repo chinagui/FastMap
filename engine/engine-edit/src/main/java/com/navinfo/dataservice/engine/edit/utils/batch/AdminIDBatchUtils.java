@@ -39,7 +39,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
     public static void updateAdminID(IRow row, Geometry geometry, Connection conn) throws Exception {
         if (row instanceof RdLink) {
             RdLink link = (RdLink) row;
-            Geometry linkGeometry = null == geometry ? shrink(loadGeometry(row)) : shrink(geometry);
+            Geometry linkGeometry = null == geometry ? transform(loadGeometry(row)) : transform(geometry);
             // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
             if (linkGeometry.getCoordinates().length > 200)
                 return;
@@ -55,7 +55,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             }
             // 获取AdFace的regionId
             Integer regionId = face.getRegionId();
-            Geometry faceGeometry = shrink(face.getGeometry());
+            Geometry faceGeometry = transform(face.getGeometry());
 
             // 判断RdLink与AdFace的关系
             // RdLink包含在AdFace内
@@ -97,7 +97,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
                 // 其他情况暂不处理
             }
         } else {
-            Geometry g = shrink(null == geometry ? loadGeometry(row) : geometry);
+            Geometry g = transform(null == geometry ? loadGeometry(row) : geometry);
             // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
             if (g.getCoordinates().length > 200)
                 return;
@@ -105,7 +105,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             AdFace face = loadAdFace(conn, g);
             if (null == face)
                 return;
-            Geometry faceGeometry = shrink(face.getGeometry());
+            Geometry faceGeometry = transform(face.getGeometry());
             // 判断row是否处于AdFace内部
             if ("POINT".equalsIgnoreCase(g.getGeometryType())) {
                 int faceRegionId = face.getRegionId();
@@ -128,7 +128,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         if (faces.size() > 1) {
             Point point = linkGeometry.getCentroid();
             for (AdFace face : faces) {
-                if (point.coveredBy(shrink(face.getGeometry()))) {
+                if (point.coveredBy(transform(face.getGeometry()))) {
                     return face;
                 }
             }
@@ -148,7 +148,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
      */
     public static void updateAdminID(AdFace face, Geometry geometry, Connection conn, Result result) throws Exception {
         RdLinkSelector selector = new RdLinkSelector(conn);
-        Geometry faceGeometry = shrink(face.getGeometry());
+        Geometry faceGeometry = transform(face.getGeometry());
         // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
         if (faceGeometry.getCoordinates().length > 200)
             return;
@@ -168,10 +168,10 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         if (geometry.getCoordinates().length > 200)
             return;
         Map<Integer, RdLink> modified = new HashMap<>();
-        geometry = shrink(geometry);
+        geometry = transform(geometry);
 
-        Geometry p1 = shrink(faceGeometry.getCentroid());
-        Geometry p2 = shrink(geometry.getCentroid());
+        Geometry p1 = transform(faceGeometry.getCentroid());
+        Geometry p2 = transform(geometry.getCentroid());
         if (p1.equals(p2))
             return;
 
@@ -179,7 +179,7 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         List<RdLink> links = selector.loadLinkByDiffGeo(geometry, faceGeometry, true);
         for (RdLink link : links) {
             int regionId = face.getRegionId();
-            Geometry linkGeometry = shrink(link.getGeometry());
+            Geometry linkGeometry = transform(link.getGeometry());
             // 判断RdLink与AdFace的关系
             // RdLink包含在AdFace内
             if (isContainOrCover(linkGeometry, geometry)) {

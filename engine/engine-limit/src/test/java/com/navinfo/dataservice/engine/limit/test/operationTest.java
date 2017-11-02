@@ -31,7 +31,7 @@ public class operationTest extends ClassPathXmlAppContextInit {
     @Test
     public void create01() throws Exception {
 
-        String parameter = "{\"command\":\"BREAK\",\"data\":{\"longitude\":116.41681070171616,\"latitude\":39.91769143492466}}";
+        String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"CREATE\",\"dbId\":13,\"data\":{\"groupId\":\"D1100000002\",\"rdlinks\":[674509,674510,673131,674508,674507]}}";
 
 
 

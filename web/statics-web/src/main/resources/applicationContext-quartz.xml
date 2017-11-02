@@ -22,7 +22,7 @@
                 <ref bean="tipsStat_Trigger" />
                 <ref bean="personTipsStat_Trigger" />
                 <ref bean="productMonitorStat_Trigger" />
-<!--                 <ref bean="poiQualityInitCountTable_Trigger" /> -->
+                <ref bean="exportQualityPoiReport_Trigger" />
 				<ref bean="dayProduceStat_Trigger" />
             </list>
         </property>
@@ -133,11 +133,11 @@
         <property name="jobDetail" ref="productMonitorStat_detail" />
         <property name="cronExpression" value="0 0 * * * ?" />
     </bean>
-<!--     <bean id="poiQualityInitCountTable_Trigger" -->
-<!--           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean"> -->
-<!--         <property name="jobDetail" ref="poiQualityInitCountTable_detail" /> -->
-<!--         <property name="cronExpression" value="0 0 * * * ?" /> -->
-<!--     </bean> -->
+    <bean id="exportQualityPoiReport_Trigger"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="exportQualityPoiReport_detail" />
+        <property name="cronExpression" value="0 0 1 * * ?" />
+    </bean>
     
     <bean id="dayProduceStat_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
@@ -185,11 +185,11 @@
         <property name="targetMethod" value="start" />
         <property name="concurrent" value="false" />
     </bean>
-<!--     <bean id="poiQualityInitCountTable_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> -->
-<!--         <property name="targetObject" ref="poiQualityInitCountTable" /> -->
-<!--         <property name="targetMethod" value="start" /> -->
-<!--         <property name="concurrent" value="false" /> -->
-<!--     </bean> -->
+    <bean id="exportQualityPoiReport_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="exportQualityPoiReport" />
+        <property name="targetMethod" value="start" />
+        <property name="concurrent" value="false" />
+    </bean>
    
     <bean id="dayProduceStat_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="targetObject" ref="dayProduceStat" />
@@ -208,7 +208,7 @@
     
     <bean id="productMonitorStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.ProductMonitorStatStarter"/>
     
-<!-- 	<bean id="poiQualityInitCountTable" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiQualityInitCountTableStarter"/> -->
+	<bean id="exportQualityPoiReport" class="com.navinfo.dataservice.engine.statics.launcher.starter.ExportQualityPoiReportStarter"/>
 
 	<bean id="dayProduceStat" class="com.navinfo.dataservice.engine.statics.launcher.starter.DayProduceStatStarter"/>
 </beans>

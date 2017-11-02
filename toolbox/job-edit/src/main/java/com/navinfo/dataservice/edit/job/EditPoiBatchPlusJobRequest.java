@@ -11,6 +11,7 @@ public class EditPoiBatchPlusJobRequest extends AbstractJobRequest {
 	private int targetDbId;
 	private List<String> batchRules;
 	private List<Long> pids;
+	private int isPhysiDelete;//是否物理删除，0不物理删除，1物理删除
 	
 	public List<Long> getPids() {
 		return pids;
@@ -64,5 +65,15 @@ public class EditPoiBatchPlusJobRequest extends AbstractJobRequest {
 	protected int myStepCount() throws JobException {
 		return 1;
 	}
+
+	public int getIsPhysiDelete() {
+		return isPhysiDelete;
+	}
+
+	public void setIsPhysiDelete(int isPhysiDelete) {
+		this.isPhysiDelete = isPhysiDelete;
+	}
+	
+	
 
 }

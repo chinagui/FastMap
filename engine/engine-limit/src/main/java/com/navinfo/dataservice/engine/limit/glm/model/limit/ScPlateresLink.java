@@ -29,6 +29,8 @@ public class ScPlateresLink implements IObj {
     private Geometry geometry;//    GEOMETRY	几何形状
     private String boundaryLink = "1";//    BOUNDARY_LINK	边界是否限行
 
+    private int linkPid;
+
     public String getGeometryId() {
         return geometryId;
     }
@@ -59,6 +61,14 @@ public class ScPlateresLink implements IObj {
 
     public void setBoundaryLink(String boundaryLink) {
         this.boundaryLink = boundaryLink;
+    }
+
+    public int getLinkPid() {
+        return linkPid;
+    }
+
+    public void setLinkPid(int linkPid) {
+        this.linkPid = linkPid;
     }
 
     protected ObjStatus status;

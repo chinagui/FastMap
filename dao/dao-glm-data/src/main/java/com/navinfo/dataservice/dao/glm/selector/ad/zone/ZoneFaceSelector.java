@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.glm.selector.ad.zone;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -162,13 +163,16 @@ public class ZoneFaceSelector extends AbstractSelector {
 	 */
 	public List<ZoneFace> loadRelateFaceByGeometry(Geometry geometry) {
 		List<ZoneFace> faces = new ArrayList<ZoneFace>();
-		String sql = "select t1.geometry, t2.region_id from zone_face t1, ad_admin t2 where t1.u_record <> 2 and t2.u_record <> 2 and t1.region_id = t2.region_id and (t2.admin_type = 8 or t2.admin_type = 9) and sdo_relate(t1.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' ";
+		String sql = "select t1.geometry, t2.region_id from zone_face t1, ad_admin t2 where t1.u_record <> 2 and t2.u_record <> 2 and t1.region_id = t2.region_id and (t2.admin_type = 8 or t2.admin_type = 9) and sdo_relate(t1.geometry, sdo_geometry(?, 8307), 'mask=anyinteract') = 'TRUE' ";
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sql);
-			String wkt = GeoTranslator.jts2Wkt(geometry);
-			pstmt.setString(1, wkt);
+
+            Clob clob = ConnectionUtil.createClob(conn);
+            clob.setString(1, GeoTranslator.jts2Wkt(geometry));
+
+			pstmt.setClob(1, clob);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				ZoneFace face = new ZoneFace();
@@ -183,59 +187,6 @@ public class ZoneFaceSelector extends AbstractSelector {
 		return faces;
 	}
 
-	/**
-	 * 根据传入几何参数查找与之相关联的ZoneFace面</br>
-	 * ADMIN_TYPE类型为:</br>
-	 * KDZone（8）或AOI（9）
-	 *
-	 * @param geometry
-	 * @return
-	 */
-	public List<ZoneFace> load(Geometry geometry) throws Exception{
-		List<ZoneFace> faces = new ArrayList<>();
-		//String sql = "DECLARE" +
-         //       "  i_geo SDO_GEOMETRY:=sdo_geometry('" + GeoTranslator.jts2Wkt(geometry) + "', 8307);" +
-         //       "  o_cur SYS_REFCURSOR;" +
-         //       "BEGIN" +
-         //       "  OPEN o_cur FOR SELECT t1.geometry, t2.region_id FROM zone_face t1, ad_admin t2 WHERE t1.u_record <> 2 AND t2.u_record <> 2 AND t1.region_id = t2.region_id AND (t2.admin_type = 8 OR t2.admin_type = 9) AND sdo_relate(t1.geometry, i_geo, 'mask=anyinteract') = 'TRUE';" +
-         //       "EXCEPTION" +
-         //       "  WHEN OTHERS THEN" +
-         //       "    dbms_output.put_line('无符合条件的数据');" +
-         //       "END;";
-        String sql = "{call load_relate_face(?,?)}";
-		CallableStatement stmt = null;
-		ResultSet resultSet = null;
-		try {
-			stmt = conn.prepareCall(sql);
-			stmt.setObject(1, GeoTranslator.jts2Wkt(geometry));
-            //String innerSql = "SELECT t1.geometry, t2.region_id" +
-             //       "      FROM zone_face t1, ad_admin t2" +
-             //       "     WHERE t1.u_record <> 2" +
-             //       "       AND t2.u_record <> 2" +
-             //       "       AND t1.region_id = t2.region_id" +
-             //       "       AND (t2.admin_type = 8 OR t2.admin_type = 9)" +
-             //       "       AND sdo_relate(t1.geometry, sdo_geometry(''," +
-             //       "                                     8307), 'mask=anyinteract') = 'TRUE';";
-            //stmt.setString(1, innerSql);
-			stmt.registerOutParameter(2, OracleTypes.CURSOR);
-			stmt.executeUpdate();
-
-			resultSet = (ResultSet) stmt.getObject(2);
-			while (resultSet.next()) {
-			    Geometry geo = GeoTranslator.struct2Jts((STRUCT) resultSet.getObject("geometry"));
-                System.out.println(Arrays.toString(geo.getCoordinates()));
-                int region_id = resultSet.getInt("region_id");
-                System.out.println(region_id);
-            }
-		} catch (Exception e) {
-		    throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(stmt);
-		}
-		return faces;
-	}
-	
 	/**
 	 * 根据regionId查询ZONEFACE
 	 * @param regionId 

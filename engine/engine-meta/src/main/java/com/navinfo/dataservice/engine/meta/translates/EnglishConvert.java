@@ -135,8 +135,6 @@ public class EnglishConvert {
 
             result = this.convertKernel(result);
 
-            result = this.replaceKeyWord(result);
-
             result = this.reductionWordSymbol(result);
 
             result = ConvertUtil.removeRepeatSpace(result);
@@ -154,7 +152,7 @@ public class EnglishConvert {
     }
 
     private String reductionWordSymbol(String sourceText) {
-        return sourceText.replaceAll("& nbsp ;", " ");
+        return sourceText.replaceAll("\\$\\$nbsp\\$\\$", " ");
     }
 
     /**
@@ -180,6 +178,8 @@ public class EnglishConvert {
         sourceText = this.convertEngKeyword(sourceText);
 
         //sourceText = ConvertUtil.removeSymbolWord(sourceText);
+
+        sourceText = this.replaceKeyWord(sourceText.trim());
 
         sourceText = ConvertUtil.convertFull2Half(sourceText);
 
@@ -211,7 +211,8 @@ public class EnglishConvert {
 
             for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictSymbolMap().entrySet()) {
                 if (org.apache.commons.lang.StringUtils.equals(entry.getKey(), tmpStr)) {
-                    tmpStr = " ".equals(entry.getValue()) ? "&nbsp;" : entry.getValue();
+                    tmpStr = " ".equals(entry.getValue()) ? "$$nbsp$$" : entry.getValue();
+                    //tmpStr = entry.getValue();
                     break;
                 }
             }
@@ -644,32 +645,54 @@ public class EnglishConvert {
         StringBuilder sb = new StringBuilder();
 
         String[] array = sourceText.split(" ");
-        label1:
+        //label1:
+        //for (int index = 0; index < array.length; index++) {
+        //    String after = "";
+        //    String current = "";
+        //    String before = "";
+        //
+        //    if (index > 0) {
+        //        after = array[index - 1];
+        //    }
+        //    current = array[index];
+        //    if (index < array.length - 1) {
+        //        before = array[index + 1];
+        //    }
+        //    for (String str : Arrays.asList(after, before)) {
+        //        if (ConvertUtil.hasChineseWord(str)) {
+        //            sb.append(current).append(" ");
+        //            continue label1;
+        //        }
+        //    }
+        //    for (Character character : current.toCharArray()) {
+        //        if (!character.isDigit(character) && !ConvertUtil.isChineseNum(character)) {
+        //            sb.append(current).append(" ");
+        //            continue label1;
+        //        }
+        //    }
+        //    sb.append(convertHz2Num(current)).append(" ");
+        //}
         for (int index = 0; index < array.length; index++) {
-            String after = "";
-            String current = "";
-            String before = "";
+            String str = array[index];
 
-            if (index > 0) {
-                after = array[index - 1];
-            }
-            current = array[index];
-            if (index < array.length - 1) {
-                before = array[index + 1];
-            }
-            for (String str : Arrays.asList(after, before)) {
-                if (ConvertUtil.hasChineseWord(str)) {
-                    sb.append(current).append(" ");
-                    continue label1;
+            Map<String, Integer> map = new HashMap<>();
+            for (Character character : str.toCharArray()) {
+                if (TranslateConstant.CHINESE_NUMBER.containsKey(String.valueOf(character))) {
+                    map.put(TranslateConstant.CHINESE_NUMBER.get(String.valueOf(character)), index);
+                } else {
+                    map.clear();
+                    break;
                 }
             }
-            for (Character character : current.toCharArray()) {
-                if (!character.isDigit(character) && !ConvertUtil.isChineseNum(character)) {
-                    sb.append(current).append(" ");
-                    continue label1;
+            if (map.isEmpty()) {
+                sb.append(str).append(" ");
+            } else {
+                for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                    sb.append(entry.getKey());
+                    param.wordIndex.remove(entry.getValue());
                 }
+                sb.append(" ");
             }
-            sb.append(convertHz2Num(current)).append(" ");
         }
         return sb.toString();
     }

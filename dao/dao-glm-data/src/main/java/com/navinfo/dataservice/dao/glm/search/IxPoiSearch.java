@@ -1049,6 +1049,7 @@ public class IxPoiSearch implements ISearch {
 		List<List<String>> result = new ArrayList<List<String>>();
 		try {
 			word = word.replace(" ", "");
+			word = word.replace("　", "");
 			for (int i = 0; i < word.length(); i++) {
 				List<String> sigleWordList = new ArrayList<String>();
 				if (NAVICOVPYMAP.containsKey(String.valueOf(word.charAt(i)))) {

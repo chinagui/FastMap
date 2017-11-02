@@ -66,6 +66,7 @@ public abstract class AbstractIx extends BasicRow {
 		if (this.checkValue("GEOMETRY", this.geometry, geometry)) {
 			this.geometry = geometry;
 		}
+		
 	}
 
 	public double getXGuide() {

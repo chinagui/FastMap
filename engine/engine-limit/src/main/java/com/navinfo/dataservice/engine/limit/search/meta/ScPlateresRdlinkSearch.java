@@ -35,9 +35,9 @@ public class ScPlateresRdlinkSearch implements ISearch {
         this.conn = conn;
     }
 
-    public ScPlateresRdLink loadById(int linkpid) throws Exception {
+    public List<ScPlateresRdLink> loadByLinkPId(int linkpid) throws Exception {
 
-    	ScPlateresRdLink rdlink = new ScPlateresRdLink();
+        List<ScPlateresRdLink> links = new ArrayList<>();
 
         String sqlstr = "SELECT * FROM SC_PLATERES_RDLINK WHERE LINK_PID=? ";
 
@@ -52,20 +52,24 @@ public class ScPlateresRdlinkSearch implements ISearch {
 
             resultSet = pstmt.executeQuery();
 
-            if (resultSet.next()) {
+            while (resultSet.next()) {
+
+                ScPlateresRdLink rdlink = new ScPlateresRdLink();
 
                 ReflectionAttrUtils.executeResultSet(rdlink, resultSet);
+
+                links.add(rdlink);
             }
         } catch (Exception e) {
 
-            throw new Exception("查询的ID为：" + rdlink + "的" + rdlink.tableName().toUpperCase() + "不存在");
+            throw new Exception("Pid为：" + linkpid + "的ScPlateresRdlink不存在");
 
         } finally {
             DBUtils.closeResultSet(resultSet);
             DBUtils.closeStatement(pstmt);
         }
 
-        return rdlink;
+        return links;
     }
 
     public List<ScPlateresRdLink> loadByGeometryId(String geometryId) throws Exception {

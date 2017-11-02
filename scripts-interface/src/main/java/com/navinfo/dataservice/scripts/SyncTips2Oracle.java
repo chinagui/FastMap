@@ -117,6 +117,7 @@ public class SyncTips2Oracle {
 		}
 	}
 	private TipsDao convert(Result result)throws Exception{
+
 		String errorRowkey = "";
 		try{
 			if(result==null){
@@ -127,7 +128,8 @@ public class SyncTips2Oracle {
 			
 			//rowkey
 			ti.setId(Bytes.toString(result.getRow()));
-            errorRowkey = ti.getId();
+            errRowkey = ti.getId();
+
 			//log.info("rowkey:"+Bytes.toString(result.getRow()));
 			
 			//显示坐标

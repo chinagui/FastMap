@@ -14,10 +14,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.*;
 
 /**
@@ -124,7 +121,7 @@ public class GLM60226 extends BasicCheckRule {
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
-            pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             if (CollectionUtils.isNotEmpty(values)) {
                 for (int i = 0; i < values.size(); i++) {
                     pstmt.setClob(i + 1, values.get(i));
@@ -132,6 +129,8 @@ public class GLM60226 extends BasicCheckRule {
             }
 
             resultSet = pstmt.executeQuery();
+
+            Map<Integer, List<RdLinkForm>> linkRefForms = loadRefLink(conn, resultSet);
 
             Set<String> filters = new HashSet<>();
 
@@ -153,9 +152,8 @@ public class GLM60226 extends BasicCheckRule {
                     flag = false;
                 }
 
-                int linkPid = resultSet.getInt("LINK_PID");
-                List<IRow> forms = new AbstractSelector(RdLinkForm.class, conn).loadRowsByParentId(linkPid, false);
-
+                Integer linkPid = resultSet.getInt("LINK_PID");
+                List<RdLinkForm> forms = linkRefForms.containsKey(linkPid) ? linkRefForms.get(linkPid) : new ArrayList<RdLinkForm>();
 
                 if (8 == kind) {
                     boolean hasRoads = false;
@@ -206,4 +204,28 @@ public class GLM60226 extends BasicCheckRule {
             logger.info("GLM60226: (SPEND TIME: " + ((System.currentTimeMillis() - startTime) >> 10) + ", CHECK RESULT SIZE:" + getCheckResultList().size() + ")");
         }
     }
+
+    private Map<Integer, List<RdLinkForm>> loadRefLink(Connection conn, ResultSet resultSet) throws Exception {
+        List<Integer> linkPids = new ArrayList<>();
+        while (resultSet.next()) {
+            linkPids.add(resultSet.getInt("LINK_PID"));
+        }
+        resultSet.first();
+        Map<Integer, List<RdLinkForm>> maps = new HashMap<>();
+
+        List<IRow> iRows = new AbstractSelector(RdLinkForm.class, conn).loadRowsByParentIds(linkPids, false);
+        for (IRow iRow : iRows) {
+            RdLinkForm form = (RdLinkForm) iRow;
+            if (maps.containsKey(form.getLinkPid())) {
+                maps.get(form.getLinkPid()).add(form);
+            } else {
+                List<RdLinkForm> forms = new ArrayList<>();
+                forms.add(form);
+                maps.put(form.getLinkPid(), forms);
+            }
+        }
+
+        return maps;
+    }
+
 }

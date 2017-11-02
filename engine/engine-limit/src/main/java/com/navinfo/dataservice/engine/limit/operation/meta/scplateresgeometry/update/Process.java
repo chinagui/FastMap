@@ -1,8 +1,12 @@
 package com.navinfo.dataservice.engine.limit.operation.meta.scplateresgeometry.update;
 
+import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresGeometry;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.limit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresGeometrySearch;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Process extends AbstractProcess<Command> {
     public Process(AbstractCommand command) throws Exception {
@@ -14,7 +18,18 @@ public class Process extends AbstractProcess<Command> {
 
         ScPlateresGeometrySearch search = new ScPlateresGeometrySearch(this.getConn());
 
-        this.getCommand().setGeometry(search.loadById(getCommand().getId()));
+        if (this.getCommand().getIds() != null) {
+            List<ScPlateresGeometry> geometrys = new ArrayList<>();
+
+            for (String groupId : this.getCommand().getIds()) {
+                geometrys.add(search.loadById(groupId));
+            }
+
+            this.getCommand().setGeometrys(geometrys);
+        } else {
+
+            this.getCommand().setGeometry(search.loadById(getCommand().getId()));
+        }
 
         return true;
     }

@@ -42,13 +42,14 @@ public class RdNameTeilen {
 	 * @param nameGroupId
 	 * @param langCode
 	 * @param roadType
+	 * @param ufi 
 	 * @throws Exception
 	 * @throws SQLException  void
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月22日 上午11:06:00 
 	 */
-	public synchronized  void teilenName(Integer nameId,Integer nameGroupId,String langCode,Integer roadType) throws Exception,
+	public synchronized  void teilenName(Integer nameId,Integer nameGroupId,String langCode,Integer roadType, String uFields) throws Exception,
 			SQLException {
 
 		CallableStatement cstmt = null;
@@ -88,7 +89,7 @@ public class RdNameTeilen {
 				//	teilenEngName(conn,String.valueOf(nameGroupId), String.valueOf(nameId),roadType);
 					teilenEngNameNew(conn,String.valueOf(nameGroupId), String.valueOf(nameId),roadType);
 				}
-				pst = recordRdNameTailenLog(nameGroupId);
+				pst = recordRdNameTailenLog(nameGroupId,uFields);
 //			}
 			
 			
@@ -104,9 +105,12 @@ public class RdNameTeilen {
 		}
 	}
 
-	private PreparedStatement recordRdNameTailenLog(Integer nameGroupId) throws SQLException {
+	private PreparedStatement recordRdNameTailenLog(Integer nameGroupId, String uFields) throws SQLException {
 		PreparedStatement pst;
 		String updateSql = "update rd_name set U_FIELDS = to_char(sysdate,'YYYY-MM-DD HH24:MI:SS'),split_flag=2 where NAME_GROUPID = " +  nameGroupId;
+		if(uFields != null && StringUtils.isNotEmpty(uFields)){
+			updateSql = "update rd_name set U_FIELDS = '"+uFields+"',split_flag=2 where NAME_GROUPID = " +  nameGroupId;
+		}
 		pst=conn.prepareStatement(updateSql);
 		pst.execute(updateSql);
 		return pst;

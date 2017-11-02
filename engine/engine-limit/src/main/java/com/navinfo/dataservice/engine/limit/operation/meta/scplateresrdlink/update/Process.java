@@ -7,6 +7,9 @@ import com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.upda
 import com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.update.Operation;
 import com.navinfo.dataservice.engine.limit.search.meta.ScPlateresRdlinkSearch;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Process extends AbstractProcess<Command> {
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
@@ -15,9 +18,23 @@ public class Process extends AbstractProcess<Command> {
     @Override
     public boolean prepareData() throws Exception {
 
-    	ScPlateresRdlinkSearch search = new ScPlateresRdlinkSearch(this.getConn());
+		ScPlateresRdlinkSearch search = new ScPlateresRdlinkSearch(this.getConn());
 
-        this.getCommand().setRdLink(search.loadById(this.getCommand().getLinkpid()));
+		List<ScPlateresRdLink> rdlinks = new ArrayList<>();
+
+		for (Integer linkPid : this.getCommand().getMapping().keySet()) {
+
+			List<ScPlateresRdLink> links = search.loadByLinkPId(linkPid);
+
+			for (ScPlateresRdLink link : links) {
+
+				this.getCommand().getMapping().get(linkPid).contains(link.getGeometryId());
+
+				rdlinks.add(link);
+			}
+		}
+
+		this.getCommand().setLinks(rdlinks);
 
         return true;
     }

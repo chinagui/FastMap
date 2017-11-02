@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.limit.operation.limit.scplateresface.crea
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.JsonUtils;
@@ -46,36 +48,33 @@ public class Operation implements IOperation {
 		JSONArray arrayad = this.command.getAdLinks();
 
 		Geometry geo = this.command.getGeo();
-
-		int seq = 0;
 		
-		int rdseq = 0;
+		if(arrayrd == null && arrayad == null && geo == null){
+			throw new Exception("没有要素选中，请确定需要复制的要素");
+		}
 		
 		if(arrayrd == null && arrayad == null && geo == null){
 			throw new Exception("没有要素选中，请确定需要复制的要素");
 		}
 		
 		if (arrayrd != null && arrayrd.size() != 0) {
-			rdseq = seq = arrayrd.size();
 
 			@SuppressWarnings("unchecked")
 			List<Integer> pidList = JSONArray.toList(arrayrd, Integer.class, JsonUtils.getJsonConfig());
 
-			createFaceByLinks(pidList, result);
+			createFaceByRdLinks(pidList, result);
 		}
 		if (arrayad != null && arrayad.size() != 0) {
-			seq += arrayad.size();
-
 			@SuppressWarnings("unchecked")
 			List<Integer> pidList = JSONArray.toList(arrayad, Integer.class, JsonUtils.getJsonConfig());
 
-			createFaceByAdLinks(pidList, result, rdseq);
+			createFaceByAdLinks(pidList, result);
 		}
 		if (geo != null) {
 			ScPlateresFace face = new ScPlateresFace();
 
 			String geomId = PidApply.getInstance(this.conn).pidForInsertGeometry(this.command.getGroupId(),
-					LimitObjType.SCPLATERESFACE, seq);
+					LimitObjType.SCPLATERESFACE, 0);
 
 			face.setGeometryId(geomId);
 
@@ -89,7 +88,7 @@ public class Operation implements IOperation {
 		return null;
 	}
 	
-	private void createFaceByLinks(List<Integer> pidList, Result result) throws Exception {
+	private void createFaceByRdLinks(List<Integer> pidList, Result result) throws Exception {
 		Connection regionConn = null;
 
 		try {
@@ -99,31 +98,36 @@ public class Operation implements IOperation {
 
 			List<IRow> links = selector.loadByIds(pidList, true, false);
 
-			for (int i = 0; i < pidList.size(); i++) {
+			Set<Integer> handlePids = getHandleLinkPids(this.command.getGroupId(),"RD_LINK");
+
+			int index = 0;
+
+			for (IRow row : links) {
+
+				RdLink rdLink = (RdLink) row;
+
+				if (handlePids.contains(rdLink.pid())) {
+
+					continue;
+				}
+
+				handlePids.add(rdLink.pid());
 
 				ScPlateresFace face = new ScPlateresFace();
 
 				String geomId = PidApply.getInstance(this.conn).pidForInsertGeometry(this.command.getGroupId(),
-						LimitObjType.SCPLATERESFACE, i);
+						LimitObjType.SCPLATERESFACE,index++);
 
-				RdLink currentLink = null;
-
-				for (IRow row : links) {
-					RdLink link = (RdLink)row;
-					if (link.getPid() == pidList.get(i)) {
-						currentLink = link;
-						break;
-					}
-				}
-
-				if (currentLink == null)
-					continue;
 
 				face.setGeometryId(geomId);
 
 				face.setGroupId(this.command.getGroupId());
 
-				face.setGeometry(currentLink.getGeometry());
+				face.setGeometry(rdLink.getGeometry());
+
+				face.setLinkPid(rdLink.getPid());
+
+				face.setLinkType(rdLink.tableName().toUpperCase());
 
 				result.insertObject(face, ObjStatus.INSERT, geomId);
 			}
@@ -134,7 +138,7 @@ public class Operation implements IOperation {
 		}
 	}
 	
-	private void createFaceByAdLinks(List<Integer> pidList, Result result, int seq) throws Exception {
+	private void createFaceByAdLinks(List<Integer> pidList, Result result) throws Exception {
 		Connection regionConn = null;
 
 		try {
@@ -144,32 +148,35 @@ public class Operation implements IOperation {
 
 			List<IRow> links = selector.loadByIds(pidList, true, false);
 
-			for (int i = 0; i < pidList.size(); i++) {
+			Set<Integer> handlePids = getHandleLinkPids(this.command.getGroupId(),"AD_LINK");
+
+			int index = 0;
+
+			for (IRow row : links) {
+
+				AdLink adlink = (AdLink) row;
+
+				if (handlePids.contains(adlink.pid())) {
+
+					continue;
+				}
+
+				handlePids.add(adlink.pid());
 
 				ScPlateresFace face = new ScPlateresFace();
 
 				String geomId = PidApply.getInstance(this.conn).pidForInsertGeometry(this.command.getGroupId(),
-						LimitObjType.SCPLATERESFACE, seq + i);
-
-				AdLink currentLink = null;
-
-				for (IRow link : links) {
-					AdLink adlink = (AdLink)link;
-					
-					if (adlink.getPid() == pidList.get(i)) {
-						currentLink = adlink;
-						break;
-					}
-				}
-
-				if (currentLink == null)
-					continue;
+						LimitObjType.SCPLATERESFACE, index);
 
 				face.setGeometryId(geomId);
 
 				face.setGroupId(this.command.getGroupId());
 
-				face.setGeometry(currentLink.getGeometry());
+				face.setGeometry(adlink.getGeometry());
+
+				face.setLinkPid(adlink.getPid());
+
+				face.setLinkType(adlink.tableName().toUpperCase());
 
 				result.insertObject(face, ObjStatus.INSERT, geomId);
 			}
@@ -202,5 +209,19 @@ public class Operation implements IOperation {
 		Line2Face line2Face = new Line2Face();
 
 		line2Face.createFace(faces, result);
+	}
+
+
+	private Set<Integer> getHandleLinkPids(String groupId,String linkType)  throws Exception
+	{
+		Set<Integer> handlePids = new HashSet<>();
+
+		ScPlateresFaceSearch linkSearch = new ScPlateresFaceSearch(this.conn);
+		List<Integer> pids = linkSearch.getLinkPidByGroupId(this.command.getGroupId(),linkType);
+
+		handlePids.addAll(pids);
+
+		return handlePids;
+
 	}
 }

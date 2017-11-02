@@ -98,12 +98,11 @@ public class ScPlateresManoeuvreSearch {
     	}
     	
     	String groupId = condition.getString("groupId");
+
         StringBuilder sql = new StringBuilder();
         
-        sql.append("WITH query AS (SELECT * FROM SC_PLATERES_MANOEUVRE WHERE GROUP_ID = ?)");
-        sql.append(" SELECT query.*, (SELECT COUNT(1) FROM query) AS TOTAL_NUM_ROW FROM query FOR UPDATE NOWAIT");       
+        sql.append("SELECT * FROM SC_PLATERES_MANOEUVRE WHERE GROUP_ID = ? order by MANOEUVRE_ID ");
 
-        int total = 0;
         PreparedStatement pstmt = null;
 
         ResultSet resultSet = null;
@@ -122,8 +121,6 @@ public class ScPlateresManoeuvreSearch {
                 ReflectionAttrUtils.executeResultSet(manoeuvre, resultSet);
 
                 rows.add(manoeuvre);
-                
-                total = resultSet.getInt("TOTAL_NUM_ROW");
             }
         } catch (Exception e) {
 
@@ -134,7 +131,7 @@ public class ScPlateresManoeuvreSearch {
             DBUtils.closeStatement(pstmt);
         }
 
-        return total;
+        return rows.size();
     }
 
     public List<ScPlateresManoeuvre> loadByGroupId(String groupId) throws Exception {

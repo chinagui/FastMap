@@ -9,6 +9,7 @@ import java.util.Set;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
@@ -89,6 +90,10 @@ public class FMBAT20104 extends BasicBatchRule {
 			// (3)将官方原始名称和官方标准名称(NAME)转全角；
 			// (4)为官方原始(NAME_CLASS=1,NAME_TYPE=2)拼音NAME_PHONETIC赋值；
 			String namePy = apiService.pyConvert(originalName,adminCode,null);
+			//生产过程中，出现了名称不为空但是转出拼音为空的数据，特加此判断进行捕获调查
+			if(StringUtils.isNotEmpty(originalName)&&StringUtils.isEmpty(namePy)){
+				throw new Exception("名称为:“"+originalName+"”的数据，对应转出的拼音为“"+namePy+"”，请调查转拼音是否正确");
+			}
 			standardPoiName.setName(originalName);
 			standardPoiName.setNamePhonetic(namePy);
 			originalPoiName.setName(originalName);
@@ -105,6 +110,10 @@ public class FMBAT20104 extends BasicBatchRule {
 			}
 			originalName = ExcelReader.h2f(originalName);
 			String namePy = apiService.pyConvert(originalName,adminCode,null);
+			//生产过程中，出现了名称不为空但是转出拼音为空的数据，特加此判断进行捕获调查
+			if(StringUtils.isNotEmpty(originalName)&&StringUtils.isEmpty(namePy)){
+				throw new Exception("名称为:“"+originalName+"”的数据，对应转出的拼音为“"+namePy+"”，请调查转拼音是否正确");
+			}
 			
 			standardPoiName = poiObj.createIxPoiName();
 			standardPoiName.setNameClass(1);

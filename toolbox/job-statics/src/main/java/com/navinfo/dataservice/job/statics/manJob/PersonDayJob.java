@@ -260,7 +260,7 @@ public class PersonDayJob extends AbstractStatJob {
 			Connection conn = null;
 			try{
 				conn = DBConnector.getInstance().getConnectionById(dbId);
-				final Map<Integer, Object> poiAddMap = subtaskStat(conn);
+				final Map<Integer, Object> poiAddMap = subtaskStat(conn, timestamp);
 				QueryRunner run = new QueryRunner();
 				
 				StringBuilder sb = new StringBuilder();
@@ -695,13 +695,13 @@ public class PersonDayJob extends AbstractStatJob {
 		
 	}
 	
-	private Map<Integer, Object> subtaskStat(Connection conn) throws Exception{
+	private Map<Integer, Object> subtaskStat(Connection conn, String timestamp) throws Exception{
 		//查询poi实际新增个数
 		QueryRunner run = new QueryRunner();
 		String sql  = "select a.stk_id, count(1) NUM, p."+"\""+"LEVEL"+"\""+", s.status "
 			+ " from log_detail d, log_operation o, log_action a, ix_poi p, poi_edit_status s"
 			+ " where d.op_id = o.op_id and o.act_id = a.act_id  and d.tb_nm = 'IX_POI' and s.pid = p.pid  "
-			+ " AND d.op_tp = 1 and d.geo_pid = p.pid GROUP BY a.stk_id, p."+"\""+"LEVEL"+"\", s.status ";
+			+ " AND d.op_tp = 1 and d.OB_PID = p.pid and to_char(o.op_dt,'yyyymmdd') = '" + timestamp + "' GROUP BY a.stk_id, p."+"\""+"LEVEL"+"\", s.status ";
 		Map<Integer, Object> poiActualAddNumMap = run.query(conn, sql, numRsHandler());
 		return poiActualAddNumMap;
 	}

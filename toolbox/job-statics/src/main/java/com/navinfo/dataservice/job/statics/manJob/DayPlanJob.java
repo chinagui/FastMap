@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,155 +78,47 @@ public class DayPlanJob extends AbstractStatJob {
 			e.printStackTrace();
 		}
 		
+		DecimalFormat df = new DecimalFormat("######0.00");   
 		String dbName = SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
 		MongoDao md = new MongoDao(dbName);
-		
 		Connection conn = null;
 		for(Map.Entry<Integer, Object> entry : taskIdMapList.entrySet()){
 			int dbId = entry.getKey();
+			Map<Integer, Object> tasks = new HashMap<>();
+			Map<Integer, Object> taskMap = (Map<Integer, Object>) entry.getValue();
+			for(Map.Entry<Integer, Object> taskEnty : taskMap.entrySet()){
+				int taskId = taskEnty.getKey();
+				if(md.find("task_day_plan",Filters.eq("taskId", taskId+"")).iterator().hasNext()){
+					continue;
+				}
+				tasks.put(taskId, taskEnty.getValue());
+			}
 			try{
 				conn = DBConnector.getInstance().getConnectionById(dbId);
-				QueryRunner run = new QueryRunner();
-				String sql = "select t.task_id, r.function_class, nvl(sum(r.length),0) from DATA_PLAN t, rd_link r where "
+				String linkFuncSql = "select t.task_id, r.function_class, nvl(sum(r.length),0) from DATA_PLAN t, rd_link r where "
 						+ "r.link_pid = t.pid and t.data_type = 2 group by t.task_id, r.function_class";
-				Map<Integer, Map<Integer, Double>> linkLenth = run.query(conn, sql, new ResultSetHandler<Map<Integer, Map<Integer, Double>>>() {
-					@Override
-					public Map<Integer, Map<Integer, Double>> handle(ResultSet rs)
-					throws SQLException {
-						Map<Integer, Map<Integer, Double>> result = new HashMap<>();
-						while(rs.next()){
-							Map<Integer, Double> length = new HashMap<Integer, Double>();
-							int taskId = rs.getInt(1);
-							if(result.containsKey(taskId)){
-								length = result.get(taskId);
-							}
-							length.put(rs.getInt(2), rs.getDouble(3));
-							result.put(rs.getInt(1), length);
-						}
-						return result;
-					}
-				});
+				
+				String poiDataSql = "SELECT d.task_id, 0, COUNT(1) FROM ix_poi p,DATA_PLAN d WHERE p.pid = d.pid AND d.data_type = 1 group by d.task_id";
+				String linkKindcSql = "select t.task_id, r.kind, nvl(sum(r.length),0) from DATA_PLAN t, rd_link r where "
+						+ "r.link_pid = t.pid and t.data_type = 2 group by t.task_id, r.kind";
+				String containsTable = "select count(1) from user_tables where table_name = 'DATA_PLAN'";
+				int count = containsTable(conn, containsTable);
+				Map<Integer, Map<Integer, Object>> linkFuncLenth = new HashMap<>();
+				Map<Integer, Map<Integer, Object>> linkKindLenth = new HashMap<>();
+				Map<Integer, Map<Integer, Object>> poiAllNumMap = new HashMap<>();
+				if(count > 0){
+					linkFuncLenth = getLinkOrPoiData(conn, linkFuncSql);
+					linkKindLenth = getLinkOrPoiData(conn, linkKindcSql);
+					poiAllNumMap = getLinkOrPoiData(conn, poiDataSql);
+				}
 					
-				Map<Integer, Object> taskMap = (Map<Integer, Object>) entry.getValue();
-				for(Map.Entry<Integer, Object> entry1 : taskMap.entrySet()){
+				for(Map.Entry<Integer, Object> entry1 : tasks.entrySet()){
 					int taskId = entry1.getKey();
 					log.info("start taskId="+taskId);
-					if(md.find("task_day_plan",Filters.eq("taskId", taskId+"")).iterator().hasNext()){
-						continue;
-					}
 					String originWkt = entry1.getValue().toString();
 					
 					Clob clob = ConnectionUtil.createClob(conn);
 					clob.setString(1, originWkt);
-					//此处不排除删除的link，poi，随规划时的状态处理
-					String rdLinkSql = "select NVL(SUM(t.length),0) from RD_LINK t where "
-					+"sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'";
-					String poiSql = "select COUNT(1) from IX_POI p where "
-					+"sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'";
-							
-					String sql2 = rdLinkSql;
-					String sql4 = poiSql;
-					String sql5 = rdLinkSql+" AND t.kind >= 1 AND t.kind <= 7";
-					String sql6 = rdLinkSql+" AND t.kind >= 2 AND t.kind <= 7";
-						
-					String rdLinkSql1 = "SELECT NVL(SUM(r.length),0) FROM rd_link r,DATA_PLAN d WHERE r.link_pid = d.pid AND d.data_type = 2 AND d.task_id = ";
-					String poiSql1 = "SELECT COUNT(1) FROM ix_poi p,DATA_PLAN d WHERE p.pid = d.pid AND d.data_type = 1 AND d.task_id = ";				
-						
-					String sql21 = rdLinkSql1+taskId;
-					String sql41 = poiSql1+taskId;
-					String sql51 = rdLinkSql1+taskId+" AND r.kind >= 1 AND r.kind <= 7";
-					String sql61 = rdLinkSql1+taskId+" AND r.kind >= 2 AND r.kind <= 7";
-						
-					String linkAllLen = run.query(conn, sql21,new ResultSetHandler<String>() {
-						@Override
-						public String handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getString(1);
-							}
-							return null;
-						}
-					});
-					String link17AllLen ="0";
-					String link27AllLen ="0";
-					if(linkAllLen.equals("0")){
-						linkAllLen = run.query(conn, sql2,new ResultSetHandler<String>() {
-							@Override
-							public String handle(ResultSet rs)
-									throws SQLException {
-								if(rs.next()){
-									return rs.getString(1);
-								}
-								return null;
-							}
-						},clob);
-						link17AllLen = run.query(conn, sql5,new ResultSetHandler<String>() {
-							@Override
-							public String handle(ResultSet rs)
-									throws SQLException {
-								if(rs.next()){
-									return rs.getString(1);
-								}
-								return null;
-							}
-						},clob);
-						
-						link27AllLen = run.query(conn, sql6,new ResultSetHandler<String>() {
-							@Override
-							public String handle(ResultSet rs)
-									throws SQLException {
-								if(rs.next()){
-									return rs.getString(1);
-								}
-								return null;
-							}
-						},clob);
-					}else {
-						link17AllLen = run.query(conn, sql51,new ResultSetHandler<String>() {
-							@Override
-							public String handle(ResultSet rs)
-									throws SQLException {
-								if(rs.next()){
-									return rs.getString(1);
-								}
-								return null;
-							}
-						});
-						
-						link27AllLen = run.query(conn, sql61,new ResultSetHandler<String>() {
-							@Override
-							public String handle(ResultSet rs)
-									throws SQLException {
-								if(rs.next()){
-									return rs.getString(1);
-								}
-								return null;
-							}
-						});
-					}
-					
-					String poiAllNum = run.query(conn, sql41,new ResultSetHandler<String>() {
-						@Override
-						public String handle(ResultSet rs)
-								throws SQLException {
-							if(rs.next()){
-								return rs.getString(1);
-							}
-							return null;
-						}
-					});
-					if(poiAllNum.equals("0")){
-						poiAllNum = run.query(conn, sql4,new ResultSetHandler<String>() {
-							@Override
-							public String handle(ResultSet rs)
-									throws SQLException {
-								if(rs.next()){
-									return rs.getString(1);
-								}
-								return null;
-							}
-						},clob);
-					}
 					//modiby by songhe 2017/10/31  添加了一些统计项，修改原来的部分逻辑
 					double taskFc1len = 0d;
 					double taskFc2len = 0d;
@@ -233,58 +126,88 @@ public class DayPlanJob extends AbstractStatJob {
 					double taskFc4len = 0d;
 					double taskFc5len = 0d;
 					
-					Map<Integer, Double> taskLinkLength = new HashMap<Integer, Double>();
-					if(linkLenth.containsKey(taskId)){
-						taskLinkLength = linkLenth.get(taskId);
+					double link17AllLen = 0d;
+					double link27AllLen = 0d;
+					double linkAllLen = 0d;
+					
+					int poiAllNum = 0;
+					
+					Map<Integer, Object> linkFucLength = new HashMap<Integer, Object>();
+					if(linkFuncLenth.containsKey(taskId)){
+						linkFucLength = linkFuncLenth.get(taskId);
 					}else{
 						String sqlLength = "select t.function_class, NVL(SUM(t.length),0) from RD_LINK t where "
 								+"sdo_relate(t.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE' group by t.function_class";
 					
-						taskLinkLength = run.query(conn, sqlLength,new ResultSetHandler<Map<Integer, Double>>() {
-							@Override
-							public Map<Integer, Double> handle(ResultSet rs)
-									throws SQLException {
-								Map<Integer, Double> result = new HashMap<>();
-								while(rs.next()){
-									result.put(rs.getInt(1), rs.getDouble(2));
-								}
-								return result;
-							}
-						},clob);
+						linkFucLength = getLinkOrPoiDataByTaskGeo(conn, sqlLength, clob);
 					}
-					
-					for(Map.Entry<Integer, Double> en : taskLinkLength.entrySet()){
+					for(Map.Entry<Integer, Object> en : linkFucLength.entrySet()){
 						int kind = en.getKey();
+						double value = Double.valueOf(en.getValue().toString());
 						switch(kind){
 						case 1 :
-							taskFc1len = en.getValue();
+							taskFc1len = value;
 							break;
 						case 2 :
-							taskFc2len = en.getValue();
+							taskFc2len = value;
 							break;
 						case 3 :
-							taskFc3len = en.getValue();
+							taskFc3len = value;
 							break;
 						case 4 :
-							taskFc4len = en.getValue();
+							taskFc4len = value;
 							break;
 						case 5 :
-							taskFc5len = en.getValue();
+							taskFc5len = value;
 							break;
 						}
 					}
 					
+					Map<Integer, Object> linkKindLength = new HashMap<Integer, Object>();
+					if(linkKindLenth.containsKey(taskId)){
+						linkKindLength = linkKindLenth.get(taskId);
+					}else{
+						String sql = "select t.kind, NVL(SUM(t.length),0) from RD_LINK t where "
+								+"sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE' group by t.kind";
+						linkKindLength = getLinkOrPoiDataByTaskGeo(conn, sql, clob);
+					}
+					for(Map.Entry<Integer, Object> en : linkKindLength.entrySet()){
+						int kind = en.getKey();
+						double value =  Double.valueOf(en.getValue().toString());
+						linkAllLen += value;
+						if(kind >= 1 && kind <= 7){
+							link17AllLen += value;
+						}
+						if(kind >= 2 && kind <= 7){
+							link27AllLen += value;
+						}
+					}
+					
+					
+					Map<Integer, Object> poitempMap = new HashMap<Integer, Object>();
+					if(poiAllNumMap.containsKey(taskId)){
+						poitempMap = poiAllNumMap.get(taskId);
+						double temp = (Double) poitempMap.get(0);
+						poiAllNum = (int) temp;
+					}else{
+						String sql = "select 1, COUNT(1) from IX_POI p where "
+								+"sdo_relate(p.GEOMETRY,SDO_GEOMETRY(?,8307),'mask=anyinteract') = 'TRUE'";
+						poitempMap = getLinkOrPoiDataByTaskGeo(conn, sql, clob);
+						double temp = Double.valueOf(poitempMap.get(1).toString());
+						poiAllNum = (int) temp; 
+					}
+					
 					Map<String, Object> map  = new HashMap<>();
 					map.put("taskId", taskId);
-					map.put("linkAllLen", linkAllLen);
+					map.put("linkAllLen", df.format(linkAllLen));
 					map.put("poiAllNum", poiAllNum);
-					map.put("link17AllLen", link17AllLen);
-					map.put("link27AllLen", link27AllLen);
-					map.put("taskFc1len", taskFc1len);
-					map.put("taskFc2len", taskFc2len);
-					map.put("taskFc3len", taskFc3len);
-					map.put("taskFc4len", taskFc4len);
-					map.put("taskFc5len", taskFc5len);
+					map.put("link17AllLen", df.format(link17AllLen));
+					map.put("link27AllLen", df.format(link27AllLen));
+					map.put("taskFc1len", df.format(taskFc1len));
+					map.put("taskFc2len", df.format(taskFc2len));
+					map.put("taskFc3len", df.format(taskFc3len));
+					map.put("taskFc4len", df.format(taskFc4len));
+					map.put("taskFc5len", df.format(taskFc5len));
 					
 					stats.add(map);
 				}
@@ -335,6 +258,94 @@ public class DayPlanJob extends AbstractStatJob {
 			e.printStackTrace();
 		}finally {
 			DbUtils.commitAndClose(conn);
+		}
+		return new HashMap<Integer, Object>();
+	}
+	
+	/**
+	 * dataPlan中查询所有任务对应的link和poi通用方法
+	 * @param Connection
+	 * @param String
+	 * 
+	 * */
+	public Map<Integer, Map<Integer, Object>> getLinkOrPoiData(Connection conn, String sql) throws Exception{
+		try {
+			log.info("sql" + sql);
+			QueryRunner run = new QueryRunner();
+			Map<Integer, Map<Integer, Object>> linkLenth = run.query(conn, sql, new ResultSetHandler<Map<Integer, Map<Integer, Object>>>() {
+				@Override
+				public Map<Integer, Map<Integer, Object>> handle(ResultSet rs)throws SQLException {
+					Map<Integer, Map<Integer, Object>> result = new HashMap<>();
+					while(rs.next()){
+						Map<Integer, Object> map = new HashMap<Integer, Object>();
+						int taskId = rs.getInt(1);
+						if(result.containsKey(taskId)){
+							map = result.get(taskId);
+						}
+						map.put(rs.getInt(2), rs.getDouble(3));
+						result.put(rs.getInt(1), map);
+					}
+					return result;
+				}
+			});
+			return linkLenth;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return new HashMap<Integer, Map<Integer, Object>>();
+	}
+	
+	/**
+	 * 查询日库中是否存在dataPlan的表
+	 * @param Connection
+	 * @param String
+	 * 
+	 * */
+	public Integer containsTable(Connection conn, String sql) throws Exception{
+		try {
+			log.info("sql" + sql);
+			QueryRunner run = new QueryRunner();
+			return run.query(conn, sql, new ResultSetHandler<Integer>() {
+				@Override
+				public Integer handle(ResultSet rs)throws SQLException {
+					int count = 0;
+					if(rs.next()){
+						count = rs.getInt(1);
+					}
+					return count;
+				}
+			});
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return 0;
+	}
+	
+	/**
+	 * dataPlan中没有的数据，用任务范围圈数据通用方法
+	 * @param Connection
+	 * @param String
+	 * @param Clob
+	 * 
+	 * */
+	public Map<Integer, Object> getLinkOrPoiDataByTaskGeo(Connection conn, String sql, Clob clob){
+		try {
+			QueryRunner run = new QueryRunner();
+			log.info("sql" + sql);
+			Map<Integer, Object> reusltMap = run.query(conn, sql, new ResultSetHandler<Map<Integer, Object>>() {
+				@Override
+				public Map<Integer, Object> handle(ResultSet rs)
+						throws SQLException {
+					Map<Integer, Object> result = new HashMap<>();
+					while(rs.next()){
+						result.put(rs.getInt(1), rs.getDouble(2));
+					}
+					return result;
+				}
+			},clob);
+			return reusltMap;
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 		return new HashMap<Integer, Object>();
 	}

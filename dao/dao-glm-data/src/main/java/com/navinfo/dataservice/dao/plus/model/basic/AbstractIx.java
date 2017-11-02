@@ -64,7 +64,7 @@ public abstract class AbstractIx extends BasicRow {
 			geometry = (LineString) GeoTranslator.transform(geometry, 1, 5);
 		}
 		if (this.checkValue("GEOMETRY", this.geometry, geometry)) {
-			this.geometry = geometry;
+			this.geometry = geometry; 
 		}
 		
 	}

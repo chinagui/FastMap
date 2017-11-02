@@ -397,20 +397,27 @@ public class DeepCoreControl {
             int subtaskId = json.getInt("subtaskId");
             String secondWorkItem = json.getString("secondWorkItem");
 
+            logger.info("start poi deep release");
             
         	int isQuality=0;
 
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			isQuality=subtask.getIsQuality();
 			
+			logger.info("subtask Id  = "+subtask.getSubtaskId()+" , isQuality = " +isQuality);
+			
             conn = DBConnector.getInstance().getConnectionById(dbId);  
 			
     		//获取后检查需要执行规则列表
 			List<String> checkList=getCheckRuleList(conn,secondWorkItem);
+			
+			logger.info("need checkList  = "+checkList);
             
 			// 查询可提交数据
             IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 			pidList = ixPoiColumnStatusSelector.getpidsForRelease(subtaskId,2,userId, secondWorkItem);
+			
+			logger.info("can realese pidList  = "+pidList);
 			
 			//调用清理检查结果方法
 			cleanExByCkRule(dbId, pidList, checkList, "IX_POI");
@@ -441,10 +448,15 @@ public class DeepCoreControl {
 			}
 			
 			operationResult.putAll(objList);
+			
+			
+			logger.info("start exe check command ");
 			CheckCommand checkCommand=new CheckCommand();
 			checkCommand.setRuleIdList(checkList);
 			Check check=new Check(conn,operationResult);
 			check.operate(checkCommand);
+			
+			logger.info("end exe check command ");
 			
 			// pidList替换为无检查错误的pidList
 			Map<String, Map<Long, Set<String>>> errorMap = check.getErrorPidMap();
@@ -462,6 +474,7 @@ public class DeepCoreControl {
 			}
 			
 			sucReleaseTotal = pidList.size();
+			logger.info("success release total =  "+sucReleaseTotal);
 			
 			// 修改poi_deep_status表作业项状态
 			updateDeepStatus(pidList, conn, 1,secondWorkItem,isQuality);
@@ -517,6 +530,8 @@ public class DeepCoreControl {
 			sb.append(condition);
 			
 			pstmt = conn.prepareStatement(sb.toString());
+			
+			logger.info("flag = "+flag+" update deep status sql "+sb.toString());
 			
 			pstmt.executeUpdate();
 			

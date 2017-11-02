@@ -13,7 +13,10 @@
 	功能：***
 	目标库：fm_man
 	author：XX
-
+2.fm_man/fmman_db_1102.sql
+  功能：质检方式取消多选，修改描述，值域3变更为1
+  目标库：fm_man
+  author：张晓毅
 
 
 

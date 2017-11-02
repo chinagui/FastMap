@@ -45,16 +45,16 @@ public class UploadTest {
 		}
 
 	}
-//	@Test
+	@Test
 	public void testUpload() {
 		try {
 			long t1 = System.currentTimeMillis();
 			//初始化存储图片属性的map
 			Map<String, Photo> photoMap=new HashMap<String, Photo>();
 			//1.2 解压文件
-			String filePath ="F:/upload";
+			String filePath ="D:/temp/resources/upload";
 			UploadManager upMan = new UploadManager(0,filePath);
-			upMan.setSubtaskId(26);
+			upMan.setSubtaskId(68);
 			UploadResult result = upMan.upload();
 			//读取poi文件，导入...
 			long t2 = System.currentTimeMillis();

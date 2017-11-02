@@ -1150,279 +1150,8 @@ public class TaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			//查询条件
-			String conditionSql = "";
-			Iterator<?> conditionKeys = condition.keys();		
-			List<String> progressList = new ArrayList<String>();
-			while (conditionKeys.hasNext()) {
-				String key = (String) conditionKeys.next();
-				//查询条件
-				if ("programId".equals(key)) {
-					conditionSql+=" AND TASK_LIST.PROGRAM_ID="+condition.getInt(key);
-				}
-				if ("type".equals(key)) {
-					conditionSql+=" AND TASK_LIST.TYPE ="+condition.getInt(key);
-				}
-				//按组查询主要应用场景：采/日/月角色登陆管理平台用，只返回开启任务
-				if ("groupId".equals(key)) {
-					conditionSql+=" AND TASK_LIST.STATUS in (0,1) AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
-				}
-				if("planStatus".equals(key)){
-					int planStatus = condition.getInt(key);
-					//未完成：开启1>待分配2
-					if(planStatus==2){
-						conditionSql+=" AND TASK_LIST.ORDER_STATUS IN (1,2)";
-					}
-					//已完成：100%(已完成)5>已关闭6
-					else if(planStatus == 3){
-						conditionSql+=" AND TASK_LIST.ORDER_STATUS IN (5,6)";
-					}
-				}
-				//任务名称模糊查询
-				if ("name".equals(key)) {	
-					conditionSql+=" AND (TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'"
-							+ " OR TASK_LIST.BLOCK_NAME LIKE '%" + condition.getString(key) +"%')";
-				}
-				//筛选条件
-				//"progress":[1,3] //进度。
-				//1采集正常，2采集异常，3采集完成，4日编正常，5日编异常，6日编完成， 7月编正常，8月编异常，9月编完成，10未规划，11草稿, 12已完成，13已关闭，
-				//14按时完成，15提前完成，16逾期完成,17采集待分配，18日编待分配，19月编待分配
-				if ("progress".equals(key)){
-					JSONArray progress = condition.getJSONArray(key);
-					if(progress.isEmpty()){
-						continue;
-					}
-					
-					for(Object i:progress){
-						int tmp=(int) i;
-						//1采集正常，2采集异常，3采集完成
-						if(tmp==1){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1) ");}
-						if(tmp==2){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1) ");}
-						if(tmp==3){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=0)");}
-						//4日编正常，5日编异常，6日编完成
-						if(tmp==4){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1) ");}
-						if(tmp==5){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=1 AND TASK_LIST.STATUS=1) ");}
-						if(tmp==6){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=1)");}
-						//7月编正常，8月编异常，9月编完成
-						if(tmp==7){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1) ");}
-						if(tmp==8){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE in (2,3) AND TASK_LIST.STATUS=1) ");}
-						if(tmp==9){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=2)");}
-						//10未规划，11草稿, 12已完成，13已关闭
-						if(tmp==10){progressList.add(" TASK_LIST.PLAN_STATUS = 0");}
-						if(tmp==11){progressList.add(" TASK_LIST.STATUS = 2 ");}
-						if(tmp==12){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5)");}
-						if(tmp==13){progressList.add(" TASK_LIST.STATUS = 0 ");}
-						//14按时完成，15提前完成，16逾期完成
-						if(tmp==14){
-							progressList.add("TASK_LIST.DIFF_DATE = 0");
-						}
-						if(tmp==15){
-							progressList.add("TASK_LIST.DIFF_DATE > 0");
-						}
-						if(tmp==16){
-							progressList.add("TASK_LIST.DIFF_DATE < 0");
-						}
-						if(tmp==17){
-							progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE=0  AND TASK_LIST.STATUS=1) ");
-						}else if(tmp==18){
-							progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1) ");
-						}else if(tmp==19){
-							progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1) ");
-						}
-					}
-				}
-				//任务自定义条件筛选
-				//order_status来表示这个排序的先后顺序。分别是开启1>待分配2>草稿3>未规划4>100%(已完成)5>已关闭6
-				//sStatus:[]//1未规划2草稿3待分配4进行中5已关闭:进行中指的status=1开启，待分配指的没有任何子任务
-				if ("sStatus".equals(key)) {	
-					JSONArray progress = condition.getJSONArray(key);
-					if(progress.isEmpty()){
-						continue;
-					}	
-					JSONArray statusListTmp=new JSONArray();
-					for(Object i:progress){
-						int tmp=(int) i;
-						if(tmp==1){statusListTmp.add(4);}
-						if(tmp==2){statusListTmp.add(3);}
-						if(tmp==3){statusListTmp.add(2);}
-						if(tmp==4){statusListTmp.add(1);statusListTmp.add(2);statusListTmp.add(5);}
-						if(tmp==5){statusListTmp.add(6);}
-					}
-					if(statusListTmp.size()>0){
-						conditionSql+="  AND TASK_LIST.order_status in ("+statusListTmp.join(",")+")";
-					}
-				}
-				if ("sType".equals(key)) {	
-					conditionSql+="  AND TASK_LIST.type IN ("+condition.getJSONArray(key).join(",")+")";
-				}
-				if ("sProgress".equals(key)) {	
-					//正常PROGRESS = 1
-					//15提前完成，16逾期完成
-					JSONArray progress = condition.getJSONArray(key);
-					if(progress.isEmpty()){
-						continue;
-					}	
-					List<String> progressListTmp = new ArrayList<String>();
-					for(Object i:progress){
-						int tmp=(int) i;						
-						if(tmp==1){
-							progressListTmp.add("TASK_LIST.PROGRESS=1");
-						}
-						if(tmp==2){
-							progressListTmp.add("TASK_LIST.DIFF_DATE > 0");
-						}
-						if(tmp==3){
-							progressListTmp.add("TASK_LIST.DIFF_DATE < 0");
-						}						
-					}
-					conditionSql+="  AND ("+StringUtils.join(progressListTmp," OR ")+") ";
-				}
-				if ("sWorkKind".equals(key)) {	
-					JSONArray progress = condition.getJSONArray(key);
-					if(progress.isEmpty()){
-						continue;
-					}	
-					List<String> progressListTmp = new ArrayList<String>();
-					for(Object i:progress){
-						int tmp=(int) i;						
-						if(tmp==1){
-							progressListTmp.add("TASK_LIST.work_kind like '1|%'");
-						}
-						if(tmp==2){
-							progressListTmp.add("TASK_LIST.work_kind like '1|1|%' or TASK_LIST.work_kind like '0|1|%'");
-						}
-						if(tmp==3){
-							progressListTmp.add("TASK_LIST.work_kind like '%|1|1' or TASK_LIST.work_kind like '%|1|0'");
-						}	
-						if(tmp==4){
-							progressListTmp.add("TASK_LIST.work_kind like '%|1'");
-						}
-					}
-					conditionSql+="  AND ("+StringUtils.join(progressListTmp," OR ")+") ";
-				}
-				if ("sLot".equals(key)) {	
-					conditionSql+="  AND TASK_LIST.lot IN ("+condition.getJSONArray(key).join(",")+")";
-				}
-				if ("sGroupId".equals(key)) {	
-					conditionSql+="  AND TASK_LIST.group_id ="+condition.getInt(key);
-				}
-				if ("sPlanStart".equals(key)) {	
-					JSONObject startJson = condition.getJSONObject(key);
-					if(startJson.isEmpty()){
-						continue;
-					}	
-					int logic=startJson.getInt("logic");
-					if(logic==1){
-						conditionSql+="  AND TASK_LIST.plan_start_date < to_date("+startJson.getString("content")+",'yyyymmdd')";
-					}else if(logic==2){
-						conditionSql+="  AND TASK_LIST.plan_start_date > to_date("+startJson.getString("content")+",'yyyymmdd')";
-					}
-				}
-				if ("sPlanEnd".equals(key)) {	
-					JSONObject endJson = condition.getJSONObject(key);
-					if(endJson.isEmpty()){
-						continue;
-					}	
-					int logic=endJson.getInt("logic");
-					if(logic==1){
-						conditionSql+="  AND TASK_LIST.plan_start_date < to_date("+endJson.getString("content")+",'yyyymmdd')";
-					}else if(logic==2){
-						conditionSql+="  AND TASK_LIST.plan_start_date > to_date("+endJson.getString("content")+",'yyyymmdd')";
-					}
-				}
-				if ("sDescp".equals(key)) {	
-					JSONObject descpJson = condition.getJSONObject(key);
-					if(descpJson.isEmpty()){
-						continue;
-					}	
-					int logic=descpJson.getInt("logic");
-					if(logic==1){
-						conditionSql+="  AND TASK_LIST.descp LIKE '%" + descpJson.getString("content") +"%'";
-					}else if(logic==2){
-						conditionSql+="  AND TASK_LIST.descp NOT LIKE '%" + descpJson.getString("content") +"%'";;
-					}
-				}
-				if ("sProgramType".equals(key)) {	
-					conditionSql+="  AND TASK_LIST.programType =" + condition.getInt(key);
-				}
-				//0无1未转换(-1,3)2进行中(1)3已完成(2)
-				if ("sNoTaskStatus".equals(key)) {
-					JSONArray progress = condition.getJSONArray(key);
-					if(progress.isEmpty()){
-						continue;
-					}	
-					JSONArray progressListTmp=new JSONArray();
-					for(Object i:progress){
-						int tmp=(int) i;
-						if(tmp==0){continue;}
-						if(tmp==1){
-							progressListTmp.add(-1);
-							progressListTmp.add(3);
-						}
-						if(tmp==2){
-							progressListTmp.add(1);
-						}
-						if(tmp==3){
-							progressListTmp.add(2);
-						}						
-					}
-					if(progressListTmp.size()>0){
-						conditionSql+="  AND TASK_LIST.programType=1 and TASK_LIST.task_id!=0 and TASK_LIST.other2medium_Status in ("+progressListTmp.join(",")+")";
-					}
-				}
-				//TISP2MARK 1未转换(-1)2进行中(1)3成功(2)4失败(3) 5无数据  6无CMS任务
-				if ("sMarkStatus".equals(key)) {	
-					JSONArray progress = condition.getJSONArray(key);
-					if(progress.isEmpty()){
-						continue;
-					}	
-					JSONArray progressListTmp=new JSONArray();
-					StringBuffer tmpStrB=new StringBuffer();
-					boolean flag=false;
-					for(Object i:progress){
-						int tmp=(int) i;
-						if(tmp==1){
-							flag=true;
-							progressListTmp.add(-1);
-						}
-						if(tmp==2){
-							flag=true;
-							progressListTmp.add(1);
-						}
-						if(tmp==3){
-							flag=true;
-							progressListTmp.add(2);
-						}	
-						if(tmp==4){
-							flag=true;
-							progressListTmp.add(3);
-						}
-						if(tmp==5){
-							flag=true;
-							if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
-							tmpStrB.append(" TASK_LIST.TISP2MARK1=4");
-
-						}
-						if(tmp==6){
-							flag=true;
-							if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
-							tmpStrB.append(" TASK_LIST.TISP2MARK2=4");
-						}
-					}
-					if(progressListTmp.size()>0){
-						if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
-						tmpStrB.append(" TASK_LIST.TISP2MARK in ("+progressListTmp.join(",")+")");
-					}
-					if(flag){
-						conditionSql+=" AND TASK_LIST.programType=1 AND TASK_LIST.STATUS=0 and TASK_LIST.task_id!=0 and ("+tmpStrB+")"; 
-					}
-				}
-			}
-			
-			if(!progressList.isEmpty()){
-				String tempSql = StringUtils.join(progressList," OR ");
-				conditionSql += " AND (" + tempSql + ")";
-			}
+			log.info("task list form condition");
+			String conditionSql=formCondition(condition);
 			QueryRunner run = new QueryRunner();
 			long pageStartNum = (curPageNum - 1) * pageSize + 1;
 			long pageEndNum = curPageNum * pageSize;
@@ -1472,7 +1201,6 @@ public class TaskService {
 			sb.append("                       T.PLAN_END_DATE,");
 			sb.append("                       T.ROAD_PLAN_TOTAL,");
 			sb.append("                       T.POI_PLAN_TOTAL,");
-			//sb.append("                       T.DATA_PLAN_STATUS,");
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
@@ -1488,11 +1216,7 @@ public class TaskService {
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
-//			sb.append("                      NVL((SELECT J.STATUS ");
-//			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 "
-//					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) NOTASK2MID,");
-			
+			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");			
 			sb.append("                      NVL((SELECT J.STATUS ");
 			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=3 AND J.LATEST=1 "
 					+ "AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) other2medium_Status,");
@@ -1505,14 +1229,12 @@ public class TaskService {
 			sb.append("         FROM JOB_RELATION JR,JOB J,job_progress p WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 "
 					+ "AND J.JOB_ID=p.JOB_ID AND p.phase=2 "
 					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK2,");
-			
 			sb.append("                      NVL((SELECT J.STATUS ");
 			sb.append("         FROM JOB_RELATION JR,JOB J WHERE J.JOB_ID=JR.JOB_ID AND J.TYPE=1 "
 					+ "AND J.LATEST=1 AND JR.ITEM_ID=T.TASK_ID AND JR.ITEM_TYPE=2 ),-1) TISP2MARK");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
-			//sb.append("                   AND T.latest=1");
 			sb.append("                   AND P.CITY_ID = B.CITY_ID");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
@@ -1533,7 +1255,6 @@ public class TaskService {
 			sb.append("	                          NULL          PLAN_END_DATE,");
 			sb.append("	                          NULL          ROAD_PLAN_TOTAL,");
 			sb.append("	                          NULL          POI_PLAN_TOTAL,");
-			//sb.append("	                          NULL          DATA_PLAN_STATUS,");
 			sb.append("	                          1             PROGRESS,");
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
@@ -1545,7 +1266,6 @@ public class TaskService {
 			sb.append("	                          B.PLAN_STATUS,");
 			sb.append("	                          0             SUBTASK_NUM,");
 			sb.append("	                          0             SUBTASK_NUM_CLOSED,-1 other2medium_Status,");
-			//sb.append("	                          -1 NOTASK2MID,");
 			sb.append("	                         -1 TISP2MARK1,-1 TISP2MARK2, -1 tips2mark_status");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
@@ -1570,7 +1290,6 @@ public class TaskService {
 			sb.append("                       T.PLAN_END_DATE,");
 			sb.append("                       T.ROAD_PLAN_TOTAL,");
 			sb.append("                       T.POI_PLAN_TOTAL,");
-			//sb.append("                       T.DATA_PLAN_STATUS,");
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
@@ -1587,17 +1306,11 @@ public class TaskService {
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append("                           AND ST.STATUS = 0 ) SUBTASK_NUM_CLOSED,");
-//			sb.append("                      nvl((select tpt.status"
-//					+ "          from (select * from task_progress tp where tp.phase=1 order by create_date desc) tpt"
-//					+ "         where tpt.task_id = t.task_id"
-//					+ "           and rownum = 1),-1) other2medium_Status,");
 			sb.append("                      -1 other2medium_Status,");
-			//sb.append("	                          -1 NOTASK2MID,");
 			sb.append("                      -1 TISP2MARK1,-1 TISP2MARK2, -1 tips2mark_status");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
-			//sb.append("                   AND t.latest=1");
 			sb.append("                   AND p.latest=1");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
 			sb.append("	             AND P.TYPE = 4) TASK_LIST1");
@@ -1721,6 +1434,283 @@ public class TaskService {
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	private String formCondition(JSONObject condition) {
+		//查询条件
+		String conditionSql = "";
+		Iterator<?> conditionKeys = condition.keys();		
+		List<String> progressList = new ArrayList<String>();
+		while (conditionKeys.hasNext()) {
+			String key = (String) conditionKeys.next();
+			//查询条件
+			if ("programId".equals(key)) {
+				conditionSql+=" AND TASK_LIST.PROGRAM_ID="+condition.getInt(key);
+			}
+			if ("type".equals(key)) {
+				conditionSql+=" AND TASK_LIST.TYPE ="+condition.getInt(key);
+			}
+			//按组查询主要应用场景：采/日/月角色登陆管理平台用，只返回开启任务
+			if ("groupId".equals(key)) {
+				conditionSql+=" AND TASK_LIST.STATUS in (0,1) AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
+			}
+			if("planStatus".equals(key)){
+				int planStatus = condition.getInt(key);
+				//未完成：开启1>待分配2
+				if(planStatus==2){
+					conditionSql+=" AND TASK_LIST.ORDER_STATUS IN (1,2)";
+				}
+				//已完成：100%(已完成)5>已关闭6
+				else if(planStatus == 3){
+					conditionSql+=" AND TASK_LIST.ORDER_STATUS IN (5,6)";
+				}
+			}
+			//任务名称模糊查询
+			if ("name".equals(key)) {	
+				conditionSql+=" AND (TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'"
+						+ " OR TASK_LIST.BLOCK_NAME LIKE '%" + condition.getString(key) +"%')";
+			}
+			//筛选条件
+			//"progress":[1,3] //进度。
+			//1采集正常，2采集异常，3采集完成，4日编正常，5日编异常，6日编完成， 7月编正常，8月编异常，9月编完成，10未规划，11草稿, 12已完成，13已关闭，
+			//14按时完成，15提前完成，16逾期完成,17采集待分配，18日编待分配，19月编待分配
+			if ("progress".equals(key)){
+				JSONArray progress = condition.getJSONArray(key);
+				if(progress.isEmpty()){
+					continue;
+				}
+				
+				for(Object i:progress){
+					int tmp=(int) i;
+					//1采集正常，2采集异常，3采集完成
+					if(tmp==1){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1) ");}
+					if(tmp==2){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1) ");}
+					if(tmp==3){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=0)");}
+					//4日编正常，5日编异常，6日编完成
+					if(tmp==4){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1) ");}
+					if(tmp==5){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=1 AND TASK_LIST.STATUS=1) ");}
+					if(tmp==6){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=1)");}
+					//7月编正常，8月编异常，9月编完成
+					if(tmp==7){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1) ");}
+					if(tmp==8){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE in (2,3) AND TASK_LIST.STATUS=1) ");}
+					if(tmp==9){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=2)");}
+					//10未规划，11草稿, 12已完成，13已关闭
+					if(tmp==10){progressList.add(" TASK_LIST.PLAN_STATUS = 0");}
+					if(tmp==11){progressList.add(" TASK_LIST.STATUS = 2 ");}
+					if(tmp==12){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5)");}
+					if(tmp==13){progressList.add(" TASK_LIST.STATUS = 0 ");}
+					//14按时完成，15提前完成，16逾期完成
+					if(tmp==14){
+						progressList.add("TASK_LIST.DIFF_DATE = 0");
+					}
+					if(tmp==15){
+						progressList.add("TASK_LIST.DIFF_DATE > 0");
+					}
+					if(tmp==16){
+						progressList.add("TASK_LIST.DIFF_DATE < 0");
+					}
+					if(tmp==17){
+						progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE=0  AND TASK_LIST.STATUS=1) ");
+					}else if(tmp==18){
+						progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1) ");
+					}else if(tmp==19){
+						progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1) ");
+					}
+				}
+			}
+			//任务自定义条件筛选
+			//order_status来表示这个排序的先后顺序。分别是开启1>待分配2>草稿3>未规划4>100%(已完成)5>已关闭6
+			//sStatus:[]//1未规划2草稿3待分配4进行中5已关闭:进行中指的status=1开启，待分配指的没有任何子任务
+			if ("sStatus".equals(key)) {	
+				JSONArray progress = condition.getJSONArray(key);
+				if(progress.isEmpty()){
+					continue;
+				}	
+				JSONArray statusListTmp=new JSONArray();
+				for(Object i:progress){
+					int tmp=(int) i;
+					if(tmp==1){statusListTmp.add(4);}
+					if(tmp==2){statusListTmp.add(3);}
+					if(tmp==3){statusListTmp.add(2);}
+					if(tmp==4){statusListTmp.add(1);statusListTmp.add(2);statusListTmp.add(5);}
+					if(tmp==5){statusListTmp.add(6);}
+				}
+				if(statusListTmp.size()>0){
+					conditionSql+="  AND TASK_LIST.order_status in ("+statusListTmp.join(",")+")";
+				}
+			}
+			if ("sType".equals(key)) {	
+				conditionSql+="  AND TASK_LIST.type IN ("+condition.getJSONArray(key).join(",")+")";
+			}
+			if ("sProgress".equals(key)) {	
+				//正常PROGRESS = 1
+				//15提前完成，16逾期完成
+				JSONArray progress = condition.getJSONArray(key);
+				if(progress.isEmpty()){
+					continue;
+				}	
+				List<String> progressListTmp = new ArrayList<String>();
+				for(Object i:progress){
+					int tmp=(int) i;						
+					if(tmp==1){
+						progressListTmp.add("(TASK_LIST.status=1 and TASK_LIST.DIFF_DATE >= 0)");
+					}
+					if(tmp==2){
+						progressListTmp.add("(TASK_LIST.status=0 and TASK_LIST.DIFF_DATE > 0)");
+					}
+					if(tmp==3){
+						progressListTmp.add("TASK_LIST.DIFF_DATE < 0");
+					}						
+				}
+				conditionSql+="  AND ("+StringUtils.join(progressListTmp," OR ")+") ";
+			}
+			if ("sWorkKind".equals(key)) {	
+				JSONArray progress = condition.getJSONArray(key);
+				if(progress.isEmpty()){
+					continue;
+				}	
+				List<String> progressListTmp = new ArrayList<String>();
+				for(Object i:progress){
+					int tmp=(int) i;						
+					if(tmp==1){
+						progressListTmp.add("TASK_LIST.work_kind like '1|%'");
+					}
+					if(tmp==2){
+						progressListTmp.add("TASK_LIST.work_kind like '1|1|%' or TASK_LIST.work_kind like '0|1|%'");
+					}
+					if(tmp==3){
+						progressListTmp.add("TASK_LIST.work_kind like '%|1|1' or TASK_LIST.work_kind like '%|1|0'");
+					}	
+					if(tmp==4){
+						progressListTmp.add("TASK_LIST.work_kind like '%|1'");
+					}
+				}
+				conditionSql+="  AND ("+StringUtils.join(progressListTmp," OR ")+") ";
+			}
+			if ("sLot".equals(key)) {	
+				conditionSql+="  AND TASK_LIST.lot IN ("+condition.getJSONArray(key).join(",")+")";
+			}
+			if ("sGroupId".equals(key)) {	
+				conditionSql+="  AND TASK_LIST.group_id ="+condition.getInt(key);
+			}
+			if ("sPlanStart".equals(key)) {	
+				JSONObject startJson = condition.getJSONObject(key);
+				if(startJson.isEmpty()){
+					continue;
+				}	
+				int logic=startJson.getInt("logic");
+				if(logic==1){
+					conditionSql+="  AND TASK_LIST.plan_start_date < to_date("+startJson.getString("content")+",'yyyymmdd')";
+				}else if(logic==2){
+					conditionSql+="  AND TASK_LIST.plan_start_date > to_date("+startJson.getString("content")+",'yyyymmdd')";
+				}
+			}
+			if ("sPlanEnd".equals(key)) {	
+				JSONObject endJson = condition.getJSONObject(key);
+				if(endJson.isEmpty()){
+					continue;
+				}	
+				int logic=endJson.getInt("logic");
+				if(logic==1){
+					conditionSql+="  AND TASK_LIST.plan_start_date < to_date("+endJson.getString("content")+",'yyyymmdd')";
+				}else if(logic==2){
+					conditionSql+="  AND TASK_LIST.plan_start_date > to_date("+endJson.getString("content")+",'yyyymmdd')";
+				}
+			}
+			if ("sDescp".equals(key)) {	
+				JSONObject descpJson = condition.getJSONObject(key);
+				if(descpJson.isEmpty()){
+					continue;
+				}	
+				int logic=descpJson.getInt("logic");
+				if(logic==1){
+					conditionSql+="  AND TASK_LIST.descp LIKE '%" + descpJson.getString("content") +"%'";
+				}else if(logic==2){
+					conditionSql+="  AND TASK_LIST.descp NOT LIKE '%" + descpJson.getString("content") +"%'";;
+				}
+			}
+			if ("sProgramType".equals(key)) {	
+				conditionSql+="  AND TASK_LIST.programType =" + condition.getInt(key);
+			}
+			//0无1未转换(-1,3)2进行中(1)3已完成(2)
+			if ("sNoTaskStatus".equals(key)) {
+				JSONArray progress = condition.getJSONArray(key);
+				if(progress.isEmpty()){
+					continue;
+				}	
+				JSONArray progressListTmp=new JSONArray();
+				for(Object i:progress){
+					int tmp=(int) i;
+					if(tmp==0){continue;}
+					if(tmp==1){
+						progressListTmp.add(-1);
+						progressListTmp.add(3);
+					}
+					if(tmp==2){
+						progressListTmp.add(1);
+					}
+					if(tmp==3){
+						progressListTmp.add(2);
+					}						
+				}
+				if(progressListTmp.size()>0){
+					conditionSql+="  AND TASK_LIST.programType=1 and TASK_LIST.task_id!=0 and TASK_LIST.other2medium_Status in ("+progressListTmp.join(",")+")";
+				}
+			}
+			//TISP2MARK 1未转换(-1)2进行中(1)3成功(2)4失败(3) 5无数据  6无CMS任务
+			if ("sMarkStatus".equals(key)) {	
+				JSONArray progress = condition.getJSONArray(key);
+				if(progress.isEmpty()){
+					continue;
+				}	
+				JSONArray progressListTmp=new JSONArray();
+				StringBuffer tmpStrB=new StringBuffer();
+				boolean flag=false;
+				for(Object i:progress){
+					int tmp=(int) i;
+					if(tmp==1){
+						flag=true;
+						progressListTmp.add(-1);
+					}
+					if(tmp==2){
+						flag=true;
+						progressListTmp.add(1);
+					}
+					if(tmp==3){
+						flag=true;
+						progressListTmp.add(2);
+					}	
+					if(tmp==4){
+						flag=true;
+						progressListTmp.add(3);
+					}
+					if(tmp==5){
+						flag=true;
+						if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
+						tmpStrB.append(" TASK_LIST.TISP2MARK1=4");
+
+					}
+					if(tmp==6){
+						flag=true;
+						if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
+						tmpStrB.append(" TASK_LIST.TISP2MARK2=4");
+					}
+				}
+				if(progressListTmp.size()>0){
+					if(tmpStrB.length()!=0){tmpStrB.append(" or ");}
+					tmpStrB.append(" TASK_LIST.TISP2MARK in ("+progressListTmp.join(",")+")");
+				}
+				if(flag){
+					conditionSql+=" AND TASK_LIST.programType=1 AND TASK_LIST.STATUS=0 and TASK_LIST.task_id!=0 and ("+tmpStrB+")"; 
+				}
+			}
+		}
+		
+		if(!progressList.isEmpty()){
+			String tempSql = StringUtils.join(progressList," OR ");
+			conditionSql += " AND (" + tempSql + ")";
+		}
+		return conditionSql;
 	}
 	
 //	/**

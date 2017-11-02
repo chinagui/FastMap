@@ -11,7 +11,7 @@ public class InfoTest extends InitApplication {
 	@Test
 	public void msgTest() throws Exception{
 		InfoChangeMsgHandler info = new InfoChangeMsgHandler();
-		String message = "{\"adminCode\":110210,\"reportUserId\":1664,\"geometry\":\"POLYGON ((116.46875 40.10417, 116.46875 40.125, 116.5 40.125, 116.53125 40.125, 116.53125 40.10417, 116.5 40.10417, 116.5 40.08333, 116.46875 40.08333, 116.46875 40.10417));\",\"rowkey\":\"e58b02ca56de4f9d92fdd22bdc45d995\",\"inforLevel\":1,\"feedbackType\":1,\"featureKind\":2,\"sourceCode\":2,\"roadLength\":19,\"adminName\":\"云南省|西双版纳傣族自治州\",\"publishDate\":\"2017-05-06 20:20:55\",\"expectDate\":\"2017-07-25 20:20:55\",\"newsDate\":\"2017-05-06 20:20:55\",\"infoCode\":\"20160306QB00000341\",\"topicName\":\"\",\"inforName\":\"1月_6\",\"infoTypeName\":\"道路|普通道路\"}";			
+		String message = "{\"bSourceId\":\"sourceId\",\"data\":\"{}\",\"adminCode\":110210,\"reportUserId\":1664,\"geometry\":\"POLYGON ((116.46875 40.10417, 116.46875 40.125, 116.5 40.125, 116.53125 40.125, 116.53125 40.10417, 116.5 40.10417, 116.5 40.08333, 116.46875 40.08333, 116.46875 40.10417));\",\"rowkey\":\"e58b02ca56de4f9d92fdd22bdc45d995\",\"inforLevel\":1,\"feedbackType\":1,\"featureKind\":1,\"inforStage\":2,\"sourceCode\":1,\"roadLength\":19,\"adminName\":\"云南省|西双版纳傣族自治州\",\"publishDate\":\"2017-05-06 20:20:55\",\"expectDate\":\"2017-07-25 20:20:55\",\"newsDate\":\"2017-05-06 20:20:55\",\"infoCode\":\"20160306QB00000341\",\"topicName\":\"\",\"inforName\":\"10月_3\",\"infoTypeName\":\"道路|普通道路\"}";			
 		info.save(message);
 	}
 	

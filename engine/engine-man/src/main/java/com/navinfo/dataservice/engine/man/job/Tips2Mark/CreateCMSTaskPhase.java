@@ -90,17 +90,17 @@ public class CreateCMSTaskPhase extends JobPhase {
                 area = "快线一体化作业";
                 workType = "快速更新";   
                 taskPar.put("poiMeshes", cmsInfo.get("poiMeshes"));
-            	taskPar.put("poiPlanLoad", cmsInfo.get("poiPlanLoad"));  
+            	taskPar.put("poiPlanLoad", cmsInfo.get("poiPlanLoad").toString());  
             } 
             if (jobRelation.getItemType() == ItemType.TASK) {
             	taskPar.put("poiMeshes", cmsInfo.get("poiMeshes"));
-            	taskPar.put("poiPlanLoad", cmsInfo.get("poiPlanLoad"));               
+            	taskPar.put("poiPlanLoad", cmsInfo.get("poiPlanLoad").toString());               
             }
             if (jobRelation.getItemType() == ItemType.SUBTASK) {
             	taskPar.put("taskParentId", cmsInfo.get("taskId"));              
             }             
             String uploadMethod="快速更新";
-            if(!StringUtils.isEmpty(cmsInfo.get("uploadMethod").toString())){
+            if(cmsInfo.get("uploadMethod")!=null&&!StringUtils.isEmpty(cmsInfo.get("uploadMethod").toString())){
             	uploadMethod=cmsInfo.get("uploadMethod").toString();
             }
             

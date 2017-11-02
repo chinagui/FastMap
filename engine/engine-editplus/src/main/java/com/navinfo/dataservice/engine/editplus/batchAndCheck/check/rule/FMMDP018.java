@@ -65,7 +65,7 @@ public class FMMDP018 extends BasicCheckRule {
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"收费信息包含“：00”，营业时间为空");
 					}
 				}
-				//4.时间段中—前后两个时间中的“：”之后只能紧跟两位阿拉伯数字，否则报出；单个时间格式为H：MM，小时位若小于10时，只能是一位，例如7点，能是07，分钟位无要求
+				//4.时间段中—前后两个时间中的“：”之后只能紧跟两位阿拉伯数字，否则报出；单个时间格式为H：MM，小时位若小于10时，只能是一位，例如7点，不能是07，分钟位无要求
 				String tollDesH = ExcelReader.f2h(tollDes);
 				Pattern pattern = Pattern.compile("\\d+:\\d+-\\d+:\\d+");
 				Matcher matcher = pattern.matcher(tollDesH);
@@ -112,9 +112,6 @@ public class FMMDP018 extends BasicCheckRule {
 							}
 						}
 					}
-				}else{
-					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
-							"时间格式错误");
 				}
 				//3.存在连续两个及两个以上的字符（此处字符特指TY_CHARACTER_EGALCHAR_EXT.EXTENTION_TYPE in (“SYMBOL_F”，“GBK_SYMBOL_F”)对应的“CHARACTER”的字符）时报出
 				//判断停车场收费信息中的字符是在合法字符集中

@@ -128,7 +128,7 @@ public class SyncTips2Oracle {
 			
 			//rowkey
 			ti.setId(Bytes.toString(result.getRow()));
-            errRowkey = ti.getId();
+			errorRowkey = ti.getId();
 
 			//log.info("rowkey:"+Bytes.toString(result.getRow()));
 			

@@ -6,6 +6,7 @@ import com.navinfo.dataservice.job.statics.manJob.PersonTipsJob;
 import org.junit.Test;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.column.job.InfoPoiMultiSrc2FmDayJob;
 import com.navinfo.dataservice.column.job.MultiSrc2FmDaySyncJob;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.edit.check.CheckService;
@@ -51,7 +52,7 @@ public class JobTest {
 			e.printStackTrace();
 		}
 	}*/
-	@Test
+//	@Test
 	public  void JobTest() throws Exception {
 		//初始化context
 		JobScriptsInterface.initContext();
@@ -83,7 +84,7 @@ public class JobTest {
 		}
 		}
 	
-	@Test
+//	@Test
 	public  void JobTest3() throws Exception {
 		//初始化context
 		JobScriptsInterface.initContext();
@@ -138,7 +139,7 @@ public class JobTest {
 		}
 //	}
 
-    @Test
+//    @Test
     public  void JobTestPersonTips() throws Exception {
         //初始化context
         JobScriptsInterface.initContext();
@@ -162,4 +163,41 @@ public class JobTest {
             e.printStackTrace();
         }
     }
+    
+//    @Test
+	public  void JobTestInfoPoi() throws Exception {
+		//初始化context
+		JobScriptsInterface.initContext();
+
+	    try{
+	    	String dataStr = "{'fid':'0010171031DXJ201710305','indoorType':0,'regionInfo':'D','remark':'','guidelat':40.27304,'foodType':'3000','lng':116.24536,'kind':'110101','contacts':[],'guidelon':116.44536,'level':'B2','name':'多源Ｂ１11111','sourceProvider':'001000030002','lat':40.07304,'website':'','updateTime':'20170728080000','status':'已发布','postCode':'888888','addFlag':1,'log':'','englishName':'','aliasName':'','adminId':'110108','open24H':2,'chain':'313A','address':'９９９９９９','batch':'大陆','fatherson':'','rating':-1,'delFlag':0}";
+	    	
+	    	JSONObject dataJson = JSONObject.fromObject(dataStr);
+	    	
+			//执行job
+			JSONObject jobPra = new JSONObject();
+			jobPra.put("dbId", 13);
+			jobPra.put("taskId", 2158);
+			jobPra.put("subtaskId", 2158);
+			jobPra.put("bSourceId", 11);
+			jobPra.put("data", dataJson);
+			  
+			long jobId = JobService.getInstance().create("infoPoiMultiSrc2FmDay", jobPra, 0,0, "测试InfoPoi job");
+			
+//	    	long jobId = 1804;
+			System.out.println("jobId: "+jobId);
+			
+			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			JobInfo jobInfo=apiService.getJobById(jobId);
+			AbstractJob job = new InfoPoiMultiSrc2FmDayJob(jobInfo);
+			job.execute();
+			job.getJobInfo().getResponse();
+			
+			System.out.println("Over.");
+			System.exit(0);
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+		}
 }

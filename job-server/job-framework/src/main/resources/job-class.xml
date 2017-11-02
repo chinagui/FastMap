@@ -206,4 +206,8 @@
           class="com.navinfo.dataservice.row.job.PointAddressReleaseJob"
           request="com.navinfo.dataservice.row.job.PointAddressReleaseJobRequest" >
     </type>
+    <type name="infoPoiMultiSrc2FmDay"
+          class="com.navinfo.dataservice.column.job.InfoPoiMultiSrc2FmDayJob"
+          request="com.navinfo.dataservice.column.job.InfoPoiMultiSrc2FmDayJobRequest" >
+    </type>
 	</mapping>

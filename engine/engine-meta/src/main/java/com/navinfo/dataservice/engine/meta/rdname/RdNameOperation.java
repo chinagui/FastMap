@@ -47,7 +47,6 @@ public RdName saveName(RdName rdName) throws Exception {
 		String initSql = "BEGIN PY_UTILS_WORD.C_CONVERT_NUMBER:= 0;END;";
 		ProcedureBase procedureBase = new ProcedureBase(conn);
         procedureBase.callProcedure(initSql);
-
 		String insertSql = "Insert Into RD_NAME( \n"
 				+ "NAME_ID,									\n"
 				+ "NAME_GROUPID,     \n"
@@ -458,7 +457,7 @@ public RdName saveName(RdName rdName) throws Exception {
 			for (int i=0;i<dataList.size();i++) {
 				JSONObject data = dataList.getJSONObject(i);
 				if(data.containsKey("splitFlag") && data.getInt("splitFlag") != 1){//2017.05.09 zl 拆分标识为人工拆分  不再拆分
-					teilen.teilenName(data.getInt("nameId"), data.getInt("nameGroupid"), data.getString("langCode"), data.getInt("roadType"));
+					teilen.teilenName(data.getInt("nameId"), data.getInt("nameGroupid"), data.getString("langCode"), data.getInt("roadType"),null);
 				}else{
 					log.info("人工拆分: "+data.getInt("nameId")+" "+data.getInt("nameGroupid"));
 				}
@@ -514,7 +513,7 @@ public RdName saveName(RdName rdName) throws Exception {
 				}
 				resultSet = pstmt.executeQuery();
 				while (resultSet.next()) {
-					teilen.teilenName(resultSet.getInt("name_id"), resultSet.getInt("name_groupid"), resultSet.getString("lang_code"), resultSet.getInt("road_type"));
+					teilen.teilenName(resultSet.getInt("name_id"), resultSet.getInt("name_groupid"), resultSet.getString("lang_code"), resultSet.getInt("road_type"),null);
 				}
 			}
 		} catch (Exception e) {
@@ -618,7 +617,7 @@ public RdName saveName(RdName rdName) throws Exception {
 				
 				resultSet = pstmt.executeQuery();
 				while (resultSet.next()) {
-					teilen.teilenName(resultSet.getInt("name_id"), resultSet.getInt("name_groupid"), resultSet.getString("lang_code"), resultSet.getInt("road_type"));
+					teilen.teilenName(resultSet.getInt("name_id"), resultSet.getInt("name_groupid"), resultSet.getString("lang_code"), resultSet.getInt("road_type"),null);
 				}
 			}
 		} catch (Exception e) {

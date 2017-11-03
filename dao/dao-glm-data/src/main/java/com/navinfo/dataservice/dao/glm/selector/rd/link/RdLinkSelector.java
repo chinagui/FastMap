@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
@@ -970,7 +971,7 @@ public class RdLinkSelector extends AbstractSelector {
 		List<RdLink> rdLinks = new ArrayList<>();
 		StringBuilder sb = new StringBuilder(
 				"SELECT RL.* FROM RD_LINK RL WHERE RL.U_RECORD <> 2 AND ");
-		sb.append(" SDO_RELATE(RL.GEOMETRY, SDO_GEOMETRY(:1, 8307),  'mask=anyinteract') = 'TRUE'");
+		sb.append(" SDO_RELATE(RL.GEOMETRY, SDO_GEOMETRY(?, 8307),  'mask=anyinteract') = 'TRUE'");
 		if (isLock) {
 			sb.append(" for update nowait");
 		}
@@ -978,8 +979,9 @@ public class RdLinkSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setString(1, GeoTranslator.jts2Wkt(geometry));
-			pstmt.setFetchSize(100);
+            Clob clob = ConnectionUtil.createClob(conn);
+            clob.setString(1, GeoTranslator.jts2Wkt(geometry));
+            pstmt.setClob(1, clob);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				RdLink link = new RdLink();
@@ -1014,8 +1016,8 @@ public class RdLinkSelector extends AbstractSelector {
 		List<RdLink> rdLinks = new ArrayList<>();
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT RL.* FROM RD_LINK RL WHERE RL.U_RECORD <> 2 AND ");
-		sql.append("SDO_RELATE(RL.GEOMETRY, SDO_GEOM.SDO_DIFFERENCE(SDO_GEOMETRY(:1, 8307),");
-		sql.append(" SDO_GEOMETRY(:2, 8307), 0.005), 'MASK=ANYINTERACT') = 'TRUE' ");
+		sql.append("SDO_RELATE(RL.GEOMETRY, SDO_GEOM.SDO_DIFFERENCE(SDO_GEOMETRY(?, 8307),");
+		sql.append(" SDO_GEOMETRY(?, 8307), 0.005), 'MASK=ANYINTERACT') = 'TRUE' ");
 		if (isLock) {
 			sql.append("FOR UPDATE NOWAIT");
 		}
@@ -1023,9 +1025,15 @@ public class RdLinkSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sql.toString());
-			pstmt.setFetchSize(100);
-			pstmt.setString(1, GeoTranslator.jts2Wkt(sourceGeo));
-			pstmt.setString(2, GeoTranslator.jts2Wkt(geo));
+
+            Clob clob1 = ConnectionUtil.createClob(conn);
+            clob1.setString(1, GeoTranslator.jts2Wkt(sourceGeo));
+
+            Clob clob2 = ConnectionUtil.createClob(conn);
+            clob2.setString(1, GeoTranslator.jts2Wkt(geo));
+
+            pstmt.setClob(1, clob1);
+			pstmt.setClob(2, clob2);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				RdLink link = new RdLink();

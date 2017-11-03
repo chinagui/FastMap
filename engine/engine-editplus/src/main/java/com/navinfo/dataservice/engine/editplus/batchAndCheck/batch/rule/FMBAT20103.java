@@ -8,6 +8,7 @@ import java.util.Set;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
@@ -55,7 +56,12 @@ public class FMBAT20103 extends BasicBatchRule {
 		}
 		if (chiAddress.getHisOpType().equals(OperationType.INSERT) || chiAddress.getHisOpType().equals(OperationType.UPDATE)) {
 			chiAddress.setFullname(ExcelReader.h2f(chiAddress.getFullname()));
-			chiAddress.setFullnamePhonetic(apiService.pyConvert(chiAddress.getFullname(),adminCode,null));
+			//生产过程中，出现了名称不为空但是转出拼音为空的数据，特加此判断进行捕获调查
+			String py=apiService.pyConvert(chiAddress.getFullname(),adminCode,null);
+			if(StringUtils.isNotEmpty(chiAddress.getFullname())&&StringUtils.isEmpty(py)){
+				throw new Exception("名称为:“"+chiAddress.getFullname()+"”的数据，对应转出的拼音为“"+py+"”，请调查转拼音是否正确");
+			}
+			chiAddress.setFullnamePhonetic(py);
 		} 
 	}
 

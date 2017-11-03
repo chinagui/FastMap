@@ -28,7 +28,7 @@ public class Operation implements IOperation {
     @Override
     public String run(Result result) throws Exception {
 
-    	for(ScPlateresRdLink link:this.command.getRdLinks()){
+    	for(ScPlateresRdLink link:this.command.getLinks()){
     		 result.insertObject(link, ObjStatus.DELETE, String.valueOf(link.getLinkPid()));
     	}
     	

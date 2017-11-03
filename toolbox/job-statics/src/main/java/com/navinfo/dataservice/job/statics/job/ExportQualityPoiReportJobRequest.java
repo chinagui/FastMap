@@ -4,7 +4,7 @@ import com.navinfo.dataservice.job.statics.AbstractStatJobRequest;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 
-public class PoiQualityInitCountTableJobRequest extends AbstractStatJobRequest {
+public class ExportQualityPoiReportJobRequest extends AbstractStatJobRequest {
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
@@ -15,13 +15,13 @@ public class PoiQualityInitCountTableJobRequest extends AbstractStatJobRequest {
 	@Override
 	public String getJobType() {
 		// TODO Auto-generated method stub
-		return "poiQualityInitCountTableJob";
+		return "exportQualityPoiReport";
 	}
 
 	@Override
 	public String getJobTypeName() {
 		// TODO Auto-generated method stub
-		return "POI质检初始化样本统计表Job";
+		return "导出POI外业质检样本统计Job";
 	}
 
 	@Override

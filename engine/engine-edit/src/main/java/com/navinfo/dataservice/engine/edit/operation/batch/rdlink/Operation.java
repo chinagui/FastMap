@@ -141,7 +141,7 @@ public class Operation implements IOperation {
 			zoneType = 2;
 		}
 
-		Geometry faceGeometry = ZoneIDBatchUtils.shrink(zoneFace.getGeometry());
+		Geometry faceGeometry = GeoTranslator.transform(zoneFace.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
 
 		// 通过face查找符合的link
 		List<RdLink> links = filterZoneLinks(zoneFace);

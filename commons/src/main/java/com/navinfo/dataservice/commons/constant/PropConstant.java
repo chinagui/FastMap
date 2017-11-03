@@ -157,4 +157,6 @@ public class PropConstant {
     public static final String downloadFilePathPa = "editsupport.pa.download.filepath.pa";
 	
 	public static final String downloadUrlPathPa = "editsupport.pa.download.urlpath.pa";
+	
+	public static final String infoPoiNotifyUrl="infoPoi.day.notify.url";
 }

@@ -7,7 +7,8 @@ public enum JobType {
     TiPS2MARK(1),
     DAY2MONTH(2),
     NOTASK2MID(3), //无任务转中
-	MID2QUICK(4);//中转快
+	MID2QUICK(4),//中转快
+	MANGE_MESH(5);//图幅管理
 
     private int value = 0;
 

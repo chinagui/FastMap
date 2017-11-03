@@ -281,7 +281,7 @@ public class Tips2MarkUtils {
     
     public static Map<Integer, Integer> getPointMeshDetail(Connection dailyConn,String taskType,int taskId) throws Exception{
     	QueryRunner run = new QueryRunner();    	
-		String poiSql = "select count(1), t.mesh_id from IX_POI t, pointaddress_edit_status ts "
+		String poiSql = "select count(1), t.mesh_id from IX_POINTADDRESS t, pointaddress_edit_status ts "
 				+ "where ts." + taskType+" = " + taskId + 
 				" and ts.pid = t.pid group by t.mesh_id";
     	

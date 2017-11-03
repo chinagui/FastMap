@@ -147,12 +147,15 @@ public class JobController extends BaseController {
             if (data == null) {
                 throw new IllegalArgumentException("parameter参数不能为空。");
             }
-            if (!data.containsKey("itemType")||!data.containsKey("isContinue")){
-                throw new IllegalArgumentException("itemType|isContinue不能为空");
+            if (!data.containsKey("isContinue")){
+                throw new IllegalArgumentException("isContinue不能为空");
             }
 
             boolean isContinue = data.getBoolean("isContinue");
-            ItemType itemType = ItemType.valueOf(data.getInt("itemType"));
+            ItemType itemType = ItemType.DEFAULT;
+            if(data.containsKey("itemType")){
+            	itemType=ItemType.valueOf(data.getInt("itemType"));
+            }
 
             AccessToken tokenObj = (AccessToken) request.getAttribute("token");
             long operator = tokenObj.getUserId();
@@ -174,7 +177,7 @@ public class JobController extends BaseController {
             result.put("jobId",jobId);
             return new ModelAndView("jsonView", success(result));
         } catch (Exception e) {
-            log.error("创建日落月任务失败，原因：" + e.getMessage(), e);
+            log.error("runCommonJob，原因：" + e.getMessage(), e);
             return new ModelAndView("jsonView", exception(e));
         }
     }

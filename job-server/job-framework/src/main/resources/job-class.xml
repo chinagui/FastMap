@@ -114,11 +114,7 @@
 		class="com.navinfo.dataservice.dealership.job.DealershipLiveUpdateJob"
 		request="com.navinfo.dataservice.dealership.job.DealershipLiveUpdateJobRequest" >
 	</type>
-	<type name="poiQualityInitCountTableJob"
-		class="com.navinfo.dataservice.job.statics.job.PoiQualityInitCountTableJob"
-		request="com.navinfo.dataservice.job.statics.job.PoiQualityInitCountTableJobRequest" >
-	</type>
-		<type name="taskMedium2QuickJob" 
+	<type name="taskMedium2QuickJob" 
 		class="com.navinfo.dataservice.job.TaskMedium2QuickJob"
 		request="com.navinfo.dataservice.job.TaskMedium2QuickJobRequest" > 
 	</type>

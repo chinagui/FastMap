@@ -39,6 +39,11 @@ public class DayPlanWriter extends DefaultWriter{
     			resultDoc.put("poiAllNum",map.get("poiAllNum"));
     			resultDoc.put("link17AllLen",map.get("link17AllLen"));
     			resultDoc.put("link27AllLen",map.get("link27AllLen"));
+    			resultDoc.put("taskFc1len",map.get("taskFc1len"));
+    			resultDoc.put("taskFc2len",map.get("taskFc2len"));
+    			resultDoc.put("taskFc3len",map.get("taskFc3len"));
+    			resultDoc.put("taskFc4len",map.get("taskFc4len"));
+    			resultDoc.put("taskFc5len",map.get("taskFc5len"));
     	
     			MongoDao md = new MongoDao(dbName);
     			md.insertOne(collectionName, resultDoc);

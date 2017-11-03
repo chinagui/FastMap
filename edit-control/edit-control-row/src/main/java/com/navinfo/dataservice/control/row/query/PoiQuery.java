@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 
 import com.navinfo.navicommons.database.QueryRunner;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class PoiQuery {
@@ -137,6 +138,51 @@ public class PoiQuery {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return resultJson;
+	}
+	
+	
+	/**
+	 * 质检POI筛选功能
+	 * @param parameter
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getFilterPoi(String parameter) throws Exception {
+
+		Connection conn = null;
+		JSONObject resultJson = new JSONObject();
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			int dbId = jsonReq.getInt("dbId");
+			JSONArray qualityGeos = jsonReq.getJSONArray("qualityGeos");
+			if(qualityGeos == null || qualityGeos.isEmpty()){
+				return resultJson;
+			}
+			JSONArray status = jsonReq.getJSONArray("status");
+			JSONArray kindCode = jsonReq.getJSONArray("kindCode");
+			int photoFlag = jsonReq.getInt("photoFlag");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiSelector selector = new IxPoiSelector(conn);
+			
+			resultJson = selector.filterPoi(false, qualityGeos, status, kindCode, photoFlag);
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
 		} finally {
 			if (conn != null) {
 				try {

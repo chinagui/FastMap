@@ -72,4 +72,11 @@ public class PoiEditStatusTest {
 		System.out.println("SIZE:"+result.size());
 		System.out.println("result");
 	}
+	@Test
+	public void testFilter() throws Exception{
+		String parameter = "{\"dbId\":13,\"qualityGeos\":[\"POLYGON ((116.38856 39.99448, 116.3883 39.98777, 116.38264 39.98488, 116.37671 39.98357, 116.37528 39.9858, 116.37506 39.99028, 116.38092 39.99553, 116.38504 39.99744, 116.38719 39.99678, 116.39079 39.99586, 116.38856 39.99448))\",\"POLYGON ((116.38598 39.9904, 116.3901 39.98968, 116.39045 39.98633, 116.38968 39.98363, 116.38762 39.98297, 116.38598 39.9904))\"],\"status\":[0,1,2,3],\"kindCode\":[\"110101\"],\"photoFlag\":1}";
+		PoiQuery aa= new PoiQuery();
+		JSONObject result = aa.getFilterPoi(parameter);
+		System.out.println("result:"+result.toString());
+	}
 }

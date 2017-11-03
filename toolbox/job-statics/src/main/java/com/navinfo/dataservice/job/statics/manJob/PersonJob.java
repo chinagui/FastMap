@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
@@ -14,6 +15,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCursor;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -47,12 +49,15 @@ public class PersonJob extends AbstractStatJob {
 			Map<Integer, Object> personFcc = queryPersonFcc(timestamp,workDay, md);
 //			Map<Integer, Object> subTasks = queryDataFromMongo(md, timestamp);
 			//从mongo库差personTips和personDay和task的数据
-			Map<Integer, Object> personTips = queryPersonTips(timestamp,workDay, md);
+			MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			Map<String,Integer> codeEditMethMap  = metaApi.queryEditMethTipsCode();
+			Map<Integer, Object> personTips = queryPersonTips(timestamp,workDay, md, codeEditMethMap);
 			Map<Integer, Object> personDay = queryPersonDay(timestamp,workDay, md);
 			
 			Map<String, Object> result = new HashMap<>();
 			List<Map<String, Object>> keyMaps = new ArrayList<>();
 			for(Map<String, Object> map : personList){
+				Map<Integer, Map<String, Integer>> tipsTaskData = new HashMap<>();
 				int taskId =  Integer.parseInt(map.get("taskId").toString());
 				int userId = Integer.parseInt(map.get("userId").toString());
 				String key = userId + "_" + taskId + "_" + timestamp;
@@ -175,10 +180,6 @@ public class PersonJob extends AbstractStatJob {
 	    		int tips9Len = 0;
 	    		int tips10Len = 0;
 	    		
-	    		int addNum = 0;
-	    		int upNum = 0;
-	    		int delNum = 0;
-	    		
 				String startDate = "";
 				String endDate = "";
 				String workTime = "";
@@ -240,10 +241,21 @@ public class PersonJob extends AbstractStatJob {
 						tips8Len += (int) subData.get("tips8Len");
 						tips9Len += (int) subData.get("tips9Len");
 						tips10Len += (int) subData.get("tips10Len");
-						
-						addNum += (int) subData.get("addNum");
-						upNum += (int) subData.get("upNum");
-						delNum += (int) subData.get("delNum");
+						for(Map.Entry<String, Object> enty : subData.entrySet()){
+							String tipsKey = enty.getKey();
+							if(tipsKey.startsWith("tips")){
+								if(tipsKey.endsWith("AddNum") || tipsKey.endsWith("UpNum") || tipsKey.endsWith("DelNum")){
+									Map<String, Integer> taskTipsMap = new HashMap<>();
+									if(tipsTaskData.containsKey(taskId)){
+										taskTipsMap = tipsTaskData.get(taskId);
+									}
+									int value = subData.containsKey(tipsKey) ? (int)subData.get(tipsKey) : 0;
+									int valueBefor = taskTipsMap.containsKey(tipsKey) ? taskTipsMap.get(tipsKey) : 0;
+									taskTipsMap.put(tipsKey, value + valueBefor);
+									tipsTaskData.put(taskId, taskTipsMap);
+								}
+							}
+						}
 					}
 					if(personDay.containsKey(id)){
 						Map<String, Object> subData = (Map<String, Object>) personDay.get(id);
@@ -450,10 +462,17 @@ public class PersonJob extends AbstractStatJob {
 				dataMap.put("tips9Len", tips9Len);
 				dataMap.put("tips10Len", tips10Len);
 				
-				dataMap.put("addNum", addNum);
-				dataMap.put("upNum", upNum);
-				dataMap.put("delNum", delNum);
-				
+				if(tipsTaskData.containsKey(taskId)){
+					Map<String, Integer> tipsMap = tipsTaskData.get(taskId);
+					for(Map.Entry<String, Integer> enty : codeEditMethMap.entrySet()){
+						String addKey = "tips" + enty.getKey() + "AddNum";
+						String upKey = "tips" + enty.getKey() + "UpNum";
+						String delKey = "tips" + enty.getKey() + "DelNum";
+						dataMap.put(addKey, tipsMap.containsKey(addKey) ? Integer.parseInt(tipsMap.get(addKey).toString()) : 0);
+						dataMap.put(upKey, tipsMap.containsKey(upKey) ? Integer.parseInt(tipsMap.get(upKey).toString()) : 0);
+						dataMap.put(delKey, tipsMap.containsKey(delKey) ? Integer.parseInt(tipsMap.get(delKey).toString()) : 0);
+					}
+				}
 				keyMaps.add(dataMap);
 			}
 			result.put("person", keyMaps);
@@ -523,7 +542,7 @@ public class PersonJob extends AbstractStatJob {
 	 * @return  Map<Integer, Object>
 	 * 
 	 * */
-	public Map<Integer, Object> queryPersonTips(String timestamp,String workDay, MongoDao md){
+	public Map<Integer, Object> queryPersonTips(String timestamp,String workDay, MongoDao md, Map<String,Integer> codeEditMethMap){
 		Map<Integer, Object> result = new HashMap<>();
 		String personTipsName = "person_tips";
 		BasicDBObject query = new BasicDBObject();
@@ -552,10 +571,6 @@ public class PersonJob extends AbstractStatJob {
 			int tips9Len = tipsJson.containsKey("tips9Len") ? (int) tipsJson.get("tips9Len") : 0;
 			int tips10Len = tipsJson.containsKey("tips10Len") ? (int) tipsJson.get("tips10Len") : 0;
 			
-			int addNum = tipsJson.containsKey("addNum") ? (int) tipsJson.get("addNum") : 0;
-			int upNum = tipsJson.containsKey("upNum") ? (int) tipsJson.get("upNum") : 0;
-			int delNum = tipsJson.containsKey("delNum") ? (int) tipsJson.get("delNum") : 0;
-			
 			map.put("tips1Len", tips1Len);
 			map.put("tips2Len", tips2Len);
 			map.put("tips3Len", tips3Len);
@@ -570,9 +585,14 @@ public class PersonJob extends AbstractStatJob {
 			map.put("tipsAddLen", tipsAddLen);
 			map.put("tipsAllNum", tipsAllNum);
 			
-			map.put("addNum", addNum);
-			map.put("upNum", upNum);
-			map.put("delNum", delNum);
+			for(Map.Entry<String, Integer> enty : codeEditMethMap.entrySet()){
+				String addKey = "tips" + enty.getKey() + "AddNum";
+				String upKey = "tips" + enty.getKey() + "UpNum";
+				String delKey = "tips" + enty.getKey() + "DelNum";
+				map.put(addKey, tipsJson.containsKey(addKey) ? Integer.parseInt(tipsJson.get(addKey).toString()) : 0);
+				map.put(upKey, tipsJson.containsKey(upKey) ? Integer.parseInt(tipsJson.get(upKey).toString()) : 0);
+				map.put(delKey, tipsJson.containsKey(delKey) ? Integer.parseInt(tipsJson.get(delKey).toString()) : 0);
+			}
 		    result.put(subtaskId, map);
 		}
 		return result;
@@ -769,11 +789,11 @@ public class PersonJob extends AbstractStatJob {
 			double link27AllLen = Double.valueOf(json.getString("link27AllLen"));
 			int poiAllNum = Integer.parseInt(json.getString("poiAllNum"));
 			//modiby by songhe 2017/11/01  添加了五个统计字段
-			double taskFc1len = Double.valueOf(json.get("taskFc1len").toString());
-			double taskFc2len = Double.valueOf(json.get("taskFc2len").toString());
-			double taskFc3len = Double.valueOf(json.get("taskFc3len").toString());
-			double taskFc4len = Double.valueOf(json.get("taskFc4len").toString());
-			double taskFc5len = Double.valueOf(json.get("taskFc5len").toString());
+			double taskFc1len = Double.valueOf(json.containsKey("taskFc1len") ? json.get("taskFc1len").toString() : String.valueOf(0));
+			double taskFc2len = Double.valueOf(json.containsKey("taskFc2len") ? json.get("taskFc2len").toString() : String.valueOf(0));
+			double taskFc3len = Double.valueOf(json.containsKey("taskFc3len") ? json.get("taskFc3len").toString() : String.valueOf(0));
+			double taskFc4len = Double.valueOf(json.containsKey("taskFc4len") ? json.get("taskFc4len").toString() : String.valueOf(0));
+			double taskFc5len = Double.valueOf(json.containsKey("taskFc5len") ? json.get("taskFc5len").toString() : String.valueOf(0));
 			
 			taskData.put("taskFc1len", taskFc1len);
 			taskData.put("taskFc2len", taskFc2len);

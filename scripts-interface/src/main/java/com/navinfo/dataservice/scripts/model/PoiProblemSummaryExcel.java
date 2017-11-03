@@ -1,15 +1,15 @@
 package com.navinfo.dataservice.scripts.model;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.nirobot.common.utils.DateUtils;
+
 import net.sf.json.JSONObject;
 
 public class PoiProblemSummaryExcel implements IObj {
@@ -47,7 +47,6 @@ public class PoiProblemSummaryExcel implements IObj {
 	private String modifyUser;// 更改人,同质检人
 	private String confirmUser;// 确认人,前台输入
 	private String version;// 版本号,前台输入（前端提供前后四年的版本供选择）
-	private String problemLevel;// 问题等级,前台输入
 	private String photoExist;// 是否有照片,不维护
 	private String memo;// 备注,前台输入
 	private String memoUser;// 备注作业员,当采集员是”AAA“时,该字段读取采集子任务作业员userid
@@ -101,7 +100,6 @@ public class PoiProblemSummaryExcel implements IObj {
 		this.modifyUser = modifyUser;
 		this.confirmUser = confirmUser;
 		this.version = version;
-		this.problemLevel = problemLevel;
 		this.photoExist = photoExist;
 		this.memo = memo;
 		this.memoUser = memoUser;
@@ -375,14 +373,6 @@ public class PoiProblemSummaryExcel implements IObj {
 
 	public void setVersion(String version) {
 		this.version = version;
-	}
-
-	public String getProblemLevel() {
-		return problemLevel;
-	}
-
-	public void setProblemLevel(String problemLevel) {
-		this.problemLevel = problemLevel;
 	}
 
 	public String getPhotoExist() {

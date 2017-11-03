@@ -1,8 +1,22 @@
-﻿1. fm_man/***.sql
+﻿2017/11/02
+
+1. fmlimitline_init_1102/initLimitLineInfoDB.sh
+   功能：更新限行限号情报库表结构
+   目标库：限行限号库（测试环境与开发环境命名不同）
+   author：鹿尧
+
+
+
+
+
+1. fm_man/***.sql
 	功能：***
 	目标库：fm_man
 	author：XX
-
+2.fm_man/fmman_db_1102.sql
+  功能：质检方式取消多选，修改描述，值域3变更为1
+  目标库：fm_man
+  author：张晓毅
 
 
 

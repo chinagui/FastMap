@@ -13,6 +13,7 @@ public class SysLogConstant {
 	
 	public static final String PA_UPLOAD_DESC = "PA点门牌上传";
 	public static final String PA_DOWNLOAD_DESC = "PA点门牌下载";
+	public static final String INFO_POI_MULTI_IMPORT_DESC = "一级数据型poi情报入日库";
 
 	public static final int TIPS_UPLOAD_TYPE = 1;
 	public static final int POI_UPLOAD_TYPE = 2;
@@ -26,5 +27,7 @@ public class SysLogConstant {
     
     public static final int PA_UPLOAD_TYPE = 11;
     public static final int PA_DOWNLOAD_TYPE = 12;
+    
+    public static final int INFO_POI_MULTI_IMPORT_TYPE = 13;
 
 }

@@ -313,5 +313,40 @@ public class ScPlateresLinkSearch implements ISearch {
 
         return objs;
     }
+
+    public List<Integer> getLinkPidByGroupId(String groupId) throws Exception {
+
+        List<Integer> objs = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder();
+
+        sql.append(" SELECT LINK_PID FROM SC_PLATERES_LINK WHERE GROUP_ID = ? ");
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = this.conn.prepareStatement(sql.toString());
+
+            pstmt.setString(1, groupId);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                objs.add(resultSet.getInt("LINK_PID"));
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return objs;
+    }
 }
 

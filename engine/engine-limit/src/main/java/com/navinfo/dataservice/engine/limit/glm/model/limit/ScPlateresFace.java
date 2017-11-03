@@ -61,6 +61,26 @@ public class ScPlateresFace implements IObj {
         this.boundaryLink = boundaryLink;
     }
 
+    private int linkPid;
+
+    public int getLinkPid() {
+        return linkPid;
+    }
+
+    public void setLinkPid(int linkPid) {
+        this.linkPid = linkPid;
+    }
+
+    private String linkType="";
+
+    public String getLinkType() {
+        return linkType;
+    }
+
+    public void setLinkType(String linkType) {
+        this.linkType = linkType;
+    }
+
     protected ObjStatus status;
 
     private Map<String, Object> changedFields = new HashMap<>();

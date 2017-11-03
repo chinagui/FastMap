@@ -31,14 +31,10 @@ public class operationTest extends ClassPathXmlAppContextInit {
     @Test
     public void create01() throws Exception {
 
-        String parameter = "{ \"command\": \"CREATE\", \"type\": \"SCPLATERESINFO\", infos: [{ infoIntelId: \"1\", infoCode: \"123\", adminCode: \"123\", url: \"123\", newsTime: \"123\", infoContent: \"123\", condition: \"1\", complete: 1, memo: \"123\" }] }";
-//        ScPlateresLink
-//                ScPlateresFace
-        //scplateresgeometry
-        //ScPlateresInfo
-        //ScPlateresManoeuvre
-        //ScPlateresRdLink
-        //ScPlateresInfo
+        String parameter = "{\"command\":\"BREAK\",\"data\":{\"longitude\":116.41681070171616,\"latitude\":39.91769143492466}}";
+
+
+
         Transaction t = new Transaction(parameter);
 
         String msg = t.run();

@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.limit.operation.meta.scplateresrdlink.delete;
 
-import java.util.List;
+import java.util.*;
 
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.limit.glm.iface.DbType;
@@ -14,39 +14,47 @@ import net.sf.json.JSONObject;
 public class Command extends AbstractCommand{
 
 	private String requester;
-	
-	private JSONArray linkpids;
-	
-	private JSONArray geometryids;
-	
-	private List<ScPlateresRdLink> rdlinks; 
+
+	private List<ScPlateresRdLink> links;
+
+	public List<ScPlateresRdLink> getLinks() {
+		return links;
+	}
+
+	public void setLinks(List<ScPlateresRdLink> rdlinks) {
+		this.links = rdlinks;
+	}
+
+	private Map<Integer, Set<String>> mapping = new HashMap<>();
+
+	public Map<Integer, Set<String>>  getMapping() {
+		return mapping;
+	}
 	
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
-		if (json.containsKey("linkpids")) {
-			this.linkpids = json.getJSONArray("linkpids");
+		JSONArray data = json.getJSONArray("data");
+
+		for (int i = 0; i < data.size(); i++) {
+
+			JSONObject obj = data.getJSONObject(i);
+
+			if (!obj.containsKey("linkPid") || !obj.containsKey("geometryId")) {
+				continue;
+			}
+
+			String geometryId = obj.getString("geometryId");
+
+			int linkPid = obj.getInt("linkPid");
+
+			if (!mapping.containsKey(linkPid)) {
+				mapping.put(linkPid, new HashSet<String>());
+			}
+
+			mapping.get(linkPid).add(geometryId);
 		}
 
-		if (json.containsKey("geometryIds")) {
-			this.geometryids = json.getJSONArray("geometryIds");
-		}
-	}
-	
-	public JSONArray getLinkpids(){
-		return this.linkpids;
-	}
-	
-	public JSONArray getGeometryIds(){
-		return this.geometryids;
-	}
-	
-	public void setRdLinks(List<ScPlateresRdLink> value){
-		this.rdlinks = value;
-	}
-	
-	public List<ScPlateresRdLink> getRdLinks(){
-		return this.rdlinks;
 	}
 	
 	@Override

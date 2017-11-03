@@ -593,20 +593,39 @@ public class PoiDownloadOperation {
 				IxPoiChargingStation chargingStation = (IxPoiChargingStation) chargingStationList.get(0);
 				JSONObject chargingStationObj = new JSONObject();
 				chargingStationObj.put("type", chargingStation.getChargingType());
-				chargingStationObj.put("changeBrands", chargingStation.getChangeBrands());
-				chargingStationObj.put("changeOpenType", chargingStation.getChangeOpenType());
-				chargingStationObj.put("servicePro", chargingStation.getServiceProv());
+				if (chargingStation.getChangeBrands() == null) {
+					chargingStationObj.put("changeBrands", "");
+				} else {
+					chargingStationObj.put("changeBrands", chargingStation.getChangeBrands());
+				}
+				if (chargingStation.getChangeOpenType() == null) {
+					chargingStationObj.put("changeOpenType", "");
+				} else {
+					chargingStationObj.put("changeOpenType", chargingStation.getChangeOpenType());
+				}
+				if (chargingStation.getServiceProv() == null) {
+					chargingStationObj.put("servicePro", "");
+				} else {
+					chargingStationObj.put("servicePro", chargingStation.getServiceProv());
+				}
 //				chargingStationObj.put("chargingNum", chargingStation.getChargingNum());
-				chargingStationObj.put("openHour", chargingStation.getOpenHour());
+				if (chargingStation.getOpenHour() == null) {
+					chargingStationObj.put("openHour", "");
+				} else {
+					chargingStationObj.put("openHour", chargingStation.getOpenHour());
+				}
 				chargingStationObj.put("parkingFees", chargingStation.getParkingFees());
-				chargingStationObj.put("parkingInfo", chargingStation.getParkingInfo());
+				if (chargingStation.getParkingInfo() == null) {
+					chargingStationObj.put("parkingInfo", "");
+				} else {
+					chargingStationObj.put("parkingInfo", chargingStation.getParkingInfo());
+				}
 				chargingStationObj.put("availableState", chargingStation.getAvailableState());
 				chargingStationObj.put("rowId", chargingStation.getRowId());
 				jsonObj.put("chargingStation", chargingStationObj);
 			} else {
 				jsonObj.put("chargingStation", JSONNull.getInstance());
 			}
-			
 			List<IRow> chargingPole = poi.getChargingplots();
 			if (chargingPole.size()>0) {
 				JSONArray chargingPoleArray = new JSONArray();
@@ -615,25 +634,74 @@ public class PoiDownloadOperation {
 					JSONObject chargingPoleObj = new JSONObject();
 //					chargingPoleObj.put("groupId", ixPoiChargingplot.getGroupId());
 					chargingPoleObj.put("acdc", ixPoiChargingplot.getAcdc());
-					chargingPoleObj.put("plugType", ixPoiChargingplot.getPlugType());
-					chargingPoleObj.put("power", ixPoiChargingplot.getPower());
-					chargingPoleObj.put("voltage", ixPoiChargingplot.getVoltage());
-					chargingPoleObj.put("current", ixPoiChargingplot.getCurrent());
+					if (ixPoiChargingplot.getPlugType() == null) {
+						chargingPoleObj.put("plugType", "");
+					} else {
+						chargingPoleObj.put("plugType", ixPoiChargingplot.getPlugType());
+					}
+					if (ixPoiChargingplot.getPower()== null) {
+						chargingPoleObj.put("power", "");
+					} else {
+						chargingPoleObj.put("power", ixPoiChargingplot.getPower());
+					}
+					if (ixPoiChargingplot.getVoltage()== null) {
+						chargingPoleObj.put("voltage", "");
+					} else {
+						chargingPoleObj.put("voltage", ixPoiChargingplot.getVoltage());
+					}
+					if (ixPoiChargingplot.getCurrent()== null) {
+						chargingPoleObj.put("current", "");
+					} else {
+						chargingPoleObj.put("current", ixPoiChargingplot.getCurrent());
+					}
 					chargingPoleObj.put("mode", ixPoiChargingplot.getMode());
 //					chargingPoleObj.put("count", ixPoiChargingplot.getCount());
 					chargingPoleObj.put("plugNum", ixPoiChargingplot.getPlugNum());
-					chargingPoleObj.put("prices", ixPoiChargingplot.getPrices());
-					chargingPoleObj.put("openType", ixPoiChargingplot.getOpenType());
+					if (ixPoiChargingplot.getPrices()== null) {
+						chargingPoleObj.put("prices", "");
+					} else {
+						chargingPoleObj.put("prices", ixPoiChargingplot.getPrices());
+					}
+					if (ixPoiChargingplot.getOpenType()== null) {
+						chargingPoleObj.put("openType", "");
+					} else {
+						chargingPoleObj.put("openType", ixPoiChargingplot.getOpenType());
+					}
 					chargingPoleObj.put("availableState", ixPoiChargingplot.getAvailableState());
-					chargingPoleObj.put("manufacturer", ixPoiChargingplot.getManufacturer());
-					chargingPoleObj.put("factoryNum", ixPoiChargingplot.getFactoryNum());
-					chargingPoleObj.put("plotNum", ixPoiChargingplot.getPlotNum());
-					chargingPoleObj.put("productNum", ixPoiChargingplot.getProductNum());
-					chargingPoleObj.put("parkingNum", ixPoiChargingplot.getParkingNum());
+					if (ixPoiChargingplot.getManufacturer()== null) {
+						chargingPoleObj.put("manufacturer", "");
+					} else {
+						chargingPoleObj.put("manufacturer", ixPoiChargingplot.getManufacturer());
+					}
+					if (ixPoiChargingplot.getFactoryNum()== null) {
+						chargingPoleObj.put("factoryNum", "");
+					} else {
+						chargingPoleObj.put("factoryNum", ixPoiChargingplot.getFactoryNum());
+					}
+					if (ixPoiChargingplot.getPlotNum()== null) {
+						chargingPoleObj.put("plotNum", "");
+					} else {
+						chargingPoleObj.put("plotNum", ixPoiChargingplot.getPlotNum());
+					}
+					if (ixPoiChargingplot.getProductNum()== null) {
+						chargingPoleObj.put("productNum", "");
+					} else {
+						chargingPoleObj.put("productNum", ixPoiChargingplot.getProductNum());
+					}
+					if (ixPoiChargingplot.getParkingNum()== null) {
+						chargingPoleObj.put("parkingNum", "");
+					} else {
+						chargingPoleObj.put("parkingNum", ixPoiChargingplot.getParkingNum());
+					}
 					chargingPoleObj.put("floor", ixPoiChargingplot.getFloor());
 					chargingPoleObj.put("locationType", ixPoiChargingplot.getLocationType());
-					chargingPoleObj.put("payment", ixPoiChargingplot.getPayment());
+					if (ixPoiChargingplot.getPayment()== null) {
+						chargingPoleObj.put("payment", "");
+					} else {
+						chargingPoleObj.put("payment", ixPoiChargingplot.getPayment());
+					}
 					chargingPoleObj.put("rowId", ixPoiChargingplot.getRowId());
+					
 					chargingPoleArray.add(chargingPoleObj);
 				}
 				jsonObj.put("chargingPole", chargingPoleArray);

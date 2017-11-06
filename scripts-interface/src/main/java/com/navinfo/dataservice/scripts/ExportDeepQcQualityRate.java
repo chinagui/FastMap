@@ -255,7 +255,7 @@ public class ExportDeepQcQualityRate {
 		sb.append("FROM (SELECT COMMON_WORKER_ID, SECOND_WORKITEM,COUNT(1) NUM FROM DEEP_QC_PROBLEM WHERE QC_TIME BETWEEN ");
 		sb.append("TO_DATE('" + startDate + " 00:00:00', 'yyyyMMdd hh24:mi:ss') AND TO_DATE('" + endDate + " 23:59:59','yyyyMMdd hh24:mi:ss')");
 		sb.append(" GROUP BY COMMON_WORKER_ID, SECOND_WORKITEM) D,USER_INFO U, USER_GROUP G,GROUP_USER_MAPPING GM ");
-		sb.append(" WHERE GM.GROUP_ID = G.GROUP_ID AND D.COMMON_WORKER_ID = U.USER_ID ORDER BY COMMON_WORKER_ID");
+		sb.append(" WHERE GM.GROUP_ID = G.GROUP_ID AND GM.USER_ID = U.USER_ID AND D.COMMON_WORKER_ID = U.USER_ID ORDER BY COMMON_WORKER_ID");
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

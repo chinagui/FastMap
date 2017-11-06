@@ -21,7 +21,9 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
 import oracle.sql.STRUCT;
@@ -236,7 +238,7 @@ public class HandlerDealership {
 			// 更新result表
 			String updateResultSql = "UPDATE ix_dealership_result r SET r.workflow_status=?,r.is_deleted=?,r.match_method=?,r.poi_num_1=?,r.poi_num_2=?,r.poi_num_3=?,r.poi_num_4=?,r.poi_num_5=?, "
 					+ " r.similarity=?,r.cfm_poi_num=?,r.cfm_is_adopted=?,r.deal_cfm_date=?,r.poi_kind_code=?,r.poi_chain=?,r.poi_name=?,r.poi_name_short=?,r.poi_address=?,r.poi_tel=?,"
-					+ " r.poi_post_code=?,r.poi_x_display=?,r.poi_y_display=?,r.poi_y_guide=?,r.poi_x_guide=? where r.result_id=?";
+					+ " r.poi_post_code=?,r.poi_x_display=?,r.poi_y_display=?,r.poi_x_guide=?,r.poi_y_guide=? where r.result_id=?";
 
 			Object[][] param = new Object[diffFinishResultList.size()][];
 
@@ -406,7 +408,7 @@ public class HandlerDealership {
 				if (obj.getGeometry() != null) {
 					JSONArray array = GeoTranslator.jts2JSONArray(obj.getGeometry());
 					dealership.setPoiXDisplay(array.getDouble(0));
-					dealership.setPoiXDisplay(array.getDouble(1));
+					dealership.setPoiYDisplay(array.getDouble(1));
 				}
 
 			}
@@ -440,21 +442,48 @@ public class HandlerDealership {
 		} else {
 			try {
 				StringBuffer sb = new StringBuffer();
-				if (dealership.getProvince() != null && !"".equals(dealership.getProvince())) {
-					sb.append(dealership.getProvince());
-				}
-				if (dealership.getCity() != null && !"".equals(dealership.getCity())) {
-					sb.append(dealership.getCity());
-				}
+				boolean flag=true;
+				String addr="";
+				String cityAddr="";
+				String provAddr="";
+				//根据地址BaiduGeocoding,没结果再根据城市+地址BaiduGeocoding，若仍然没结果再根据省+城市+地址BaiduGeocoding
 				if (dealership.getAddress() != null && !"".equals(dealership.getAddress())) {
-					sb.append(dealership.getAddress());
+					addr=dealership.getAddress();
+					Geometry addrGeo=BaiduGeocoding.geocoder(addr);
+					if(addrGeo!=null){
+						dealership.setGeometry(addrGeo);
+						flag=false;
+					}else{
+						if(dealership.getCity() != null && !"".equals(dealership.getCity())){
+							cityAddr=dealership.getCity()+addr;
+							Geometry cityGeo=BaiduGeocoding.geocoder(cityAddr);
+							if(cityGeo!=null){
+								dealership.setGeometry(cityGeo);
+								flag=false;
+							}else{
+								if (dealership.getProvince() != null && !"".equals(dealership.getProvince())){
+									provAddr=dealership.getProvince()+cityAddr;
+									Geometry provGeo=BaiduGeocoding.geocoder(provAddr);
+									if(provGeo!=null){
+										dealership.setGeometry(provGeo);
+										flag=false;
+									}
+								}
+								}
+							}			
+					}
 				}
-				String str=sb.toString();
-				log.error(str);
-				dealership.setGeometry(BaiduGeocoding.geocoder(str));
+				if(flag){
+					String wkt = "POINT(" +String.valueOf("104.11413") + " " +String.valueOf("37.55034") + ")";
+					Geometry point = new WKTReader().read(wkt);
+					dealership.setGeometry(point);
+				}
+				
 			} catch (Exception e) {
 				log.error("无法获取geometry:"+e.getMessage());
-				throw new Exception("无法获取geometry");
+				String wkt = "POINT(" +String.valueOf("104.11413") + " " +String.valueOf("37.55034") + ")";
+				Geometry point = new WKTReader().read(wkt);
+				dealership.setGeometry(point);
 			}
 		}
 		return dealership;

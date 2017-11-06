@@ -600,7 +600,7 @@ public class IxDealershipResultOperator {
 
 				nameMap.put("rowId", name.getRowId() == null ? "" : name.getRowId());
 				nameMap.put("nameStrPinyin", name.getNamePhonetic() == null ? "" : name.getNamePhonetic());
-				nameMap.put("nameGrpId", name.getNameGroupid());
+				nameMap.put("nameGroupid", name.getNameGroupid());
 				nameMap.put("nameId", name.getPid());
 				nameMap.put("langCode", name.getLangCode() == null ? "" : name.getLangCode());
 				nameMap.put("nameClass", name.getNameClass());

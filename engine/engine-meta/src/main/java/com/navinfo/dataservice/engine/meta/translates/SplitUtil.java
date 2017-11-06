@@ -73,6 +73,8 @@ public class SplitUtil {
             kindChain.append(",").append(param.chain);
         }
 
+        Integer wordIndex = 0;
+
         for(String subText : sourceText.split("/")){
             int length = subText.length();
 
@@ -84,7 +86,6 @@ public class SplitUtil {
             while (index < length) {
                 char currentChar = charArray[index];
                 String wordValue = String.valueOf(currentChar);
-
 
                 boolean flag = true;
                 if(ConvertUtil.isChinese(currentChar) && !TranslateConstant.CHINESE_NUMBER.keySet().contains(String.valueOf(currentChar))){
@@ -107,17 +108,24 @@ public class SplitUtil {
                             if (subStr.equals(entry.getKey())) {
                                 wordValue = entry.getKey() + "/";
                                 index = index + subStr.length();
+                                wordIndex = wordIndex + subStr.length();
                                 flag = false;
                                 connNum = true;
                             }
                         }
                     }
-                    if(flag){
-                        param.wordIndex.add(index++);
+                    if(flag) {
+                        index++;
+                        param.wordIndex.add(wordIndex++);
                         wordValue = wordValue + "/";
                         connNum = false;
                     }
-                }else {
+                } else if (wordValue.equals("＄") && subText.substring(index).indexOf("＄＄ｎｂｓｐ＄＄") == 0) {
+                    index += "＄＄ｎｂｓｐ＄＄".length();
+                    wordValue = "＄＄ｎｂｓｐ＄＄" + "/";
+                    wordIndex++;
+                } else {
+                    wordIndex++;
                     if(++index == length){
                         wordValue = currentChar + "/";
                     }else {
@@ -137,7 +145,7 @@ public class SplitUtil {
                         } else if (ConvertUtil.isChinesePunctuation(currentChar)) {
                             wordValue = currentChar + "/";
                         } else if (ConvertUtil.isChineseNum(currentChar)) {
-                            param.wordIndex.add(index - 1);
+                            param.wordIndex.add(wordIndex - 1);
                             if (!ConvertUtil.isChineseNum(afterChar) || !connNum) {
                                 wordValue = currentChar + "/";
                             }

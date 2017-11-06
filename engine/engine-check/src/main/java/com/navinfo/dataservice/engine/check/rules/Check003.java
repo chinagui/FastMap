@@ -12,10 +12,13 @@ import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -28,9 +31,9 @@ import java.util.List;
  */
 public class Check003 extends baseRule {
 
-    private final static List<ObjType> OBJ_TYPES =
-            Arrays.asList(ObjType.LCNODE, ObjType.LCLINK, ObjType.LUNODE, ObjType.LULINK, ObjType.CMGBUILDNODE,
-                    ObjType.CMGBUILDLINK,ObjType.RWNODE, ObjType.RWLINK);
+    private final static List<ObjType> NODE_TYPES = Arrays.asList(ObjType.LCNODE, ObjType.LUNODE, ObjType.CMGBUILDNODE, ObjType.RWNODE);
+
+    private final static List<ObjType> LINK_TYPES = Arrays.asList(ObjType.LCLINK, ObjType.LULINK, ObjType.CMGBUILDLINK, ObjType.RWLINK);
 
     /**
      * 日志记录
@@ -39,35 +42,33 @@ public class Check003 extends baseRule {
 
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
-        for (IRow row : checkCommand.getGlmList()) {
-            if (CheckGeometryUtils.notContains(OBJ_TYPES, row.objType())) {
-                continue;
-            }
-            if (row.status() != ObjStatus.UPDATE || !hasModifyGeo(row)) {
-                continue;
-            }
+        if (checkCommand.getOperType().equals(OperType.MOVE) || checkCommand.getOperType().equals(OperType.REPAIR)) {
+            DatabaseOperator databaseOperator = new DatabaseOperator();
+            for (IRow iRow : checkCommand.getGlmList()) {
+                if (NODE_TYPES.contains(iRow.objType()) && hasModifyGeo(iRow)) {
+                    // 检查点位是否包含立交
+                    Coordinate coordinate = GeoTranslator.transform
+                            (CheckGeometryUtils.getGeometry(iRow), GeoTranslator.dPrecisionMap, 5).getCoordinate();
+                    checkGscGeometry(iRow, databaseOperator, coordinate);
+                }
+                if (LINK_TYPES.contains(iRow.objType()) && hasModifyGeo(iRow)) {
+                    Coordinate[] oldCoors = GeoTranslator.transform
+                            (CheckGeometryUtils.getGeometry(iRow), GeoTranslator.dPrecisionMap, 5).getCoordinates();
+                    ArrayList<Coordinate> oldCoordinates = new ArrayList(Arrays.asList(oldCoors));
+                    Iterator<Coordinate> iterator = oldCoordinates.iterator();
 
-            Geometry geometry = CheckGeometryUtils.getGeometry(row);
-
-            if (null == geometry) {
-                logger.error(String.format("ObjType: %s, Pid: %d, [对象几何获取过程出错]", row.tableName(), row.parentPKValue()));
-            } else {
-                logger.debug(String.format("CHECK003 {ObjType: %s, Pid: %d, Geometry: %s}", row.tableName(), row.parentPKValue(),
-                        geometry.toString()));
-
-                geometry = GeoTranslator.transform(geometry, GeoTranslator.dPrecisionMap, 5);
-                DatabaseOperator databaseOperator = new DatabaseOperator();
-                if (GeometryTypeName.POINT.equals(geometry.getGeometryType())) {
-
-                    checkGscGeometry(row, geometry.getCoordinate(), databaseOperator);
-
-                } else if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())
-                        && OperType.REPAIR.equals(checkCommand.getOperType())) {
-
-                    for (Coordinate coor : geometry.getCoordinates()) {
-                        checkGscGeometry(row, coor, databaseOperator);
+                    Coordinate[] newCoors = GeoTranslator.geojson2Jts((JSONObject) iRow.changedFields().get("geometry"), 1, 5)
+                            .getCoordinates();
+                    while (iterator.hasNext()) {
+                        Coordinate next = iterator.next();
+                        for (Coordinate coor : newCoors) {
+                            if (coor.x == next.x && coor.y == next.y) {
+                                iterator.remove();
+                                break;
+                            }
+                        }
                     }
-                    
+                    checkGscGeometry(iRow, databaseOperator, oldCoordinates.toArray(new Coordinate[]{}));
                 }
             }
         }
@@ -75,13 +76,30 @@ public class Check003 extends baseRule {
 
     /**
      * 检查该点位是否为立交点
-     * @param coor 点位
+     * @param coors 点位
      * @param databaseOperator 数据库操作
      * @throws Exception 查询失败
      */
-    private void checkGscGeometry(IRow row, Coordinate coor, DatabaseOperator databaseOperator) throws Exception {
-        String sql = "SELECT * FROM RD_GSC T WHERE T.GEOMETRY.SDO_POINT.X = %.5f AND T.GEOMETRY.SDO_POINT.Y = %.5f AND T.U_RECORD <> 2";
-        List<Object> resultList = databaseOperator.exeSelect(getConn(), String.format(sql, coor.x, coor.y));
+    private void checkGscGeometry(IRow row, DatabaseOperator databaseOperator, Coordinate... coors) throws Exception {
+        if (null == coors || coors.length == 0) {
+            return;
+        }
+
+        StringBuilder sql = new StringBuilder("SELECT * FROM RD_GSC T WHERE T.U_RECORD <> 2 AND (");
+        for (int index = 0; index < coors.length; index++) {
+            if (0 != index) {
+                sql.append(" OR ");
+            }
+
+            Coordinate coordinate = coors[index];
+            sql.append("(");
+            sql.append("T.GEOMETRY.SDO_POINT.X = ").append(coordinate.x);
+            sql.append(" AND ");
+            sql.append("T.GEOMETRY.SDO_POINT.Y = ").append(coordinate.y);
+            sql.append(")");
+        }
+        sql.append(")");
+        List<Object> resultList = databaseOperator.exeSelect(getConn(), sql.toString());
         if (CollectionUtils.isNotEmpty(resultList)) {
             setCheckResult("不允许去除有立交关系的形状点、node", String.format("[%s,%d]", row.tableName().toUpperCase(),
                     row.parentPKValue()), 0);

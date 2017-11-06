@@ -30,13 +30,19 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"DELETE\",\"type\":\"RDNODE\",\"objId\":709000131,\"infect\":0,\"dbId\":65,\"subtaskId\":986}";
+        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":504000778,\"data\":{\"type\":\"RDLINK\"," +
+                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.23211,39.95218],[116.23244404792784,39.952140617120605]]}," +
+                "\"catchInfos\":[{\"nodePid\":520000595,\"longitude\":116.23244404792784,\"latitude\":39.952140617120605}]},\"dbId\":13," +
+                "\"subtaskId\":856}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void update() {
-        String parameter = "{\"command\":\"DELETE\",\"type\":\"RDINTER\",\"objId\":703000004,\"infect\":0,\"dbId\":65,\"subtaskId\":672}";
+        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":504000778,\"data\":{\"type\":\"RDLINK\"," +
+                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.23211,39.95218],[116.23231798410414,39.95222389036465]]}," +
+                "\"catchInfos\":[{\"nodePid\":520000595,\"longitude\":116.23231798410414,\"latitude\":39.95222389036465}]},\"dbId\":13," +
+                "\"subtaskId\":856}";
         TestUtil.run(parameter);
     }
 

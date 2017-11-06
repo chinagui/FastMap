@@ -32,6 +32,8 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
+		
+		JSONArray array = this.command.getLinks();
 
 		if (this.command.getLinks() == null || this.command.getLinks().size() == 0) {
 			throw new Exception("没有要素选中，请确定需要复制的要素");
@@ -39,6 +41,10 @@ public class Operation implements IOperation {
 
 		Connection regionConn = null;
 
+		if(array == null || array.size() == 0){
+			throw new Exception("没有要素选中，请确定需要复制的要素");
+		}
+		
 		try {
 			regionConn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
 

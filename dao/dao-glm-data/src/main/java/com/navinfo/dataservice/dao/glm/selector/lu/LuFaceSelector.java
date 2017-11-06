@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.glm.selector.lu;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -15,10 +16,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,14 +124,22 @@ public class LuFaceSelector extends AbstractSelector {
 	 * @return
 	 */
 	public List<LuFace> loadRelateFaceByGeometry(Geometry geometry) {
-		List<LuFace> faces = new ArrayList<LuFace>();
-		String sql = "select * from lu_face t where t.u_record <> 2 and t.kind = 21 and sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' ";
+		List<LuFace> faces = new ArrayList<>();
+		String sql = "SELECT *" + 
+                "  FROM lu_face t" + 
+                " WHERE t.u_record <> 2" + 
+                "   AND t.kind = 21" + 
+                "   AND sdo_relate(geometry, sdo_geometry(?, 8307), 'mask=anyinteract') =" +
+                "       'TRUE'";
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sql);
-			String wkt = GeoTranslator.jts2Wkt(geometry);
-			pstmt.setString(1, wkt);
+
+            Clob clob = ConnectionUtil.createClob(conn);
+            clob.setString(1, GeoTranslator.jts2Wkt(geometry));
+
+            pstmt.setClob(1, clob);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				LuFace face = new LuFace();

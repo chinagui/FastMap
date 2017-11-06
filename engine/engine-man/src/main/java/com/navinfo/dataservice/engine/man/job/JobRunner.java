@@ -89,7 +89,7 @@ public abstract class JobRunner {
             jobRelation.setJobId(job.getJobId());
             jobOperator.updateStatusByJobId(job.getJobId(), JobStatus.RUNNING);
         } else {
-            if(jobType == JobType.DAY2MONTH && itemType == ItemType.LOT){
+            if((jobType == JobType.DAY2MONTH && itemType == ItemType.LOT)||jobType == JobType.MANGE_MESH){
                 //按批次日落月，清空所有相关job的latest
                 jobOperator.clearLatestJobs();
             }else {

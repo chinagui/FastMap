@@ -9,6 +9,7 @@ import com.navinfo.dataservice.engine.man.job.Day2Month.Day2MonthJobRunner;
 import com.navinfo.dataservice.engine.man.job.NoTask2Medium.NoTask2MediumJobRunner;
 import com.navinfo.dataservice.engine.man.job.Tips2Mark.Tips2MarkJobRunner;
 import com.navinfo.dataservice.engine.man.job.bean.*;
+import com.navinfo.dataservice.engine.man.job.mangeMesh.MangeMeshRunner;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.dataservice.engine.man.job.operator.JobDetailOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
@@ -235,6 +236,8 @@ public class JobService {
 			runner= new NoTask2MediumJobRunner();
 		}else if(jobType == JobType.MID2QUICK){		
  			runner = new TaskMedium2QuickRunner();		
+  		}else if(jobType==JobType.MANGE_MESH){
+  			runner=new MangeMeshRunner();
   		}
 		return runner;
 	}

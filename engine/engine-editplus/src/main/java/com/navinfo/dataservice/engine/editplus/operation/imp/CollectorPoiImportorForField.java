@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.JSONObjectDiffUtils;
@@ -1418,6 +1419,14 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 		poiFilterFields.add("t_operateDate");
 		//需要单独处理
 		poiFilterFields.add("indoor");
+		poiFilterFields.add("geometry");
+		//处理geometry
+		Geometry tarGeo = JtsGeometryFactory.read(tarJso.getString("geometry"));
+		Geometry refGeo = JtsGeometryFactory.read(refJso.getString("geometry"));
+		boolean geoFlag = GeoTranslator.isPointEquals(tarGeo.getCoordinate(), refGeo.getCoordinate());
+		if(!geoFlag){
+			changePoiFields.add("geometry");
+		}
 		//字段级差分
 		Collection<String> diffFirstLevel = JSONObjectDiffUtils.diffFirstLevel(tarJso, refJso, poiFilterFields);
 		if(diffFirstLevel != null && diffFirstLevel.size() >0){

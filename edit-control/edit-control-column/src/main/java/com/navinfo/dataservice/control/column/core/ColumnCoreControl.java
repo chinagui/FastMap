@@ -719,5 +719,38 @@ public class ColumnCoreControl {
 	}
 	
 	
+	/**
+	 * 月编子任务统计接口,关闭月编子任务判断使用(查询改子任务范围内,是否有未提交的数据)
+	 * @param subtaskId
+	 * @return
+	 * @throws Exception
+	 */
+	public int getSubTaskStatics(int subtaskId) throws Exception {
+		Connection conn = null;
+		try {
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			logger.info("获取subtask,subtaskId:"+subtaskId);
+			
+			int dbId = subtask.getDbId();
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
+			
+			int result = selector.getSubTaskStatics(subtask);
+			
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 	
 }

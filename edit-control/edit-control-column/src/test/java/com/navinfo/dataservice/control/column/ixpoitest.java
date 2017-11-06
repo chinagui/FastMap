@@ -403,5 +403,17 @@ public class ixpoitest {
 			System.out.println(e.getMessage());
 		}
 	}
+	
+	@Test
+	public void testSubtaskStatics() throws Exception{
+		int subtaskId = 252;
+		try {
+			ColumnCoreControl control = new ColumnCoreControl();
+			int result = control.getSubTaskStatics(subtaskId);
+			System.out.println(result);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
 
 }

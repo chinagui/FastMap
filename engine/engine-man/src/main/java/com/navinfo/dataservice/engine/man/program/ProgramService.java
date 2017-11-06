@@ -940,6 +940,8 @@ public class ProgramService {
 					+ "         0 STATUS,"
 					+ "         C.INFOR_NAME,"
 					+ "         C.FEATURE_KIND,"
+					+ "         C.admin_name,"
+					+ "         C.PUBLISH_DATE,"
 					+ "         C.PLAN_STATUS"
 					+ "    FROM INFOR C"
 					+ "   WHERE C.PLAN_STATUS = 0"
@@ -951,6 +953,8 @@ public class ProgramService {
 					+ "         P.STATUS,"
 					+ "         C.INFOR_NAME,"
 					+ "         C.FEATURE_KIND,"
+					+ "         C.admin_name,"
+					+ "         C.PUBLISH_DATE,"
 					+ "         C.PLAN_STATUS"
 					+ "    FROM PROGRAM P, INFOR C"
 					+ "   WHERE P.INFOR_ID = C.INFOR_ID"
@@ -961,7 +965,7 @@ public class ProgramService {
 					+ "    FROM PROGRAM_LIST"
 					+ "   WHERE 1 = 1"
 					+ conditionSql
-					+ "   ORDER BY PROGRAM_LIST.PLAN_STATUS DESC,PROGRAM_LIST.INFOR_NAME DESC)"
+					+ "   ORDER BY PROGRAM_LIST.PUBLISH_DATE DESC,PROGRAM_LIST.PLAN_STATUS DESC,PROGRAM_LIST.INFOR_NAME DESC)"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
 					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
 					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
@@ -995,7 +999,9 @@ public class ProgramService {
 					else if(rs.getInt("TYPE")==4){
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
-						map.put("featureKind", rs.getInt("FEATURE_KIND"));}
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));
+						map.put("adminName", rs.getString("ADMIN_NAME"));
+					}
 					map.put("planStatus", rs.getInt("PLAN_STATUS"));
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", rs.getInt("STATUS"));
@@ -1072,6 +1078,8 @@ public class ProgramService {
 					+ "       C.INFOR_NAME,"
 					+ "       C.INFOR_ID,"
 					+ "       C.FEATURE_KIND,"
+					+ "         C.admin_name,"
+					+ "         C.PUBLISH_DATE,"
 					+ "       F.PERCENT,"
 					+ "       F.DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
@@ -1108,6 +1116,8 @@ public class ProgramService {
 					+ "       C.INFOR_NAME,"
 					+ "       C.INFOR_ID,"
 					+ "       C.FEATURE_KIND,"
+					+ "         C.admin_name,"
+					+ "         C.PUBLISH_DATE,"
 					+ "       F.PERCENT,"
 					+ "       F.DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
@@ -1152,13 +1162,14 @@ public class ProgramService {
 					+ "           AND T.STATUS !=0)"
 					+ "   GROUP BY P.PROGRAM_ID,P.NAME,P.TYPE,C.INFOR_NAME,C.INFOR_ID,F.PERCENT,F.DIFF_DATE,"
 					+ "            P.PLAN_START_DATE,P.PLAN_END_DATE,F.ACTUAL_START_DATE,F.ACTUAL_END_DATE,"
-					+ "            F.COLLECT_PERCENT,F.COLLECT_PROGRESS,F.DAILY_PERCENT,F.DAILY_PROGRESS,C.FEATURE_KIND),"
+					+ "            F.COLLECT_PERCENT,F.COLLECT_PROGRESS,F.DAILY_PERCENT,F.DAILY_PROGRESS,"
+					+ "            C.FEATURE_KIND,C.admin_name,C.PUBLISH_DATE),"
 					+ "FINAL_TABLE AS"
 					+ " (SELECT DISTINCT *"
 					+ "    FROM PROGRAM_LIST"
 					+ "   WHERE 1 = 1"
 					+ conditionSql
-					+ "   ORDER BY PROGRAM_LIST.DIFF_DATE ASC,PROGRAM_LIST.PERCENT DESC)"
+					+ "   ORDER BY PROGRAM_LIST.PUBLISH_DATE DESC,PROGRAM_LIST.DIFF_DATE ASC,PROGRAM_LIST.PERCENT DESC)"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
 					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
 					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
@@ -1176,6 +1187,7 @@ public class ProgramService {
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
 						map.put("featureKind", rs.getInt("FEATURE_KIND"));
+						map.put("adminName", rs.getString("ADMIN_NAME"));						
 						map.put("type", rs.getInt("TYPE"));
 						map.put("status", 1);					
 						map.put("percent", rs.getInt("PERCENT"));
@@ -1263,6 +1275,8 @@ public class ProgramService {
 					+ "                C.INFOR_NAME,"
 					+ "                C.INFOR_ID,"
 					+ "         C.FEATURE_KIND,"
+					+ "         C.admin_name,"
+					+ "         C.PUBLISH_DATE,"
 					+ "                F.PERCENT,"
 					+ "                F.DIFF_DATE,"
 					+ "                P.PLAN_START_DATE,"
@@ -1293,7 +1307,7 @@ public class ProgramService {
 					+ "    FROM PROGRAM_LIST"
 					+ "   WHERE 1 = 1"
 					+ conditionSql
-					+ "   ORDER BY PROGRAM_LIST.DIFF_DATE ASC,PROGRAM_LIST.PROGRAM_NAME DESC)"
+					+ "   ORDER BY PROGRAM_LIST.PUBLISH_DATE DESC,PROGRAM_LIST.DIFF_DATE ASC,PROGRAM_LIST.PROGRAM_NAME DESC)"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
 					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
 					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
@@ -1327,7 +1341,9 @@ public class ProgramService {
 					else if(rs.getInt("TYPE")==4){
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
-						map.put("featureKind", rs.getInt("FEATURE_KIND"));}
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));
+						map.put("adminName", rs.getString("ADMIN_NAME"));
+					}
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", 1);					
 					map.put("percent", rs.getInt("PERCENT"));
@@ -1402,6 +1418,8 @@ public class ProgramService {
 					+ "       C.INFOR_NAME,"
 					+ "       C.INFOR_ID,"
 					+ "       C.FEATURE_KIND,"
+					+ "         C.admin_name,"
+					+ "         C.PUBLISH_DATE,"
 					+ "       F.DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
@@ -1424,7 +1442,7 @@ public class ProgramService {
 					+ "    FROM PROGRAM_LIST"
 					+ "   WHERE 1 = 1"
 					+ conditionSql
-					+ "   ORDER BY PROGRAM_LIST.DIFF_DATE ASC,PROGRAM_LIST.PROGRAM_NAME DESC)"
+					+ "   ORDER BY PROGRAM_LIST.PUBLISH_DATE DESC,PROGRAM_LIST.DIFF_DATE ASC,PROGRAM_LIST.PROGRAM_NAME DESC)"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
 					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
 					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
@@ -1458,7 +1476,9 @@ public class ProgramService {
 					else if(rs.getInt("TYPE")==4){
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
-						map.put("featureKind", rs.getInt("FEATURE_KIND"));}
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));
+						map.put("adminName", rs.getString("ADMIN_NAME"));
+					}
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", 0);				
 					map.put("diffDate", rs.getInt("DIFF_DATE"));

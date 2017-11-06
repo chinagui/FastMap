@@ -432,21 +432,21 @@ public class PoiDownloadOperation {
 					foodtype.put("foodtype", restaurant.getFoodType());
 				}
 				
-				if (restaurant.getCreditCard() == null) {
-					foodtype.put("creditCards", "");
-				} else {
-					foodtype.put("creditCards", restaurant.getCreditCard());
-				}
+//				if (restaurant.getCreditCard() == null) {
+//					foodtype.put("creditCards", "");
+//				} else {
+//					foodtype.put("creditCards", restaurant.getCreditCard());
+//				}
 				
-				foodtype.put("parking", restaurant.getParking());
+//				foodtype.put("parking", restaurant.getParking());
 				
-				if (restaurant.getOpenHour() == null) {
-					foodtype.put("openHour", "");
-				} else {
-					foodtype.put("openHour", restaurant.getOpenHour());
-				}
+//				if (restaurant.getOpenHour() == null) {
+//					foodtype.put("openHour", "");
+//				} else {
+//					foodtype.put("openHour", restaurant.getOpenHour());
+//				}
 				
-				foodtype.put("avgCost", restaurant.getAvgCost());
+//				foodtype.put("avgCost", restaurant.getAvgCost());
 				foodtype.put("rowId", restaurant.getRowId());
 				jsonObj.put("foodtypes", foodtype);
 			} else {
@@ -500,22 +500,22 @@ public class PoiDownloadOperation {
 					parkings.put("buildingType", parking.getParkingType());
 				}
 				
-				parkings.put("resHigh", parking.getResHigh());
-				parkings.put("resWidth", parking.getResWidth());
-				parkings.put("resWeigh", parking.getResWeigh());
-				parkings.put("certificate", parking.getCertificate());
-				parkings.put("vehicle", parking.getVehicle());
+//				parkings.put("resHigh", parking.getResHigh());
+//				parkings.put("resWidth", parking.getResWidth());
+//				parkings.put("resWeigh", parking.getResWeigh());
+//				parkings.put("certificate", parking.getCertificate());
+//				parkings.put("vehicle", parking.getVehicle());
 				
-				if (parking.getHaveSpecialplace() == null) {
-					parkings.put("haveSpecialPlace", "");
-				} else {
-					parkings.put("haveSpecialPlace", parking.getHaveSpecialplace());
-				}
+//				if (parking.getHaveSpecialplace() == null) {
+//					parkings.put("haveSpecialPlace", "");
+//				} else {
+//					parkings.put("haveSpecialPlace", parking.getHaveSpecialplace());
+//				}
 				
-				parkings.put("womenNum", parking.getWomenNum());
-				parkings.put("handicapNum", parking.getHandicapNum());
-				parkings.put("miniNum", parking.getMiniNum());
-				parkings.put("vipNum", parking.getVipNum());
+//				parkings.put("womenNum", parking.getWomenNum());
+//				parkings.put("handicapNum", parking.getHandicapNum());
+//				parkings.put("miniNum", parking.getMiniNum());
+//				parkings.put("vipNum", parking.getVipNum());
 				parkings.put("rowId", parking.getRowId());
 				jsonObj.put("parkings", parkings);
 			} else {
@@ -528,59 +528,59 @@ public class PoiDownloadOperation {
 				JSONObject hotelObj = new JSONObject();
 				hotelObj.put("rating", hotel.getRating());
 				
-				if (hotel.getCreditCard() == null) {
-					hotelObj.put("creditCards", "");
-				} else {
-					hotelObj.put("creditCards", hotel.getCreditCard());
-				}
+//				if (hotel.getCreditCard() == null) {
+//					hotelObj.put("creditCards", "");
+//				} else {
+//					hotelObj.put("creditCards", hotel.getCreditCard());
+//				}
 				
-				if (hotel.getLongDescription() == null) {
-					hotelObj.put("description", "");
-				} else {
-					hotelObj.put("description", hotel.getLongDescription());
-				}
+//				if (hotel.getLongDescription() == null) {
+//					hotelObj.put("description", "");
+//				} else {
+//					hotelObj.put("description", hotel.getLongDescription());
+//				}
 				
-				if (hotel.getCheckinTime() == null) {
-					hotelObj.put("checkInTime", "");
-				} else {
-					hotelObj.put("checkInTime", hotel.getCheckinTime());
-				}
+//				if (hotel.getCheckinTime() == null) {
+//					hotelObj.put("checkInTime", "");
+//				} else {
+//					hotelObj.put("checkInTime", hotel.getCheckinTime());
+//				}
 				
-				if (hotel.getCheckoutTime() == null) {
-					hotelObj.put("checkOutTime", "");
-				} else {
-					hotelObj.put("checkOutTime", hotel.getCheckoutTime());
-				}
+//				if (hotel.getCheckoutTime() == null) {
+//					hotelObj.put("checkOutTime", "");
+//				} else {
+//					hotelObj.put("checkOutTime", hotel.getCheckoutTime());
+//				}
 				
-				hotelObj.put("roomCount", hotel.getRoomCount());
+//				hotelObj.put("roomCount", hotel.getRoomCount());
 				
-				if (hotel.getRoomType() == null) {
-					hotelObj.put("roomType", "");
-				} else {
-					hotelObj.put("roomType", hotel.getRoomType());
-				}
+//				if (hotel.getRoomType() == null) {
+//					hotelObj.put("roomType", "");
+//				} else {
+//					hotelObj.put("roomType", hotel.getRoomType());
+//				}
 				
-				if (hotel.getRoomPrice() == null) {
-					hotelObj.put("roomPrice", "");
-				} else {
-					hotelObj.put("roomPrice", hotel.getRoomPrice());
-				}
+//				if (hotel.getRoomPrice() == null) {
+//					hotelObj.put("roomPrice", "");
+//				} else {
+//					hotelObj.put("roomPrice", hotel.getRoomPrice());
+//				}
 				
-				hotelObj.put("breakfast", hotel.getBreakfast());
+//				hotelObj.put("breakfast", hotel.getBreakfast());
 				
-				if (hotel.getService() == null) {
-					hotelObj.put("service", "");
-				} else {
-					hotelObj.put("service", hotel.getService());
-				}
+//				if (hotel.getService() == null) {
+//					hotelObj.put("service", "");
+//				} else {
+//					hotelObj.put("service", hotel.getService());
+//				}
 				
-				hotelObj.put("parking", hotel.getParking());
+//				hotelObj.put("parking", hotel.getParking());
 				
-				if (hotel.getOpenHour() == null) {
-					hotelObj.put("openHour", "");
-				} else {
-					hotelObj.put("openHour", hotel.getOpenHour());
-				}
+//				if (hotel.getOpenHour() == null) {
+//					hotelObj.put("openHour", "");
+//				} else {
+//					hotelObj.put("openHour", hotel.getOpenHour());
+//				}
 				
 				hotelObj.put("rowId", hotel.getRowId());
 				jsonObj.put("hotel", hotelObj);
@@ -593,47 +593,115 @@ public class PoiDownloadOperation {
 				IxPoiChargingStation chargingStation = (IxPoiChargingStation) chargingStationList.get(0);
 				JSONObject chargingStationObj = new JSONObject();
 				chargingStationObj.put("type", chargingStation.getChargingType());
-				chargingStationObj.put("changeBrands", chargingStation.getChangeBrands());
-				chargingStationObj.put("changeOpenType", chargingStation.getChangeOpenType());
-				chargingStationObj.put("servicePro", chargingStation.getServiceProv());
-				chargingStationObj.put("chargingNum", chargingStation.getChargingNum());
-				chargingStationObj.put("openHour", chargingStation.getOpenHour());
+				if (chargingStation.getChangeBrands() == null) {
+					chargingStationObj.put("changeBrands", "");
+				} else {
+					chargingStationObj.put("changeBrands", chargingStation.getChangeBrands());
+				}
+				if (chargingStation.getChangeOpenType() == null) {
+					chargingStationObj.put("changeOpenType", "");
+				} else {
+					chargingStationObj.put("changeOpenType", chargingStation.getChangeOpenType());
+				}
+				if (chargingStation.getServiceProv() == null) {
+					chargingStationObj.put("servicePro", "");
+				} else {
+					chargingStationObj.put("servicePro", chargingStation.getServiceProv());
+				}
+//				chargingStationObj.put("chargingNum", chargingStation.getChargingNum());
+				if (chargingStation.getOpenHour() == null) {
+					chargingStationObj.put("openHour", "");
+				} else {
+					chargingStationObj.put("openHour", chargingStation.getOpenHour());
+				}
 				chargingStationObj.put("parkingFees", chargingStation.getParkingFees());
-				chargingStationObj.put("parkingInfo", chargingStation.getParkingInfo());
+				if (chargingStation.getParkingInfo() == null) {
+					chargingStationObj.put("parkingInfo", "");
+				} else {
+					chargingStationObj.put("parkingInfo", chargingStation.getParkingInfo());
+				}
 				chargingStationObj.put("availableState", chargingStation.getAvailableState());
 				chargingStationObj.put("rowId", chargingStation.getRowId());
 				jsonObj.put("chargingStation", chargingStationObj);
 			} else {
 				jsonObj.put("chargingStation", JSONNull.getInstance());
 			}
-			
 			List<IRow> chargingPole = poi.getChargingplots();
 			if (chargingPole.size()>0) {
 				JSONArray chargingPoleArray = new JSONArray();
 				for (IRow charging:chargingPole) {
 					IxPoiChargingPlot ixPoiChargingplot = (IxPoiChargingPlot) charging;
 					JSONObject chargingPoleObj = new JSONObject();
-					chargingPoleObj.put("groupId", ixPoiChargingplot.getGroupId());
+//					chargingPoleObj.put("groupId", ixPoiChargingplot.getGroupId());
 					chargingPoleObj.put("acdc", ixPoiChargingplot.getAcdc());
-					chargingPoleObj.put("plugType", ixPoiChargingplot.getPlugType());
-					chargingPoleObj.put("power", ixPoiChargingplot.getPower());
-					chargingPoleObj.put("voltage", ixPoiChargingplot.getVoltage());
-					chargingPoleObj.put("current", ixPoiChargingplot.getCurrent());
+					if (ixPoiChargingplot.getPlugType() == null) {
+						chargingPoleObj.put("plugType", "");
+					} else {
+						chargingPoleObj.put("plugType", ixPoiChargingplot.getPlugType());
+					}
+					if (ixPoiChargingplot.getPower()== null) {
+						chargingPoleObj.put("power", "");
+					} else {
+						chargingPoleObj.put("power", ixPoiChargingplot.getPower());
+					}
+					if (ixPoiChargingplot.getVoltage()== null) {
+						chargingPoleObj.put("voltage", "");
+					} else {
+						chargingPoleObj.put("voltage", ixPoiChargingplot.getVoltage());
+					}
+					if (ixPoiChargingplot.getCurrent()== null) {
+						chargingPoleObj.put("current", "");
+					} else {
+						chargingPoleObj.put("current", ixPoiChargingplot.getCurrent());
+					}
 					chargingPoleObj.put("mode", ixPoiChargingplot.getMode());
-					chargingPoleObj.put("count", ixPoiChargingplot.getCount());
+//					chargingPoleObj.put("count", ixPoiChargingplot.getCount());
 					chargingPoleObj.put("plugNum", ixPoiChargingplot.getPlugNum());
-					chargingPoleObj.put("prices", ixPoiChargingplot.getPrices());
-					chargingPoleObj.put("openType", ixPoiChargingplot.getOpenType());
+					if (ixPoiChargingplot.getPrices()== null) {
+						chargingPoleObj.put("prices", "");
+					} else {
+						chargingPoleObj.put("prices", ixPoiChargingplot.getPrices());
+					}
+					if (ixPoiChargingplot.getOpenType()== null) {
+						chargingPoleObj.put("openType", "");
+					} else {
+						chargingPoleObj.put("openType", ixPoiChargingplot.getOpenType());
+					}
 					chargingPoleObj.put("availableState", ixPoiChargingplot.getAvailableState());
-					chargingPoleObj.put("manufacturer", ixPoiChargingplot.getManufacturer());
-					chargingPoleObj.put("factoryNum", ixPoiChargingplot.getFactoryNum());
-					chargingPoleObj.put("plotNum", ixPoiChargingplot.getPlotNum());
-					chargingPoleObj.put("productNum", ixPoiChargingplot.getProductNum());
-					chargingPoleObj.put("parkingNum", ixPoiChargingplot.getParkingNum());
+					if (ixPoiChargingplot.getManufacturer()== null) {
+						chargingPoleObj.put("manufacturer", "");
+					} else {
+						chargingPoleObj.put("manufacturer", ixPoiChargingplot.getManufacturer());
+					}
+					if (ixPoiChargingplot.getFactoryNum()== null) {
+						chargingPoleObj.put("factoryNum", "");
+					} else {
+						chargingPoleObj.put("factoryNum", ixPoiChargingplot.getFactoryNum());
+					}
+					if (ixPoiChargingplot.getPlotNum()== null) {
+						chargingPoleObj.put("plotNum", "");
+					} else {
+						chargingPoleObj.put("plotNum", ixPoiChargingplot.getPlotNum());
+					}
+					if (ixPoiChargingplot.getProductNum()== null) {
+						chargingPoleObj.put("productNum", "");
+					} else {
+						chargingPoleObj.put("productNum", ixPoiChargingplot.getProductNum());
+					}
+					if (ixPoiChargingplot.getParkingNum()== null) {
+						chargingPoleObj.put("parkingNum", "");
+					} else {
+						chargingPoleObj.put("parkingNum", ixPoiChargingplot.getParkingNum());
+					}
 					chargingPoleObj.put("floor", ixPoiChargingplot.getFloor());
 					chargingPoleObj.put("locationType", ixPoiChargingplot.getLocationType());
-					chargingPoleObj.put("payment", ixPoiChargingplot.getPayment());
+					if (ixPoiChargingplot.getPayment()== null) {
+						chargingPoleObj.put("payment", "");
+					} else {
+						chargingPoleObj.put("payment", ixPoiChargingplot.getPayment());
+					}
 					chargingPoleObj.put("rowId", ixPoiChargingplot.getRowId());
+					
 					chargingPoleArray.add(chargingPoleObj);
 				}
 				jsonObj.put("chargingPole", chargingPoleArray);

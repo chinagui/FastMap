@@ -6,39 +6,62 @@ import com.navinfo.dataservice.engine.limit.glm.iface.LimitObjType;
 import com.navinfo.dataservice.engine.limit.glm.model.meta.ScPlateresRdLink;
 import com.navinfo.dataservice.engine.limit.operation.AbstractCommand;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import java.util.*;
 
 public class Command extends AbstractCommand{
 	private String requester;
 
-	private int linkpid = 0;
+	private int limitDir = 0;
 
-	private JSONObject content;
-	
-	private ScPlateresRdLink rdLink;
-	
-	public int getLinkpid(){
-		return this.linkpid;
+	public int getLimitDir() {
+		return limitDir;
 	}
-	
-	public JSONObject getContent(){
-		return this.content;
+
+	private List<ScPlateresRdLink> links;
+
+	public List<ScPlateresRdLink> getLinks() {
+		return links;
 	}
-	
-	public ScPlateresRdLink getRdLink(){
-		return this.rdLink;
+
+	public void setLinks(List<ScPlateresRdLink> rdlinks) {
+		this.links = rdlinks;
 	}
-	
-	public void setRdLink(ScPlateresRdLink value){
-		this.rdLink = value;
+
+	private Map<Integer, Set<String>> mapping = new HashMap<>();
+
+	public Map<Integer, Set<String>>  getMapping() {
+		return mapping;
 	}
 
 	public Command(JSONObject json, String requester) {
+
 		this.requester = requester;
-		
-		//JSONObject data = json.getJSONObject("data");
-		this.linkpid = json.getInt("objId");
-		this.content = json.getJSONObject("data");
+
+		JSONArray data = json.getJSONArray("data");
+
+		for (int i = 0; i < data.size(); i++) {
+
+			JSONObject obj = data.getJSONObject(i);
+
+			if (!obj.containsKey("linkPid") || !obj.containsKey("geometryId")) {
+				continue;
+			}
+
+			String geometryId = obj.getString("geometryId");
+
+			int linkPid = obj.getInt("linkPid");
+
+			if (!mapping.containsKey(linkPid)) {
+				mapping.put(linkPid, new HashSet<String>());
+			}
+
+			mapping.get(linkPid).add(geometryId);
+		}
+
+		this.limitDir = json.getInt("limitDir");
 	}
 
 	@Override

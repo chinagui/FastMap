@@ -22,19 +22,19 @@ public class Operation implements IOperation{
 	}
 
 	private void updateRdLink(Result result) throws Exception {
-		JSONObject content = command.getContent();
 
-		ScPlateresRdLink rdlink = command.getRdLink();
 
-		if (content.containsKey("objStatus") && ObjStatus.UPDATE.toString().equals(content.getString("objStatus"))) {
+		for (ScPlateresRdLink link : command.getLinks()) {
 
-			boolean isChanged = rdlink.fillChangeFields(content);
+			if (link.getLinkDir() != command.getLimitDir()) {
 
-			if (isChanged) {
-				result.insertObject(rdlink, ObjStatus.UPDATE, String.valueOf(rdlink.getLinkPid()));
+				link.changedFields().put("limitDir", command.getLimitDir());
+
+				result.insertObject(link, ObjStatus.UPDATE, String.valueOf(link.getLinkPid()));
+
+				result.setPrimaryId(String.valueOf(String.valueOf(link.getLinkPid())));
 			}
-
 		}
-		result.setPrimaryId(String.valueOf(String.valueOf(rdlink.getLinkPid())));
+
 	}
 }

@@ -28,11 +28,11 @@ public class Command extends AbstractCommand{
 		this.requester = requester;
 		
 		JSONObject data = json.getJSONObject("data");
-		
+
 		this.dbId = json.getInt("dbId");
-		
+
 		this.groupId = data.getString("groupId");
-		
+
 		this.links = data.getJSONArray("links");
 	}
 	

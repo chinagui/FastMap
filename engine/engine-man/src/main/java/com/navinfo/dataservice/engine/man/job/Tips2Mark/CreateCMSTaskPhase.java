@@ -86,22 +86,25 @@ public class CreateCMSTaskPhase extends JobPhase {
             String area = "中线一体化作业";
             String workType = "更新";  
             String workSeason = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
+            String uploadMethod="";
+            if(cmsInfo.get("uploadMethod")!=null&&!StringUtils.isEmpty(cmsInfo.get("uploadMethod").toString())){
+            	uploadMethod=cmsInfo.get("uploadMethod").toString();
+            }
             if (jobRelation.getItemType() == ItemType.PROJECT) {
                 area = "快线一体化作业";
                 workType = "快速更新";   
                 taskPar.put("poiMeshes", cmsInfo.get("poiMeshes"));
-            	taskPar.put("poiPlanLoad", cmsInfo.get("poiPlanLoad"));  
+            	taskPar.put("poiPlanLoad", cmsInfo.get("poiPlanLoad").toString());  
+            	if(StringUtils.isEmpty(uploadMethod)){
+            		uploadMethod="快速更新";
+            	}
             } 
             if (jobRelation.getItemType() == ItemType.TASK) {
             	taskPar.put("poiMeshes", cmsInfo.get("poiMeshes"));
-            	taskPar.put("poiPlanLoad", cmsInfo.get("poiPlanLoad"));               
+            	taskPar.put("poiPlanLoad", cmsInfo.get("poiPlanLoad").toString());               
             }
             if (jobRelation.getItemType() == ItemType.SUBTASK) {
             	taskPar.put("taskParentId", cmsInfo.get("taskId"));              
-            }             
-            String uploadMethod="快速更新";
-            if(!StringUtils.isEmpty(cmsInfo.get("uploadMethod").toString())){
-            	uploadMethod=cmsInfo.get("uploadMethod").toString();
             }
             
             taskPar.put("workType", workType);

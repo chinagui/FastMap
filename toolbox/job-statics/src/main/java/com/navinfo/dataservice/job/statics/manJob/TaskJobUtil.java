@@ -316,7 +316,7 @@ public class TaskJobUtil{
 			}
 			return stat;
 		} catch (Exception e) {
-			log.error("查询mongo中上一次的任务统计数据报错"+e.getMessage());
+			log.error("查询mongo中上一次的任务统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo中上一次的任务统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -344,7 +344,7 @@ public class TaskJobUtil{
 			}
 			return stat;
 		} catch (Exception e) {
-			log.error("查询mongo中子任务的统计数据报错"+e.getMessage());
+			log.error("查询mongo中子任务的统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo中子任务的统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -369,7 +369,7 @@ public class TaskJobUtil{
 			}
 			return startTimeList;
 		} catch (Exception e) {
-			log.error("处理taskId("+task.getTaskId()+")子任务统计数据报错,"+e.getMessage());
+			log.error("处理taskId("+task.getTaskId()+")子任务统计数据报错,"+e.getMessage(),e);
 			throw new Exception("处理taskId("+task.getTaskId()+")子任务统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -397,7 +397,7 @@ public class TaskJobUtil{
 				if(StringUtils.isNotEmpty(tipsAddLenS)){
 					tipsAddLen = Double.parseDouble(tipsAddLenS);
 				}
-				int tipsUploadNum = (int) jso.get("tipsUploadNum");
+				int tipsUploadNum = Integer.valueOf(String.valueOf(jso.get("tipsUploadNum")));
 				task.put("collectRoadActualTotal", tipsAddLen);
 				task.put("collectTipsUploadNum", tipsUploadNum);
 				task.put("collectLinkAddTotal", tipsAddLen);
@@ -405,7 +405,7 @@ public class TaskJobUtil{
 			}
 			return stat;
 		} catch (Exception e) {
-			log.error("查询mongo中task_grid_tips相应的统计数据报错"+e.getMessage());
+			log.error("查询mongo中task_grid_tips相应的统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo中task_grid_tips相应的统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -453,7 +453,7 @@ public class TaskJobUtil{
 			}
 			return stat;
 		} catch (Exception e) {
-			log.error("查询mongo中task_grid_tips相应的统计数据报错"+e.getMessage());
+			log.error("查询mongo中task_grid_tips相应的统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo中task_grid_tips相应的统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -492,7 +492,7 @@ public class TaskJobUtil{
 			}
 			return stat;
 		} catch (Exception e) {
-			log.error("查询mongo中task_day_poi相应的统计数据报错"+e.getMessage());
+			log.error("查询mongo中task_day_poi相应的统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo中task_day_poi相应的统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -530,7 +530,7 @@ public class TaskJobUtil{
 			}
 			return tipsStat;
 		} catch (Exception e) {
-			log.error("查询mongo库中grid_tips统计数据报错"+e.getMessage());
+			log.error("查询mongo库中grid_tips统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo库中grid_tips统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -559,7 +559,7 @@ public class TaskJobUtil{
 			}
 			return tipsStat;
 		} catch (Exception e) {
-			log.error("查询mongo库中grid_tips统计数据报错"+e.getMessage());
+			log.error("查询mongo库中grid_tips统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo库中grid_tips统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -598,7 +598,7 @@ public class TaskJobUtil{
 			taskStat.put("tipsCreateByEditNum", tipsCreateByEditNum);
 			return taskStat;
 		} catch (Exception e) {
-			log.error("处理taskId("+task.getTaskId()+")grid_tips统计数据报错,"+e.getMessage());
+			log.error("处理taskId("+task.getTaskId()+")grid_tips统计数据报错,"+e.getMessage(),e);
 			throw new Exception("处理taskId("+task.getTaskId()+")grid_tips统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -622,7 +622,7 @@ public class TaskJobUtil{
 			taskStat.put("notaskTipsNum", notaskTipsNum);
 			return taskStat;
 		} catch (Exception e) {
-			log.error("处理taskId("+task.getTaskId()+")grid_tips统计数据报错,"+e.getMessage());
+			log.error("处理taskId("+task.getTaskId()+")grid_tips统计数据报错,"+e.getMessage(),e);
 			throw new Exception("处理taskId("+task.getTaskId()+")grid_tips统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -656,7 +656,7 @@ public class TaskJobUtil{
 			}
 			return monthPoiStat;
 		} catch (Exception e) {
-			log.error("查询mongo库中grid_month_poi统计数据报错"+e.getMessage());
+			log.error("查询mongo库中grid_month_poi统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo库中grid_month_poi统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -690,7 +690,7 @@ public class TaskJobUtil{
 			taskStat.put("day2MonthNum", day2MonthNum);
 			return taskStat;
 		} catch (Exception e) {
-			log.error("处理taskId("+task.getTaskId()+")月编poi统计数据报错,"+e.getMessage());
+			log.error("处理taskId("+task.getTaskId()+")月编poi统计数据报错,"+e.getMessage(),e);
 			throw new Exception("处理taskId("+task.getTaskId()+")月编poi统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -718,7 +718,7 @@ public class TaskJobUtil{
 			}
 			return monthPoiStat;
 		} catch (Exception e) {
-			log.error("查询mongo库中grid_day_poi统计数据报错"+e.getMessage());
+			log.error("查询mongo库中grid_day_poi统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo库中grid_day_poi统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -744,7 +744,7 @@ public class TaskJobUtil{
 			taskStat.put("notaskPoiNum", notaskPoiNum);
 			return taskStat;
 		} catch (Exception e) {
-			log.error("处理taskId("+task.getTaskId()+")grid_day_poi统计数据报错,"+e.getMessage());
+			log.error("处理taskId("+task.getTaskId()+")grid_day_poi统计数据报错,"+e.getMessage(),e);
 			throw new Exception("处理taskId("+task.getTaskId()+")grid_day_poi统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -800,7 +800,7 @@ public class TaskJobUtil{
 			}
 			return stat;
 		} catch (Exception e) {
-			log.error("查询mongo中task_day_plan相应的统计数据报错"+e.getMessage());
+			log.error("查询mongo中task_day_plan相应的统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo中task_day_plan相应的统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -828,7 +828,7 @@ public class TaskJobUtil{
 			}
 			return stat;
 		} catch (Exception e) {
-			log.error("查询mongo库中subtask_tips统计数据报错"+e.getMessage());
+			log.error("查询mongo库中subtask_tips统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo库中subtask_tips统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -869,7 +869,7 @@ public class TaskJobUtil{
 			taskStat.put("inforTipsTotal", inforTipsTotal);
 			return taskStat;
 		} catch (Exception e) {
-			log.error("处理taskId("+task.getTaskId()+")subtask_tips统计数据报错,"+e.getMessage());
+			log.error("处理taskId("+task.getTaskId()+")subtask_tips统计数据报错,"+e.getMessage(),e);
 			throw new Exception("处理taskId("+task.getTaskId()+")subtask_tips统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -904,7 +904,7 @@ public class TaskJobUtil{
 			}
 			return stat;
 		} catch (Exception e) {
-			log.error("查询mongo库中subtask_day_poi统计数据报错"+e.getMessage());
+			log.error("查询mongo库中subtask_day_poi统计数据报错"+e.getMessage(),e);
 			throw new Exception("查询mongo库中subtask_day_poi统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -966,7 +966,7 @@ public class TaskJobUtil{
 			taskStat.put("poiActualDeleteNum", poiActualDeleteNumSum);
 			return taskStat;
 		} catch (Exception e) {
-			log.error("处理taskId("+task.getTaskId()+")subtask_day_poi统计数据报错,"+e.getMessage());
+			log.error("处理taskId("+task.getTaskId()+")subtask_day_poi统计数据报错,"+e.getMessage(),e);
 			throw new Exception("处理taskId("+task.getTaskId()+")subtask_day_poi统计数据报错"+e.getMessage(),e);
 		}
 	}
@@ -996,7 +996,7 @@ public class TaskJobUtil{
 			taskStat.put("areaCloseNum", areaCloseNum);
 			return taskStat;
 		} catch (Exception e) {
-			log.error("处理taskId("+task.getTaskId()+")子任务数数据报错,"+e.getMessage());
+			log.error("处理taskId("+task.getTaskId()+")子任务数数据报错,"+e.getMessage(),e);
 			throw new Exception("处理taskId("+task.getTaskId()+")子任务数据报错"+e.getMessage(),e);
 		}
 	}

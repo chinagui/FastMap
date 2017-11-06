@@ -114,11 +114,7 @@
 		class="com.navinfo.dataservice.dealership.job.DealershipLiveUpdateJob"
 		request="com.navinfo.dataservice.dealership.job.DealershipLiveUpdateJobRequest" >
 	</type>
-	<type name="poiQualityInitCountTableJob"
-		class="com.navinfo.dataservice.job.statics.job.PoiQualityInitCountTableJob"
-		request="com.navinfo.dataservice.job.statics.job.PoiQualityInitCountTableJobRequest" >
-	</type>
-		<type name="taskMedium2QuickJob" 
+	<type name="taskMedium2QuickJob" 
 		class="com.navinfo.dataservice.job.TaskMedium2QuickJob"
 		request="com.navinfo.dataservice.job.TaskMedium2QuickJobRequest" > 
 	</type>
@@ -206,4 +202,12 @@
           class="com.navinfo.dataservice.row.job.PointAddressReleaseJob"
           request="com.navinfo.dataservice.row.job.PointAddressReleaseJobRequest" >
     </type>
+    <type name="exportQualityPoiReport"
+          class="com.navinfo.dataservice.job.statics.job.ExportQualityPoiReportJob"
+          request="com.navinfo.dataservice.job.statics.job.ExportQualityPoiReportJobRequest" >
+    </type>
+    <!-- <type name="infoPoiMultiSrc2FmDay"
+          class="com.navinfo.dataservice.column.job.InfoPoiMultiSrc2FmDayJob"
+          request="com.navinfo.dataservice.column.job.InfoPoiMultiSrc2FmDayJobRequest" >
+    </type> -->
 	</mapping>

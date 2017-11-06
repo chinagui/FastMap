@@ -170,4 +170,30 @@ public class RowEditController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	
+	/**
+	 * POI日编质检筛选接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/filter/list")
+	public ModelAndView filterPoiList(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+		try {
+			if (StringUtils.isEmpty(parameter)||jsonReq == null|| jsonReq.isNullObject()){
+				return new ModelAndView("jsonView", fail("parameter参数不能为空"));
+			}
+			PoiQuery poiQuery = new PoiQuery();
+			JSONObject result = poiQuery.getFilterPoi(parameter);
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 }

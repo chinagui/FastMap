@@ -170,7 +170,9 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			sb.append(" AND PC.TYPE = 1 ");
 			sb.append(" AND PC.CHECK_FLAG IN (1, 3) ");
 			sb.append(" AND PS.WORK_ITEM_ID = PC.WORK_ITEM_ID ");
-			sb.append(" AND PC.FIRST_WORK_ITEM ='"+firstWorkItem+"') ");
+			sb.append(" AND PC.FIRST_WORK_ITEM ='"+firstWorkItem+"'");
+			sb.append(" AND PS.WORK_ITEM_ID != 'FM-YW-20-017') ");// 英文名称申请时，WORK_ITEM_ID为FM-YW-20-017的数据不作业，不参与申请
+			
 		}
 
 		PreparedStatement pstmt = null;

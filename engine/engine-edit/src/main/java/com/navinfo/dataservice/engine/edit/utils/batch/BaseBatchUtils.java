@@ -70,7 +70,7 @@ public class BaseBatchUtils {
         if (null == node) {
             return false;
         }
-        Geometry nodeGeo = shrink(node.getGeometry());
+        Geometry nodeGeo = transform(node.getGeometry());
         if (MeshUtils.isPointAtMeshBorder(nodeGeo.getCoordinate().x, nodeGeo.getCoordinate().y)) {
             return true;
         }
@@ -101,7 +101,7 @@ public class BaseBatchUtils {
      * @return
      * @throws JSONException
      */
-    public static Geometry shrink(Geometry g) throws JSONException {
+    protected static Geometry transform(Geometry g) throws JSONException {
         return GeoTranslator.transform(g, Constant.BASE_SHRINK, Constant.BASE_PRECISION);
     }
 
@@ -119,7 +119,7 @@ public class BaseBatchUtils {
         if (null == node)
             return false;
         // 获取边界线几何
-        Geometry intersection = faceGeometry.getBoundary().intersection(shrink(node.getGeometry()));
+        Geometry intersection = faceGeometry.getBoundary().intersection(transform(node.getGeometry()));
         return !intersection.isEmpty();
     }
 

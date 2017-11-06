@@ -2450,7 +2450,12 @@ public class TipsSelector {
                     JSONArray oldArray = oldTip.getJSONArray("old_array");
                     if(oldArray != null && oldArray.size() > 0) {
                         JSONObject lastOld = oldArray.getJSONObject(oldArray.size() - 1);
-                        JSONObject oldGeoJson = JSONObject.fromObject(lastOld.getString("o_location"));
+                        String oLocationStr = lastOld.getString("o_location");
+                        if(StringUtils.isBlank(oLocationStr) || oLocationStr.equals("null")
+                                || oLocationStr.equals("\"null\"")) {
+                            continue;
+                        }
+                        JSONObject oldGeoJson = JSONObject.fromObject(oLocationStr);
                         Geometry oldGeo = GeoTranslator.geojson2Jts(oldGeoJson);
                         Set<Integer> olcMeshSet = this.calculateGeometeryMesh(oldGeo);
                         if (olcMeshSet != null && olcMeshSet.size() > 0) {

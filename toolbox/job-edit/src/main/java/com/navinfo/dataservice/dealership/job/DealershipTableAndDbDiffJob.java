@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dealership.job;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -303,7 +304,7 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 				resultIds += StringUtils.join(resultIdList.toArray(), ",") + ")";
 			}
 			log.info("sourceType:"+sourceType+",chains:"+chains+",resultIds:"+resultIds);
-			
+			Clob clobPids = null;
 			StringBuffer sb = new StringBuffer();
 			sb.append("select r.result_id,r.kind_code,r.name,r.name_short,r.chain,r.address,r.tel_sale,r.tel_service,r.tel_other,r.post_code,r.region_id,r.match_method,r.cfm_poi_num,r.source_id,r.GEOMETRY, ");
 			sb.append(" r.is_deleted,r.poi_num_1,r.poi_num_2,r.poi_num_3,r.poi_num_4,r.poi_num_5,r.cfm_is_adopted,r.poi_kind_code,r.poi_chain,");
@@ -314,7 +315,13 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 			}else if (sourceType==2){
 				sb.append(" and r.workflow_status in (0,1,2,3) and r.chain in "+chains);
 			}else{
-				sb.append(" and r.result_id in "+resultIds);
+				if (resultIdList.size() > 1000) {
+					clobPids = conn.createClob();
+					clobPids.setString(1, StringUtils.join(resultIdList, ","));
+					sb.append(" AND r.result_id in (select to_number(column_value) from table(clob_to_table(?)))");
+				} else {
+					sb.append(" and r.result_id in "+resultIds);
+				}				
 			}
 			String querySql=sb.toString();
 			log.info("query resultData sql:"+querySql);
@@ -374,7 +381,11 @@ public class DealershipTableAndDbDiffJob extends AbstractJob {
 					return resultList;
 				}
 			};
-			return run.query(conn, querySql, rs);
+			if (clobPids == null){
+				return run.query(conn, querySql, rs);
+			}else{
+				return run.query(conn, querySql, rs,clobPids);
+			}
 		} catch (Exception e) {
 			throw new Exception("加载resultData失败：" + e.getMessage(), e);
 		} finally {

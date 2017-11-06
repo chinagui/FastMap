@@ -3,27 +3,21 @@ package com.navinfo.dataservice.impcore.flushbylog;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
-
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
-import oracle.sql.STRUCT;
 
 /*
  * @author MaYunFei
@@ -76,7 +70,8 @@ public class LogWriter {
 
 			listener.preUpdate();
 			data = updateData(editLog);
-			if (data.get("result").equals(0)) {
+			if (data.get("result").equals(0) 
+					&& (!data.get("log").toString().equals(""))) {
 				listener.updateFailed(editLog, data.get("log").toString());
 			}
 

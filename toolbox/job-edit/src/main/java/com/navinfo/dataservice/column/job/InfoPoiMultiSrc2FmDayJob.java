@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.dbutils.DbUtils;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
@@ -50,11 +51,11 @@ public class InfoPoiMultiSrc2FmDayJob extends AbstractJob {
 			
 			String beginTime = DateUtils.getSysDateFormat();
 			InfoPoiMultiSrc2FmDayJobRequest req = (InfoPoiMultiSrc2FmDayJobRequest)request;
-			//获取一级数据型poi情报数据
+			//1.获取一级数据型poi情报数据 参数:
 			int dbid = req.getDbId();
 			int taskId = req.getTaskId();
 			int subtaskId = req.getSubtaskId();
-			int bSourceId = req.getBSourceId();    
+			String bSourceId = req.getBSourceId();    
 			JSONObject poiJobj = req.getData();
 			
 			String fid = null;
@@ -119,6 +120,19 @@ public class InfoPoiMultiSrc2FmDayJob extends AbstractJob {
 		}
 	}
 	
+	/**
+	 * @Title: imp
+	 * @Description: 开始执行导入
+	 * @param dbId
+	 * @param taskId
+	 * @param subtaskId
+	 * @param poiJobj
+	 * @return
+	 * @throws Exception  Set<Long>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年11月3日 下午1:53:25 
+	 */
 	private Set<Long> imp(int dbId, int taskId, int subtaskId, JSONObject poiJobj)throws Exception{
 		Connection conn=null;
 		Set<Long> pids = null;
@@ -167,15 +181,18 @@ public class InfoPoiMultiSrc2FmDayJob extends AbstractJob {
 			log.debug("导入完成，用时"+((System.currentTimeMillis()-t)/1000)+"s");
 			return pids;
 		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(),e);
 			//设置导入失败状态
 //			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_IMP_FAIL,jobInfo.getId());
 			throw e;
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
 
-	private void notifyMultiSrc(String fid, long pid, int bSourceId, int subtaskId){
+	private void notifyMultiSrc(String fid, long pid, String bSourceId, int subtaskId){
 		try{
 			//
 			log.debug("开始通知info ");
@@ -187,11 +204,11 @@ public class InfoPoiMultiSrc2FmDayJob extends AbstractJob {
 			String infoUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.infoPoiNotifyUrl);
 			log.info("infoUrl: "+infoUrl);
 			Map<String,String> parMap = new HashMap<String, String>();
-	        	parMap.put("parameter","{\"fid\":"+fid+",\"pid\":"+pid+",\"bSourceId\":"+bSourceId+",\"subtaskId\":"+subtaskId+",\"isAdopted\":"+isAdopted+",\"denyRemark\":\""+denyRemark+"\"}");
+	        	parMap.put("parameter","{\"fid\":\""+fid+"\",\"pid\":"+pid+",\"bSourceId\":\""+bSourceId+"\",\"subtaskId\":"+subtaskId+",\"isAdopted\":"+isAdopted+",\"denyRemark\":"+denyRemark+"}");
 	        log.info("parameter: "+parMap.get("parameter"));
 	        String result = ServiceInvokeUtil.invokeByGet(infoUrl,parMap);
 			
-			log.debug("notify info poi result:"+result);
+			log.info("notify info poi result:"+result);
 //			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_SUCCESS,jobInfo.getId());
 		}catch(Exception e){
 			try{

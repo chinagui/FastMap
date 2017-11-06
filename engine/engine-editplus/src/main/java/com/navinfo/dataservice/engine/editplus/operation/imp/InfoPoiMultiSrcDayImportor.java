@@ -109,8 +109,6 @@ public class InfoPoiMultiSrcDayImportor extends AbstractOperation {
 		//入库时如果常规数据或众包数据未作业完成，即处于"待作业"或"待提交"状态且存在常规子任务或众包子任务号，则多源数据不入大区域库，返回失败信息，失败信息报log：常规(众包)子任务XX正在作业！
 		filterPoiUnderSubtask(pois);
 
-//		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
-		
 		if(pois!=null){
 			//加载元数据库sc_point_truck
 			MetadataApi metaApi = (MetadataApi)ApplicationContextUtil.getBean("metadataApi");

@@ -24,7 +24,6 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -1054,7 +1053,7 @@ public class TipsController extends BaseController {
 
              TipsSelector selector = new TipsSelector();
 
-			JSONArray array = selector.searchPoiRelateTips(id, subTaskId, buffer, dbId, programType);
+			JSONArray array = selector.searchPoiOrPointRelateTips(id, subTaskId, buffer, dbId, programType, 1);
              
              return new ModelAndView("jsonView", success(array));
 
@@ -1064,5 +1063,45 @@ public class TipsController extends BaseController {
 
              return new ModelAndView("jsonView", fail(e.getMessage()));
          }
+    }
+
+    @RequestMapping(value = "/tip/pointAddrRelateTips")
+    public ModelAndView getPointAddrRelateTips(HttpServletRequest request) throws ServletException, IOException{
+        String parameter = request.getParameter("parameter");
+
+        try {
+
+            if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            int subTaskId = jsonReq.getInt("subtaskId");
+
+            String id = jsonReq.getString("id");
+
+            int buffer = jsonReq.getInt("buffer");
+
+            int dbId = jsonReq.getInt("dbId");
+
+            int programType = jsonReq.getInt("programType");
+
+            if (id.isEmpty() || buffer == 0 || subTaskId == 0 || programType == 0) {
+                throw new IllegalArgumentException("参数错误");
+            }
+
+            TipsSelector selector = new TipsSelector();
+
+            JSONArray array = selector.searchPoiOrPointRelateTips(id, subTaskId, buffer, dbId, programType, 2);
+
+            return new ModelAndView("jsonView", success(array));
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
     }
 }

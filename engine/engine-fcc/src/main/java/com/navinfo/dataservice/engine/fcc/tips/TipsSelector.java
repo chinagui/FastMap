@@ -14,9 +14,11 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.*;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
 import com.navinfo.dataservice.dao.fcc.operator.TipsIndexOracleOperator;
+import com.navinfo.dataservice.dao.glm.model.ixpointaddress.IxPointaddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.dataservice.dao.glm.selector.ixpointaddress.IxPointaddressSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.OracleWhereClause;
@@ -2655,7 +2657,7 @@ public class TipsSelector {
 		return geo;
 	}
 
-	public JSONArray searchPoiRelateTips(String id, int subTaskId, int buffer, int dbId, int programType) throws Exception {
+	public JSONArray searchPoiOrPointRelateTips(String id, int subTaskId, int buffer, int dbId, int programType, int type) throws Exception {
 		String taskInfo = programType == TaskType.PROGRAM_TYPE_Q ? "S_QSUBTASKID" : "S_MSUBTASKID";
 		
 		// A、库中状态为未处理且没有形状删除的测线tips
@@ -2675,8 +2677,6 @@ public class TipsSelector {
 
 		Connection oracleConn = null;
 
-		List<IxPoi> result = new ArrayList<>();
-
 		JSONArray array = new JSONArray();
 
 		try {	
@@ -2684,30 +2684,24 @@ public class TipsSelector {
 			TipsIndexOracleOperator operator = new TipsIndexOracleOperator(oracleConn);
 
 			List<TipsDao> unhandleGpsList = operator.query(unhandleGps);
-			if (unhandleGpsList.size() > 0 && isRelateDeleteLinkTips(taskInfo, subTaskId, id) == false) {
-				result.addAll(GetRelatePois(unhandleGpsList, dbId, buffer, false, false, operator));
-			}
+            List<TipsDao> handleGpsList = operator.query(handleGps);
+            boolean isRelateDelLinkTips = isRelateDeleteLinkTips(taskInfo, subTaskId, id);
 
-			List<TipsDao> handleGpsList = operator.query(handleGps);
-			if (handleGpsList.size() > 0 && isRelateDeleteLinkTips(taskInfo, subTaskId, id) == false) {
-				result.addAll(GetRelatePois(handleGpsList, dbId, buffer, false, true, operator));
-			}
-
-			List<TipsDao> deleteLinksList = operator.query(deleteLinks);
-			if (deleteLinksList.size() > 0 ) {
-				result.addAll(GetRelatePois(deleteLinksList, dbId, buffer, true, true, operator));
-			}
-
-			for (IxPoi poi : result) {
-				JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
-				JSONObject obj = JSONObject.fromObject(poi, jsonConfig);
-				array.add(obj);
-			}
+            if(unhandleGpsList.size() > 0 && (!isRelateDelLinkTips)) {
+               array.addAll(getRelatePoisOrPoints(unhandleGpsList, dbId, buffer, false, false, operator, type));
+            }
+            if(handleGpsList.size() > 0 && (!isRelateDelLinkTips)) {
+                array.addAll(getRelatePoisOrPoints(handleGpsList, dbId, buffer, false, true, operator, type));
+            }
+            List<TipsDao> deleteLinksList = operator.query(deleteLinks);
+            if (deleteLinksList.size() > 0 ) {
+                array.addAll(getRelatePoisOrPoints(deleteLinksList, dbId, buffer, true, true, operator, type));
+            }
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(oracleConn);
 			e.printStackTrace();
-            throw new Exception("查询Tips报错", e);
+            throw new Exception("查询Tips报错 " + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(oracleConn);
 		}
@@ -2723,82 +2717,49 @@ public class TipsSelector {
 	 * @param buffer
 	 * @param isDeleteLink ”形状删除“？
 	 * @param isHandle "已处理"？
+     * @param type 1 poi 2 pointadress
 	 * @throws Exception
 	 */
-	private List<IxPoi> GetRelatePois(List<TipsDao> tipsList, int dbId, int buffer, boolean isDeleteLink,
-			boolean isHandle, TipsIndexOracleOperator operator) throws Exception {
+	private List<IxPoi> getRelatePoisOrPoints(List<TipsDao> tipsList, int dbId, int buffer, boolean isDeleteLink,
+			boolean isHandle, TipsIndexOracleOperator operator, int type) throws Exception {
 		Connection conn = null;
-		List<IxPoi> poiList = new ArrayList<>();
 
+        JSONArray array = new JSONArray();
 		try {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			RdLinkSelector selector = new RdLinkSelector(conn);
-			
-			IxPoiSelector poiSelector = new IxPoiSelector(conn);
 
-			PreparedStatement pstmt = null;
-
-			ResultSet resultSet = null;
-
-			Geometry pointBuffer = null;
+            IxPoiSelector poiSelector = null;
+            IxPointaddressSelector pointAddressSelector = null;
+            if(type == 1) {//POI
+                poiSelector = new IxPoiSelector(conn);
+            }else {//点门牌
+                pointAddressSelector = new IxPointaddressSelector(conn);
+            }
 
 			for (TipsDao tip : tipsList) {
 
 				Geometry tipGeo = isDeleteLink == true ? getDeleteLinkGeo(tip, selector, operator)
 						: GeoTranslator.transform(tip.getWktLocation(), 0.00001, 5);
-				
-				if(isDeleteLink){
-					poiList.addAll(handlePoiRelateDeleteLink(tip,poiSelector));
-				}
-				
-				if(tipGeo == null){
-					continue;
-				}
-				//pointBuffer = tipGeo.buffer(GeometryUtils.convert2Degree(buffer));
-				
-				//与web端保持一致，转换为墨卡托投影
-				Geometry wgs2mector = GeometryUtils.lonLat2Mercator(tipGeo);
-				Geometry pointBuffermector = wgs2mector.buffer(buffer);
-				pointBuffer = GeometryUtils.Mercator2lonLat(pointBuffermector);
 
-				String wkt = GeoTranslator.jts2Wkt(pointBuffer); // buffer
-
-				String sql = String.format(
-						"select p.* from IX_POI p WHERE sdo_within_distance(p.geometry, sdo_geometry('%s' , 8307), 'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE' AND p.U_RECORD <> 2",
-						wkt);
-
-				pstmt = conn.prepareStatement(sql);
-
-				resultSet = pstmt.executeQuery();
-
-				while (resultSet.next()) {
-
-					IxPoi ixPoi = new IxPoi();
-
-					ReflectionAttrUtils.executeResultSet(ixPoi, resultSet);
-
-					boolean isExist = isPoiEquals(poiList, ixPoi);
-
-					if (isExist) {
-						continue;
-					}
-
-					Geometry guidPoint = GeoTranslator.point2Jts(ixPoi.getxGuide(), ixPoi.getyGuide());
-					
-					Coordinate coor = GeometryUtils.GetNearestPointOnLine(guidPoint.getCoordinate(), tipGeo);
-					
-					double distance = GeometryUtils.getDistance(coor, guidPoint.getCoordinate());
-
-					if (isHandle == false && distance < 3) {
-						continue;
-					}
-					if (isHandle == true && distance > 3) {
-						continue;
-					}
-
-					poiList.add(ixPoi);
-				}
+                if(type == 1) {//POI
+                    List<IxPoi> poiList = getRelatePois(tip, tipGeo, conn, isDeleteLink, isHandle,
+                            poiSelector, buffer);
+                    for (IxPoi poi : poiList) {
+                        JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+                        JSONObject obj = JSONObject.fromObject(poi, jsonConfig);
+                        array.add(obj);
+                    }
+                }else {//点门牌
+                    List<IxPointaddress> pointAddressList = getRelatePoints(tip, tipGeo, conn, isDeleteLink, isHandle,
+                            pointAddressSelector, buffer);
+                    for (IxPointaddress pointAddress : pointAddressList) {
+                        JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+                        JSONObject obj = JSONObject.fromObject(pointAddress, jsonConfig);
+                        array.add(obj);
+                    }
+                }
 			}
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -2806,10 +2767,140 @@ public class TipsSelector {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-		return poiList;
+		return array;
 	}
 
-	/**
+    private List<IxPoi> getRelatePois(TipsDao tip, Geometry tipGeo, Connection conn, boolean isDeleteLink,
+                                    boolean isHandle, IxPoiSelector poiSelector, int buffer) throws Exception {
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        List<IxPoi> poiList = new ArrayList<>();
+        try {
+            if (isDeleteLink) {
+                poiList.addAll(handlePoiRelateDeleteLink(tip, poiSelector));
+            }
+            if (tipGeo == null) {
+                return poiList;
+            }
+
+            //与web端保持一致，转换为墨卡托投影
+            Geometry wgs2mector = GeometryUtils.lonLat2Mercator(tipGeo);
+            Geometry pointBuffermector = wgs2mector.buffer(buffer);
+            Geometry pointBuffer = GeometryUtils.Mercator2lonLat(pointBuffermector);
+
+            String wkt = GeoTranslator.jts2Wkt(pointBuffer); // buffer
+
+            String sql = String.format(
+                    "select p.* from IX_POI p WHERE sdo_within_distance(p.geometry, sdo_geometry('%s' , 8307), 'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE' AND p.U_RECORD <> 2",
+                    wkt);
+
+            pstmt = conn.prepareStatement(sql);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                IxPoi ixPoi = new IxPoi();
+
+                ReflectionAttrUtils.executeResultSet(ixPoi, resultSet);
+
+                boolean isExist = isPoiEquals(poiList, ixPoi);
+
+                if (isExist) {
+                    continue;
+                }
+
+                Geometry guidPoint = GeoTranslator.point2Jts(ixPoi.getxGuide(), ixPoi.getyGuide());
+
+                Coordinate coor = GeometryUtils.GetNearestPointOnLine(guidPoint.getCoordinate(), tipGeo);
+
+                double distance = GeometryUtils.getDistance(coor, guidPoint.getCoordinate());
+
+                if (isHandle == false && distance < 3) {
+                    continue;
+                }
+                if (isHandle == true && distance > 3) {
+                    continue;
+                }
+
+                poiList.add(ixPoi);
+            }
+        }catch (Exception e) {
+            throw new Exception(tip.getId() + " getRelatePois error: " + e.getMessage(), e);
+        }finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+        return poiList;
+    }
+
+    private List<IxPointaddress> getRelatePoints(TipsDao tip, Geometry tipGeo, Connection conn, boolean isDeleteLink,
+                                      boolean isHandle, IxPointaddressSelector pointAddressSelector, int buffer) throws Exception {
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        List<IxPointaddress> pointAddressList = new ArrayList<>();
+        try {
+            if (isDeleteLink) {
+                pointAddressList.addAll(handlePointAddrRelateDeleteLink(tip, pointAddressSelector));
+            }
+            if (tipGeo == null) {
+                return pointAddressList;
+            }
+
+            //与web端保持一致，转换为墨卡托投影
+            Geometry wgs2mector = GeometryUtils.lonLat2Mercator(tipGeo);
+            Geometry pointBuffermector = wgs2mector.buffer(buffer);
+            Geometry pointBuffer = GeometryUtils.Mercator2lonLat(pointBuffermector);
+
+            String wkt = GeoTranslator.jts2Wkt(pointBuffer); // buffer
+
+            String sql = String.format(
+                    "select p.* from IX_POINTADDRESS p WHERE sdo_within_distance(p.geometry, sdo_geometry('%s' , 8307), 'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE' AND p.U_RECORD <> 2",
+                    wkt);
+
+            pstmt = conn.prepareStatement(sql);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                IxPointaddress pointAddress = new IxPointaddress();
+
+                ReflectionAttrUtils.executeResultSet(pointAddress, resultSet);
+
+                boolean isExist = isPointAddressEquals(pointAddressList, pointAddress);
+
+                if (isExist) {
+                    continue;
+                }
+
+                Geometry guidPoint = GeoTranslator.point2Jts(pointAddress.getxGuide(), pointAddress.getyGuide());
+
+                Coordinate coor = GeometryUtils.GetNearestPointOnLine(guidPoint.getCoordinate(), tipGeo);
+
+                double distance = GeometryUtils.getDistance(coor, guidPoint.getCoordinate());
+
+                if (isHandle == false && distance < 3) {
+                    continue;
+                }
+                if (isHandle == true && distance > 3) {
+                    continue;
+                }
+
+                pointAddressList.add(pointAddress);
+            }
+        }catch (Exception e) {
+            throw new Exception(tip.getId() + " getRelatePoints error: " + e.getMessage(), e);
+        }finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+        return pointAddressList;
+    }
+
+
+
+    /**
 	 * poi去重
 	 * @param poiList
 	 * @param poi
@@ -2827,6 +2918,19 @@ public class TipsSelector {
 		
 		return result;
 	}
+
+    private boolean isPointAddressEquals(List<IxPointaddress> pointAddressList,IxPointaddress pointAddress){
+        boolean result = false;
+
+        for(IxPointaddress item:pointAddressList){
+            if(pointAddress.getPid() == item.getPid()){
+                result = true;
+                break;
+            }
+        }
+
+        return result;
+    }
 	
 	/**
 	 * 查找引导link为形状删除linkPid的poi
@@ -2859,6 +2963,38 @@ public class TipsSelector {
 
 		return poiList;
 	}
+
+    /**
+     * 查找引导link为形状删除linkPid的pointaddress
+     *
+     * @param tip
+     * @param selector
+     * @return
+     * @throws Exception
+     */
+    private List<IxPointaddress> handlePointAddrRelateDeleteLink(TipsDao tip, IxPointaddressSelector selector) throws Exception {
+        List<IxPointaddress> pointaddressList = new ArrayList<>();
+
+        String relateInfo = getDeepRelateId(tip);
+
+        if (relateInfo.isEmpty() || relateInfo.contains("_") == false)
+            return pointaddressList;
+
+        int index = relateInfo.indexOf('_');
+
+        String type = relateInfo.substring(0, index);
+        String relateId = relateInfo.substring(index + 1);
+
+        if (type.equals("1") == false) {
+            return pointaddressList;
+        }
+
+        List<IxPointaddress> pointAddresses = selector.loadIxPointAddrByLinkPid(Integer.valueOf(relateId), true);
+
+        pointaddressList.addAll(pointAddresses);
+
+        return pointaddressList;
+    }
 
 	/**
 	 * 形状删除的测线tips

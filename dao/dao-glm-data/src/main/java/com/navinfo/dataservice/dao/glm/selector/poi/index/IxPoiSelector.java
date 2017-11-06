@@ -690,4 +690,115 @@ public class IxPoiSelector extends AbstractSelector {
 
 		return array;
 	}
+	
+	
+	/**
+	 * 查询POI的省市县名称
+	 * @param pid
+	 * @return
+	 * @throws Exception
+	 */
+	public String getPoiAdminName(long pid) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("WITH T1 AS");
+		sb.append(" (SELECT AAN1.REGION_ID, AAN1.NAME");
+		sb.append("    FROM IX_POI P, AD_ADMIN_NAME AAN1");
+		sb.append("   WHERE P.REGION_ID = AAN1.REGION_ID");
+		sb.append("     AND AAN1.LANG_CODE = 'CHI'");
+		sb.append("     AND AAN1.NAME_CLASS = 1");
+		sb.append("     AND P.PID = ?),");
+		sb.append("T2 AS");
+		sb.append(" (SELECT AAN2.NAME      AS NAME2,");
+		sb.append("         AAN2.REGION_ID AS REGION2,");
+		sb.append("         T1.NAME        AS NAME1,");
+		sb.append("         T1.REGION_ID   AS REGION1");
+		sb.append("    FROM AD_ADMIN_NAME AAN2, T1");
+		sb.append("   WHERE AAN2.REGION_ID =");
+		sb.append("         (SELECT AAG1.REGION_ID_UP");
+		sb.append("            FROM AD_ADMIN_GROUP AAG1");
+		sb.append("           WHERE AAG1.GROUP_ID = (SELECT GROUP_ID");
+		sb.append("                                    FROM AD_ADMIN_PART");
+		sb.append("                                   WHERE REGION_ID_DOWN = T1.REGION_ID");
+		sb.append("                                     AND ROWNUM = 1))");
+		sb.append("     AND AAN2.LANG_CODE = 'CHI'");
+		sb.append("     AND AAN2.NAME_CLASS = 1)");
+		sb.append("SELECT AAN3.NAME AS PROVINCE, T2.NAME2 AS CITY, T1.NAME AS COUNTY");
+		sb.append("  FROM AD_ADMIN_NAME AAN3, T2, T1");
+		sb.append(" WHERE AAN3.REGION_ID =");
+		sb.append("       (SELECT AAG1.REGION_ID_UP");
+		sb.append("          FROM AD_ADMIN_GROUP AAG1");
+		sb.append("         WHERE AAG1.GROUP_ID = (SELECT GROUP_ID");
+		sb.append("                                  FROM AD_ADMIN_PART");
+		sb.append("                                 WHERE REGION_ID_DOWN = T2.REGION2");
+		sb.append("                                   AND ROWNUM = 1))");
+		sb.append("   AND AAN3.LANG_CODE = 'CHI'");
+		sb.append("   AND AAN3.NAME_CLASS = 1");
+		try{
+			log.info("查询POI行政区划名称sql:" + sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setLong(1, pid);
+			rs = pstmt.executeQuery();
+			String county = "";
+			String city = "";
+			String province = "";
+			if (rs.next()){
+				province = rs.getString("PROVINCE");
+				city = rs.getString("CITY");
+				county = rs.getString("COUNTY");
+			}
+			
+			return  province + city + county;
+		}catch(Exception e){
+			log.error("查询POI行政区划名称错误: " + e.getMessage());
+			throw e;
+		}finally{
+			DBUtils.closeResultSet(rs);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	/**
+	 * 根据regionId查询上一级的行政区划名称和regionId
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getUpAdminNameRegion(int regionId) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		JSONObject data = new JSONObject();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select aan2.name, aan2.region_id");
+		sb.append("  from ad_admin_name aan2");
+		sb.append(" where aan2.region_id = ");
+		sb.append("       (select aag1.region_id_up");
+		sb.append("          from ad_admin_group aag1");
+		sb.append("         where aag1.group_id = (select group_id");
+		sb.append("                                  from ad_admin_part");
+		sb.append("                                 where region_id_down = ?");
+		sb.append("                                   and rownum = 1))");
+		sb.append("    and aan2.lang_code='CHI'");
+		sb.append("    and aan2.name_class=1");
+		try{
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1, regionId);
+			rs = pstmt.executeQuery();
+			String name = "";
+			int upRegionId = 0;
+			if (rs.next()){
+				name = rs.getString("name");
+				upRegionId = rs.getInt("region_id");
+			}
+			data.put("name", name);
+			data.put("regionId", upRegionId);
+			
+			return data;
+		}catch(Exception e){
+			throw e;
+		}finally{
+			DBUtils.closeResultSet(rs);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
 }

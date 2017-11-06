@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.search.IxPointaddressSearch;
 import com.navinfo.dataservice.dao.glm.selector.SearchAllObject;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.dataservice.dao.tranlsate.entity.TranslateLog;
@@ -351,6 +352,12 @@ public class EditController extends BaseController {
                                 Connection conn) throws Exception {
 
         JSONObject json = obj.Serialize(ObjLevel.FULL);
+        
+        // getByPid POI查询增加返回行政区划名称
+        if (ObjType.IXPOI.toString().equals(objType)){
+        	IxPoiSelector selector = new IxPoiSelector(conn);
+        	json.put("provinceCityCounty", selector.getPoiAdminName((long)pid));
+        }
 
         if (!json.containsKey("geometry")) {
 

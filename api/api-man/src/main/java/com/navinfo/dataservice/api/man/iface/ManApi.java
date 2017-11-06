@@ -39,15 +39,6 @@ public interface ManApi{
 	 */
 	public Map<String, Integer> getTaskBySubtaskId(int subtaskId) throws Exception;
 	/**
-	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
-	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
-	 * @param phaseId
-	 * @return
-	 * @throws Exception 
-	 */
-	public void taskUpdateCmsProgress(int phaseId,int status,String message) throws Exception;
-
-	/**
 	 * 更新job步骤的执行状态
 	 * @param phaseId
 	 * @param status 2成功，3失败，4无数据

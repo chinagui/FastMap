@@ -338,16 +338,21 @@ public class CheckController extends BaseController {
 
 		String parameter = request.getParameter("parameter");
 		logger.debug("listPoiResults:poi检查结果列表查询接口:parameter:" + parameter);
+		
 		Connection conn = null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId = jsonReq.getInt("subtaskId");
 			int dbId = jsonReq.getInt("dbId");
 
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
-			Page page = selector.listPoiCheckResultList(jsonReq, subtaskId);
+			Page page = selector.listPoiCheckResultList(jsonReq, subtaskId,userId,secondWorkItem);
 
 			logger.info("end check/listPoiResults");
 			// logger.debug(data);

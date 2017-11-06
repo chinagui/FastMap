@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.column.job;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
@@ -16,7 +17,7 @@ public class InfoPoiMultiSrc2FmDayJobRequest extends AbstractJobRequest {
 	protected int dbId ;
 	protected int taskId ;
 	protected int subtaskId ;
-	protected int bSourceId ;
+	protected String bSourceId ;
 	protected JSONObject data;
 	
 	
@@ -45,11 +46,11 @@ public class InfoPoiMultiSrc2FmDayJobRequest extends AbstractJobRequest {
 		this.subtaskId = subtaskId;
 	}
 
-	public int getBSourceId() {
+	public String getBSourceId() {
 		return bSourceId;
 	}
 
-	public void setBSourceId(int bSourceId) {
+	public void setBSourceId(String bSourceId) {
 		this.bSourceId = bSourceId;
 	}
 
@@ -87,7 +88,7 @@ public class InfoPoiMultiSrc2FmDayJobRequest extends AbstractJobRequest {
 			if(dbId==0)throw new JobException("传入大区库不能为空.");
 			if(taskId==0)throw new JobException("传入任务号不能为空.");
 			if(subtaskId==0)throw new JobException("传入子任务号不能为空.");
-			if(bSourceId==0)throw new JobException("传入bSourceId不能为空.");
+			if(bSourceId==null || StringUtils.isEmpty(bSourceId))throw new JobException("传入bSourceId不能为空.");
 			if(data==null){
 					throw new JobException("传入poi数据不能为空.");
 			}

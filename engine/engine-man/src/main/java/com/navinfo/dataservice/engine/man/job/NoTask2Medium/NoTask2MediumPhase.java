@@ -1,18 +1,14 @@
 package com.navinfo.dataservice.engine.man.job.NoTask2Medium;
 
 import java.sql.Connection;
-
 import org.apache.commons.dbutils.DbUtils;
-
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
-import com.navinfo.dataservice.engine.man.job.JobService;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
-
 import net.sf.json.JSONObject;
 
 public class NoTask2MediumPhase extends JobPhase {

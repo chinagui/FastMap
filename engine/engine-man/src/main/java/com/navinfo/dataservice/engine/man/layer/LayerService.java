@@ -10,33 +10,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import net.sf.json.JSONObject;
-import oracle.sql.CLOB;
-import oracle.sql.STRUCT;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-
-import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.engine.man.message.MessageOperation;
-import com.navinfo.dataservice.engine.man.common.DbOperation;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
-import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
-import com.navinfo.navicommons.database.DataBaseUtils;
+import com.navinfo.dataservice.engine.man.common.DbOperation;
+import com.navinfo.dataservice.engine.man.task.TaskOperation;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /** 
 * @ClassName:  CustomisedLayerService 

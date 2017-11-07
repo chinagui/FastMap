@@ -945,7 +945,7 @@ public class NiValExceptionSelector {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年6月23日 下午4:07:22
 	 */
-	public Page listPoiCheckResultList(JSONObject params, int subtaskId)
+	public Page listPoiCheckResultList(JSONObject params, int subtaskId,long userId,String secondWorkItem)
 			throws Exception {
 		log.info(" begin time"
 				+ DateUtils.dateToString(new Date(),
@@ -961,7 +961,13 @@ public class NiValExceptionSelector {
 		}
 		long pageStartNum = (pageNum - 1) * pageSize + 1;
 		long pageEndNum = pageNum * pageSize;
-		List<Integer> pids = getCheckPidList(conn, subtaskId);
+		List<Integer> pids = new ArrayList<>();
+		if(StringUtils.isBlank(secondWorkItem)){//日编原先流程
+			pids = getCheckPidList(conn, subtaskId);
+		}else{//支持深度信息查询。
+			pids = getDeepCheckPidList(conn, subtaskId,userId,secondWorkItem);
+		}
+	
 
 		log.info("pids :" + pids.size());
 		try {
@@ -1096,6 +1102,50 @@ public class NiValExceptionSelector {
 		}
 	}
 	
+	/**
+	 * 查询深度信息当前作业员子任务范围内的pid
+	 * @param conn
+	 * @param subtaskId
+	 * @param userId
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception 
+	 */
+	private List<Integer> getDeepCheckPidList(Connection conn, int subtaskId, long userId, String secondWorkItem) throws Exception {
+		List<Integer> pids = new ArrayList<Integer>();
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT DISTINCT PID ");
+		sb.append(" FROM POI_COLUMN_STATUS S, POI_COLUMN_WORKITEM_CONF CF ");
+		sb.append(" WHERE S.WORK_ITEM_ID = CF.WORK_ITEM_ID ");
+		sb.append(" AND S.TASK_ID = ? ");
+		sb.append(" AND HANDLER = ? ");
+		sb.append(" AND SECOND_WORK_STATUS IN (1, 2) ");
+		sb.append(" AND CF.SECOND_WORK_ITEM = ? ");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1,subtaskId);
+			pstmt.setLong(2, userId);
+			pstmt.setString(3, secondWorkItem);
+			
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				pids.add(resultSet.getInt("pid"));
+			}
+			
+			return pids;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+
 	/**
 	 * @Description: 子任务范围内pointaddress检查结果列表查询接口
 	 * @param params

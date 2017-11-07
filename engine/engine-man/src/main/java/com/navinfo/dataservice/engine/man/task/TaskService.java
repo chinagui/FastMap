@@ -22,10 +22,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.fcc.iface.FccApi;
-import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -45,7 +41,6 @@ import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
@@ -727,34 +722,6 @@ public class TaskService {
 			//Task task1 = getTaskListWithLeader(conn, taskIds);
 			if(oldTask.getStatus()==1){
 				openTaskIds.add(bean.getTaskId());
-			}
-			
-			//常规采集任务修改了出品时间或批次，其他常规任务同步更新
-			JSONObject json2 = new JSONObject();
-			if((oldTask.getBlockId()!=0)&&(oldTask.getType()==0)){
-				if(json.containsKey("lot")){
-					json2.put("lot", json.getString("lot"));
-				}
-				if(json.containsKey("producePlanStartDate")){
-					json2.put("producePlanStartDate", json.getString("producePlanStartDate"));
-				}
-				if(json.containsKey("producePlanEndDate")){
-					json2.put("producePlanEndDate", json.getString("producePlanEndDate"));
-				}
-			}
-			
-			if(!json2.isEmpty()){
-				List<Task> taskList = getLatestTaskListByBlockId(oldTask.getBlockId());
-				for(Task task2:taskList){
-					if((task2.getType()==1)||(task2.getType()==2)||(task2.getType()==3)){
-						Task taskTemp = (Task) JsonOperation.jsonToBean(json2,Task.class);
-						taskTemp.setTaskId(task2.getTaskId());
-						TaskOperation.updateTask(conn, taskTemp);
-						if(task2.getStatus()==1){
-							openTaskIds.add(bean.getTaskId());
-						}
-					}
-				}
 			}
 			
 			List<Task> openTaskList = new ArrayList<Task>();
@@ -1878,153 +1845,201 @@ public class TaskService {
 	 */
 	public String close(int taskId, long userId,String overdueReason,String overdueOtherReason)throws Exception{
 		Connection conn = null;
-		Connection dailyConn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
-			Task task = queryByTaskId(conn,taskId);
+			Task task = queryNoGeoByTaskId(conn,taskId);
 			//更新任务状态
 			log.info("更新"+taskId+"任务状态为关闭");
 			TaskOperation.updateStatus(conn, taskId, 0);
-			//任务关闭清空该任务的非作业规划数据
-			Region region = RegionService.getInstance().query(conn,task.getRegionId());
-			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
-			String updateSql="DELETE FROM data_plan t where t.is_plan_selected=0 and t.task_id="+ taskId;
-			QueryRunner run=new QueryRunner();
-			run.execute(dailyConn, updateSql);
 			//若有延迟原因，需更新进入任务表
 			if(!StringUtils.isEmpty(overdueReason)){
+				log.info("update overdueReason");
 				Task beanTask=new Task();
 				beanTask.setTaskId(taskId);
 				beanTask.setOverdueReason(overdueReason);
 				beanTask.setOverdueOtherReason(overdueOtherReason);
 				TaskOperation.updateTask(conn, beanTask);
 			}
+			if(task.getType()==0&&task.getProgramType()==4){
+				//关闭日编任务
+				log.info("close day tasks");
+				closeDayTask(conn,task);
+			}
 			//更新block状态：如果所有task都已关闭，则block状态置3
 			log.info("更新"+taskId+"任务对应的block状态，如果所有task都已关闭，则block状态置3关闭");
-			TaskOperation.closeBlock(conn,task.getBlockId());
-			//快线采集任务关闭，需批中线采集任务id
-//			if(task.getType()==0&&task.getBlockId()==0){
-//				log.info(taskId+"任务为快线采集任务，关闭时需同步批poi，tips的对应的中线任务号");
-//				Set<Integer> collectTask = batchMidTask(conn,userId,task);
-//				if(collectTask!=null&&collectTask.size()>0){
-//					try {
-//						log.info(taskId+"任务为快线采集任务，快转中消息推送start");
-//						List<Object[]> msgContentList=new ArrayList<Object[]>();
-//						String msgTitle="快线转中线";
-//						JSONArray taskIds=new JSONArray();
-//						taskIds.addAll(collectTask);
-//						List<Task> pushtask = getTaskListWithLeader(conn, taskIds);
-//						for(Task t:pushtask){
-//							if(t.getGroupLeader()!=0){
-//								Object[] msgTmp=new Object[4];
-//								msgTmp[0]=t.getGroupLeader();//收信人
-//								msgTmp[1]=msgTitle;//消息头
-//								msgTmp[2]="快线"+task.getName()+"采集任务的数据，已落入中线"+t.getName()+"采集任务,请关注";//消息内容
-//								//关联要素
-//								JSONObject msgParam = new JSONObject();
-//								msgParam.put("relateObject", "TASK");
-//								msgParam.put("relateObjectId", t.getTaskId());
-//								msgTmp[3]=msgParam.toString();//消息对象
-//								msgContentList.add(msgTmp);
-//							}
-//						}
-//						if(msgContentList.size()>0){
-//							taskPushMsgByMsg(conn,msgContentList,userId);	
-//							log.info(taskId+"任务为快线采集任务，快转中消息推送end");
-//						}						
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//						log.error("task关闭消息发送失败,原因:"+e.getMessage(), e);
-//					}
-//				}
-//			}
+			TaskOperation.closeBlock(conn,task.getBlockId());			
 			//记录关闭时间
-			TimelineService.recordTimeline(taskId, "task",0, conn);
-			
+			TimelineService.recordTimeline(taskId, "task",0, conn);			
 			//发送消息
 			try {
-				List<Object[]> msgContentList=new ArrayList<Object[]>();
-				String msgTitle="task关闭";
-				JSONArray taskIds=new JSONArray();
-				taskIds.add(task.getTaskId());
-				List<Task> pushtask = getTaskListWithLeader(conn, taskIds);
-				Task taskLeader=new Task();
-				if(pushtask!=null&&pushtask.size()>0){taskLeader=pushtask.get(0);}
-				if(taskLeader.getGroupLeader()!=0){
-					Object[] msgTmp=new Object[4];
-					msgTmp[0]=taskLeader.getGroupLeader();//收信人
-					msgTmp[1]=msgTitle;//消息头
-					msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
-					//关联要素
-					JSONObject msgParam = new JSONObject();
-					msgParam.put("relateObject", "TASK");
-					msgParam.put("relateObjectId", task.getTaskId());
-					msgTmp[3]=msgParam.toString();//消息对象
-					msgContentList.add(msgTmp);
-				}
-				//生管角色发消息
-				String userSql="SELECT DISTINCT M.USER_ID, I.USER_REAL_NAME,I.USER_EMAIL"
-						+ "  FROM ROLE_USER_MAPPING M, USER_INFO I"
-						+ " WHERE M.ROLE_ID = 3"
-						+ "   AND M.USER_ID = I.USER_ID";
-				Map<Long, UserInfo> userIdList=UserInfoOperation.getUserInfosBySql(conn, userSql);
-				for(Long userIdTmp:userIdList.keySet()){
-					//String pushUserName =userIdList.get(userIdTmp).getUserRealName();
-					Object[] msgTmp=new Object[4];
-					msgTmp[0]=userIdTmp;//收信人
-					msgTmp[1]=msgTitle;//消息头
-					msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
-					//关联要素
-					JSONObject msgParam = new JSONObject();
-					msgParam.put("relateObject", "TASK");
-					msgParam.put("relateObjectId", task.getTaskId());
-					msgTmp[3]=msgParam.toString();//消息对象
-					msgContentList.add(msgTmp);
-				}
-				//若是采集任务，还需向其所在区域的日编组长，月编组长发消息
-				String userLeaderSql="SELECT DISTINCT I.USER_ID, I.USER_REAL_NAME, I.USER_EMAIL"
-						+ "  FROM USER_INFO I, TASK T, TASK CT, USER_GROUP G"
-						+ " WHERE CT.TASK_ID = "+task.getTaskId()
-						+ "   AND CT.TYPE = 0"
-						+ "   AND CT.PROGRAM_ID = T.PROGRAM_ID"
-						+ "   AND CT.BLOCK_ID = T.BLOCK_ID"
-						+ "   AND T.LATEST = 1"
-						+ "   AND T.TYPE IN (1, 2)"
-						+ "   AND T.GROUP_ID != 0"
-						+ "   AND T.GROUP_ID = G.GROUP_ID"
-						+ "   AND G.LEADER_ID = I.USER_ID";
-				Map<Long, UserInfo> userIdLeaderList=UserInfoOperation.getUserInfosBySql(conn, userLeaderSql);
-				for(Long userIdTmp:userIdLeaderList.keySet()){
-					//String pushUserName =userIdList.get(userIdTmp).getUserRealName();
-					Object[] msgTmp=new Object[4];
-					msgTmp[0]=userIdTmp;//收信人
-					msgTmp[1]=msgTitle;//消息头
-					msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
-					//关联要素
-					JSONObject msgParam = new JSONObject();
-					msgParam.put("relateObject", "TASK");
-					msgParam.put("relateObjectId", task.getTaskId());
-					msgTmp[3]=msgParam.toString();//消息对象
-					msgContentList.add(msgTmp);
-				}
-				
-				if(msgContentList.size()>0){
-					taskPushMsgByMsg(conn,msgContentList,userId);	
-				}
+				log.info("close push msg:"+taskId);
+				closePushMsg(conn,task,userId);
 			} catch (Exception e) {
 				e.printStackTrace();
 				log.error("task关闭消息发送失败,原因:"+e.getMessage(), e);
 			}
+			log.info("end close task");
 			return "";
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			DbUtils.rollbackAndCloseQuietly(dailyConn);
-			
+			DbUtils.rollbackAndCloseQuietly(conn);			
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
-			DbUtils.commitAndCloseQuietly(dailyConn);
+		}
+	}
+	/**
+	 * 判断是否关闭日编任务
+	 * 采集任务关闭成功后，增加判断：如果同时满足如下3个条件，则关闭当前项目下的所有日编任务
+	 * 1.当前项目下所有采集任务均关闭状态
+	 * 2.当前项目下所有采集任务均无tips成果
+	 * 3.当前项目下所有日编任务均无子任务
+	 * @param conn
+	 * @param task
+	 * @throws Exception
+	 */
+	private void closeDayTask(Connection conn,Task task) throws Exception{
+		Connection fccConn = null;
+		try{
+			//1.当前项目下所有采集任务均关闭状态
+			String sql="select count(1) C from task where type=0 and status!=0 and program_id="+task.getProgramId();
+			QueryRunner runner=new QueryRunner();
+			int unCloseCollectNum=runner.query(conn, sql, new ResultSetHandler<Integer>(){
+	
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						return rs.getInt(1);
+					}
+					return 0;
+				}					
+			});
+			if(unCloseCollectNum!=0){log.info("存在未关闭的采集任务，无法关闭日编任务");return;}
+				
+			List<Task> tasks = getNoGeoTaskByProgramId(conn, task.getProgramId());
+			Set<Integer> dayTaskIds=new HashSet<>();
+			Set<Integer> colTaskIds=new HashSet<>();
+			for(Task t:tasks){
+				if(t.getType()==0){colTaskIds.add(t.getTaskId());}
+				else if(t.getType()==1){dayTaskIds.add(t.getTaskId());}
+			}
+			//3.当前项目下所有日编任务均无子任务
+			sql="select count(1) C from subtask where task_id in "+dayTaskIds.toString().replace("[", "(").replace("]", ")");
+			int daySubtaskNum=runner.query(conn, sql, new ResultSetHandler<Integer>(){
+
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						return rs.getInt(1);
+					}
+					return 0;
+				}					
+			});
+			if(daySubtaskNum!=0){log.info("日编任务存在子任务，无法关闭日编任务");return;}
+			//2.当前项目下所有采集任务均无tips成果
+			fccConn=DBConnector.getInstance().getTipsIdxConnection();
+			sql="select count(1) C from tips_index where s_qtaskid in "+colTaskIds.toString().replace("[", "(").replace("]", ")");
+			int tipsNum=runner.query(fccConn, sql, new ResultSetHandler<Integer>(){
+
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						return rs.getInt(1);
+					}
+					return 0;
+				}					
+			});
+			if(tipsNum!=0){log.info("采集任务存在tips，无法关闭日编任务");return;}
+			log.info("关闭日编任务");
+			//关闭日编任务
+			for(int dayTaskId:dayTaskIds){
+				TaskOperation.updateStatus(conn, dayTaskId, 0);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(fccConn);
+			
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(fccConn);
+		}
+	}
+	
+	/**
+	 * 任务关闭时进行消息推送
+	 * @param conn
+	 * @param task
+	 * @param userId
+	 * @throws Exception
+	 */
+	private void closePushMsg(Connection conn,Task task,long userId) throws Exception{
+		List<Object[]> msgContentList=new ArrayList<Object[]>();
+		String msgTitle="task关闭";
+		JSONArray taskIds=new JSONArray();
+		taskIds.add(task.getTaskId());
+		List<Task> pushtask = getTaskListWithLeader(conn, taskIds);
+		Task taskLeader=new Task();
+		if(pushtask!=null&&pushtask.size()>0){taskLeader=pushtask.get(0);}
+		if(taskLeader.getGroupLeader()!=0){
+			Object[] msgTmp=new Object[4];
+			msgTmp[0]=taskLeader.getGroupLeader();//收信人
+			msgTmp[1]=msgTitle;//消息头
+			msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
+			//关联要素
+			JSONObject msgParam = new JSONObject();
+			msgParam.put("relateObject", "TASK");
+			msgParam.put("relateObjectId", task.getTaskId());
+			msgTmp[3]=msgParam.toString();//消息对象
+			msgContentList.add(msgTmp);
+		}
+		//生管角色发消息
+		String userSql="SELECT DISTINCT M.USER_ID, I.USER_REAL_NAME,I.USER_EMAIL"
+				+ "  FROM ROLE_USER_MAPPING M, USER_INFO I"
+				+ " WHERE M.ROLE_ID = 3"
+				+ "   AND M.USER_ID = I.USER_ID";
+		Map<Long, UserInfo> userIdList=UserInfoOperation.getUserInfosBySql(conn, userSql);
+		for(Long userIdTmp:userIdList.keySet()){
+			//String pushUserName =userIdList.get(userIdTmp).getUserRealName();
+			Object[] msgTmp=new Object[4];
+			msgTmp[0]=userIdTmp;//收信人
+			msgTmp[1]=msgTitle;//消息头
+			msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
+			//关联要素
+			JSONObject msgParam = new JSONObject();
+			msgParam.put("relateObject", "TASK");
+			msgParam.put("relateObjectId", task.getTaskId());
+			msgTmp[3]=msgParam.toString();//消息对象
+			msgContentList.add(msgTmp);
+		}
+		//若是采集任务，还需向其所在区域的日编组长，月编组长发消息
+		String userLeaderSql="SELECT DISTINCT I.USER_ID, I.USER_REAL_NAME, I.USER_EMAIL"
+				+ "  FROM USER_INFO I, TASK T, TASK CT, USER_GROUP G"
+				+ " WHERE CT.TASK_ID = "+task.getTaskId()
+				+ "   AND CT.TYPE = 0"
+				+ "   AND CT.PROGRAM_ID = T.PROGRAM_ID"
+				+ "   AND CT.BLOCK_ID = T.BLOCK_ID"
+				+ "   AND T.LATEST = 1"
+				+ "   AND T.TYPE IN (1, 2)"
+				+ "   AND T.GROUP_ID != 0"
+				+ "   AND T.GROUP_ID = G.GROUP_ID"
+				+ "   AND G.LEADER_ID = I.USER_ID";
+		Map<Long, UserInfo> userIdLeaderList=UserInfoOperation.getUserInfosBySql(conn, userLeaderSql);
+		for(Long userIdTmp:userIdLeaderList.keySet()){
+			//String pushUserName =userIdList.get(userIdTmp).getUserRealName();
+			Object[] msgTmp=new Object[4];
+			msgTmp[0]=userIdTmp;//收信人
+			msgTmp[1]=msgTitle;//消息头
+			msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
+			//关联要素
+			JSONObject msgParam = new JSONObject();
+			msgParam.put("relateObject", "TASK");
+			msgParam.put("relateObjectId", task.getTaskId());
+			msgTmp[3]=msgParam.toString();//消息对象
+			msgContentList.add(msgTmp);
+		}
+		
+		if(msgContentList.size()>0){
+			taskPushMsgByMsg(conn,msgContentList,userId);	
 		}
 	}
 	/**
@@ -3137,14 +3152,14 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(meta);
 		}
 	}
-
+	
 	/**
 	 * @param conn 
 	 * @param programId
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public List<Task> getTaskByProgramId(final Connection conn, int programId) throws ServiceException {
+	public List<Task> getNoGeoTaskByProgramId(Connection conn, int programId) throws ServiceException {
 		try {
 			QueryRunner run = new QueryRunner();
 			
@@ -3172,18 +3187,31 @@ public class TaskService {
 						task.setWorkKind(rs.getString("WORK_KIND"));
 						task.setRegionId(rs.getInt("region_id"));
 						task.setLot(rs.getInt("LOT"));
-						try {
-							task.setGridIds(getGridMapByTaskId(conn,task.getTaskId()));
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
 						result.add(task);
 					}
 					return result;
 				}
 			};
 			List<Task> result =  run.query(conn, sql,rsHandler);
+			return result;			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getTaskByProgramId失败，原因为:" + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * @param conn 
+	 * @param programId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Task> getTaskByProgramId(final Connection conn, int programId) throws ServiceException {
+		try {
+			List<Task> result=getNoGeoTaskByProgramId(conn,programId);
+			for(Task t:result){
+				t.setGridIds(getGridMapByTaskId(conn,t.getTaskId()));
+			}
 			return result;
 			
 		} catch (Exception e) {

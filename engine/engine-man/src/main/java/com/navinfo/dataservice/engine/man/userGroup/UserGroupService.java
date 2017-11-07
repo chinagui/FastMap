@@ -303,7 +303,8 @@ public class UserGroupService {
 					selectSql += " and ug.group_subtype =" + conditionJson.get("groupSubtype");
 				}
 			}
-
+			selectSql += " order by ug.GROUP_NAME";
+			
 			ResultSetHandler<List<UserGroup>> rsHandler = new ResultSetHandler<List<UserGroup>>(){
 				public List<UserGroup> handle(ResultSet rs) throws SQLException {
 					List<UserGroup> list = new ArrayList<UserGroup>();
@@ -352,7 +353,7 @@ public class UserGroupService {
 					selectSql += " and ug.group_subtype =" + conditionJson.get("groupSubtype");
 				}
 			}
-			selectSql += " order by ug.group_id";
+			selectSql += " order by u.user_real_name,ug.group_NAME";
 			
 			ResultSetHandler<ArrayList<HashMap<?,?>>> rsHandler = new ResultSetHandler<ArrayList<HashMap<?,?>>>(){
 				public ArrayList<HashMap<?,?>> handle(ResultSet rs) throws SQLException {

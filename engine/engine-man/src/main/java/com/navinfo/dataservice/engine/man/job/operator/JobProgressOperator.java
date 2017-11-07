@@ -1,5 +1,11 @@
 package com.navinfo.dataservice.engine.man.job.operator;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 import com.alibaba.fastjson.JSON;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
@@ -8,13 +14,6 @@ import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.bean.JobStatus;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.navicommons.database.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * Created by wangshishuai3966 on 2017/7/7.

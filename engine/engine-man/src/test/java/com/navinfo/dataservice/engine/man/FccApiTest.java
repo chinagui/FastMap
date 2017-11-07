@@ -1,14 +1,12 @@
 package com.navinfo.dataservice.engine.man;
 
-import net.sf.json.JSONObject;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.engine.man.mqmsg.InfoChangeMsgHandler;
-import com.navinfo.dataservice.engine.man.mqmsg.SendEmailMsgHandler;
+
+import net.sf.json.JSONObject;
 
 public class FccApiTest extends InitApplication {
 	

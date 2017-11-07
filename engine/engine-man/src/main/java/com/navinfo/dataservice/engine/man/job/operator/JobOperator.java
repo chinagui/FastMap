@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.engine.man.job.operator;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.apache.commons.dbutils.ResultSetHandler;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.Job;
 import com.navinfo.dataservice.engine.man.job.bean.JobStatus;
@@ -7,11 +11,6 @@ import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import com.navinfo.navicommons.database.QueryRunner;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.dbutils.ResultSetHandler;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * Created by wangshishuai3966 on 2017/7/7.

@@ -1,21 +1,13 @@
 package com.navinfo.dataservice.engine.man.message;
 
-import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.UserInfo;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;

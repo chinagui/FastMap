@@ -1,5 +1,11 @@
 package com.navinfo.dataservice.engine.man.job.Tips2Mark;
 
+import java.sql.Connection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
@@ -13,13 +19,6 @@ import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.log4j.Logger;
-
-import java.sql.Connection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by wangshishuai3966 on 2017/7/6.

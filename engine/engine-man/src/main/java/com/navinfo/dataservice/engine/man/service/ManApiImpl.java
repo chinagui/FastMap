@@ -1,16 +1,13 @@
 package com.navinfo.dataservice.engine.man.service;
 
 import java.sql.Connection;
-import java.util.*;
-
-import com.navinfo.dataservice.engine.man.job.JobService;
-import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
-import net.sf.json.JSONArray;
-
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
@@ -27,6 +24,8 @@ import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.config.ConfigService;
 import com.navinfo.dataservice.engine.man.day2Month.Day2MonthService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.job.JobService;
+import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.produce.ProduceService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
@@ -42,7 +41,7 @@ import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
 import com.navinfo.navicommons.exception.ServiceException;
-
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 /*
  * @author mayunfei

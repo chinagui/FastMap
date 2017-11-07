@@ -10,31 +10,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.fileConvert.ImportOracle;
-import com.navinfo.dataservice.commons.fileConvert.LoadTab;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskRefer;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskReferOperation;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 public class commonTest extends InitApplication {

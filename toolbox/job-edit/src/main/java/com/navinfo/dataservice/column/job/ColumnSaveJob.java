@@ -22,8 +22,12 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
+import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
+import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
@@ -59,6 +63,8 @@ public class ColumnSaveJob extends AbstractJob {
 	public void execute() throws JobException {
 		
 		log.info("columnSave start...");
+		
+		String beginDate = DateUtils.getSysDateFormat();
 		
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 		
@@ -210,6 +216,10 @@ public class ColumnSaveJob extends AbstractJob {
 				}
 			}
 
+			String endDate = DateUtils.getSysDateFormat();
+			// 保存统计
+			insertLogStats(SysLogConstant.POI_COLUMN_SAVE_TYPE, SysLogConstant.POI_COLUMN_SAVE_DESC, userId, 
+					jobInfo.getId(), taskId, secondWorkItem, pidListL, beginDate, endDate);
 			
 			log.info("月编保存完成");
 		} catch (Exception e) {
@@ -603,5 +613,35 @@ public class ColumnSaveJob extends AbstractJob {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
-
+	
+	
+	/**
+	 * POI精编保存和提交JOB记录统计信息
+	 * @param logType
+	 * @param logDesc
+	 * @param userId
+	 * @param jobId
+	 * @param subtaskId
+	 * @param secondWorkItem
+	 * @param pids
+	 * @param startTime
+	 * @param endTime
+	 * @throws Exception
+	 */
+	public static void insertLogStats(int logType, String logDesc, int userId, long jobId, 
+			int subtaskId, String secondWorkItem, List<Long> pids, String startTime, String endTime) throws Exception{
+		try{
+            SysLogStats log = new SysLogStats();
+            log.setLogType(logType);
+            log.setLogDesc(logDesc+",jobId:"+jobId+",subTaskId:"+subtaskId+",secondWorkItem:"+secondWorkItem);
+            log.setBeginTime(startTime);
+            log.setEndTime(endTime);
+            log.setErrorMsg(pids.toString());
+            log.setUserId(String.valueOf(userId));
+            SysLogOperator.getInstance().insertSysLog(log);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
 }

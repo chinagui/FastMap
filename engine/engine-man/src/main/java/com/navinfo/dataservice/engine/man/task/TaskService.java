@@ -724,34 +724,6 @@ public class TaskService {
 				openTaskIds.add(bean.getTaskId());
 			}
 			
-			//常规采集任务修改了出品时间或批次，其他常规任务同步更新
-			JSONObject json2 = new JSONObject();
-			if((oldTask.getBlockId()!=0)&&(oldTask.getType()==0)){
-				if(json.containsKey("lot")){
-					json2.put("lot", json.getString("lot"));
-				}
-				if(json.containsKey("producePlanStartDate")){
-					json2.put("producePlanStartDate", json.getString("producePlanStartDate"));
-				}
-				if(json.containsKey("producePlanEndDate")){
-					json2.put("producePlanEndDate", json.getString("producePlanEndDate"));
-				}
-			}
-			
-			if(!json2.isEmpty()){
-				List<Task> taskList = getLatestTaskListByBlockId(oldTask.getBlockId());
-				for(Task task2:taskList){
-					if((task2.getType()==1)||(task2.getType()==2)||(task2.getType()==3)){
-						Task taskTemp = (Task) JsonOperation.jsonToBean(json2,Task.class);
-						taskTemp.setTaskId(task2.getTaskId());
-						TaskOperation.updateTask(conn, taskTemp);
-						if(task2.getStatus()==1){
-							openTaskIds.add(bean.getTaskId());
-						}
-					}
-				}
-			}
-			
 			List<Task> openTaskList = new ArrayList<Task>();
 			if(openTaskIds!=null&&openTaskIds.size()>0){
 				openTaskList = getTaskListWithLeader(conn, openTaskIds);

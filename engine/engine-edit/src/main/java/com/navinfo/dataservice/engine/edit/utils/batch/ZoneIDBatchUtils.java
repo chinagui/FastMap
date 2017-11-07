@@ -295,30 +295,30 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
             }
         }
 
-        for (IRow row : link.getZones()) {
-
-            RdLinkZone linkZone = (RdLinkZone) row;
-
-            //不处理其他面关联的linkzone
-            if (type != linkZone.getType() && regionId != linkZone.getRegionId()) {
-
-                continue;
-            }
-
-            String rowId = linkZone.getRowId();
-
-            if (linkZoneLeft != null && rowId.equals(linkZoneLeft.getRowId()) && (isBoundaryLeft || isContainOrCover)) {
-
-                continue;
-            }
-
-            if (linkZoneRight != null && rowId.equals(linkZoneRight.getRowId()) && (isBoundaryRight || isContainOrCover)) {
-
-                continue;
-            }
-
-            result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
-        }
+        //for (IRow row : link.getZones()) {
+        //
+        //    RdLinkZone linkZone = (RdLinkZone) row;
+        //
+        //    //不处理其他面关联的linkzone
+        //    if (type != linkZone.getType() && regionId != linkZone.getRegionId()) {
+        //
+        //        continue;
+        //    }
+        //
+        //    String rowId = linkZone.getRowId();
+        //
+        //    if (linkZoneLeft != null && rowId.equals(linkZoneLeft.getRowId()) && (isBoundaryLeft || isContainOrCover)) {
+        //
+        //        continue;
+        //    }
+        //
+        //    if (linkZoneRight != null && rowId.equals(linkZoneRight.getRowId()) && (isBoundaryRight || isContainOrCover)) {
+        //
+        //        continue;
+        //    }
+        //
+        //    result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
+        //}
 
         if (linkZoneLeft == null && (isBoundaryLeft || isContainOrCover)) {
 

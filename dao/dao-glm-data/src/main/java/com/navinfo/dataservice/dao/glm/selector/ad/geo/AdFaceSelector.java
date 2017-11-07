@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.glm.selector.ad.geo;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -14,10 +15,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -246,13 +244,15 @@ public class AdFaceSelector extends AbstractSelector {
      */
     public List<AdFace> loadRelateFaceByGeometry(Geometry geometry) {
         List<AdFace> faces = new ArrayList<AdFace>();
-        String sql = "select t1.geometry, t2.region_id from ad_face t1, ad_admin t2 where t1.u_record <> 2 and t2.u_record <> 2 and t1.region_id = t2.region_id and (t2.admin_type = 0 or t2.admin_type = 1 or t2.admin_type = 2 or t2.admin_type = 2.5 or t2.admin_type = 3 or t2.admin_type = 3.5 or t2.admin_type = 4 or t2.admin_type = 4.5 or t2.admin_type = 4.8 or t2.admin_type = 5 or t2.admin_type = 6 or t2.admin_type = 7) and sdo_relate(t1.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' ";
+        String sql = "select t1.geometry, t2.region_id from ad_face t1, ad_admin t2 where t1.u_record <> 2 and t2.u_record <> 2 and t1.region_id = t2.region_id and (t2.admin_type = 0 or t2.admin_type = 1 or t2.admin_type = 2 or t2.admin_type = 2.5 or t2.admin_type = 3 or t2.admin_type = 3.5 or t2.admin_type = 4 or t2.admin_type = 4.5 or t2.admin_type = 4.8 or t2.admin_type = 5 or t2.admin_type = 6 or t2.admin_type = 7) and sdo_relate(t1.geometry, sdo_geometry(?, 8307), 'mask=anyinteract') = 'TRUE' ";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
             pstmt = conn.prepareStatement(sql);
-            String wkt = GeoTranslator.jts2Wkt(geometry);
-            pstmt.setString(1, wkt);
+
+            Clob clob = ConnectionUtil.createClob(conn);
+            clob.setString(1, GeoTranslator.jts2Wkt(geometry));
+            pstmt.setClob(1, clob);
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 AdFace face = new AdFace();

@@ -243,7 +243,9 @@ public class PersonJob extends AbstractStatJob {
 						tips10Len += (int) subData.get("tips10Len");
 						for(Map.Entry<String, Object> enty : subData.entrySet()){
 							String tipsKey = enty.getKey();
-							if(tipsKey.startsWith("tips")){
+							//判断是否在tips的配置表中
+							String tipsCode = tipsKey.substring(4, 8);
+							if(tipsKey.startsWith("tips") && codeEditMethMap.containsKey(tipsCode)){
 								if(tipsKey.endsWith("AddNum") || tipsKey.endsWith("UpNum") || tipsKey.endsWith("DelNum")){
 									Map<String, Integer> taskTipsMap = new HashMap<>();
 									if(tipsTaskData.containsKey(taskId)){

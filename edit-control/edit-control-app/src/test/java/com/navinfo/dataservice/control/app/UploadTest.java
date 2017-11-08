@@ -53,7 +53,7 @@ public class UploadTest {
 			Map<String, Photo> photoMap=new HashMap<String, Photo>();
 			//1.2 解压文件
 			String filePath ="D:/temp/resources/upload";
-			UploadManager upMan = new UploadManager(0,filePath);
+			UploadManager upMan = new UploadManager(1664,filePath);
 			upMan.setSubtaskId(68);
 			UploadResult result = upMan.upload();
 			//读取poi文件，导入...

@@ -1568,6 +1568,12 @@ public class TaskJobUtil{
 					List<Task> list = new ArrayList<Task>();
 					while(rs.next()){
 						Task map = new Task();
+						map.setRoadPlanIn(rs.getInt("ROAD_PLAN_IN"));
+						map.setRoadPlanOut(rs.getInt("ROAD_PLAN_OUT"));
+						map.setPoiPlanIn(rs.getInt("POI_PLAN_IN"));
+						map.setPoiPlanOut(rs.getInt("POI_PLAN_OUT"));
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+
 						map.setBlockId(rs.getInt("BLOCK_ID"));
 						map.setTaskId(rs.getInt("TASK_ID"));
 						map.setName(rs.getString("NAME"));

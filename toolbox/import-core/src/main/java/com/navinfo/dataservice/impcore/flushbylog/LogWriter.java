@@ -70,8 +70,7 @@ public class LogWriter {
 
 			listener.preUpdate();
 			data = updateData(editLog);
-			if (data.get("result").equals(0) 
-					&& (!data.get("log").toString().equals(""))) {
+			if (data.get("result").equals(0)) {
 				listener.updateFailed(editLog, data.get("log").toString());
 			}
 

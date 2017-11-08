@@ -90,8 +90,8 @@ public class JobScriptsInterface {
 			}
 			JSONObject request = null;
 			JSONObject response = null;
-//			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
-			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
+			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+//			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
 			request = readJson(dir + "request" + File.separator + irequest);
 			// 初始化context
 			initContext();

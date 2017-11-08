@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.JSONObjectDiffUtils;
@@ -184,31 +185,17 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 						//处理未修改
 						poiObj = (IxPoiObj)objs.get(fid);
 						if(poiObj.opType().equals(OperationType.PRE_DELETED)){
-							log.info("fid:"+fid+"在库中已删除");
-							errLogs.add(new ErrorLog(fid,3,"poi在库中已删除"));
-							continue;
+//							log.info("fid:"+fid+"在库中已删除");
+//							errLogs.add(new ErrorLog(fid,3,"poi在库中已删除"));
+//							continue;
 							//修改POI，库中已删除的，作为新增处理,重新赋值fid和pid
-//							log.info("fid:"+fid+"在库中已删除，修改数据作为新增处理,重新赋值fid和pid");
-//							poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
-//							setPoiAttr(poiObj,entry.getValue(),false);
-//							addFlag = true;
+							log.info("fid:"+fid+"在库中已删除，修改数据作为新增处理,重新赋值fid和pid");
+							poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
+							
+							setPoiAttr(poiObj,entry.getValue(),false,userId);
+							addFlag = true;
 						}else{
 							log.info("fid:"+fid+"在库中存在，作为修改处理");
-//							//差分过滤的字段
-//							List<String> poiFilterFields = new ArrayList<String>();
-//							poiFilterFields.add("pid");
-//							poiFilterFields.add("fid");
-//							poiFilterFields.add("rawFields");
-//							poiFilterFields.add("t_lifecycle");
-//							poiFilterFields.add("sourceName");
-//							poiFilterFields.add("parentFid");
-//							poiFilterFields.add("sameFid");
-//							poiFilterFields.add("orgInfo");
-//							poiFilterFields.add("attachments");
-//							poiFilterFields.add("contacts");
-//							poiFilterFields.add("childFid");
-//							//需要单独处理
-//							poiFilterFields.add("indoor");
 							
 							JSONObject tarJso = entry.getValue();
 							Object orgInfoJso = tarJso.get("orgInfo");
@@ -216,25 +203,6 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 								log.info("fid:"+fid+"上传的数据中orgInfo为null,判断为没有修改");
 							}else{
 								JSONObject refJso = tarJso.getJSONObject("orgInfo");
-//								//字段级差分
-//								Collection<String> diffFirstLevel = JSONObjectDiffUtils.diffFirstLevel(tarJso, refJso, poiFilterFields);
-//								if(diffFirstLevel != null && diffFirstLevel.size() >0){
-//									changeFields.addAll(diffFirstLevel);
-//								}
-//								//特殊处理indoor字段
-//								Object indoorJso = tarJso.get("indoor");
-//								Object indoorJsoRef = refJso.get("indoor");
-//								if((JSONUtils.isNull(indoorJso)&&!JSONUtils.isNull(indoorJsoRef))||
-//										(!JSONUtils.isNull(indoorJso)&&JSONUtils.isNull(indoorJsoRef))){
-//									changeFields.add("indoor");
-//								}
-//								if(!JSONUtils.isNull(indoorJso)&&!JSONUtils.isNull(indoorJsoRef)){
-//									JSONObject indoor = (JSONObject) indoorJso;
-//									JSONObject indoorOld = (JSONObject) indoorJsoRef;
-//									if(indoor.getInt("type") != indoorOld.getInt("type")){
-//										changeFields.add("indoor");
-//									}
-//								}
 								//字段差分
 								List<String> diffPoiFields = diffPoiFields(tarJso, refJso);
 								if(diffPoiFields != null && diffPoiFields.size()>0){
@@ -258,7 +226,7 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 						//库中未找到数据，处理为新增
 						log.info("fid:"+fid+"在库中未找到，作为新增处理");
 						poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
-						setPoiAttr(poiObj,entry.getValue(),true);
+						setPoiAttr(poiObj,entry.getValue(),true,userId);
 						addFlag = true;
 					}
 					//******存储 photo 属性值 ******
@@ -342,7 +310,7 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 	
 	
 
-	public void setPoiAttr(IxPoiObj poiObj,JSONObject jo,boolean updateFidFlag)throws Exception{
+	public void setPoiAttr(IxPoiObj poiObj,JSONObject jo,boolean updateFidFlag,long userId)throws Exception{
 		//to-do
 		//table IX_POI
 		IxPoi ixPoi = (IxPoi)poiObj.getMainrow();
@@ -397,10 +365,14 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 		if(ixPoi.isChanged(IxPoi.OLD_ADDRESS)){
 			setAddressAndAttr(poiObj,addr);
 		}
-		//fid
+		//fid,修改poi但库中已删除,为新增重新赋值pid和fid
 		if(updateFidFlag){
 			ixPoi.setPoiNum(jo.getString("fid"));
+		}else{
+			String fid = this.getFid(userId);
+			ixPoi.setPoiNum(fid);
 		}
+		
 		//season version
 		ixPoi.setDataVersion(version);
 		//t_operateDate
@@ -1418,6 +1390,14 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 		poiFilterFields.add("t_operateDate");
 		//需要单独处理
 		poiFilterFields.add("indoor");
+		poiFilterFields.add("geometry");
+		//处理geometry
+		Geometry tarGeo = JtsGeometryFactory.read(tarJso.getString("geometry"));
+		Geometry refGeo = JtsGeometryFactory.read(refJso.getString("geometry"));
+		boolean geoFlag = GeoTranslator.isPointEquals(tarGeo.getCoordinate(), refGeo.getCoordinate());
+		if(!geoFlag){
+			changePoiFields.add("geometry");
+		}
 		//字段级差分
 		Collection<String> diffFirstLevel = JSONObjectDiffUtils.diffFirstLevel(tarJso, refJso, poiFilterFields);
 		if(diffFirstLevel != null && diffFirstLevel.size() >0){
@@ -1443,6 +1423,15 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 		return changePoiFields;
 	}
 	
+	
+	
+	//获取FID
+    private String getFid(long userId) {
+        String date =  com.navinfo.dataservice.commons.util.StringUtils.getCurrentTime();
+        String userIdStr = String.valueOf(userId);
+        return StringUtils.leftPad(userIdStr.concat(date), 20, "0");
+
+    }
 	
 	public static void main(String[] args) throws Exception {
 
@@ -1541,5 +1530,6 @@ public class CollectorPoiImportorForField extends AbstractOperation {
 		for(Entry<String,String> entry:map.entrySet()){
 			System.out.println(entry.getKey()+":"+entry.getValue());
 		}
+		
 	}
 }

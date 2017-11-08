@@ -1,41 +1,38 @@
 package com.navinfo.dataservice.engine.fcc;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
 import com.navinfo.dataservice.bizcommons.sys.SysLogOperator;
 import com.navinfo.dataservice.bizcommons.sys.SysLogStats;
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.model.TipsDao;
+import com.navinfo.dataservice.engine.audio.Audio;
+import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
+import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
+import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 import com.navinfo.dataservice.engine.fcc.track.TrackLinesUpload;
 import com.navinfo.navicommons.geo.computation.*;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.photo.Photo;
-import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.ExcelReader;
-import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-import com.navinfo.dataservice.dao.fcc.SolrController;
-import com.navinfo.dataservice.engine.audio.Audio;
-import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
-import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TipsSelectorTest extends InitApplication {
 
@@ -772,7 +769,7 @@ public class TipsSelectorTest extends InitApplication {
 			obj.put("dbId", 13);
 			//JSONObject result = selector.searchGpsAndDeleteLinkTips(649, "2017-07-28", "2017-07-31", 20, 1,obj);
 			
-			JSONArray result = selector.searchPoiRelateTips("02200198b6885076094a3391a2702025daee56", 649, 30, 13, 1);
+			JSONArray result = selector.searchPoiOrPointRelateTips("02200198b6885076094a3391a2702025daee56", 649, 30, 13, 1, 1);
 			System.out.println(result.toString());
 		}
 		catch(Exception e){

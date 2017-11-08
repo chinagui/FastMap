@@ -1724,94 +1724,6 @@ public class SubtaskService {
 		}
 	}
 	
-//	public Page list(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
-//			final int curPageNum,int snapshot) throws ServiceException {
-//		Connection conn = null;
-//		try {
-//			conn = DBConnector.getInstance().getManConnection();
-//			
-//			//获取用户所在组信息
-//			UserInfo userInfo = new UserInfo();
-//			userInfo.setUserId((int)userId);
-//			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
-//			int groupId = (int) group.get("groupId");
-//			
-//			//返回简略信息
-//			if (snapshot==1){
-//				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-//				return page;
-//			}else{
-//				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-//				return page;
-//			}		
-//
-//		} catch (Exception e) {
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-//		} finally {
-//			DbUtils.commitAndCloseQuietly(conn);
-//		}
-//	}
-
-	/**
-	 * @param planStatus 
-	 * @param condition
-	 * @param filter 
-	 * @param pageSize
-	 * @param curPageNum
-	 * @return
-	 */
-	public Page list(int planStatus, JSONObject condition, int pageSize,int curPageNum) throws ServiceException {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			
-			Page page = SubtaskOperation.getList(conn,planStatus,condition,pageSize,curPageNum);
-			return page;
-
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-	
-	
-//	public Page listByGroup(long groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
-//			final int curPageNum,int snapshot) throws ServiceException {
-//		Connection conn = null;
-//		try {
-//			conn = DBConnector.getInstance().getManConnection();
-//			
-////			//获取用户所在组信息
-////			UserInfo userInfo = new UserInfo();
-////			userInfo.setUserId((int)userId);
-////			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
-////			int groupId = (int) group.get("groupId");
-//			
-//			Page page = SubtaskOperation.getListByGroup(conn,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-//			return page;
-//			
-////			//返回简略信息
-////			if (snapshot==1){
-////				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-////				return page;
-////			}else{
-////				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-////				return page;
-////			}		
-//
-//		} catch (Exception e) {
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-//		} finally {
-//			DbUtils.commitAndCloseQuietly(conn);
-//		}
-//	}
 	/**
 	 * 删除子任务，前端只有草稿状态的子任务有删除按钮
 	 * @param subtaskId
@@ -2426,7 +2338,7 @@ public class SubtaskService {
 			sb.append(" SS.PLAN_START_DATE AS QUALITY_PLAN_START_DATE,");
 			sb.append(" SS.PLAN_END_DATE   AS QUALITY_PLAN_END_DATE,");
 			sb.append(" SS.STATUS          QUALITY_TASK_STATUS,");
-			sb.append(" UU.USER_REAL_NAME  AS QUALITY_EXE_USER_NAME");
+			sb.append(" UU.USER_REAL_NAME  AS QUALITY_EXE_USER_NAME,ss.quality_method");
 			sb.append(" FROM SUBTASK SS, USER_INFO UU,USER_GROUP G");
 			sb.append(" WHERE SS.IS_QUALITY = 1");
 			sb.append(" AND SS.EXE_USER_ID = UU.USER_ID(+) AND SS.EXE_GROUP_ID = G.GROUP_ID(+)),");
@@ -2448,7 +2360,7 @@ public class SubtaskService {
 			sb.append(" NVL(Q.QUALITY_SUBTASK_ID, 0) QUALITY_SUBTASK_ID,");
 			sb.append(" NVL(Q.QUALITY_EXE_USER_ID, 0) QUALITY_EXE_USER_ID,");
 			sb.append(" Q.QUALITY_PLAN_START_DATE,");
-			sb.append(" Q.QUALITY_PLAN_END_DATE,");
+			sb.append(" Q.QUALITY_PLAN_END_DATE,q.quality_method,");
 			sb.append(" NVL(Q.QUALITY_TASK_STATUS, 0) QUALITY_TASK_STATUS,");
 			sb.append(" Q.QUALITY_EXE_USER_NAME,"
 			+ "Q.QUALITY_EXE_GROUP_ID,"
@@ -2526,7 +2438,7 @@ public class SubtaskService {
 						subtask.put("qualityExeUserId", rs.getInt("quality_Exe_User_Id"));
 						subtask.put("qualityExeGroupId", rs.getInt("quality_Exe_group_Id"));
 						subtask.put("qualityExeGroupName", rs.getString("quality_Exe_group_NAME"));
-						
+						subtask.put("qualityMethod", rs.getInt("quality_method"));
 						Timestamp qualityPlanStartDate = rs.getTimestamp("quality_Plan_Start_Date");
 						Timestamp qualityPlanEndDate = rs.getTimestamp("quality_Plan_End_Date");
 						if(qualityPlanStartDate != null){

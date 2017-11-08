@@ -1,14 +1,5 @@
 package com.navinfo.dataservice.dao.glm.selector.ixpointaddress;
 
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.glm.model.ixpointaddress.IxPointaddress;
@@ -19,6 +10,16 @@ import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
+
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Pa基础信息表 selector
@@ -64,6 +65,60 @@ public class IxPointaddressSelector extends AbstractSelector {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * 根据引导LINK查询pointAdress对象
+	 *
+	 * @param linkPid
+	 *            引导link
+	 * @param isLock
+	 *            是否加锁
+	 * @return poi对象
+	 * @throws Exception
+	 */
+	public List<IxPointaddress> loadIxPointAddrByLinkPid(int linkPid, boolean isLock)
+			throws Exception {
+
+		List<IxPointaddress> pointAddressList = new ArrayList<>();
+
+        IxPointaddress ixPointAddress = null;
+
+		String sql = "select * from IX_POINTADDRESS where GUIDE_LINK_PID=:1 and u_record !=2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+                ixPointAddress = new IxPointaddress();
+				ReflectionAttrUtils.executeResultSet(ixPointAddress, resultSet);
+                pointAddressList.add(ixPointAddress);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return pointAddressList;
 	}
 
 	/**

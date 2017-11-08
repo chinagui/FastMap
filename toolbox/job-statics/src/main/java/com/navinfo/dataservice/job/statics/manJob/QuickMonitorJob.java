@@ -1008,7 +1008,7 @@ public class QuickMonitorJob extends AbstractStatJob {
 			while (iterable.hasNext()) {
 				String denyReason=String.valueOf(iterable.next());
 				int number=(int) denyReasonJson.get(denyReason);
-				returnJson.put(denyReason, DoubleUtil.keepSpecDecimal(Math.floor(number*100/total),2));
+				returnJson.put(denyReason, Math.floor(number*100/total));
 			}
 			
 		} catch (Exception e) {

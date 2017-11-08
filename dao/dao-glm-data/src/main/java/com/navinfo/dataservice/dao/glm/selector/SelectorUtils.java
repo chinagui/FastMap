@@ -270,13 +270,15 @@ public class SelectorUtils {
 								+ "FROM(select poi.pid,ipn.name,poi.geometry from( SELECT ix.pid,ix.geometry FROM ix_poi ix "
 								+ "where ix.pid ="
 								+ object.getInt("pid")
-								+ " and ix.U_RECORD !=2 "
-								+ "union all "
-								+ "select ix.pid,ix.geometry from ix_poi ix,poi_edit_status ps "
-								+ "where ix.PID = "
-								+ object.getInt("pid")
-								+ " and ix.U_RECORD = 2 "
-								+ "and ix.PID = ps.PID and ps.STATUS <3)poi "
+								// bug9384高级搜索可以搜出已提交删除的数据
+//								+ " and ix.U_RECORD !=2 "
+//								+ "union all "
+//								+ "select ix.pid,ix.geometry from ix_poi ix,poi_edit_status ps "
+//								+ "where ix.PID = "
+//								+ object.getInt("pid")
+//								+ " and ix.U_RECORD = 2 "
+//								+ "and ix.PID = ps.PID and ps.STATUS <3"
+								+ " )poi "
 								+ "LEFT JOIN ix_poi_name ipn ON poi.pid = ipn.poi_pid "
 								+ "AND ipn.name_class=1 AND ipn.name_type =2 AND ipn.lang_code = 'CHI' "
 								+ ")tmp");
@@ -299,13 +301,15 @@ public class SelectorUtils {
 								+ "FROM(select po.pid,po.name,po.geometry from( SELECT ix.pid,ix.geometry,ix.dpr_name as name FROM ix_pointaddress ix "
 								+ "where ix.pid ="
 								+ object.getInt("pid")
-								+ " and ix.U_RECORD !=2 "
-								+ "union all "
-								+ "select ix.pid,ix.geometry,ix.dpr_name as name from ix_pointaddress ix,pointaddress_edit_status ps "
-								+ "where ix.PID = "
-								+ object.getInt("pid")
-								+ " and ix.U_RECORD = 2 "
-								+ "and ix.PID = ps.PID and ps.STATUS <3) po "
+								// bug9384高级搜索可以搜出已提交删除的数据
+//								+ " and ix.U_RECORD !=2 "
+//								+ "union all "
+//								+ "select ix.pid,ix.geometry,ix.dpr_name as name from ix_pointaddress ix,pointaddress_edit_status ps "
+//								+ "where ix.PID = "
+//								+ object.getInt("pid")
+//								+ " and ix.U_RECORD = 2 "
+//								+ "and ix.PID = ps.PID and ps.STATUS <3"
+								+ ") po "
 								+ ")tmp");
 				sql = getSqlFromBufferCondition(bufferCondition.toString(),
 						isLock);

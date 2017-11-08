@@ -1,12 +1,11 @@
 package com.navinfo.dataservice.engine.man.job.operator;
 
-import com.navinfo.dataservice.engine.man.job.bean.JobRelation;
-import com.navinfo.navicommons.database.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.apache.commons.dbutils.ResultSetHandler;
+import com.navinfo.dataservice.engine.man.job.bean.JobRelation;
+import com.navinfo.navicommons.database.QueryRunner;
 
 /**
  * Created by wangshishuai3966 on 2017/7/7.

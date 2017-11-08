@@ -195,6 +195,8 @@ public class MetaController extends BaseController {
             		logger.info("voiceStr: "+voiceStr);
             		voiceStr = voiceStr.replace("gaosugonglu", "");
                 	logger.info("new voiceStr : "+voiceStr);
+                	voiceStr = voiceStr.endsWith("'")?voiceStr.substring(0, voiceStr.length() - 1):voiceStr;
+                	logger.info("1 voiceStr :"+voiceStr);
             }
             
             if (result != null) {

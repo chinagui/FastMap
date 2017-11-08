@@ -2,17 +2,12 @@ package com.navinfo.dataservice.engine.man.mqmsg;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
-import com.navinfo.dataservice.engine.man.message.SendEmail;
-
 import net.sf.json.JSONObject;
 
 /**

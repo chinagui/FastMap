@@ -6,18 +6,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;

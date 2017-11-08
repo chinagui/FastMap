@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.man.mqmsg;
 
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -9,17 +8,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -27,29 +22,20 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
-import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.log.ManLogOperation;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
-import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
-import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 

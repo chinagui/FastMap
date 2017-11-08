@@ -1,21 +1,17 @@
 package com.navinfo.dataservice.engine.man.mqmsg;
 
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.sf.json.JSONObject;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.navicommons.database.QueryRunner;
+import net.sf.json.JSONObject;
 
 /**
  * 同步消费消息

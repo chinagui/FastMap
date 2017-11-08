@@ -1,27 +1,25 @@
 package com.navinfo.dataservice.engine.man.job;
 
-import com.alibaba.fastjson.JSON;
+import java.sql.Connection;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.job.Day2Month.Day2MonthJobRunner;
 import com.navinfo.dataservice.engine.man.job.NoTask2Medium.NoTask2MediumJobRunner;
 import com.navinfo.dataservice.engine.man.job.Tips2Mark.Tips2MarkJobRunner;
-import com.navinfo.dataservice.engine.man.job.bean.*;
-import com.navinfo.dataservice.engine.man.job.message.JobMessage;
+import com.navinfo.dataservice.engine.man.job.bean.ItemType;
+import com.navinfo.dataservice.engine.man.job.bean.Job;
+import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
+import com.navinfo.dataservice.engine.man.job.bean.JobStatus;
+import com.navinfo.dataservice.engine.man.job.bean.JobType;
+import com.navinfo.dataservice.engine.man.job.medium2quick.TaskMedium2QuickRunner;
 import com.navinfo.dataservice.engine.man.job.operator.JobDetailOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import com.navinfo.dataservice.engine.man.job.medium2quick.TaskMedium2QuickRunner;
-import org.apache.log4j.Logger;
-
-import java.sql.Connection;
-import java.util.Iterator;
 
 /**
  * Created by wangshishuai3966 on 2017/7/10.

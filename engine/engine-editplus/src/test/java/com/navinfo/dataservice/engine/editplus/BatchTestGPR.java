@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.editplus;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,29 +50,34 @@ public class BatchTestGPR {
 		System.out.println("start batch test");
 		BatchTest test=new BatchTest();
 		test.init();
-		Connection conn = DBConnector.getInstance().getConnectionById(13);
+
+		Connection conn = DBConnector.getInstance().getConnectionById(12);
 		OperationResult operationResult = new OperationResult();
 
 		List<Long> pids = new ArrayList<>();
-		pids.add(6469160L);
+		pids.add(4015088L);
 		
 		Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(conn, pids);
-		Set<String> tabNames = null;
+		Set<String> tabNames = new HashSet<>();
+		tabNames.add("IX_POI_NAME");
+		tabNames.add("IX_POI_NAME_FLAG");
+		
 		// 获取poi对象
 		Map<Long, BasicObj> objs = null;
 		if (tabNames == null || tabNames.size() == 0) {
 			// log.info(1);
-			objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POINTADDRESS, tabNames, true, pids, false, false);
+			objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, true, pids, false, false);
 			// log.info(2);
 		} else {
-			objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POINTADDRESS, tabNames, false, pids, false, false);
+			objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, false, pids, false, false);
+
 		}
 		// 将poi对象与履历合并起来
 		ObjHisLogParser.parse(objs, logs);
 		operationResult.putAll(objs.values());
 		
 		BatchCommand batchCommand=new BatchCommand();	
-		batchCommand.setRuleId("FM-BAT-PA20-003");
+		batchCommand.setRuleId("FM-BAT-20-135");
 		//batchCommand.setOperationName("day2month");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);

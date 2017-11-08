@@ -40,9 +40,6 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         if (row instanceof RdLink) {
             RdLink link = (RdLink) row;
             Geometry linkGeometry = null == geometry ? transform(loadGeometry(row)) : transform(geometry);
-            // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
-            if (linkGeometry.getCoordinates().length > 200)
-                return;
 
             // 获取RdLink关联的AdFace
             AdFace face = loadAdFace(conn, linkGeometry);
@@ -98,14 +95,11 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             }
         } else {
             Geometry g = transform(null == geometry ? loadGeometry(row) : geometry);
-            // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
-            if (g.getCoordinates().length > 200)
-                return;
             // 获取关联AdFace
             AdFace face = loadAdFace(conn, g);
             if (null == face)
                 return;
-            Geometry faceGeometry = transform(face.getGeometry());
+            //Geometry faceGeometry = transform(face.getGeometry());
             // 判断row是否处于AdFace内部
             if ("POINT".equalsIgnoreCase(g.getGeometryType())) {
                 int faceRegionId = face.getRegionId();
@@ -149,9 +143,6 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
     public static void updateAdminID(AdFace face, Geometry geometry, Connection conn, Result result) throws Exception {
         RdLinkSelector selector = new RdLinkSelector(conn);
         Geometry faceGeometry = transform(face.getGeometry());
-        // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
-        if (faceGeometry.getCoordinates().length > 200)
-            return;
         // 删除时将面内link的regionId清空
         if (null == geometry) {
             List<RdLink> links = selector.loadLinkByFaceGeo(faceGeometry, true);
@@ -164,9 +155,6 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             }
             return;
         }
-        // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
-        if (geometry.getCoordinates().length > 200)
-            return;
         Map<Integer, RdLink> modified = new HashMap<>();
         geometry = transform(geometry);
 

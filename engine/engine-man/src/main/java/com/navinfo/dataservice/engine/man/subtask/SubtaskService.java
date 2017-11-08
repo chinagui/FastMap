@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.Reader;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -11,7 +10,6 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,20 +18,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.navinfo.dataservice.commons.kmeans.KPoint;
-import com.navinfo.dataservice.commons.kmeans.Kmeans;
-import com.navinfo.dataservice.engine.man.job.bean.JobType;
-import com.navinfo.dataservice.engine.man.log.ManLogOperation;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.Infor;
@@ -52,6 +40,8 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.geom.MyGeometry;
 import com.navinfo.dataservice.commons.json.JsonOperation;
+import com.navinfo.dataservice.commons.kmeans.KPoint;
+import com.navinfo.dataservice.commons.kmeans.Kmeans;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.token.AccessTokenFactory;
@@ -62,6 +52,8 @@ import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.infor.InforService;
+import com.navinfo.dataservice.engine.man.job.bean.JobType;
+import com.navinfo.dataservice.engine.man.log.ManLogOperation;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
@@ -81,6 +73,9 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * @ClassName: SubtaskService

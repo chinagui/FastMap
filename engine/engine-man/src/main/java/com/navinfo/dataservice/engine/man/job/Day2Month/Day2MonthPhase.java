@@ -1,21 +1,18 @@
 package com.navinfo.dataservice.engine.man.job.Day2Month;
 
+import java.sql.Connection;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.job.JobPhase;
-import com.navinfo.dataservice.engine.man.job.JobService;
 import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import net.sf.json.JSONObject;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
-
-import java.sql.Connection;
 
 /**
  * Created by wangshishuai3966 on 2017/7/14.

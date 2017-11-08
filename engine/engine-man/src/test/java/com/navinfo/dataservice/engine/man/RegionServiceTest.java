@@ -3,9 +3,6 @@ package com.navinfo.dataservice.engine.man;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
-import org.apache.commons.collections.map.MultiValueMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

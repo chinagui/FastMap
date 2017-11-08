@@ -1,5 +1,24 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -24,15 +43,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.MapHandler;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /** 
  * @ClassName: SubtaskOperation

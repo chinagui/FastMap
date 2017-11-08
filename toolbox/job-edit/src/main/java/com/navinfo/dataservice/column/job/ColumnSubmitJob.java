@@ -21,8 +21,10 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.sys.SysLogConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
@@ -110,6 +112,7 @@ public class ColumnSubmitJob extends AbstractJob {
 			}
 			
 			for (String second:secondWorkList) {
+				String beginDate = DateUtils.getSysDateFormat();
 				log.info("当前提交二级项:"+second);
 				// 查询可提交数据
 				allPidList = ixPoiDeepStatusSelector.getPIdForSubmit(firstWorkItem, second, comSubTaskId,userId,false);
@@ -318,6 +321,10 @@ public class ColumnSubmitJob extends AbstractJob {
 //					deepControl.cleanExByCkRule(dbId, pidList, classifyRules, "IX_POI");
 //				}
 				
+				String endDate = DateUtils.getSysDateFormat();
+				// 提交统计
+				ColumnSaveJob.insertLogStats(SysLogConstant.POI_COLUMN_SUBMIT_TYPE, SysLogConstant.POI_COLUMN_SUBMIT_DESC, 
+						userId, jobInfo.getId(), taskId, second, allPids, beginDate, endDate);
 			}
 			
 			log.info("提交完成");

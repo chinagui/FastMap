@@ -27,6 +27,7 @@ public class ScPlateresInfo implements IObj {
     private int complete = 1;//    COMPLETE	完成状态
     private String condition="S";//    CONDITION	限行长短期说明
     private String memo="";//    MEMO	备注
+    private String publicTime;//    PUBLIC_TIME	推送日期
 
     public String getInfoIntelId() {
         return infoIntelId;
@@ -98,6 +99,14 @@ public class ScPlateresInfo implements IObj {
 
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+
+    public String getPublicTime() {
+        return publicTime;
+    }
+
+    public void setPublicTime(String publicTime) {
+        this.publicTime = publicTime;
     }
 
     protected ObjStatus status;

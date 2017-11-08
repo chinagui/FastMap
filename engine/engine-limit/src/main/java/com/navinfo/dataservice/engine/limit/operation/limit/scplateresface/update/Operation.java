@@ -17,17 +17,39 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		JSONObject content = this.command.getContent();
+		//批量写入boundaryLink
+		if (command.getFaces() != null) {
 
-		ScPlateresFace face = this.command.getFace();
+			for (ScPlateresFace face : command.getFaces()) {
 
-		if (content.containsKey("objStatus") && content.getString("objStatus").equals(ObjStatus.UPDATE.toString())) {
-			boolean isChange = face.fillChangeFields(content);
+				if (face.getBoundaryLink().equals(command.getBoundaryLink())) {
+					continue;
+				}
+				face.changedFields().put("boundaryLink", command.getBoundaryLink());
 
-			if (isChange) {
-				result.insertObject(face, ObjStatus.UPDATE, this.command.getGemetryId());
+				result.insertObject(face, ObjStatus.UPDATE, face.getGeometryId());
+
+				result.setPrimaryId(face.getGeometryId());
+
 			}
+		} else {
+
+			JSONObject content = this.command.getContent();
+
+			ScPlateresFace face = command.getFace();
+
+			if (content.containsKey("objStatus") && content.getString("objStatus").equals(ObjStatus.UPDATE.toString())) {
+				boolean isChange = face.fillChangeFields(content);
+
+				if (isChange) {
+					result.insertObject(face, ObjStatus.UPDATE, this.command.getGemetryId());
+				}
+			}
+
+			result.setPrimaryId(face.getGeometryId());
 		}
+
 		return null;
+
 	}
 }

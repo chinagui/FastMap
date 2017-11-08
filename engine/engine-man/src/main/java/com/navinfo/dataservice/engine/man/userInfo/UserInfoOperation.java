@@ -1,6 +1,6 @@
-
 package com.navinfo.dataservice.engine.man.userInfo;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,23 +9,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-import java.sql.Connection;
-
 import com.navinfo.dataservice.api.man.model.UserDevice;
 import com.navinfo.dataservice.api.man.model.UserGroup;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.QueryRunner;
-
 import net.sf.json.JSONArray;
-
-import com.navinfo.dataservice.api.man.model.UserInfo;
 
 /** 
  * @ClassName: UserInfoOperation

@@ -1,11 +1,36 @@
 package com.navinfo.dataservice.web.edit.controller;
 
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.DbMeshInfoUtil;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.JsonUtils;
@@ -16,6 +41,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.search.IxPointaddressSearch;
 import com.navinfo.dataservice.dao.glm.selector.SearchAllObject;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.dataservice.dao.tranlsate.entity.TranslateLog;
@@ -28,25 +54,9 @@ import com.navinfo.dataservice.engine.translate.upload.UploadOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-import java.util.*;
 
 @Controller
 public class EditController extends BaseController {
@@ -351,6 +361,12 @@ public class EditController extends BaseController {
                                 Connection conn) throws Exception {
 
         JSONObject json = obj.Serialize(ObjLevel.FULL);
+        
+        // getByPid POI查询增加返回行政区划名称
+        if (ObjType.IXPOI.toString().equals(objType)){
+        	IxPoiSelector selector = new IxPoiSelector(conn);
+        	json.put("provinceCityCounty", selector.getPoiAdminName((long)pid));
+        }
 
         if (!json.containsKey("geometry")) {
 
@@ -820,5 +836,32 @@ public class EditController extends BaseController {
         //IOUtils.copy(new FileInputStream(log.getDownloadUrl()), response.getOutputStream());
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         return new ResponseEntity<>(FileUtils.readFileToByteArray(file), headers, HttpStatus.OK);
+    }
+    
+    
+    /**
+     * 批量关闭子任务功能
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     */
+    @RequestMapping(value = "/batchCloseSubTask")
+    public ModelAndView batchCloseSubTask(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+        AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+        long userId = tokenObj.getUserId();
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+            //批量关闭子任务功能
+    		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+            JSONObject result = manApi.batchCloseSubTask(jsonReq,userId);
+            return new ModelAndView("jsonView", success(result));
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
     }
 }

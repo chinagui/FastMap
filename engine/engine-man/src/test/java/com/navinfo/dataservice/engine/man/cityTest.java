@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.engine.man.city.CityService;
+
+import net.sf.json.JSONObject;
 
 
 public class cityTest {

@@ -1,16 +1,20 @@
 package com.navinfo.dataservice.engine.man.job.Day2Month;
 
-import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.engine.man.job.bean.ItemType;
-import com.navinfo.navicommons.database.QueryRunner;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.log4j.Logger;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.engine.man.job.bean.ItemType;
+import com.navinfo.navicommons.database.QueryRunner;
 
 /**
  * Created by wangshishuai3966 on 2017/7/14.

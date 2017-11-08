@@ -696,169 +696,112 @@ public class IxPoiSelector extends AbstractSelector {
 	
 	
 	/**
-	 * @param isLock
-	 * @param qualityGeos 质检圈列表
-	 * @param states 状态列表[0,1,2,3] 0无,1新增,2删除,3修改
-	 * @param kindCode 分类列表["230220",'200200','230218',......]
-	 * @param photoFlag 1:有当前作业季照片,2:全部照片
+	 * 查询POI的省市县名称
+	 * @param pid
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject filterPoi(boolean isLock, JSONArray qualityGeos, JSONArray states,
-			JSONArray kindCode, int photoFlag) throws Exception {
-
-		JSONObject result = new JSONObject();
-
-		JSONArray array = new JSONArray();
-
-		Map<Long, JSONObject> objs = new LinkedHashMap<Long, JSONObject>();
-
-		NiValExceptionSelector selector = new NiValExceptionSelector(conn);
-		List<String> checkRuleList=selector.loadByOperationName("POI_ROW_COMMIT");
-		String ckRules = "('";
-		ckRules += StringUtils.join(checkRuleList.toArray(), "','") + "')";
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(" SELECT * ");
-		buffer.append(" FROM (SELECT ");
-		buffer.append(" ip.pid,ip.kind_code,ip.poi_num,ip.poi_memo,ps.fresh_verified as freshness_vefication,ps.raw_fields as flag,ipn.name,ip.collect_time, ");
-		buffer.append(" (SELECT COUNT (1)  FROM ix_poi_photo iph WHERE ip.pid = iph.poi_pid(+) AND U_RECORD != 2) as photocount  ,");
-		buffer.append("  (SELECT COUNT (n.RULEID) FROM ni_val_exception n, ck_result_object c  WHERE     n.MD5_CODE = c.MD5_CODE AND ip.pid = c.pid(+) AND c.TABLE_NAME = 'IX_POI' AND n.ruleid in "+ckRules+") as checkcount, ");
-		buffer.append(" photo.photo_rowkey ");
-		buffer.append(" FROM ix_poi ip, (SELECT poi_pid,name FROM ix_poi_name WHERE lang_code = 'CHI' AND name_type = 2 AND name_class = 1) ipn, poi_edit_status ps, ");
-		buffer.append("  (select p.pid,LISTAGG(pp.pid,',') WITHIN GROUP( ORDER BY null) photo_rowkey ");
-		buffer.append("    from ix_poi p, ix_poi_photo pp ");
-		buffer.append("    where p.pid = pp.poi_pid(+) ");
-		buffer.append("      and pp.u_record <> 2");
-		buffer.append("    group by p.pid) photo");
-		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) ");
-		buffer.append("  and ip.pid = photo.pid(+)");
-		buffer.append("  and ip.pid = ps.pid");
-
-		// 按照分类筛选
-		if(kindCode != null && !kindCode.isEmpty()){
-			String kindStr = StringUtils.join(kindCode.toArray(), "','");
-			buffer.append(" AND ip.kind_code in ('" + kindStr + "') ");
-		}
-		
-		// 按质检圈去筛选
-		List<Clob> clobs = new ArrayList<>();
-		log.info("筛选质检圈 size:" + qualityGeos.size());
-		if(qualityGeos != null && !qualityGeos.isEmpty()){
-			buffer.append(" AND ( ");
-			for (int i = 0; i < qualityGeos.size(); i++){
-				String geo = (String) qualityGeos.get(i);
-				log.info("筛选质检圈 " + i +":"+ geo);
-				Clob geoClob = ConnectionUtil.createClob(conn);
-				geoClob.setString(1, geo);
-				clobs.add(geoClob);
-				buffer.append(" sdo_within_distance(ip.geometry,sdo_geometry(?,8307),'mask=anyinteract') = 'TRUE' ");
-				if(i != (qualityGeos.size()-1)){
-					buffer.append(" or ");
-				}
-			}
-			buffer.append(" ) ");
-		}
-		
-//		// 全部照片判断,有照片rowkey
-//		if (photoFlag == 2){
-//			buffer.append(" AND photo.photo_rowkey is not null ");
-//		}
-		buffer.append(" ) c");
-		if (isLock) {
-			buffer.append(" for update nowait");
-		}
-		log.info("筛选sql:" + buffer.toString());
+	public String getPoiAdminName(long pid) throws Exception{
 		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-		try {
-			pstmt = conn.prepareStatement(buffer.toString());
-			int clobSize = clobs.size();
-			if(clobSize != 0){
-				for (int i = 0; i < clobSize; i++){
-					pstmt.setClob(i+1, clobs.get(i));
-				}
+		ResultSet rs = null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("WITH T1 AS");
+		sb.append(" (SELECT AAN1.REGION_ID, AAN1.NAME");
+		sb.append("    FROM IX_POI P, AD_ADMIN_NAME AAN1");
+		sb.append("   WHERE P.REGION_ID = AAN1.REGION_ID");
+		sb.append("     AND AAN1.LANG_CODE = 'CHI'");
+		sb.append("     AND AAN1.NAME_CLASS = 1");
+		sb.append("     AND P.PID = ?),");
+		sb.append("T2 AS");
+		sb.append(" (SELECT AAN2.NAME      AS NAME2,");
+		sb.append("         AAN2.REGION_ID AS REGION2,");
+		sb.append("         T1.NAME        AS NAME1,");
+		sb.append("         T1.REGION_ID   AS REGION1");
+		sb.append("    FROM AD_ADMIN_NAME AAN2, T1");
+		sb.append("   WHERE AAN2.REGION_ID =");
+		sb.append("         (SELECT AAG1.REGION_ID_UP");
+		sb.append("            FROM AD_ADMIN_GROUP AAG1");
+		sb.append("           WHERE AAG1.GROUP_ID = (SELECT GROUP_ID");
+		sb.append("                                    FROM AD_ADMIN_PART");
+		sb.append("                                   WHERE REGION_ID_DOWN = T1.REGION_ID");
+		sb.append("                                     AND ROWNUM = 1))");
+		sb.append("     AND AAN2.LANG_CODE = 'CHI'");
+		sb.append("     AND AAN2.NAME_CLASS = 1)");
+		sb.append("SELECT AAN3.NAME AS PROVINCE, T2.NAME2 AS CITY, T1.NAME AS COUNTY");
+		sb.append("  FROM AD_ADMIN_NAME AAN3, T2, T1");
+		sb.append(" WHERE AAN3.REGION_ID =");
+		sb.append("       (SELECT AAG1.REGION_ID_UP");
+		sb.append("          FROM AD_ADMIN_GROUP AAG1");
+		sb.append("         WHERE AAG1.GROUP_ID = (SELECT GROUP_ID");
+		sb.append("                                  FROM AD_ADMIN_PART");
+		sb.append("                                 WHERE REGION_ID_DOWN = T2.REGION2");
+		sb.append("                                   AND ROWNUM = 1))");
+		sb.append("   AND AAN3.LANG_CODE = 'CHI'");
+		sb.append("   AND AAN3.NAME_CLASS = 1");
+		try{
+			log.info("查询POI行政区划名称sql:" + sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setLong(1, pid);
+			rs = pstmt.executeQuery();
+			String county = "";
+			String city = "";
+			String province = "";
+			if (rs.next()){
+				province = rs.getString("PROVINCE");
+				city = rs.getString("CITY");
+				county = rs.getString("COUNTY");
 			}
-			resultSet = pstmt.executeQuery();
-			while (resultSet.next()) {
-				JSONObject json = new JSONObject();
-				long pid = resultSet.getLong("pid");
-				json.put("poiNum", resultSet.getString("poi_num") == null ? "" : resultSet.getString("poi_num"));
-				json.put("pid", pid);
-				json.put("name", resultSet.getString("name") == null ? "" : resultSet.getString("name"));
-				json.put("kindCode", resultSet.getString("kind_code"));
-				String flag = "";
-				if (StringUtils.isNotEmpty(resultSet.getString("flag"))) {
-					flag = resultSet.getString("flag");
-				}
-				json.put("flag", flag);
-
-				json.put("photo", resultSet.getInt("photocount"));
-				String poiMemo = "";
-				if (StringUtils.isNotEmpty(resultSet.getString("poi_memo"))) {
-					poiMemo = resultSet.getString("poi_memo");
-				}
-				json.put("memo", poiMemo);
-				String collectTime = "";
-				if (StringUtils.isNotEmpty(resultSet.getString("collect_time"))) {
-					collectTime = resultSet.getString("collect_time");
-				}
-				json.put("collectTime", collectTime);
-				json.put("freshnessVefication",
-						resultSet.getInt("freshness_vefication"));
-				json.put("errorCount", resultSet.getInt("checkcount"));
-				json.put("errorType", "");
-				json.put("auditProblem", "");
-				json.put("auditStatus", "");
-				
-				json.put("photo_rowkey", resultSet.getString("photo_rowkey")==null?"":resultSet.getString("photo_rowkey"));
-
-				objs.put(pid, json);
-			}
-			// get status
-			if (objs.size() > 0) {
-				LogReader logRead = new LogReader(conn);
-				Map<Long, Integer> objStatus = logRead.getObjectState(
-						objs.keySet(), ObjectName.IX_POI);
-				// 查询POI的照片标志是否有当前版本的照片
-				Map<Long, Set<Integer>> objPhotoFlag = new HashMap<>();
-				// 只有在筛选为当前作业季有新增照片时,才需要查询Hbase判断照片状态
-				if (photoFlag == 1){
-					HBaseController control = new HBaseController();
-					objPhotoFlag = control.getPOIPhotosFlag(objs);
-				}
-				
-				for (Entry<Long, JSONObject> entry : objs.entrySet()) {
-					Long poiPid = entry.getKey();
-					Integer status = objStatus.get(entry.getKey()) == null ? 0 : objStatus.get(entry.getKey());
-					// 筛选在状态列表中的POI
-					if(states.contains(status)){
-						// 新增照片
-						if (photoFlag == 1){
-							Set<Integer> flags = objPhotoFlag.get(poiPid);
-							if (flags.contains(photoFlag)){
-								JSONObject jo = entry.getValue();
-								jo.put("status", status);
-								array.add(jo);
-							}
-						}else{
-							// 全部照片
-							JSONObject jo = entry.getValue();
-							jo.put("status", status);
-							array.add(jo);
-						}
-					}
-				}
-			}
-			result.put("rows", array);
-			result.put("total", array.size());
-			return result;
-		} catch (Exception e) {
+			
+			return  province + city + county;
+		}catch(Exception e){
+			log.error("查询POI行政区划名称错误: " + e.getMessage());
 			throw e;
-		} finally {
-			DBUtils.closeResultSet(resultSet);
+		}finally{
+			DBUtils.closeResultSet(rs);
 			DBUtils.closeStatement(pstmt);
-
+		}
+	}
+	
+	/**
+	 * 根据regionId查询上一级的行政区划名称和regionId
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getUpAdminNameRegion(int regionId) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		JSONObject data = new JSONObject();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select aan2.name, aan2.region_id");
+		sb.append("  from ad_admin_name aan2");
+		sb.append(" where aan2.region_id = ");
+		sb.append("       (select aag1.region_id_up");
+		sb.append("          from ad_admin_group aag1");
+		sb.append("         where aag1.group_id = (select group_id");
+		sb.append("                                  from ad_admin_part");
+		sb.append("                                 where region_id_down = ?");
+		sb.append("                                   and rownum = 1))");
+		sb.append("    and aan2.lang_code='CHI'");
+		sb.append("    and aan2.name_class=1");
+		try{
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1, regionId);
+			rs = pstmt.executeQuery();
+			String name = "";
+			int upRegionId = 0;
+			if (rs.next()){
+				name = rs.getString("name");
+				upRegionId = rs.getInt("region_id");
+			}
+			data.put("name", name);
+			data.put("regionId", upRegionId);
+			
+			return data;
+		}catch(Exception e){
+			throw e;
+		}finally{
+			DBUtils.closeResultSet(rs);
+			DBUtils.closeStatement(pstmt);
 		}
 	}
 }

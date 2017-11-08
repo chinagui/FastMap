@@ -1,16 +1,10 @@
-/**
- * 
- */
 package org.navinfo.dataservice.engine.meta;
 
 import org.junit.Before;
-import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
-
 import net.sf.json.JSONObject;
 
 /**
@@ -143,6 +137,17 @@ public class PingConverterTest {
 		//Shang Hai Nong Tang
 		//带行政区划号后  Shang Hai Long Tang
 
+	}
+//	@Test
+	public void testpyPolyphoneConvert2() throws Exception {
+		PinyinConverter py = new PinyinConverter();
+		String word = "永丰路";
+		String voiceStr = py.voiceConvert(word, null, null, null);
+		System.out.println("1: "+voiceStr);
+		voiceStr = voiceStr.replace("gaosugonglu", "");
+		System.out.println("2: "+voiceStr);
+		voiceStr = voiceStr.endsWith("'")?voiceStr.substring(0, voiceStr.length() - 1):voiceStr;
+		System.out.println("3: "+voiceStr);
 	}
 	
 	public static void main(String[] args) {

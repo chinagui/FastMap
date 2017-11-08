@@ -1,11 +1,14 @@
 package com.navinfo.dataservice.engine.man.job;
 
-import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.engine.man.job.bean.*;
-import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
-import org.apache.log4j.Logger;
-
 import java.sql.Connection;
+import org.apache.log4j.Logger;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
+import com.navinfo.dataservice.engine.man.job.bean.Job;
+import com.navinfo.dataservice.engine.man.job.bean.JobProgress;
+import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
+import com.navinfo.dataservice.engine.man.job.bean.JobRelation;
+import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 
 /**
  * Created by wangshishuai3966 on 2017/7/6.

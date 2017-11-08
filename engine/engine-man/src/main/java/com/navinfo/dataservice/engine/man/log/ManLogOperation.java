@@ -4,16 +4,12 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.exception.ServiceException;
 
 public class ManLogOperation {
 	private static Logger log = LoggerRepos.getLogger(ManLogOperation.class);

@@ -121,6 +121,7 @@ public class ColumnCoreControl {
 					// 数据加锁， 赋值handler，task_id,apply_date
 					Timestamp timeStamp = new Timestamp(new Date().getTime());
 					List<String> workItemIds = columnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
+					workItemIds.remove("FM-YW-20-017");//WORK_ITEM_ID为FM-YW-20-017的数据不作业
 					columnSelector.dataSetLock(applyDataPids, workItemIds, userId, comSubTaskId, timeStamp,qcFlag);
 					totalCount += applyDataPids.size();
 					logger.info("常规申请需要打质检标记");

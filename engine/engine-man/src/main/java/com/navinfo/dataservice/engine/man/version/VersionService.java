@@ -6,20 +6,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Service
 public class VersionService {

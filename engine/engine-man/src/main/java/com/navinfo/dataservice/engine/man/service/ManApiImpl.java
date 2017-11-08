@@ -1,16 +1,20 @@
 package com.navinfo.dataservice.engine.man.service;
 
 import java.sql.Connection;
-import java.util.*;
-
-import com.navinfo.dataservice.engine.man.job.JobService;
-import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
-import net.sf.json.JSONArray;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
@@ -27,6 +31,8 @@ import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.config.ConfigService;
 import com.navinfo.dataservice.engine.man.day2Month.Day2MonthService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.job.JobService;
+import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.produce.ProduceService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
@@ -42,7 +48,7 @@ import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
 import com.navinfo.navicommons.exception.ServiceException;
-
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 /*
  * @author mayunfei
@@ -588,5 +594,125 @@ public class ManApiImpl implements ManApi {
     public Set<Integer> queryTasksHasSubtask() throws Exception{
     	return TaskService.getInstance().queryTasksHasSubtask();
     }
+
+	
+
+	/**
+	 * 取得子任务下量 map
+	 * @param subtaskListJson
+	 * @return
+	 * @throws Exception 
+	 */
+	private Map<Integer, Map<String, Object>> getSubtaskInfoCountMap(Connection conn,JSONArray subtaskListJson) throws Exception {
+		
+		Map<Integer, Map<String, Object>> subtaskInfoCountMap = new LinkedHashMap<>();
+		
+		if(subtaskListJson == null || subtaskListJson.isEmpty()){
+	 		return subtaskInfoCountMap;
+	 	}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT ST.SUBTASK_ID, ST.NAME, FS.FINISHED_POI, FS.TOTAL_POI, FS.WAIT_WORK_POI,");
+		sb.append(" ST.STAGE, ST.TYPE,ST.STATUS,R.DAILY_DB_ID,R.MONTHLY_DB_ID, ST.IS_QUALITY,");
+		sb.append(" P.TYPE PROGRAM_TYPE, ST.EXE_USER_ID,ST.WORK_KIND FROM  SUBTASK ST, TASK T, REGION R, ");
+		sb.append(" PROGRAM P, FM_STAT_OVERVIEW_SUBTASK FS WHERE ST.TASK_ID = T.TASK_ID AND T.REGION_ID = R.REGION_ID ");
+		sb.append(" AND T.PROGRAM_ID = P.PROGRAM_ID AND ST.SUBTASK_ID = FS.SUBTASK_ID(+) ");
+		sb.append(" AND ST.SUBTASK_ID IN ( "+StringUtils.join(subtaskListJson.toArray(), ",")+" )");
+
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				Map<String,Object> subtask = new HashMap<String,Object>();
+
+				subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+				subtask.put("name", rs.getString("NAME"));
+				subtask.put("finishedPoi", rs.getInt("FINISHED_POI"));
+				subtask.put("totalPoi", rs.getInt("TOTAL_POI"));
+				subtask.put("waitWorkPoi", rs.getInt("WAIT_WORK_POI"));
+				subtask.put("stage", rs.getInt("STAGE"));
+				subtask.put("type", rs.getInt("TYPE"));
+				subtask.put("status", rs.getInt("STATUS"));
+				if (1 == rs.getInt("STAGE")) {
+					subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+				} else if (2 == rs.getInt("STAGE")) {
+					subtask.put("dbId",rs.getInt("MONTHLY_DB_ID"));
+				} else {
+					subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+				}
+				subtask.put("isQuality", rs.getInt("IS_QUALITY"));
+				subtask.put("programType", rs.getInt("PROGRAM_TYPE"));
+				subtask.put("workKind", rs.getInt("WORK_KIND"));
+				
+				subtaskInfoCountMap.put(rs.getInt("SUBTASK_ID"), subtask);
+			}
+			
+			return subtaskInfoCountMap;
+			
+		} catch (Exception e) {
+			log.error("查询subtask失败",e);
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+
+	/**
+	 * 批量关闭子任务
+	 */
+	@Override
+	public JSONObject batchCloseSubTask(JSONObject jsonReq, long userId) throws Exception {
+		Connection conn = null;
+		
+		JSONObject result = new JSONObject();
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			
+			int subtaskType = jsonReq.getInt("subtaskType");
+		    JSONArray subtaskListJson = jsonReq.getJSONArray("subtaskList");
+			
+			Map<Integer,Map<String,Object>> subtaskMap = getSubtaskInfoCountMap(conn,subtaskListJson);
+			int closeSuccessTasks = 0;//关闭成功的任务个数
+			int closeFailTasks = 0; //不可关闭的任务个数
+			
+		    switch (subtaskType) {
+			case 1://采集
+				
+				break;
+			case 2://多源
+				for (Entry<Integer, Map<String, Object>> entry : subtaskMap.entrySet()) {
+					int subtaskId = entry.getKey();
+					Map<String, Object> map = entry.getValue();
+					int waitWorkPoi = (int)map.get("waitWorkPoi");
+					int workedPoi = (int)map.get("totalPoi") - (int)map.get("finishedPoi") - waitWorkPoi;
+					if(waitWorkPoi == 0 && workedPoi == 0){
+						closeSuccessTasks ++;
+						close(subtaskId, userId);
+					}else{
+						closeFailTasks ++;
+					}
+					
+				}
+				break;
+			case 3://月编
+				
+				break;
+			}
+		    
+		    result.put("closeSuccessTasks", closeSuccessTasks);
+		    result.put("closeFailTasks", closeFailTasks);
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
     
 }

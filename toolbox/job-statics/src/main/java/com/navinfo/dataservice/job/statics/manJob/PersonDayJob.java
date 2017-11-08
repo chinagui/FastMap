@@ -270,10 +270,10 @@ public class PersonDayJob extends AbstractStatJob {
 				sb.append("        s.quick_subtask_id,            		");
 				sb.append("        s.medium_subtask_id,           		");
 				sb.append("     substr(p.collect_time,0,8) collect_time ");
-				sb.append("   from poi_edit_status s, ix_poi p          ");
+				sb.append(" from poi_edit_status s, ix_poi p,log_action a ");
 				sb.append("   where trunc(substr(p.collect_time,0,8)) = ");
 				sb.append("	 '"+timestamp+"'"                            );
-				sb.append("   and p.pid = s.pid  and s.status <> 0      ");
+				sb.append("   and p.pid = s.pid  and s.status <> 0 and s.medium_subtask_id = a.stk_id ");
 				
 				String selectSql = sb.toString();
 
@@ -701,7 +701,7 @@ public class PersonDayJob extends AbstractStatJob {
 		String sql  = "select a.stk_id, count(1) NUM, p."+"\""+"LEVEL"+"\""+", s.status "
 			+ " from log_detail d, log_operation o, log_action a, ix_poi p, poi_edit_status s"
 			+ " where d.op_id = o.op_id and o.act_id = a.act_id  and d.tb_nm = 'IX_POI' and s.pid = p.pid  "
-			+ " AND d.op_tp = 1 and d.OB_PID = p.pid and to_char(p.collect_time,'yyyymmdd') = '" + timestamp + "' GROUP BY a.stk_id, p."+"\""+"LEVEL"+"\", s.status ";
+			+ " and s.medium_subtask_id = a.stk_id AND d.op_tp = 1 and d.OB_PID = p.pid and trunc(substr(p.collect_time,0,8)) = '" + timestamp + "' GROUP BY a.stk_id, p."+"\""+"LEVEL"+"\", s.status ";
 		Map<Integer, Object> poiActualAddNumMap = run.query(conn, sql, numRsHandler());
 		return poiActualAddNumMap;
 	}

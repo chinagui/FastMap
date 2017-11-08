@@ -94,7 +94,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			
 			conn.commit();
 			
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			DbUtils.rollbackAndCloseQuietly(conn);
 			StringBuilder logs = new StringBuilder();

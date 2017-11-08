@@ -387,5 +387,18 @@ public interface ManApi{
      * 
      * */
     public Set<Integer> queryTasksHasSubtask() throws Exception;
+    
+    /**
+     * 通过子任务类型批量关闭子任务  暂只支持多源 2017.11.07
+     * @param jsonReq
+     * @param userId
+     * @return
+     * @throws Exception
+     */
+    public JSONObject batchCloseSubTask(JSONObject jsonReq, long userId) throws Exception;
+   
+
+
 }
+
 

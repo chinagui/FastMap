@@ -347,7 +347,10 @@ public class CheckController extends BaseController {
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
-			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			String secondWorkItem = null;
+			if(jsonReq.containsKey("secondWorkItem")){
+				secondWorkItem = jsonReq.getString("secondWorkItem");
+			}
 			
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 

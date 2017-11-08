@@ -6,6 +6,9 @@ import com.navinfo.dataservice.engine.limit.glm.iface.Result;
 import com.navinfo.dataservice.engine.limit.glm.model.limit.ScPlateresInfo;
 import net.sf.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Operation  implements IOperation {
     private Command command;
 
@@ -28,6 +31,9 @@ public class Operation  implements IOperation {
             info.setUrl(infoObj.getString("url"));
             info.setNewsTime(infoObj.getString("newsTime"));
             info.setInfoContent(infoObj.getString("infoContent"));
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+            info.setPublicTime(dateFormat.format(new Date()));
 
             if (infoObj.containsKey("condition")) {
                 info.setCondition(infoObj.getString("condition"));

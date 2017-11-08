@@ -45,7 +45,7 @@
     <filter-class>com.navinfo.dataservice.commons.token.TokenValidateFilter</filter-class>
     <init-param>
       <param-name>exclude-url-pattern</param-name>
-      <param-value>/login</param-value>
+      <param-value>/login|/import</param-value>
     </init-param>
   </filter>
   <filter-mapping>

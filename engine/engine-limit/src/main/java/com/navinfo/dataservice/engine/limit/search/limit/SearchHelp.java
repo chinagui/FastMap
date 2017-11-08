@@ -1,125 +1,94 @@
 package com.navinfo.dataservice.engine.limit.search.limit;
 
+import java.util.HashMap;
+
 public class SearchHelp {
-	public static String updateInfoAdminCode(String mkadminCode){
-		String infoAdminCode = "";
-		
-		switch(mkadminCode){
-		case "110099":
-			infoAdminCode = "110100";
-			break;
-		case "120099":
-			infoAdminCode = "120100";
-			break;
-		case "310099":
-			infoAdminCode = "310100";
-			break;
-		case "419098":
-			infoAdminCode = "419001";
-			break;
-		case "429095":
-			infoAdminCode = "429004";
-			break;
-		case "429094":
-			infoAdminCode = "429005";
-			break;
-		case "429093":
-			infoAdminCode = "429006";
-			break;
-		case "429078":
-			infoAdminCode = "429021";
-			break;
-		case "441999":
-			infoAdminCode = "441900";
-			break;
-		case "442099":
-			infoAdminCode = "442000";
-			break;
-		case "460399":
-			infoAdminCode = "460300";
-			break;
-		case "460499":
-			infoAdminCode = "460400";
-			break;
-		case "469098":
-			infoAdminCode = "469001";
-			break;
-		case "469097":
-			infoAdminCode = "469002";
-			break;
-		case "469094":
-			infoAdminCode = "469005";
-			break;
-		case "469093":
-			infoAdminCode = "469006";
-			break;
-		case "469092":
-			infoAdminCode = "469007";
-			break;
-		case "469078":
-			infoAdminCode = "469021";
-			break;
-		case "469077":
-			infoAdminCode = "469022";
-			break;
-		case "469076":
-			infoAdminCode = "469023";
-			break;
-		case "469075":
-			infoAdminCode = "469024";
-			break;
-		case "469074":
-			infoAdminCode = "469025";
-			break;
-		case "469073":
-			infoAdminCode = "469026";
-			break;
-		case "469072":
-			infoAdminCode = "469027";
-			break;
-		case "469071":
-			infoAdminCode = "469028";
-			break;
-		case "469070":
-			infoAdminCode = "469029";
-			break;
-		case "469069":
-			infoAdminCode = "469030";
-			break;
-		case "500099":
-			infoAdminCode = "500100";
-			break;
-		case "659098":
-			infoAdminCode = "659001";
-			break;
-		case "659097":
-			infoAdminCode = "659002";
-			break;
-		case "659096":
-			infoAdminCode = "659003";
-			break;
-		case "659095":
-			infoAdminCode = "659004";
-			break;
-		case "659094":
-			infoAdminCode = "659005";
-			break;
-		case "659093":
-			infoAdminCode = "659006";
-			break;
-		case "659092":
-			infoAdminCode = "659007";
-			break;
-		case "659091":
-			infoAdminCode = "659008";
-			break;
-		case "659090":
-			infoAdminCode = "659009";
-			break;
-		default:
-			infoAdminCode = mkadminCode;
-			break;
-		}
-		return infoAdminCode;
-	}
+
+   private static HashMap<String, String> adminMapping = new HashMap<String, String>() {{
+
+        put("110099", "110100");
+
+        put("120099", "120100");
+
+        put("310099", "310100");
+
+        put("419098", "419001");
+
+        put("429095", "429004");
+
+        put("429094", "429005");
+
+        put("429093", "429006");
+
+        put("429078", "429021");
+
+        put("441999", "441900");
+
+        put("442099", "442000");
+
+        put("460399", "460300");
+
+        put("460499", "460400");
+
+        put("469098", "469001");
+
+        put("469097", "469002");
+
+        put("469094", "469005");
+
+        put("469093", "469006");
+
+        put("469092", "469007");
+
+        put("469078", "469021");
+
+        put("469077", "469022");
+
+        put("469076", "469023");
+
+        put("469075", "469024");
+
+        put("469074", "469025");
+
+        put("469073", "469026");
+
+        put("469072", "469027");
+
+        put("469071", "469028");
+
+        put("469070", "469029");
+
+        put("469069", "469030");
+
+        put("500099", "500100");
+
+        put("659098", "659001");
+
+        put("659097", "659002");
+
+        put("659096", "659003");
+
+        put("659095", "659004");
+
+        put("659094", "659005");
+
+        put("659093", "659006");
+
+        put("659092", "659007");
+
+        put("659091", "659008");
+
+        put("659090", "659009");
+    }};
+
+
+    public static String updateInfoAdminCode(String mkadminCode) {
+        String infoAdminCode = mkadminCode;
+
+        if (adminMapping.containsKey(mkadminCode)) {
+            infoAdminCode = adminMapping.get(mkadminCode);
+        }
+
+        return infoAdminCode;
+    }
 }

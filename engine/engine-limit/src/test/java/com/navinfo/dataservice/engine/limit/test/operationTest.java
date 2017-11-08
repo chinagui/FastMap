@@ -31,8 +31,7 @@ public class operationTest extends ClassPathXmlAppContextInit {
     @Test
     public void create01() throws Exception {
 
-        String parameter = "{\"type\":\"SCPLATERESFACE\",\"command\":\"CREATE\",\"dbId\":13,\"data\":{\"groupId\":\"D1100000002\",\"rdlinks\":[674509,674510,673131,674508,674507]}}";
-
+        String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"UPDATE\",\"objIds\":[\"S1100000007_000001\",\"S1100000007_000002\"],\"data\":{\"boundaryLink\":\"0\",\"objStatus\":\"UPDATE\"}}";
 
 
         Transaction t = new Transaction(parameter);

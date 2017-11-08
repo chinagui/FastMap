@@ -211,6 +211,64 @@ public class limitController extends BaseController {
         }
     }
 
+    @RequestMapping(value = "/import")
+    public ModelAndView Import(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+        logger.info("parameter====" + parameter);
+//        AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+
+        com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject
+                .parseObject(parameter);
+
+        JSONObject paraJson = JsonUtils.fastJson2netJson(fastJson);
+
+        try {
+            long beginRunTime = System.currentTimeMillis();
+            logger.info("BEGIN EDIT RUN");
+            Transaction t = new Transaction(parameter);
+            // 加载用户ID
+//            t.setUserId(tokenObj.getUserId());
+            // 加载用户taskId
+            if (paraJson.containsKey("subtaskId")) {
+                t.setSubTaskId(paraJson.getInt("subtaskId"));
+            }
+
+            String msg = t.run();
+
+            String log = t.getLogs();
+
+            JSONObject json = new JSONObject();
+
+            json.put("result", msg);
+
+            json.put("log", log);
+
+            json.put("check", t.getCheckLog());
+
+            json.put("Id", t.getId());
+            long endRunTime = System.currentTimeMillis();
+            logger.info("END EDIT RUN");
+            logger.info("edit run total use time   "
+                    + String.valueOf(endRunTime - beginRunTime));
+            if (parameter.contains("\"infect\":1")) {
+                return new ModelAndView("jsonView", infect(json));
+            } else {
+                return new ModelAndView("jsonView", success(json));
+            }
+        } catch (DataNotChangeException e) {
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", success(e.getMessage()));
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+
     @RequestMapping(value = "/getRegionIdByAdmin")
     public ModelAndView getRegionIdByAdiminArea(HttpServletRequest request) throws Exception {
         String parameter = request.getParameter("parameter");

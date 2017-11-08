@@ -2131,7 +2131,8 @@ public class SubtaskService {
 					//modify by songhe
 					//原则变更：快线：采集/日编子任务关闭进行动态调整，增加动态调整快线月编任务，月编子任务范围
 					//调整快线月编任务以及子任务的范围和项目范围保持一致，根据项目范围调整的个数判断是否执行表便任务的调整操作
-					if(programCount > 0){
+					//20171108 by zxy 快线仅采集子任务关闭的时候调整月编任务/子任务。
+					if(subtask.getStage()==0&&programCount > 0){
 						log.info("subTaskId:" + subtask.getSubtaskId() + "开始执行快线月编任务范围更新操作");
 						int monthChangedTasks = TaskOperation.changeMonthTaskGridByProgram(conn, subtask.getTaskId());
 						if(monthChangedTasks > 0){

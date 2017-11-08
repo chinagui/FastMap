@@ -1954,6 +1954,7 @@ public class TaskService {
 			//关闭日编任务
 			for(int dayTaskId:dayTaskIds){
 				TaskOperation.updateStatus(conn, dayTaskId, 0);
+				TimelineService.recordTimeline(dayTaskId, "task",0, conn);	
 			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(fccConn);

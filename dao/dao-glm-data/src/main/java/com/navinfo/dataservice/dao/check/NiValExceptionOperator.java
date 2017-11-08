@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.web.servlet.ModelAndView;
@@ -155,6 +157,15 @@ public class NiValExceptionOperator {
 								geo.getCoordinate().x * 0.00001,
 								geo.getCoordinate().y * 0.00001)[0]));
 			}
+			if (objectNode.getMeshTable().equals("ZONE_LINK")) {
+                ZoneLinkSelector zoneLinkSelector = new ZoneLinkSelector(conn);
+                String sql = objectNode.getMeshSql();
+                sql = sql.replace("!OBJECT_PID!", pid);
+                ZoneLink link = (ZoneLink) zoneLinkSelector.loadBySql(sql, false, false).get(0);
+                Geometry geo = link.getGeometry();
+                geometryMap.put(key, GeometryUtils.getPointFromGeo(GeoTranslator.transform(geo, 0.00001, 5)));
+                meshMap.put(key, link.mesh());
+            }
 			list.add(geometryMap.get(key));
 			list.add(meshMap.get(key));
 		}

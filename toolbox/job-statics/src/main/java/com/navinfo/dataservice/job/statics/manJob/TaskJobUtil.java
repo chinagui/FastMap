@@ -17,7 +17,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.bson.Document;
-import com.alibaba.dubbo.common.utils.StringUtils;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
@@ -32,6 +31,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
@@ -1018,6 +1018,8 @@ public class TaskJobUtil{
 		int type = 0;
 		int status = 0;
 		int planDate = 0;
+		String name="";
+		String groupName="";
 		
 		String actualStartDate = "";
 		String actualEndDate = "";
@@ -1097,6 +1099,8 @@ public class TaskJobUtil{
 			type = task.getType();
 			//任务状态
 			status = task.getStatus();
+			name=task.getName();
+			groupName=task.getGroupName();
 			//项目状态
 			programType = task.getProgramType();
 			//计划天数
@@ -1434,6 +1438,8 @@ public class TaskJobUtil{
 			taskMap.put("type", type);
 			taskMap.put("status", status);
 			taskMap.put("planDate", planDate);
+			taskMap.put("name", name);
+			taskMap.put("groupName", groupName);
 			taskMap.put("actualStartDate", actualStartDate);
 			taskMap.put("actualEndDate", actualEndDate);
 			taskMap.put("diffDate", diffDate);
@@ -1534,8 +1540,26 @@ public class TaskJobUtil{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "SELECT *"
-					+ "  FROM TASK";
+			String selectSql = "SELECT T.CREATE_DATE,"
+					+ "       T.BLOCK_ID,"
+					+ "       T.TASK_ID,"
+					+ "       T.PROGRAM_ID,"
+					+ "       T.GROUP_ID,"
+					+ "       T.POI_PLAN_TOTAL,"
+					+ "       T.ROAD_PLAN_TOTAL,"
+					+ "       T.WORK_KIND,"
+					+ "       T.CREATE_USER_ID,"
+					+ "       T.STATUS,"
+					+ "       T.PLAN_START_DATE,"
+					+ "       T.PLAN_END_DATE,"
+					+ "       T.LATEST,"
+					+ "       T.TYPE,"
+					+ "       T.LOT,"
+					+ "       T.GEOMETRY,"
+					+ "       T.NAME,"
+					+ "       G.GROUP_NAME"
+					+ "  FROM TASK T, USER_GROUP G"
+					+ " WHERE T.GROUP_ID = G.GROUP_ID(+)";
 					//+ " WHERE LATEST = 1";
 					//+ "   AND STATUS IN (0, 1)";
 			QueryRunner run = new QueryRunner();
@@ -1544,9 +1568,16 @@ public class TaskJobUtil{
 					List<Task> list = new ArrayList<Task>();
 					while(rs.next()){
 						Task map = new Task();
+						map.setRoadPlanIn(rs.getInt("ROAD_PLAN_IN"));
+						map.setRoadPlanOut(rs.getInt("ROAD_PLAN_OUT"));
+						map.setPoiPlanIn(rs.getInt("POI_PLAN_IN"));
+						map.setPoiPlanOut(rs.getInt("POI_PLAN_OUT"));
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+
 						map.setBlockId(rs.getInt("BLOCK_ID"));
 						map.setTaskId(rs.getInt("TASK_ID"));
+						map.setName(rs.getString("NAME"));
+						map.setGroupName(StringUtils.isEmpty(rs.getString("GROUP_NAME"))?"":rs.getString("GROUP_NAME"));
 						map.setProgramId(rs.getInt("PROGRAM_ID"));
 						map.setGroupId(rs.getInt("GROUP_ID"));
 						map.setPoiPlanTotal((rs.getInt("POI_PLAN_TOTAL")));

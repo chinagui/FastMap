@@ -779,6 +779,27 @@ public class PoiEditStatus {
 			throw new Exception("poiWithOutSubtask");
 		}
 	}
+
+	public static void tagMultiSrcPoi(Connection conn, Set<Long> pids, int taskId, int subtaskId) throws Exception {
+		try{
+			if(pids.isEmpty()){
+				return;
+			}
+			//更新poi_edit_status表
+//			DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			StringBuilder sb = new StringBuilder();
+			sb.append("UPDATE POI_EDIT_STATUS T SET ");
+				sb.append("QUICK_SUBTASK_ID="+subtaskId+",QUICK_TASK_ID="+taskId+" WHERE PID in ("+StringUtils.join(pids, ",")+")");
+			
+				
+			logger.info("updatePoiEditStatusMultiSrc 一级 多源POI打标签sql:"+sb.toString());
+			new QueryRunner().update(conn, sb.toString());
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+	}
 	
 //	public static void main(String[] args) throws Exception {
 //		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",

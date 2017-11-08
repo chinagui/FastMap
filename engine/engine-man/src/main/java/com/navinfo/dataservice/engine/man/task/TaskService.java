@@ -1919,10 +1919,12 @@ public class TaskService {
 			List<Task> tasks = getNoGeoTaskByProgramId(conn, task.getProgramId());
 			Set<Integer> dayTaskIds=new HashSet<>();
 			Set<Integer> colTaskIds=new HashSet<>();
+			//关闭的日编任务不判断
 			for(Task t:tasks){
 				if(t.getType()==0){colTaskIds.add(t.getTaskId());}
-				else if(t.getType()==1){dayTaskIds.add(t.getTaskId());}
+				else if(t.getType()==1&&t.getStatus()!=0){dayTaskIds.add(t.getTaskId());}
 			}
+			if(dayTaskIds==null||dayTaskIds.size()==0){log.info("不存在非关闭状态的日编任务");return;}
 			//3.当前项目下所有日编任务均无子任务
 			sql="select count(1) C from subtask where task_id in "+dayTaskIds.toString().replace("[", "(").replace("]", ")");
 			int daySubtaskNum=runner.query(conn, sql, new ResultSetHandler<Integer>(){
@@ -3166,7 +3168,7 @@ public class TaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind,t.region_id,t.lot");
+			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind,t.region_id,t.lot,t.status");
 			sb.append("   FROM TASK T ");
 			sb.append("  WHERE T.PROGRAM_ID = " + programId);
 			
@@ -3181,6 +3183,7 @@ public class TaskService {
 					while(rs.next()) {
 						Task task = new Task();
 						task.setTaskId(rs.getInt("TASK_ID"));
+						task.setStatus(rs.getInt("STATUS"));
 						task.setType(rs.getInt("TYPE"));
 						task.setGroupId(rs.getInt("GROUP_ID"));
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));

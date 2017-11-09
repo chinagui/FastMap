@@ -102,59 +102,61 @@ public class ExportQualityTipsReportJob extends AbstractStatJob {
 	public void exportExcelTipsByTask(Connection checkConn,Map<Integer,Map<String, Object>> taskMap,
 			Map<Integer, Map<String, Object>> subtaskMap) throws Exception{
 		String encoding = System.getProperty("file.encoding");
+        try {
+            for (Entry<Integer, Map<String, Object>> entry : taskMap.entrySet()) {
 
-		for (Entry<Integer, Map<String, Object>> entry : taskMap.entrySet()) {
+                Integer taskId = entry.getKey();
 
-			Integer taskId  = entry.getKey();
+                log.info("start export taskId = " + taskId);
 
-			log.info("start export taskId = "+taskId);
+                Map<String, Object> taskInfo = entry.getValue();
+                String taskGroup = (String) taskInfo.get("taskGroup");
+                String taskName = (String) taskInfo.get("taskName");
+                StringBuffer xcSubtaskIds = (StringBuffer) taskInfo.get("xcSubtaskIds");
+                StringBuffer snSubtaskIds = (StringBuffer) taskInfo.get("snSubtaskIds");
+                if (xcSubtaskIds != null && StringUtils.isNotBlank(xcSubtaskIds.toString())) {
+                    xcSubtaskIds.deleteCharAt(xcSubtaskIds.length() - 1);
+                }
+                if (snSubtaskIds != null && StringUtils.isNotBlank(snSubtaskIds.toString())) {
+                    snSubtaskIds.deleteCharAt(snSubtaskIds.length() - 1);
+                }
 
-			Map<String, Object> taskInfo = entry.getValue();
-			String taskGroup = (String) taskInfo.get("taskGroup");
-			String taskName = (String) taskInfo.get("taskName");
-			StringBuffer xcSubtaskIds = (StringBuffer) taskInfo.get("xcSubtaskIds");
-			StringBuffer snSubtaskIds = (StringBuffer) taskInfo.get("snSubtaskIds");
-			if(xcSubtaskIds != null && StringUtils.isNotBlank(xcSubtaskIds.toString())){
-				xcSubtaskIds.deleteCharAt(xcSubtaskIds.length()-1);
-			}
-			if(snSubtaskIds != null && StringUtils.isNotBlank(snSubtaskIds.toString())){
-				snSubtaskIds.deleteCharAt(snSubtaskIds.length()-1);
-			}
+                String xcSubtaskIdStr = xcSubtaskIds.toString();
+                String snSubtaskIdStr = snSubtaskIds.toString();
 
-			String xcSubtaskIdStr = xcSubtaskIds.toString();
-			String snSubtaskIdStr = snSubtaskIds.toString();
+                taskGroup = new String(taskGroup.getBytes("UTF-8"), encoding);
 
-			taskGroup = new String(taskGroup.getBytes("UTF-8"),encoding);
+                String path = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathTips)
+                        + "/" + DateUtils.dateToString(new Date(), "yyyyMMdd") + "/" + taskGroup + "/tip/";
 
-			String path = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathTips)
-                    +"/"+DateUtils.dateToString(new Date(), "yyyyMMdd")+"/"+taskGroup+"/tip/";
+                String fileName = null;
+                String dateStr = DateUtils.dateToString(new Date(), "yyyyMMddHHmmssSSS");
 
-			String fileName = null;
-			String dateStr = DateUtils.dateToString(new Date(), "yyyyMMddHHmmssSSS");
+                if (xcSubtaskIdStr != null && StringUtils.isNotEmpty(xcSubtaskIdStr)) {
+                    log.info("start export taskId = " + taskId + " xnSubtaskIdStr = " + xcSubtaskIdStr);
+                    fileName = taskName + "质检报表现场" + dateStr;
+                    fileName = new String(fileName.getBytes("UTF-8"), encoding);
+                    log.info("start export path = " + path + " fileName = " + fileName);
 
-			if(xcSubtaskIdStr != null && StringUtils.isNotEmpty(xcSubtaskIdStr)){
-				log.info("start export taskId = "+taskId+" xnSubtaskIdStr = "+xcSubtaskIdStr);
-				fileName = taskName + "质检报表现场" + dateStr;
-				fileName = new String(fileName.getBytes("UTF-8"),encoding);
-				log.info("start export path = "+path+" fileName = "+fileName);
+                    //导出tip 外业质检现场报表
+                    exportExcelTip(path, checkConn, xcSubtaskIdStr, fileName, subtaskMap);
+                }
 
-				//导出tip 外业质检现场报表
-				exportExcelTip(path,checkConn,xcSubtaskIdStr,fileName,subtaskMap);
-			}
+                if (snSubtaskIdStr != null && StringUtils.isNotEmpty(snSubtaskIdStr)) {
+                    log.info("start export taskId = " + taskId + " snSubtaskIdStr = " + snSubtaskIdStr);
+                    fileName = taskName + "质检报表室内" + dateStr;
+                    fileName = new String(fileName.getBytes("UTF-8"), encoding);
+                    log.info("start export path = " + path + " fileName = " + fileName);
+                    //导出tip外业质检室内报表
+                    exportExcelTip(path, checkConn, snSubtaskIdStr, fileName, subtaskMap);
+                }
 
-			if(snSubtaskIdStr != null && StringUtils.isNotEmpty(snSubtaskIdStr)){
-				log.info("start export taskId = "+taskId+" snSubtaskIdStr = "+snSubtaskIdStr);
-				fileName = taskName + "质检报表室内"+dateStr;
-				fileName = new String(fileName.getBytes("UTF-8"),encoding);
-				log.info("start export path = "+path+" fileName = "+fileName);
-				//导出tip外业质检室内报表
-                exportExcelTip(path,checkConn,snSubtaskIdStr,fileName,subtaskMap);
-			}
+                log.info("end export taskId = " + taskId);
 
-			log.info("end export taskId = "+taskId);
-
-		}
-
+            }
+        }catch (Exception e) {
+            throw  e;
+        }
 	}
 
     /**
@@ -246,7 +248,7 @@ public class ExportQualityTipsReportJob extends AbstractStatJob {
 			out = new FileOutputStream(file);
 
             String templatePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathTips);
-            FileInputStream fis = new FileInputStream(templatePath + TipsQualityReportConstant.QC_TEMPLATE_XLS_NAME);
+            FileInputStream fis = new FileInputStream(templatePath + "/" + TipsQualityReportConstant.QC_TEMPLATE_XLS_NAME);
 			HSSFWorkbook workbook = new HSSFWorkbook(fis);
 			Map<String, Integer> colorMap = new HashMap<>();
 			colorMap.put("red", 255);
@@ -262,8 +264,10 @@ public class ExportQualityTipsReportJob extends AbstractStatJob {
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+            throw e;
 		} catch (IOException e) {
 			e.printStackTrace();
+            throw e;
 		}finally {
 			if(out != null){
 				out.close();

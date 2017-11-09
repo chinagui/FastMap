@@ -22,3 +22,7 @@
 
 
 
+1. fm_sys/update_glm_tables.sql
+   共能: ZONE_LINK检查结果计算图幅依赖
+   目标库: fm_sys
+   author: 张云涛

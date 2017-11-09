@@ -3,14 +3,19 @@ package com.navinfo.dataservice.engine.editplus;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.ChangeLog;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -19,7 +24,9 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
@@ -43,32 +50,41 @@ public class BatchTestGPR {
 		System.out.println("start batch test");
 		BatchTest test=new BatchTest();
 		test.init();
-		Connection conn = DBConnector.getInstance().getConnectionById(84);
-		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, false,408000026, false);
-		IxPoiObj poiObj=(IxPoiObj) obj;
-		IxPoi row=(IxPoi) obj.getMainrow();
-		//IxPoiAddress chiAddress = poiObj.getChiAddress();
-		//ChangeLog logg=new ChangeLog();
-		//Map<String, Object> oldValues=new HashMap<String, Object>();
-		//oldValues.put("PREFIX", "123");
-		//logg.setOldValues(oldValues);
-		//List<ChangeLog> logList=new ArrayList<ChangeLog>();
-		//logList.add(logg);
-		//chiAddress.setHisChangeLogs(logList);
-		//chiAddress.setOpType(OperationType.INSERT);
-		//row.setOpType(OperationType.INSERT);
-		operationResult.putObj(obj);
+
+		Connection conn = DBConnector.getInstance().getConnectionById(12);
+		OperationResult operationResult = new OperationResult();
+
+		List<Long> pids = new ArrayList<>();
+		pids.add(4015088L);
+		
+		Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(conn, pids);
+		Set<String> tabNames = new HashSet<>();
+		tabNames.add("IX_POI_NAME");
+		tabNames.add("IX_POI_NAME_FLAG");
+		
+		// 获取poi对象
+		Map<Long, BasicObj> objs = null;
+		if (tabNames == null || tabNames.size() == 0) {
+			// log.info(1);
+			objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, true, pids, false, false);
+			// log.info(2);
+		} else {
+			objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, false, pids, false, false);
+
+		}
+		// 将poi对象与履历合并起来
+		ObjHisLogParser.parse(objs, logs);
+		operationResult.putAll(objs.values());
 		
 		BatchCommand batchCommand=new BatchCommand();	
-		batchCommand.setRuleId("FM-BAT-D20-002");
+		batchCommand.setRuleId("FM-BAT-20-135");
 		//batchCommand.setOperationName("day2month");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
 		System.out.println(batch.getName());
 		batch.persistChangeLog(1, 2);
 		DbUtils.commitAndCloseQuietly(conn);
-		System.out.println("end batch test FM-BAT-20-164");
+		System.out.println("end batch test FM-BAT-PA20-001");
 	}
 
 }

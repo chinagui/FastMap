@@ -3,7 +3,9 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -34,8 +36,8 @@ public class GLM55108 extends BasicCheckRule {
 				IxPointAddressObj pointAddressObj=(IxPointAddressObj) obj;
 				IxPointaddress ixPointaddress = (IxPointaddress) pointAddressObj.getMainrow();
 				Long linkPid = ixPointaddress.getGuideLinkPid();
-				Integer formOfWay = getFormOfWayByLinkPid(linkPid);
-				if(formOfWay == 16 || formOfWay == 17){
+				List<Integer> formOfWays = getFormOfWayByLinkPid(linkPid);
+				if(formOfWays!=null && formOfWays.size() > 0 && (formOfWays.contains(16) || formOfWays.contains(17))){
 					setCheckResult(ixPointaddress.getGeometry(), pointAddressObj, ixPointaddress.getMeshId(),null);
 				}
 			}
@@ -57,8 +59,8 @@ public class GLM55108 extends BasicCheckRule {
 	 * @return
 	 * @throws Exception
 	 */
-	public Integer getFormOfWayByLinkPid(Long linkPid) throws Exception{
-		String sql = "select form_of_way from rd_link_form where link_pid = "+linkPid;
+	public List<Integer> getFormOfWayByLinkPid(Long linkPid) throws Exception{
+		String sql = "select form_of_way from rd_link_form where u_record <> 2 and link_pid = "+linkPid;
     	
     	PreparedStatement pstmt = null;
 		
@@ -66,14 +68,15 @@ public class GLM55108 extends BasicCheckRule {
 		
 		Connection conn = null;
 		
+		List<Integer> formWayList = new ArrayList<Integer>();
     	try {
     		conn = getCheckRuleCommand().getConn();
     		pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
-				return resultSet.getInt(1);
+				formWayList.add(resultSet.getInt(1));
 			}
-    		return 0;
+    		return formWayList;
     	}catch(Exception e){
 			log.error("查询form_of_way出错",e);
 			throw e;

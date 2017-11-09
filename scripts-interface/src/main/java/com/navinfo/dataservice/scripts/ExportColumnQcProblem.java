@@ -54,7 +54,6 @@ public class ExportColumnQcProblem {
 					int qcWorkerId = Integer.parseInt(columnQcProblem.getQcWorker());
 					columnQcProblem.setQcWorker(qcWorkerId+"-"+getUserRealName(qcWorkerId));
 				}
-				
 			}
 			
 			

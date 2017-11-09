@@ -127,6 +127,9 @@ public class PointAddressReleaseJob extends AbstractJob{
 			BatchCommand batchCommand=new BatchCommand();		
 			batchCommand.setRuleId("FM-BAT-PA20-002");
 			batchCommand.setRuleId("FM-BAT-PA20-001");
+			batchCommand.setRuleId("FM-BAT-PA20-003");
+			batchCommand.setRuleId("FM-BAT-PA20-004");
+			batchCommand.setRuleId("FM-BAT-PA20-005");
 			Batch batch=new Batch(conn,batchData);
 			batch.setSubtaskId((int)jobInfo.getTaskId());
 			batch.operate(batchCommand);

@@ -119,7 +119,7 @@ public class GLM55048 extends BasicCheckRule {
 						log = String.format(log, "河川域");
 						break;
 					case 3:
-						log = String.format(log, "湖沼地");
+						log = String.format(log, "湖沼池");
 						break;
 					case 4:
 						log = String.format(log, "水库");

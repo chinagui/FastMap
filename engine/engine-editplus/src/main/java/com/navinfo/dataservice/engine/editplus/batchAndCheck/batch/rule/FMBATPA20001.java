@@ -36,9 +36,7 @@ public class FMBATPA20001 extends BasicBatchRule {
 		// TODO Auto-generated method stub
 		IxPointAddressObj ixPointaddressObj = (IxPointAddressObj) obj;
 		IxPointaddress ixPonitaddress = (IxPointaddress) ixPointaddressObj.getMainrow();
-		// 非新增和非修改的数据不执行批处理
-		if (!ixPonitaddress.getHisOpType().equals(OperationType.INSERT)
-				&& !ixPonitaddress.getHisOpType().equals(OperationType.UPDATE)) {
+		if (ixPointaddressObj.opType().equals(OperationType.PRE_DELETED)) {
 			return;
 		}
 		// 处理FLAG子表记录
@@ -59,7 +57,8 @@ public class FMBATPA20001 extends BasicBatchRule {
 		}
 		// 处理主表SRC_PID,SRC_TYPE,DATA_VERSION
 		ixPonitaddress.setSrcPid(0);
-		ixPonitaddress.setSrcType(null);
+//		ixPonitaddress.setSrcType(null);
+		ixPonitaddress.setSrcType("");
 		ixPonitaddress.setDataVersion(SystemConfigFactory.getSystemConfig()
 				.getValue(PropConstant.seasonVersion));
 	}

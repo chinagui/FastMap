@@ -28,7 +28,7 @@ public class GLM50012 extends baseRule {
                 if (linkKind.changedFields().containsKey("form"))
                     form = (int) linkKind.changedFields().get("form");
                 if (form != 1)
-                    setCheckResult("", "", 0);
+                    setCheckResult("", "[ZONE_LINK, " + linkKind.parentPKValue() + "]", 0);
             }
         }
     }

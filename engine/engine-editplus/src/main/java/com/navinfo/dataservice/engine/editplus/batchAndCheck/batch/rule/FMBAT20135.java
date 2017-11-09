@@ -7,7 +7,6 @@ import java.util.Map;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameFlag;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -22,6 +21,9 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  * 将其用SHORT_NAME替换。如果替换后，长度小于等于35个字符，当标准化官方英文名为空时，将替换的结果更新到标准化官方英文名中；当没有标准化官方英文名时，
  * 则IX_POI_NAME新增一条记录，NAME_ID申请赋值，POI_PID赋值该POI的PID，NAME_GROUPID=对应中文NAME_GROUPID,LANG_CODE赋值ENG，NAME_CLASS=1，NAME_TYPE=1，
  * NAME赋值官方原始名称对应的名称，NAME_PHONETIC根据官方标准名称转拼音，如果从右往左替换后仍超过35个字符，则不用批处理。
+ * 
+ * 2017.11.07 增加处理
+ * 简化后，若存在官方标准英文记录且记录中name不为空，将IX_POI_NAME_FLAG中官方原始英文的NAME_ID的值改为该POI对象的官方标准英文名称对应的NAME_ID
  *
  */
 public class FMBAT20135 extends BasicBatchRule {
@@ -113,7 +115,29 @@ public class FMBAT20135 extends BasicBatchRule {
 			} else {
 				standardName.setName(officialNameStr);
 			}
+			
+			// 简化后，若存在官方标准英文记录且记录中name不为空，
+			// 将IX_POI_NAME_FLAG中官方原始英文的NAME_ID的值改为该POI对象的官方标准英文名称对应的NAME_ID
+			IxPoiName standardEngName = poiObj.getOfficeStandardEngName();
+			if(standardEngName != null){
+				String standEngNameStr = standardEngName.getName();
+				if(StringUtils.isNotEmpty(standEngNameStr)){
+					IxPoiName originEngName = poiObj.getOfficeOriginEngName();
+					List<IxPoiNameFlag> ixPoiNameFlags = poiObj.getIxPoiNameFlags();
+					for (IxPoiNameFlag ixPoiNameFlag: ixPoiNameFlags){
+						long nameId = ixPoiNameFlag.getNameId();
+						long standardNameId = standardEngName.getNameId();
+						if(nameId != standardNameId){
+							if(originEngName != null){
+								long originNameId = originEngName.getNameId();
+								if(nameId == originNameId){
+									ixPoiNameFlag.setNameId(standardNameId);
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
-
 }

@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpointaddress.IxPointaddress;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPointAddressObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -46,7 +47,8 @@ public class FMDPA005 extends BasicCheckRule {
 				IxPointaddress ixPointaddress = (IxPointaddress) ixPointaddressObj.getMainrow();
 				if (!StringUtils.isEmpty(ixPointaddress.getDpName())) {
 					String dpName = ixPointaddress.getDpName();
-
+					dpName = CheckUtil.strQ2B(dpName);
+					
 					if (checkStr(dpName)) {
 						Geometry geo = ixPointaddress.getGeometry();
 						int meshId = ixPointaddress.getMeshId();

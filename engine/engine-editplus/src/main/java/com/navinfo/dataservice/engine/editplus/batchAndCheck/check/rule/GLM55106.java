@@ -58,7 +58,7 @@ public class GLM55106 extends BasicCheckRule {
 	 * @throws Exception
 	 */
 	public Integer getKindByLinkPid(Long linkPid) throws Exception{
-		String sql = "select kind from rd_link where link_pid = "+linkPid;
+		String sql = "select kind from rd_link where u_record <> 2 and link_pid = "+linkPid;
     	
     	PreparedStatement pstmt = null;
 		

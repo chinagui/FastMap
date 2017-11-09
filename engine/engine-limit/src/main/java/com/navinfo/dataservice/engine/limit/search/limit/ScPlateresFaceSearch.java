@@ -33,39 +33,32 @@ public class ScPlateresFaceSearch implements ISearch {
         return null;
     }
 
+
     public int searchDataByCondition(JSONObject condition, List<IRow> objList) throws Exception {
 
         if (!condition.containsKey("groupId")) {
             throw new Exception("请输入groupId！");
         }
 
-        String groupId = condition.getString("groupId");
+        String sqlStr = "SELECT t.* FROM SC_PLATERES_FACE t WHERE t.GROUP_ID = ? ";
 
-        String sqlStr = "SELECT t.*, row_number() over(order by GEOMETRY_ID) as row_num FROM SC_PLATERES_FACE t WHERE t.GROUP_ID = ? ";
+        if (condition.containsKey("gtype")) {
 
-        boolean Paging = (condition.containsKey("pageSize") && condition.containsKey("pageNum"));
+            String gtype = condition.getString("gtype");
 
-        if (Paging) {
+            if (gtype != null && !gtype.isEmpty()) {
 
-            int pageSize = condition.getInt("pageSize");
-            int pageNum = condition.getInt("pageNum");
+                sqlStr += " AND t.geometry.sdo_gtype = ";
 
-            StringBuilder sql = new StringBuilder(" WITH query AS ( ");
-            sql.append(sqlStr);
-            sql.append(") SELECT query.*,(SELECT count(1) FROM query) AS TOTAL_ROW_NUM FROM query ");
-
-            sql.append(" WHERE row_num BETWEEN ");
-            sql.append((pageNum - 1) * pageSize + 1);
-            sql.append(" AND ");
-            sql.append((pageNum * pageSize));
-           
-            sqlStr = sql.toString();
+                sqlStr += gtype;
+            }
         }
+
+        String groupId = condition.getString("groupId");
 
         PreparedStatement pstmt = null;
 
         ResultSet resultSet = null;
-        int total = 0;
 
         try {
             pstmt = this.conn.prepareStatement(sqlStr);
@@ -80,15 +73,9 @@ public class ScPlateresFaceSearch implements ISearch {
 
                 ReflectionAttrUtils.executeResultSet(info, resultSet);
 
-                if (Paging && total == 0) {
-                    total = resultSet.getInt("TOTAL_ROW_NUM");
-                }
-
                 objList.add(info);
             }
-            if (!Paging) {
-                total = objList.size();
-            }
+
         } catch (Exception e) {
 
             throw e;
@@ -98,7 +85,7 @@ public class ScPlateresFaceSearch implements ISearch {
             DBUtils.closeStatement(pstmt);
         }
 
-        return total;
+        return objList.size();
     }
 
     @Override

@@ -153,7 +153,7 @@ public class InfoPoiMultiSrc2FmDayJob extends AbstractJob {
 			Date uploadDate = new Date();
 			PoiEditStatus.insertPoiEditStatus(conn, imp.getInsertPids(),2);//status = 2 已作业(待提交)
 			PoiEditStatus.updatePoiEditStatus(conn, imp.getPids(), 2, 1, uploadDate);//status = 2 已作业(待提交)
-			PoiEditStatus.tagMultiSrcPoi(conn, imp.getQuickSubtaskIdMap(),imp.getMediumSubtaskIdMap(),uploadDate);
+			PoiEditStatus.tagMultiSrcPoi(conn, imp.getPids(),taskId,subtaskId);
 			//导入父子关系
 			PoiRelationImportorCommand relCmd = new PoiRelationImportorCommand();
 			relCmd.setPoiRels(imp.getParentPid());

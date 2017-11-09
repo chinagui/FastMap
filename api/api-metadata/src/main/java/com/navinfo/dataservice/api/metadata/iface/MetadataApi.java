@@ -472,5 +472,9 @@ public interface MetadataApi {
 	public List<String> scPointSpecKindCodeType16() throws Exception;
 	
 	public int getTruck(String kind,String chain,String fuelType) throws Exception;
+	
+	public List<String> getPointAddrck(int type) throws Exception;
+	
+	public List<String> getPointAddrck(int type, String hmFlag) throws Exception;
 
 }

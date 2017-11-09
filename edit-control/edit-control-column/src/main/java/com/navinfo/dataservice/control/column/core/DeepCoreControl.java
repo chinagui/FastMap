@@ -439,6 +439,8 @@ public class DeepCoreControl {
 			tabNames.add("IX_POI_BUSINESSTIME");
 			tabNames.add("IX_POI_PARKING");
 			tabNames.add("IX_POI_CARRENTAL");
+			tabNames.add("IX_POI_HOTEL");
+			tabNames.add("IX_POI_PHOTO");
 			for (int pid:pidList) {
 				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, pid, false);
 				if (submitLogs.containsKey(new Long((long)pid))) {
@@ -449,6 +451,13 @@ public class DeepCoreControl {
 			
 			operationResult.putAll(objList);
 			
+			logger.info("start exe batch command ");
+			BatchCommand batchCommand=new BatchCommand();
+			batchCommand.setRuleId("FM-BAT-TEMP-13");
+			Batch batch=new Batch(conn,operationResult);
+			batch.operate(batchCommand);
+			batch.setPhysiDelete(true);
+			batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			
 			logger.info("start exe check command ");
 			CheckCommand checkCommand=new CheckCommand();

@@ -31,8 +31,7 @@ public class operationTest extends ClassPathXmlAppContextInit {
     @Test
     public void create01() throws Exception {
 
-        String parameter = "{\"command\":\"BREAK\",\"data\":{\"longitude\":116.41681070171616,\"latitude\":39.91769143492466}}";
-
+        String parameter = "{\"type\":\"SCPLATERESLINK\",\"command\":\"UPDATE\",\"objIds\":[\"S1100000007_000001\",\"S1100000007_000002\"],\"data\":{\"boundaryLink\":\"0\",\"objStatus\":\"UPDATE\"}}";
 
 
         Transaction t = new Transaction(parameter);

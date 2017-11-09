@@ -51,6 +51,7 @@ public class TipsDao {
 	protected String relate_links;
 	protected String relate_nodes;
 	protected String t_dataDate;
+    protected String old;
 	
 	public String getId() {
 		return id;
@@ -226,9 +227,16 @@ public class TipsDao {
 	public void setRelate_nodes(String relate_nodes) {
 		this.relate_nodes = relate_nodes;
 	}
-	
-	
-	/**
+
+    public String getOld() {
+        return old;
+    }
+
+    public void setOld(String old) {
+        this.old = old;
+    }
+
+    /**
 	 * @return the t_dataDate
 	 */
 	public String getT_dataDate() {
@@ -350,6 +358,11 @@ public class TipsDao {
 			JSONObject tipdiff = hbaseTips.getJSONObject("tipdiff");
 			this.setTipdiff(tipdiff.toString());
 		}
+
+        if(hbaseTips.containsKey("old")) {
+            JSONObject old = hbaseTips.getJSONObject("old");
+            this.setOld(old.toString());
+        }
 	}
 	public TipsDao copy(){
 		TipsDao tipsDao = new TipsDao();
@@ -380,6 +393,7 @@ public class TipsDao {
 		tipsDao.setRelate_links(this.getRelate_links());
 		tipsDao.setRelate_nodes(this.getRelate_nodes());
 		tipsDao.setT_dataDate(this.getT_dataDate());
+        tipsDao.setOld(this.getOld());
 		return tipsDao;
 	}
 }

@@ -3,8 +3,10 @@ package com.navinfo.dataservice.engine.check.rules;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkKind;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -29,10 +31,10 @@ public class GLM50072 extends baseRule {
                 if (kind != 0)
                     continue;
 
-                RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(linkKind.getLinkPid(), false);
+                ZoneLink link = (ZoneLink) new ZoneLinkSelector(getConn()).loadById(linkKind.getLinkPid(), false);
                 Geometry geometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
                 if (MeshUtils.isMeshLine(geometry))
-                    setCheckResult(geometry, "[RD_LINK," + link.pid() + "]", link.mesh());
+                    setCheckResult(geometry, "[ZONE_LINK," + link.pid() + "]", link.mesh());
             }
         }
     }

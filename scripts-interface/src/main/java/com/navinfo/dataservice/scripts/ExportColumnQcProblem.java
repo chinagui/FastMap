@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -45,10 +46,14 @@ public class ExportColumnQcProblem {
 			for (ColumnQcProblem columnQcProblem : columnQcProblemList) {
 				int subtaskId = columnQcProblem.getSubtaskId();
 				setNameAndSubtaskGroup(subtaskId, columnQcProblem);
-				int workerId = Integer.parseInt(columnQcProblem.getWorker());
-				int qcWorkerId = Integer.parseInt(columnQcProblem.getQcWorker());
-				columnQcProblem.setWorker(workerId+"-"+getUserRealName(workerId));
-				columnQcProblem.setQcWorker(qcWorkerId+"-"+getUserRealName(qcWorkerId));
+				if (StringUtils.isNotBlank(columnQcProblem.getWorker())) {
+					int workerId = Integer.parseInt(columnQcProblem.getWorker());
+					columnQcProblem.setWorker(workerId + "-" + getUserRealName(workerId));
+				}
+				if (StringUtils.isNotBlank(columnQcProblem.getQcWorker())) {
+					int qcWorkerId = Integer.parseInt(columnQcProblem.getQcWorker());
+					columnQcProblem.setQcWorker(qcWorkerId + "-" + getUserRealName(qcWorkerId));
+				}
 			}
 			
 			

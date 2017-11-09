@@ -314,7 +314,8 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 				log.info("2.1 开始将日库("+region.getDailyDbId().toString()+")poi履历（temptable:"+tempP+"）刷新到P+R出品库");
 				FlushResult flushResultPRP= new Day2MonLogFlusher(dailyDbSchema,dailyConn,releaseDbConnR,true,tempP,"fmPoiRoadDailyRelease").flush();
 				if(0!=flushResultPRP.getFailedTotal()){
-					throw new Exception("存在刷履历失败的log,请查看:"+flushResultPRP.getTempFailLogTable());
+//					throw new Exception("存在刷履历失败的log,请查看:"+flushResultPRP.getTempFailLogTable());
+					log.info("存在刷履历失败的log,请查看:"+flushResultPRP.getTempFailLogTable());
 				}
 				log.info("2.2 开始将poi履历搬到P+R出品库：logtotal:"+String.valueOf(flushResultPRP.getTotal()));
 				if(0!=flushResultPRP.getTotal()){

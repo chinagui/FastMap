@@ -231,7 +231,7 @@
         <Foreign Table="CMG_BUILDING_3DICON" FK="BUILDING_PID" Ref="CMG_BUILDING"/>
         <Foreign Table="CMG_BUILDING_3DMODEL" FK="BUILDING_PID" Ref="CMG_BUILDING"/>
         <!--CMG_BUILDFACE-->
-        <Foreign Table="CMG_BUILDING_TENANT" FK="FACE_PID" Ref="CMG_BUILDFACE"/>
+        <Foreign Table="CMG_BUILDFACE_TENANT" FK="FACE_PID" Ref="CMG_BUILDFACE"/>
         <Foreign Table="CMG_BUILDFACE_TOPO" FK="FACE_PID" Ref="CMG_BUILDFACE"/>
         <!--CMG_BUILDLINK-->
         <Foreign Table="CMG_BUILDLINK_MESH" FK="LINK_PID" Ref="CMG_BUILDLINK"/>

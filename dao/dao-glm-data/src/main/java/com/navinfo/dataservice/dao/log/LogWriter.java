@@ -896,7 +896,7 @@ public class LogWriter {
 					if (status != Status.DELETE) {
 						ldC.setNewValue(convertObj2NewValue(row).toString());
 					}else{
-						ldC.setOldValue(convertObj2NewValue(r).toString());
+						ldC.setOldValue(convertObj2NewValue(row).toString());
 					}
 
 					ldC.setRowId(UuidUtils.genUuid());

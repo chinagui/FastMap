@@ -237,6 +237,24 @@ public class ScPlateresInfoSearch  {
             }
         }
 
+        if (obj.containsKey("sPublicTime")) {
+            String startTime = obj.getString("sPublicTime");
+
+            if (startTime != null && !startTime.isEmpty()) {
+                sql.append(" AND t.PUBLIC_TIME >= ");
+                sql.append("'" + startTime + "'");
+            }
+        }
+
+        if (obj.containsKey("ePublicTime")) {
+            String endTime = obj.getString("ePublicTime");
+
+            if (endTime != null && !endTime.isEmpty()) {
+                sql.append(" AND t.PUBLIC_TIME <= ");
+                sql.append("'" + endTime + "'");
+            }
+        }
+
         if (obj.containsKey("complete")) {
             JSONArray complete = obj.getJSONArray("complete");
 
@@ -262,8 +280,8 @@ public class ScPlateresInfoSearch  {
 				sql.append(")");
 			}
 		}
-
-        //sql.append(" AND rownum BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize) + " for update nowait");
     }
+
+
 
 }

@@ -90,27 +90,26 @@ public class ScPlateresGroupSearch {
     public int searchDataByCondition(JSONObject condition,List<IRow> rows) throws Exception {
     	
     	StringBuilder sqlstr = new StringBuilder();
-    	sqlstr.append("SELECT t.*, row_number() over(order by GROUP_ID) as row_num FROM SC_PLATERES_GROUP t WHERE");
+    	sqlstr.append("SELECT t.* FROM SC_PLATERES_GROUP t WHERE 1=1 ");
         componentSql(condition,sqlstr);
         
-        StringBuilder sql = new StringBuilder();
-        sql.append("WITH query AS (" + sqlstr + ")");
-        sql.append(" SELECT query.*,(SELECT COUNT(1) FROM query) AS TOTAL_ROW_NUM FROM query");
-
-        if (condition.containsKey("pageSize") && condition.containsKey("pageNum")) {
-            int pageSize = condition.getInt("pageSize");
-            int pageNum = condition.getInt("pageNum");
-
-            sql.append(" WHERE row_num BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize));
-        }
-    	
+//        StringBuilder sql = new StringBuilder();
+//        sql.append("WITH query AS (" + sqlstr + ")");
+//        sql.append(" SELECT query.*,(SELECT COUNT(1) FROM query) AS TOTAL_ROW_NUM FROM query");
+//
+//        if (condition.containsKey("pageSize") && condition.containsKey("pageNum")) {
+//            int pageSize = condition.getInt("pageSize");
+//            int pageNum = condition.getInt("pageNum");
+//
+//            sql.append(" WHERE row_num BETWEEN "+ ((pageNum - 1) * pageSize + 1) + " AND " + (pageNum * pageSize));
+//        }
+//
         PreparedStatement pstmt = null;
-        int total = 0;
 
         ResultSet resultSet = null;
 
         try {
-            pstmt = this.conn.prepareStatement(sql.toString());
+            pstmt = this.conn.prepareStatement(sqlstr.toString());
 
             resultSet = pstmt.executeQuery();
 
@@ -119,8 +118,6 @@ public class ScPlateresGroupSearch {
                 ScPlateresGroup group = new ScPlateresGroup();
 
                 ReflectionAttrUtils.executeResultSet(group, resultSet);
-                
-                total = resultSet.getInt("TOTAL_ROW_NUM");
 
                 rows.add(group);
             }
@@ -133,7 +130,7 @@ public class ScPlateresGroupSearch {
             DBUtils.closeStatement(pstmt);
         }
 
-        return total;
+        return rows.size();
     }
     
 	private void componentSql(JSONObject obj, StringBuilder sql) {
@@ -142,21 +139,22 @@ public class ScPlateresGroupSearch {
 			String infoIntelId = obj.getString("infoIntelId");
 
 			if (infoIntelId != null && !infoIntelId.isEmpty()) {
-				sql.append(" t.INFO_INTEL_ID = ");
-				sql.append("'" + infoIntelId + "'");
-			}
+                sql.append(" and t.INFO_INTEL_ID = '");
+                sql.append(infoIntelId);
+                sql.append("' ");
+            }
 		}
 
 		if (obj.containsKey("adminArea")) {
 			String admin = obj.getString("adminArea");
 
-			if (!sql.toString().endsWith("WHERE")) {
-				sql.append(" AND");
-			}
 
 			if (admin != null && !admin.isEmpty()) {
-				sql.append(" t.AD_ADMIN = ");
+				sql.append(" and t.AD_ADMIN = ");
+
 				sql.append(admin);
+
+                sql.append(" ");
 			}
 		}
 
@@ -164,8 +162,9 @@ public class ScPlateresGroupSearch {
 			String groupId = obj.getString("groupId");
 
 			if (groupId != null && !groupId.isEmpty()) {
-				sql.append(" AND t.GROUP_ID = ");
-				sql.append("'" + groupId + "'");
+				sql.append(" AND t.GROUP_ID = '");
+				sql.append(groupId);
+                sql.append("' ");
 			}
 		}
 
@@ -174,7 +173,9 @@ public class ScPlateresGroupSearch {
 
 			if (groupType != null && groupType.size() != 0) {
 				sql.append(" AND t.GROUP_TYPE IN ");
-				sql.append("(" + groupType.toString().replace("[", "").replace("]", "") + ")");
+				sql.append("(" );
+                sql.append(groupType.toString().replace("[", "").replace("]", ""));
+                sql.append(") ");
 			}
 		}
 	}

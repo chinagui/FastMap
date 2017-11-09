@@ -164,7 +164,7 @@ public class ExportColumnQcQualityRate {
 			
 			List<ColumnQcQualityRate> columnQcQualityRateList = new ArrayList<>();
 			int worker = 0;
-			ColumnQcQualityRate columnQcQualityRate = null;
+			ColumnQcQualityRate columnQcQualityRate = new ColumnQcQualityRate();
 			while (rs.next()) {
 				if(worker!=rs.getInt(1)) {
 					worker = rs.getInt(1);

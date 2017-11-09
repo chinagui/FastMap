@@ -44,8 +44,7 @@ public class ExportQualityTipsReportJob extends AbstractStatJob {
 
 	@Override
 	public String stat() throws JobException {
-
-		Connection manConn = null;
+        Connection manConn = null;
 		Connection checkConn = null;
 
 	    List<Integer> subtaskQualityIdList = new ArrayList<>();//质检圈Id list
@@ -247,8 +246,8 @@ public class ExportQualityTipsReportJob extends AbstractStatJob {
 			}
 			out = new FileOutputStream(file);
 
-            String templatePath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathTips);
-            FileInputStream fis = new FileInputStream(templatePath + "/" + TipsQualityReportConstant.QC_TEMPLATE_XLS_NAME);
+            String templatePath = this.getClass().getResource("xls/" + TipsQualityReportConstant.QC_TEMPLATE_XLS_NAME).getPath();
+            FileInputStream fis = new FileInputStream(templatePath);
 			HSSFWorkbook workbook = new HSSFWorkbook(fis);
 			Map<String, Integer> colorMap = new HashMap<>();
 			colorMap.put("red", 255);

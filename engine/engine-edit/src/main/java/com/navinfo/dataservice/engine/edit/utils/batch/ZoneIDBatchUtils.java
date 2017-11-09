@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -133,22 +134,37 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
 
             double type = 0;
             try {
-                type = ((AdAdmin)selector.loadById(faceRegionId, false)).getAdminType();
+                type = ((AdAdmin)new AdAdminSelector(conn).loadById(faceRegionId, false)).getAdminType();
             } catch (Exception e) {
                 logger.error(String.format("load admin error [regionId : %s]", faceRegionId));
                 logger.error(e.getMessage(), e.fillInStackTrace());
             }
 
             Geometry newGeometry = transform(geometry);
-            List<RdLink> links = selector.loadLinkByFaceGeo(newGeometry, true);
+            List<RdLink> oldLinks = selector.loadLinkByFaceGeo(oldGeometry, true);
 
-            for (RdLink link : links) {
-                Geometry linkGeometry = transform(link.getGeometry());
+            List<RdLink> newLinks = selector.loadLinkByFaceGeo(newGeometry, true);
 
-                excuteData(faceRegionId, type, newGeometry, link, linkGeometry, result);
-
-
+            label1:
+            for (RdLink next : oldLinks) {
+                for (RdLink newLink : newLinks) {
+                    if (next.rowId().equals(newLink.rowId())) {
+                        continue label1;
+                    }
+                }
+                for (IRow iRow : next.getZones()) {
+                    RdLinkZone zone = (RdLinkZone) iRow;
+                    if (zone.getRegionId() == faceRegionId) {
+                        result.insertObject(iRow, ObjStatus.DELETE, next.pid());
+                    }
+                }
             }
+
+            for (RdLink link : newLinks) {
+                Geometry linkGeometry = transform(link.getGeometry());
+                excuteData(faceRegionId, type, newGeometry, link, linkGeometry, result);
+            }
+
         }
     }
 
@@ -166,7 +182,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                 result.insertObject(rightZone, ObjStatus.INSERT, link.pid());
             }
 
-        // link在zoneFace组成线上
+            // link在zoneFace组成线上
         } else if (GeoRelationUtils.Boundary(linkGeometry, newGeometry)) {
             // link在zoneFace的右边
             if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry, newGeometry)) {

@@ -30,10 +30,8 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":504000778,\"data\":{\"type\":\"RDLINK\"," +
-                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.23211,39.95218],[116.23244404792784,39.952140617120605]]}," +
-                "\"catchInfos\":[{\"nodePid\":520000595,\"longitude\":116.23244404792784,\"latitude\":39.952140617120605}]},\"dbId\":13," +
-                "\"subtaskId\":856}";
+        String parameter = "{\"command\":\"ONLINEBATCH\",\"type\":\"FACE\",\"dbId\":13,\"subtaskId\":856,\"pid\":408000040," +
+                "\"ruleId\":\"BATCHZONEID\"}";
         TestUtil.run(parameter);
     }
 

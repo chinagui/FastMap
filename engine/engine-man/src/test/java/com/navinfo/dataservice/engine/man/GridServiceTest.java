@@ -1,13 +1,10 @@
 package com.navinfo.dataservice.engine.man;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import junit.framework.Assert;
-import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.map.MultiValueMap;
 import org.junit.Before;
@@ -17,9 +14,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.grid.GridService;
-import com.navinfo.dataservice.engine.man.service.ManApiImpl;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import junit.framework.Assert;
+import net.sf.json.JSONObject;
 
 /*
  * @author mayunfei

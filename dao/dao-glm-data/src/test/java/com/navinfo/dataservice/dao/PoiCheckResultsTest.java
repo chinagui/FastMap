@@ -70,16 +70,16 @@ public class PoiCheckResultsTest {
 		Connection conn =null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1").getConnection();
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "fm_gdb_trunk", "fm_gdb_trunk").getConnection();
 
 			NiValExceptionSelector a = new NiValExceptionSelector(conn);
 				
-			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':68,'dbId':13,'sortby':'-ruleid'}");	
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':251,'dbId':12,'sortby':'-ruleid'}");	
 			JSONObject data = new JSONObject();//selector.poiCheckResults(pid);
 			
 				//List<JSONObject> page =null;
 				try {
-					 Page page1 = a.listPoiCheckResultList(jsonReq,306);
+					 Page page1 = a.listPoiCheckResultList(jsonReq,251,5,"deepDetail");
 					 System.out.println(page1.getResult());
 						
 					/*JSONArray results = a.queryRefFeatures(1810842);

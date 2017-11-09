@@ -1,5 +1,17 @@
 package com.navinfo.dataservice.engine.man.job.Tips2Mark;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -14,7 +26,6 @@ import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
 import com.navinfo.dataservice.engine.man.job.bean.ItemType;
 import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
-
 import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;

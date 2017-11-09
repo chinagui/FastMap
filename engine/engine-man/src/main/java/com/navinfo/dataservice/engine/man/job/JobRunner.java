@@ -1,22 +1,28 @@
 package com.navinfo.dataservice.engine.man.job;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 import com.alibaba.fastjson.JSON;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
-import com.navinfo.dataservice.engine.man.job.bean.*;
+import com.navinfo.dataservice.engine.man.job.bean.InvokeType;
+import com.navinfo.dataservice.engine.man.job.bean.ItemType;
+import com.navinfo.dataservice.engine.man.job.bean.Job;
+import com.navinfo.dataservice.engine.man.job.bean.JobProgress;
+import com.navinfo.dataservice.engine.man.job.bean.JobProgressStatus;
+import com.navinfo.dataservice.engine.man.job.bean.JobRelation;
+import com.navinfo.dataservice.engine.man.job.bean.JobStatus;
+import com.navinfo.dataservice.engine.man.job.bean.JobType;
 import com.navinfo.dataservice.engine.man.job.exception.JobRunningException;
 import com.navinfo.dataservice.engine.man.job.message.JobMessage;
 import com.navinfo.dataservice.engine.man.job.operator.JobOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobProgressOperator;
 import com.navinfo.dataservice.engine.man.job.operator.JobRelationOperator;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
-
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by wangshishuai3966 on 2017/7/6.

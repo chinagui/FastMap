@@ -489,6 +489,26 @@ public class TipsSelector {
 					m.put("c", gSLoc.getJSONArray("coordinates"));
 					m.put("d", gELoc.getJSONArray("coordinates"));
 
+                    JSONArray iArray = new JSONArray();
+                    if (json.containsKey("old")) {
+                        JSONObject old = JSONObject.fromObject(json.getString("old"));
+                        JSONArray oldArray = old.getJSONArray("old_array");
+                        if(oldArray != null && oldArray.size() > 0) {
+                            for(int oldIndex = 0; oldIndex < oldArray.size(); oldIndex ++) {
+                                JSONObject perOld = oldArray.getJSONObject(oldIndex);
+                                String oLocationStr = perOld.getString("o_location");
+                                if (StringUtils.isBlank(oLocationStr) || oLocationStr.equals("null")
+                                        || oLocationStr.equals("\"null\"")) {
+                                    continue;
+                                }
+                                JSONObject oldGeoJson = JSONObject.fromObject(oLocationStr);
+                                Geojson.coord2Pixel(oldGeoJson, z, px, py);
+                                iArray.add(oldGeoJson.getJSONArray("coordinates"));
+                            }
+                        }
+                    }
+                    m.put("i", iArray);
+
 					if (type == 1510 || type == 1507 || type == 1511 || type == 1509) {
 
 						m.put("e", deep.getString("name"));

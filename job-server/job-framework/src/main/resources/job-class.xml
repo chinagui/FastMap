@@ -210,4 +210,8 @@
           class="com.navinfo.dataservice.column.job.InfoPoiMultiSrc2FmDayJob"
           request="com.navinfo.dataservice.column.job.InfoPoiMultiSrc2FmDayJobRequest" >
     </type>
+    <type name="exportQualityTipsReport"
+          class="com.navinfo.dataservice.job.statics.job.ExportQualityTipsReportJob"
+          request="com.navinfo.dataservice.job.statics.job.ExportQualityTipsReportJobRequest" >
+    </type>
 	</mapping>

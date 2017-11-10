@@ -18,9 +18,7 @@ import com.navinfo.dataservice.commons.json.JsonIsEqualUtil;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.bizcommons.upload.RegionUploadResult;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
@@ -39,12 +37,11 @@ import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -842,6 +839,10 @@ public class TipsUpload {
      */
     public void updateTipsStatus(JSONObject json) {
         json.put("t_tipStatus", TipsUpload.IMPORT_TIP_STATUS);
+        json.put("t_dEditStatus", 0);
+        json.put("t_dEditMeth", 0);
+        json.put("t_mEditStatus", 0);
+        json.put("t_mEditMeth", 0);
         json.put("t_date", currentDate);
     }
 
@@ -1339,7 +1340,11 @@ public class TipsUpload {
         TipsTrack track = (TipsTrack) JSONObject.toBean(oldTrack, TipsTrack.class);
         track.setT_lifecycle(t_lifecycle);
         track.setT_date(currentDate);
-        track.setT_dataDate(t_dataDate); //915新增字段，需要重新赋值为系统当前时间 
+        track.setT_dataDate(t_dataDate); //915新增字段，需要重新赋值为系统当前时间
+        track.setT_dEditStatus(json.getInt("t_dEditStatus"));
+        track.setT_dEditMeth(json.getInt("t_dEditMeth"));
+        track.setT_mEditStatus(json.getInt("t_mEditStatus"));
+        track.setT_mEditMeth(json.getInt("t_mEditMeth"));
         track.setT_tipStatus(json.getInt("t_tipStatus"));
         track.setT_command(json.getInt("t_command"));
         track.addTrackInfo(stage, json.getString("t_operateDate"), json.getInt("t_handler"));

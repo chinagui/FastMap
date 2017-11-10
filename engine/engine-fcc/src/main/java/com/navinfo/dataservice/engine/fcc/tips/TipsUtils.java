@@ -150,6 +150,10 @@ public class TipsUtils {
         tipsIndexModel.setRelate_nodes(relateMap.get("relate_nodes"));
 
         tipsIndexModel.setT_tipStatus(json.getInt("t_tipStatus"));
+        tipsIndexModel.setT_dEditStatus(json.getInt("t_dEditStatus"));
+        tipsIndexModel.setT_dEditMeth(json.getInt("t_dEditMeth"));
+        tipsIndexModel.setT_mEditStatus(json.getInt("t_mEditStatus"));
+        tipsIndexModel.setT_mEditMeth(json.getInt("t_mEditMeth"));
         
         tipsIndexModel.setT_dataDate(json.getString("t_dataDate")); //915新增字段
  

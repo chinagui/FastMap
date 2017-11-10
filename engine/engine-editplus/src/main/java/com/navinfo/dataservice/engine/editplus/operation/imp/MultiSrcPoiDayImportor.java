@@ -1014,8 +1014,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 									ixPoiContact.setContact(number);
 									ixPoiContact.setContactType(type);
 									//zl 2017.11.08 新增电话优先级赋值
-									System.out.println("2新增电话优先级: "+priority+1);
+									System.out.println("2新增电话优先级: "+(priority+1));
 									ixPoiContact.setPriority(priority+1);
+									priority= priority+1;
 								}
 							}
 						}else{//多源上传的 电话库中没有,至接新增
@@ -1024,8 +1025,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 							ixPoiContact.setContact(number);
 							ixPoiContact.setContactType(type);
 							//zl 2017.11.08 新增电话优先级赋值
-							System.out.println("3新增电话优先级: "+priority+1);
-							ixPoiContact.setPriority(priority+1);
+							System.out.println("3新增电话优先级: "+(i+1));
+							ixPoiContact.setPriority(i+1);
+							priority= i+1;
 						}
 						
 					}else{//数据库中无可更新数据,至接将多源上传的电话新增进数据库
@@ -1034,8 +1036,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 						ixPoiContact.setContact(number);
 						ixPoiContact.setContactType(type);
 						//zl 2017.11.08 新增电话优先级赋值
-						System.out.println("3新增电话优先级: "+priority+1);
+						System.out.println("3新增电话优先级: "+(priority+1));
 						ixPoiContact.setPriority(priority+1);
+						priority= priority+1;
 					}
 					
 				}
@@ -1058,7 +1061,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					ixPoiContact.setContact(number);
 					ixPoiContact.setContactType(type);
 					//zl 2017.11.08 新增电话优先级赋值
-					System.out.println("新增电话优先级: "+i+1);
+					System.out.println("新增电话优先级: "+(i+1));
 					ixPoiContact.setPriority(i+1);
 					
 				}

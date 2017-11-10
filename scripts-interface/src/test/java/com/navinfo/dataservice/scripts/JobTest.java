@@ -52,7 +52,7 @@ public class JobTest {
 			e.printStackTrace();
 		}
 	}*/
-//	@Test
+	@Test
 	public  void JobTest() throws Exception {
 		//初始化context
 		JobScriptsInterface.initContext();
@@ -62,9 +62,9 @@ public class JobTest {
 			JSONObject jobPra = new JSONObject();
 			jobPra.put("timestamp", new Date());
 
-			long jobId = JobService.getInstance().create("taskStat", jobPra, 0,0, "创建FM日库多源增量包");
+			long jobId = JobService.getInstance().create("multisrc2FmDay", jobPra, 0,0, "创建FM日库多源增量包");
 //	    	int jobId = 3998;
-
+			System.out.println("jobId: "+jobId);
 			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			JobInfo jobInfo=apiService.getJobById(jobId);
 //			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);

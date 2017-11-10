@@ -29,7 +29,7 @@ public class IxPoiChildren implements IRow {
 	
 	private int childPoiPid;//子POI号码
 	
-	private int relationType=0;	//关系类型
+	private int relationType=2;	//关系类型默认值改为2, 2017.11.10 by jicaihua updated
 	
 	private int uRecord=0;
 	

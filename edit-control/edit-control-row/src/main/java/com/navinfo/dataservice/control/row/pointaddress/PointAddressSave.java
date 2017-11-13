@@ -484,19 +484,26 @@ public class PointAddressSave {
         
         RdLinkSelector rdLinkSelector = new RdLinkSelector(conn);
         
-        RdLink link = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(poiData.getInt("guideLinkPid"), false);
-        
-        // 计算行政区划代表点与关联线的左右关系
-        Coordinate c = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(go, 0.00001, 5).getCoordinate(), 
-        		GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
-        
-        JSONObject geojson = new JSONObject();
-        geojson.put("type", "Point");
-        geojson.put("coordinates", new double[]{c.x, c.y});
-        Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 1, 0);
-        int side = GeometryUtils.calulatPointSideOflink(go, link.getGeometry(), nearestPointGeo);
+        Integer guideLinkPid = poiData.getInt("guideLinkPid");
+        if(guideLinkPid != 0){
+        	 RdLink link = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(guideLinkPid, false);
+             
+             // 计算行政区划代表点与关联线的左右关系
+             Coordinate c = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(go, 0.00001, 5).getCoordinate(), 
+             		GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
+             
+             JSONObject geojson = new JSONObject();
+             geojson.put("type", "Point");
+             geojson.put("coordinates", new double[]{c.x, c.y});
+             Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 1, 0);
+             int side = GeometryUtils.calulatPointSideOflink(go, link.getGeometry(), nearestPointGeo);
+             poiData.put("guideLinkSide", side);
+        }else{
+        	 poiData.put("guideLinkSide", 0);
+        }
+       
 
-        poiData.put("guideLinkSide", side);
+        
 	}
 	
 	

@@ -16,6 +16,7 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.job.statics.AbstractStatJob;
@@ -112,7 +113,7 @@ public class PersonTipsJob extends AbstractStatJob {
 		java.sql.Connection orclConn = null;
 		try {
 			String sqlLineQuery = "SELECT T.S_MSUBTASKID, T.ID, T.WKTLOCATION, T.T_LIFECYCLE, T.S_SOURCETYPE\n" +
-					" FROM TIPS_INDEX171106 T\n" +
+					" FROM TIPS_INDEX T\n" +
 					" WHERE T.S_MSUBTASKID <> 0 and T.S_SOURCETYPE = '2001'\n" + // s_msubtaskid!=0
 					" ORDER BY T.S_MSUBTASKID";
 			orclConn = DBConnector.getInstance().getTipsIdxConnection();
@@ -127,9 +128,7 @@ public class PersonTipsJob extends AbstractStatJob {
 					Table htab = null;
 					try {
 						hbaseConn = HBaseConnector.getInstance().getConnection();
-						// htab =
-						// hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-						htab = hbaseConn.getTable(TableName.valueOf("tips_sprint10"));
+						 htab =hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
 						while (rs.next()) {
 							int subtaskId = rs.getInt("S_MSUBTASKID");

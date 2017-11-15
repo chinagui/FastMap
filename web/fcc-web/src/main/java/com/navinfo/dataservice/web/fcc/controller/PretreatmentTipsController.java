@@ -624,7 +624,7 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalAccessException("parameter参数不能为空");
 			}
 			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
-			int subtaskId = 0;
+			int subtaskId;
 			if (!jsonReq.containsKey("subtaskId")) {
 				throw new IllegalAccessException("参数错误：subtaskId不能为空");
 			}

@@ -624,13 +624,11 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalAccessException("parameter参数不能为空");
 			}
 			JSONObject jsonReq = TipsUtils.stringToSFJson(parameter);
-			Integer subtaskId = null;
-			if (jsonReq.containsKey("subtaskId")) {
-				subtaskId = (Integer) jsonReq.get("subtaskId");
-			}
-			if (subtaskId == null) {
+			int subtaskId = 0;
+			if (!jsonReq.containsKey("subtaskId")) {
 				throw new IllegalAccessException("参数错误：subtaskId不能为空");
 			}
+			subtaskId = jsonReq.getInt("subtaskId");
 
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			JSONArray data = op.getSubtaskGridStat(subtaskId);

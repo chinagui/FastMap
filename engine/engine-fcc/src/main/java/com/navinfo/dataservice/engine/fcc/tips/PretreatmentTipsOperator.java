@@ -2960,7 +2960,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		return rowkeys;
 	}
 
-	public JSONArray getSubtaskGridStat(Integer subtaskId) throws Exception {
+	public JSONArray getSubtaskGridStat(int subtaskId) throws Exception {
 		Map<String, JSONObject> gridTipsMap = getGridTipsMap(subtaskId);
 		Map<String, Object> resultMap = new HashMap<>();
 		List<Map<String, Object>> resultList = new ArrayList<>();
